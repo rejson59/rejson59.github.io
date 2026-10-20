@@ -115,8 +115,13 @@
     if (p.stars > 0) meta += '<span class="meta-item">' + ICON_STAR + esc(p.stars) + "</span>";
     if (p.forks > 0) meta += '<span class="meta-item">' + ICON_FORK + esc(p.forks) + "</span>";
 
+    var preview = p.liveUrl
+      ? '<a class="card-preview" href="' + esc(p.liveUrl) + '" target="_blank" rel="noopener noreferrer" aria-label="Podgląd ' + esc(p.name) + ' — otwórz live">' +
+          '<div class="card-preview-frame" aria-hidden="true"><iframe src="' + esc(p.liveUrl) + '" loading="lazy" tabindex="-1" aria-hidden="true"></iframe><div class="card-preview-topbar"><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-url">' + esc(p.liveUrl.replace(/^https?:\/\//, "")) + '</span></div></div><span class="card-preview-hint">otwórz ↗</span></a>'
+      : "";
+
     var liveBtn = p.liveUrl
-      ? '<a class="btn btn-primary btn-sm" href="' + esc(p.liveUrl) + '" target="_blank" rel="noopener noreferrer">Wersja live ' + ICON_ARROW + "</a>"
+      ? '<a class="btn btn-live btn-sm" href="' + esc(p.liveUrl) + '" target="_blank" rel="noopener noreferrer">Wersja live ' + ICON_ARROW + "</a>"
       : "";
     var codeBtn = '<a class="btn btn-ghost btn-sm" href="' + esc(p.url) + '" target="_blank" rel="noopener noreferrer">' +
       ICON_GITHUB + " Kod źródłowy</a>";
@@ -129,6 +134,7 @@
             '<span class="card-index mono">/ ' + num + "</span>" +
             '<span class="card-badges">' + lang + liveBadge + "</span>" +
           "</div>" +
+          preview +
           '<h3 class="card-title"><a href="' + esc(p.url) + '" target="_blank" rel="noopener noreferrer">' + esc(p.name) + "</a></h3>" +
           '<p class="card-desc">' + esc(p.description) + "</p>" +
           topics +
