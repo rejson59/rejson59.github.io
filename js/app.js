@@ -387,11 +387,15 @@
     wrapper.addEventListener("pointerleave", onLeave);
   }
 
-  /* Karta profilu w hero — ten sam element jest i ramą, i treścią */
-  (function initProfileTilt() {
+  /* Karta profilu w hero oraz statyczne karty wyróżnione (Jakuplayer, JoyPad) */
+  (function initStaticTilt() {
     if (!canTilt) return;
     var profile = document.querySelector(".profile-card");
     if (profile) attachTilt(profile, profile, 4);
+    document.querySelectorAll(".showcase-item .project-card[data-tilt]").forEach(function (card) {
+      var inner = card.querySelector(".card-inner");
+      if (inner) attachTilt(card, inner, 5);
+    });
   })();
 
   /* ---------- Filtry i wyszukiwarka ---------- */
