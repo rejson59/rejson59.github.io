@@ -14,7 +14,7 @@ Strona portfolio dostępna pod [https://rejson59.github.io/](https://rejson59.gi
 │   └── style.css         # style strony
 ├── js/
 │   ├── app.js            # logika: fetch z API GitHuba, render kart, filtry
-│   └── projects-data.js  # kopia zapasowa listy 42 projektów (fallback)
+│   └── projects-data.js  # kopia zapasowa listy projektów (fallback)
 └── scripts/
     └── fetch-repos.py    # generuje js/projects-data.js z API GitHuba
 ```

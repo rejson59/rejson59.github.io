@@ -1,13 +1,16 @@
 /* rejson59.github.io — lista projektów pobierana na żywo z API GitHuba.
-   Najpierw renderujemy kopię zapasową (projects-data.js), a potem — jeśli
-   API odpowie — podmieniamy dane na aktualne. Dzięki temu strona działa
-   zawsze, a nowe repozytoria pojawiają się na niej automatycznie. */
+   Najpierw renderujemy ostatnio zapisane dane z cache / kopii zapasowej
+   (projects-data.js), a równolegle — oraz przy powrocie na kartę i cyklicznie
+   w tle — odpytujemy API GitHuba z użyciem ETag (If-None-Match). Dzięki temu
+   zmiana opisu, usunięcie lub dodanie repozytorium na GitHubie od razu
+   aktualizuje stronę na żywo bez przeładowywania ramek podglądu. */
 
 (function () {
   "use strict";
 
   var GH_USER = "rejson59";
   var API_URL = "https://api.github.com/users/" + GH_USER + "/repos?per_page=100&sort=updated";
+  var CACHE_KEY = "rejson_repos_cache_v2";
 
   /* Repozytoria infrastrukturalne — to nie projekty, więc nie pokazujemy ich jako kart. */
   var EXCLUDED = { "rejson59": true, "rejson59.github.io": true };
@@ -37,6 +40,7 @@
   var state = { query: "", liveOnly: false, lang: "all", sort: "updated" };
   var allProjects = [];
   var firstRenderDone = false;
+  var cardCache = {}; /* name -> { el, sig, liveUrl } */
 
   /* ---------- Elementy ---------- */
   var grid = document.getElementById("grid");
@@ -46,6 +50,7 @@
   var langSelect = document.getElementById("filter-lang");
   var sortSelect = document.getElementById("sort");
   var dataStatus = document.getElementById("data-status");
+  var originsMoreBtn = document.getElementById("origins-more-btn");
   var chips = Array.prototype.slice.call(document.querySelectorAll(".chip[data-live]"));
 
   /* ---------- Pomocnicze ---------- */
@@ -68,6 +73,13 @@
     return null;
   }
 
+  function latestActivity(repo) {
+    var u = repo.updated_at ? new Date(repo.updated_at).getTime() : 0;
+    var p = repo.pushed_at ? new Date(repo.pushed_at).getTime() : 0;
+    var max = Math.max(u || 0, p || 0);
+    return max ? new Date(max).toISOString() : (repo.updated_at || repo.created_at);
+  }
+
   function normalize(repo) {
     return {
       name: repo.name,
@@ -80,7 +92,7 @@
       forks: repo.forks_count || 0,
       topics: repo.topics || [],
       created: repo.created_at,
-      updated: repo.updated_at
+      updated: latestActivity(repo)
     };
   }
 
@@ -97,52 +109,121 @@
   var ICON_FORK = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="5" r="2.5"/><circle cx="18" cy="5" r="2.5"/><circle cx="12" cy="19" r="2.5"/><path d="M6 7.5v3a2.5 2.5 0 0 0 2.5 2.5H12M18 7.5v3A2.5 2.5 0 0 1 15.5 13H12M12 13v3.5"/></svg>';
 
   /* ---------- Renderowanie kart ---------- */
-  function cardHTML(p, index) {
-    var num = ("0" + (index + 1)).slice(-2);
+  function badgesHTML(p) {
     var lang = p.language
       ? '<span class="lang"><span class="lang-dot" style="background:' +
         esc(LANG_COLORS[p.language] || "#8b949e") + '"></span>' + esc(p.language) + "</span>"
       : "";
     var liveBadge = p.liveUrl ? '<span class="live-badge">LIVE</span>' : "";
+    return lang + liveBadge;
+  }
 
+  function metaHTML(p) {
+    var meta = '<span class="meta-item mono">Aktualizacja: ' + esc(fmtDate(p.updated)) + "</span>";
+    if (p.stars > 0) meta += '<span class="meta-item">' + ICON_STAR + esc(p.stars) + "</span>";
+    if (p.forks > 0) meta += '<span class="meta-item">' + ICON_FORK + esc(p.forks) + "</span>";
+    return meta;
+  }
+
+  function actionsHTML(p) {
+    var liveBtn = p.liveUrl
+      ? '<a class="btn btn-live btn-sm" href="' + esc(p.liveUrl) + '" target="_blank" rel="noopener noreferrer">Wersja live ' + ICON_ARROW + "</a>"
+      : "";
+    var codeBtn = '<a class="btn btn-ghost btn-sm" href="' + esc(p.url) + '" target="_blank" rel="noopener noreferrer">' +
+      ICON_GITHUB + " Kod źródłowy</a>";
+    return liveBtn + codeBtn;
+  }
+
+  function cardHTML(p, index) {
+    var num = ("0" + (index + 1)).slice(-2);
     var topics = p.topics.length
       ? '<ul class="card-topics">' + p.topics.slice(0, 5).map(function (t) {
           return "<li>" + esc(t) + "</li>";
         }).join("") + "</ul>"
-      : "";
-
-    var meta = '<span class="meta-item mono">Aktualizacja: ' + esc(fmtDate(p.updated)) + "</span>";
-    if (p.stars > 0) meta += '<span class="meta-item">' + ICON_STAR + esc(p.stars) + "</span>";
-    if (p.forks > 0) meta += '<span class="meta-item">' + ICON_FORK + esc(p.forks) + "</span>";
+      : '<ul class="card-topics" hidden></ul>';
 
     var preview = p.liveUrl
       ? '<a class="card-preview" href="' + esc(p.liveUrl) + '" target="_blank" rel="noopener noreferrer" aria-label="Podgląd ' + esc(p.name) + ' — otwórz live">' +
           '<div class="card-preview-frame" aria-hidden="true"><iframe src="' + esc(p.liveUrl) + '" loading="lazy" tabindex="-1" aria-hidden="true"></iframe><div class="card-preview-topbar"><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-url">' + esc(p.liveUrl.replace(/^https?:\/\//, "")) + '</span></div></div><span class="card-preview-hint">otwórz ↗</span></a>'
       : "";
 
-    var liveBtn = p.liveUrl
-      ? '<a class="btn btn-live btn-sm" href="' + esc(p.liveUrl) + '" target="_blank" rel="noopener noreferrer">Wersja live ' + ICON_ARROW + "</a>"
-      : "";
-    var codeBtn = '<a class="btn btn-ghost btn-sm" href="' + esc(p.url) + '" target="_blank" rel="noopener noreferrer">' +
-      ICON_GITHUB + " Kod źródłowy</a>";
-
     return (
-      '<article class="project-card reveal" data-tilt>' +
+      '<article class="project-card reveal" data-tilt data-repo="' + esc(p.name) + '">' +
         '<div class="card-inner">' +
           '<div class="card-sheen" aria-hidden="true"></div>' +
           '<div class="card-top">' +
             '<span class="card-index mono">/ ' + num + "</span>" +
-            '<span class="card-badges">' + lang + liveBadge + "</span>" +
+            '<span class="card-badges">' + badgesHTML(p) + "</span>" +
           "</div>" +
           preview +
           '<h3 class="card-title"><a href="' + esc(p.url) + '" target="_blank" rel="noopener noreferrer">' + esc(p.name) + "</a></h3>" +
           '<p class="card-desc">' + esc(p.description) + "</p>" +
           topics +
-          '<p class="card-meta">' + meta + "</p>" +
-          '<div class="card-actions">' + liveBtn + codeBtn + "</div>" +
+          '<p class="card-meta">' + metaHTML(p) + "</p>" +
+          '<div class="card-actions">' + actionsHTML(p) + "</div>" +
         "</div>" +
       "</article>"
     );
+  }
+
+  function projectSig(p) {
+    return [
+      p.name, p.description, p.url, p.liveUrl || "",
+      p.language || "", p.stars, p.forks,
+      (p.topics || []).join(","), p.updated
+    ].join("|");
+  }
+
+  function getOrUpdateCard(p, index) {
+    var num = ("0" + (index + 1)).slice(-2);
+    var sig = projectSig(p);
+    var entry = cardCache[p.name];
+
+    if (!entry || entry.liveUrl !== (p.liveUrl || "")) {
+      var temp = document.createElement("div");
+      temp.innerHTML = cardHTML(p, index);
+      var el = temp.firstElementChild;
+      var inner = el.querySelector(".card-inner");
+      if (canTilt && inner) attachTilt(el, inner, 6);
+      entry = { el: el, sig: sig, liveUrl: p.liveUrl || "" };
+      cardCache[p.name] = entry;
+      return el;
+    }
+
+    var cardEl = entry.el;
+    var idxEl = cardEl.querySelector(".card-index");
+    if (idxEl) idxEl.textContent = "/ " + num;
+
+    if (entry.sig !== sig) {
+      var badgesEl = cardEl.querySelector(".card-badges");
+      if (badgesEl) badgesEl.innerHTML = badgesHTML(p);
+      var titleLink = cardEl.querySelector(".card-title a");
+      if (titleLink) {
+        titleLink.href = p.url;
+        titleLink.textContent = p.name;
+      }
+      var descEl = cardEl.querySelector(".card-desc");
+      if (descEl) descEl.textContent = p.description;
+      var topicsEl = cardEl.querySelector(".card-topics");
+      if (topicsEl) {
+        if (p.topics.length) {
+          topicsEl.hidden = false;
+          topicsEl.innerHTML = p.topics.slice(0, 5).map(function (t) {
+            return "<li>" + esc(t) + "</li>";
+          }).join("");
+        } else {
+          topicsEl.hidden = true;
+          topicsEl.innerHTML = "";
+        }
+      }
+      var metaEl = cardEl.querySelector(".card-meta");
+      if (metaEl) metaEl.innerHTML = metaHTML(p);
+      var actionsEl = cardEl.querySelector(".card-actions");
+      if (actionsEl) actionsEl.innerHTML = actionsHTML(p);
+      entry.sig = sig;
+    }
+
+    return cardEl;
   }
 
   function sortProjects(list) {
@@ -180,10 +261,30 @@
 
   function render() {
     var list = filteredProjects();
-    grid.innerHTML = list.map(cardHTML).join("");
+    var desiredSet = {};
+    var desiredEls = list.map(function (p, i) {
+      desiredSet[p.name] = true;
+      return getOrUpdateCard(p, i);
+    });
+
+    /* Usuwamy z DOM karty, których już nie ma na liście (usunięte repo lub odfiltrowane) */
+    Array.prototype.slice.call(grid.children).forEach(function (child) {
+      var repoName = child.getAttribute("data-repo");
+      if (!repoName || !desiredSet[repoName]) {
+        grid.removeChild(child);
+      }
+    });
+
+    /* Ustawiamy kolejność kart bez niepotrzebnego odpinania już załadowanych iframe */
+    desiredEls.forEach(function (el, i) {
+      var currentAtPos = grid.children[i];
+      if (currentAtPos !== el) {
+        grid.insertBefore(el, currentAtPos || null);
+      }
+    });
+
     emptyState.hidden = list.length > 0;
     resultCount.textContent = "Wyświetlono " + list.length + " z " + allProjects.length + " projektów";
-    initTilt(grid);
     revealCards();
   }
 
@@ -194,6 +295,9 @@
     document.getElementById("stat-total").textContent = allProjects.length;
     document.getElementById("stat-live").textContent = live;
     document.getElementById("stat-langs").textContent = Object.keys(langs).length;
+    if (originsMoreBtn) {
+      originsMoreBtn.textContent = "Zobacz wszystkie " + allProjects.length + " projektów ↓";
+    }
   }
 
   function updateLangFilter() {
@@ -226,10 +330,11 @@
     }
   }
 
-  /* ---------- Pojawianie się kart (tylko przy pierwszym renderze) ---------- */
+  /* ---------- Pojawianie się kart ---------- */
   var revealObserver = null;
   function revealCards() {
-    var cards = grid.querySelectorAll(".reveal");
+    var cards = grid.querySelectorAll(".reveal:not(.in)");
+    if (!cards.length) return;
     if (firstRenderDone || !("IntersectionObserver" in window)) {
       cards.forEach(function (c) { c.classList.add("in"); });
       firstRenderDone = true;
@@ -280,14 +385,6 @@
     }
     wrapper.addEventListener("pointermove", onMove);
     wrapper.addEventListener("pointerleave", onLeave);
-  }
-
-  function initTilt(scope) {
-    if (!canTilt) return;
-    scope.querySelectorAll("[data-tilt]").forEach(function (card) {
-      var inner = card.querySelector(".card-inner");
-      if (inner) attachTilt(card, inner, 6);
-    });
   }
 
   /* Karta profilu w hero — ten sam element jest i ramą, i treścią */
@@ -341,22 +438,96 @@
     try { localStorage.setItem("theme", next); } catch (e) { /* ignorujemy */ }
   });
 
-  /* ---------- Start: najpierw kopia zapasowa, potem dane na żywo ---------- */
-  document.getElementById("year").textContent = new Date().getFullYear();
+  /* ---------- Synchronizacja na żywo z API GitHuba (ETag + localStorage) ---------- */
+  function readCache() {
+    try {
+      var raw = localStorage.getItem(CACHE_KEY);
+      if (!raw) return null;
+      var parsed = JSON.parse(raw);
+      if (parsed && Array.isArray(parsed.data) && parsed.data.length) return parsed;
+    } catch (e) { /* ignorujemy */ }
+    return null;
+  }
 
-  if (window.PROJECTS_FALLBACK) setProjects(window.PROJECTS_FALLBACK, false);
+  function writeCache(etag, data) {
+    try {
+      localStorage.setItem(CACHE_KEY, JSON.stringify({
+        etag: etag || "",
+        data: data,
+        savedAt: Date.now()
+      }));
+    } catch (e) { /* ignorujemy */ }
+  }
 
-  if (window.fetch) {
+  var fetchInFlight = false;
+  var lastCheckAt = 0;
+
+  function syncWithGitHub(force) {
+    if (!window.fetch || fetchInFlight) return;
+    var now = Date.now();
+    if (!force && now - lastCheckAt < 10000) return;
+    fetchInFlight = true;
+    lastCheckAt = now;
+
+    var cached = readCache();
+    var headers = { "Accept": "application/vnd.github+json" };
+    if (cached && cached.etag) {
+      headers["If-None-Match"] = cached.etag;
+    }
+
     var controller = window.AbortController ? new AbortController() : null;
     var timeout = controller ? setTimeout(function () { controller.abort(); }, 8000) : null;
-    fetch(API_URL, { signal: controller ? controller.signal : undefined })
-      .then(function (res) { return res.ok ? res.json() : Promise.reject(new Error(res.status)); })
-      .then(function (data) {
+
+    fetch(API_URL, {
+      cache: "no-store",
+      headers: headers,
+      signal: controller ? controller.signal : undefined
+    })
+      .then(function (res) {
         clearTimeout(timeout);
-        if (Array.isArray(data) && data.length) setProjects(data, true);
+        if (res.status === 304 && cached && cached.data) {
+          setProjects(cached.data, true);
+          return null;
+        }
+        if (!res.ok) return Promise.reject(new Error(res.status));
+        var newEtag = res.headers ? res.headers.get("ETag") : "";
+        return res.json().then(function (data) {
+          return { etag: newEtag, data: data };
+        });
+      })
+      .then(function (result) {
+        fetchInFlight = false;
+        if (result && Array.isArray(result.data) && result.data.length) {
+          writeCache(result.etag, result.data);
+          setProjects(result.data, true);
+        }
       })
       .catch(function () {
-        /* API niedostępne (offline / limit zapytań) — zostaje kopia zapasowa. */
+        clearTimeout(timeout);
+        fetchInFlight = false;
       });
   }
+
+  /* ---------- Start ---------- */
+  document.getElementById("year").textContent = new Date().getFullYear();
+
+  var initialCache = readCache();
+  if (initialCache && initialCache.data) {
+    setProjects(initialCache.data, true);
+  } else if (window.PROJECTS_FALLBACK) {
+    setProjects(window.PROJECTS_FALLBACK, false);
+  }
+
+  syncWithGitHub(true);
+
+  /* Automatyczne odświeżanie po powrocie na kartę oraz cyklicznie w tle */
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible") syncWithGitHub(false);
+  });
+  window.addEventListener("focus", function () {
+    syncWithGitHub(false);
+  });
+  setInterval(function () {
+    if (document.visibilityState === "visible") syncWithGitHub(false);
+  }, 45000);
 })();

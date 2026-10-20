@@ -1,7 +1,35 @@
 // Kopia zapasowa listy projektów (fallback, gdyby API GitHuba było niedostępne).
-// Wygenerowano: 2026-10-19 — odśwież: python3 scripts/fetch-repos.py
-window.PROJECTS_GENERATED_AT = "2026-10-19";
+// Wygenerowano: 2026-10-20 — odśwież: python3 scripts/fetch-repos.py
+window.PROJECTS_GENERATED_AT = "2026-10-20";
 window.PROJECTS_FALLBACK = [
+  {
+    "name": "mconline",
+    "description": "Zagraj w moją własną przerobiona wersję minecrafta w przeglądarce",
+    "html_url": "https://github.com/rejson59/mconline",
+    "homepage": "https://rejson59.github.io/mconline/",
+    "has_pages": true,
+    "language": "TypeScript",
+    "stargazers_count": 0,
+    "forks_count": 0,
+    "topics": [],
+    "created_at": "2026-09-25T16:45:30Z",
+    "updated_at": "2026-10-20T15:27:57Z",
+    "pushed_at": "2026-10-01T13:24:11Z"
+  },
+  {
+    "name": "zaplecze-resellera",
+    "description": "Testowy sklep internetowy",
+    "html_url": "https://github.com/rejson59/zaplecze-resellera",
+    "homepage": "https://zaplecze-resellera.vercel.app",
+    "has_pages": true,
+    "language": null,
+    "stargazers_count": 0,
+    "forks_count": 0,
+    "topics": [],
+    "created_at": "2026-10-18T10:00:55Z",
+    "updated_at": "2026-10-19T21:12:45Z",
+    "pushed_at": "2026-10-20T15:38:20Z"
+  },
   {
     "name": "zayra-voice",
     "description": "Program który potrafi generować głos asystentki Zayra",
@@ -13,20 +41,8 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-10-18T19:19:38Z",
-    "updated_at": "2026-10-18T19:20:12Z"
-  },
-  {
-    "name": "zaplecze-resellera",
-    "description": "Testowy sklep internetowy",
-    "html_url": "https://github.com/rejson59/zaplecze-resellera",
-    "homepage": null,
-    "has_pages": true,
-    "language": null,
-    "stargazers_count": 0,
-    "forks_count": 0,
-    "topics": [],
-    "created_at": "2026-10-18T10:00:55Z",
-    "updated_at": "2026-10-18T10:41:11Z"
+    "updated_at": "2026-10-18T19:20:12Z",
+    "pushed_at": "2026-10-18T19:20:08Z"
   },
   {
     "name": "FocusIt",
@@ -39,7 +55,8 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-10-13T20:00:04Z",
-    "updated_at": "2026-10-13T20:00:10Z"
+    "updated_at": "2026-10-13T20:00:10Z",
+    "pushed_at": "2026-10-13T22:10:45Z"
   },
   {
     "name": "MeshRouter",
@@ -52,7 +69,8 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-10-13T13:24:41Z",
-    "updated_at": "2026-10-13T13:24:47Z"
+    "updated_at": "2026-10-13T13:24:47Z",
+    "pushed_at": "2026-10-13T15:35:53Z"
   },
   {
     "name": "kompi",
@@ -65,7 +83,8 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-10-12T19:54:33Z",
-    "updated_at": "2026-10-13T07:49:55Z"
+    "updated_at": "2026-10-13T07:49:55Z",
+    "pushed_at": "2026-10-13T07:49:50Z"
   },
   {
     "name": "nimo",
@@ -78,7 +97,8 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-10-12T09:50:18Z",
-    "updated_at": "2026-10-12T09:55:39Z"
+    "updated_at": "2026-10-12T09:55:39Z",
+    "pushed_at": "2026-10-12T17:48:17Z"
   },
   {
     "name": "JoyPad",
@@ -91,7 +111,8 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-09-23T08:18:54Z",
-    "updated_at": "2026-10-08T17:10:16Z"
+    "updated_at": "2026-10-08T17:10:16Z",
+    "pushed_at": "2026-10-09T16:31:40Z"
   },
   {
     "name": "Blessed-Optimizer",
@@ -104,7 +125,8 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-10-03T18:48:48Z",
-    "updated_at": "2026-10-08T15:32:04Z"
+    "updated_at": "2026-10-08T15:32:04Z",
+    "pushed_at": "2026-10-08T17:22:22Z"
   },
   {
     "name": "lumen-os",
@@ -117,7 +139,8 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-10-05T17:49:23Z",
-    "updated_at": "2026-10-05T17:50:22Z"
+    "updated_at": "2026-10-05T17:50:22Z",
+    "pushed_at": "2026-10-05T17:50:18Z"
   },
   {
     "name": "AbsurdalneGry",
@@ -130,20 +153,8 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-10-03T23:36:47Z",
-    "updated_at": "2026-10-03T23:37:52Z"
-  },
-  {
-    "name": "mconline",
-    "description": "MC-ONLINE",
-    "html_url": "https://github.com/rejson59/mconline",
-    "homepage": null,
-    "has_pages": true,
-    "language": "TypeScript",
-    "stargazers_count": 0,
-    "forks_count": 0,
-    "topics": [],
-    "created_at": "2026-09-25T16:45:30Z",
-    "updated_at": "2026-09-27T22:33:20Z"
+    "updated_at": "2026-10-03T23:37:52Z",
+    "pushed_at": "2026-10-03T23:37:49Z"
   },
   {
     "name": "Nixi",
@@ -156,7 +167,8 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-09-12T16:17:05Z",
-    "updated_at": "2026-09-24T08:41:32Z"
+    "updated_at": "2026-09-24T08:41:32Z",
+    "pushed_at": "2026-09-26T13:38:22Z"
   },
   {
     "name": "Grow",
@@ -169,7 +181,8 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-09-23T09:57:29Z",
-    "updated_at": "2026-09-23T09:58:04Z"
+    "updated_at": "2026-09-23T09:58:04Z",
+    "pushed_at": "2026-09-23T21:08:37Z"
   },
   {
     "name": "Nixi-v2",
@@ -182,7 +195,8 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-09-22T18:00:29Z",
-    "updated_at": "2026-09-22T19:06:56Z"
+    "updated_at": "2026-09-22T19:06:56Z",
+    "pushed_at": "2026-09-22T19:06:51Z"
   },
   {
     "name": "MiraOS",
@@ -195,7 +209,8 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-09-20T15:06:46Z",
-    "updated_at": "2026-09-20T15:07:04Z"
+    "updated_at": "2026-09-20T15:07:04Z",
+    "pushed_at": "2026-09-21T16:28:22Z"
   },
   {
     "name": "RobloxAIGameBuilder",
@@ -208,7 +223,8 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-09-20T12:36:37Z",
-    "updated_at": "2026-09-20T12:36:41Z"
+    "updated_at": "2026-09-20T12:36:41Z",
+    "pushed_at": "2026-09-20T13:22:17Z"
   },
   {
     "name": "AnimationBuilder",
@@ -221,7 +237,8 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-09-17T17:04:09Z",
-    "updated_at": "2026-09-17T17:35:11Z"
+    "updated_at": "2026-09-17T17:35:11Z",
+    "pushed_at": "2026-09-17T17:35:06Z"
   },
   {
     "name": "OffChat",
@@ -234,7 +251,8 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-09-16T09:31:04Z",
-    "updated_at": "2026-09-16T22:02:20Z"
+    "updated_at": "2026-09-16T22:02:20Z",
+    "pushed_at": "2026-09-16T22:02:14Z"
   },
   {
     "name": "TheMostPowerfulPrompt",
@@ -247,7 +265,8 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-09-16T21:47:58Z",
-    "updated_at": "2026-09-16T21:48:03Z"
+    "updated_at": "2026-09-16T21:48:03Z",
+    "pushed_at": "2026-09-16T22:50:39Z"
   },
   {
     "name": "Qwazon-LLM",
@@ -260,7 +279,8 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-09-16T21:19:26Z",
-    "updated_at": "2026-09-16T21:19:32Z"
+    "updated_at": "2026-09-16T21:19:32Z",
+    "pushed_at": "2026-09-22T10:41:21Z"
   },
   {
     "name": "ClassQuest",
@@ -273,7 +293,8 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-09-03T14:37:36Z",
-    "updated_at": "2026-09-15T22:32:34Z"
+    "updated_at": "2026-09-15T22:32:34Z",
+    "pushed_at": "2026-09-15T22:32:28Z"
   },
   {
     "name": "X-Offline",
@@ -286,7 +307,8 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-09-14T07:58:40Z",
-    "updated_at": "2026-09-15T17:00:41Z"
+    "updated_at": "2026-09-15T17:00:41Z",
+    "pushed_at": "2026-09-15T17:00:35Z"
   },
   {
     "name": "PomyslyNaProjekty",
@@ -299,7 +321,8 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-09-13T20:53:54Z",
-    "updated_at": "2026-09-13T20:53:59Z"
+    "updated_at": "2026-09-13T20:53:59Z",
+    "pushed_at": "2026-09-13T20:53:56Z"
   },
   {
     "name": "RealisticCarNight",
@@ -312,7 +335,8 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-09-11T22:40:09Z",
-    "updated_at": "2026-09-13T11:06:29Z"
+    "updated_at": "2026-09-13T11:06:29Z",
+    "pushed_at": "2026-09-13T11:06:23Z"
   },
   {
     "name": "DreamKnight",
@@ -325,20 +349,8 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-09-09T06:20:21Z",
-    "updated_at": "2026-09-13T03:03:21Z"
-  },
-  {
-    "name": "VibesAIMobile",
-    "description": "vibes.ai page but on mobile devices",
-    "html_url": "https://github.com/rejson59/VibesAIMobile",
-    "homepage": null,
-    "has_pages": false,
-    "language": null,
-    "stargazers_count": 0,
-    "forks_count": 0,
-    "topics": [],
-    "created_at": "2026-09-13T00:12:51Z",
-    "updated_at": "2026-09-13T00:12:56Z"
+    "updated_at": "2026-09-13T03:03:21Z",
+    "pushed_at": "2026-09-13T03:03:16Z"
   },
   {
     "name": "VibeAnimations",
@@ -351,7 +363,8 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-09-10T20:32:28Z",
-    "updated_at": "2026-09-11T21:59:13Z"
+    "updated_at": "2026-09-11T21:59:13Z",
+    "pushed_at": "2026-09-11T21:57:56Z"
   },
   {
     "name": "NexoAgents",
@@ -364,7 +377,8 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-09-11T20:04:42Z",
-    "updated_at": "2026-09-11T20:06:10Z"
+    "updated_at": "2026-09-11T20:06:10Z",
+    "pushed_at": "2026-09-11T20:06:05Z"
   },
   {
     "name": "VibeCodeAI",
@@ -377,7 +391,8 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-09-08T21:23:52Z",
-    "updated_at": "2026-09-08T21:26:10Z"
+    "updated_at": "2026-09-08T21:26:10Z",
+    "pushed_at": "2026-09-08T21:23:53Z"
   },
   {
     "name": "MiniVS-Code",
@@ -390,7 +405,8 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-08-25T22:40:23Z",
-    "updated_at": "2026-09-08T21:23:18Z"
+    "updated_at": "2026-09-08T21:23:18Z",
+    "pushed_at": "2026-09-08T21:20:10Z"
   },
   {
     "name": "VibeFilm",
@@ -403,20 +419,8 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-09-08T21:05:49Z",
-    "updated_at": "2026-09-08T21:07:48Z"
-  },
-  {
-    "name": "AirPad",
-    "description": "Graj na swoim komputerze/laptopie lub jakimkolwiek większym ekranie w gry tak jak na konsoli! Używaj telefonu jako kontrolera! Wystarczy połączyć telefon z komputerem/laptopem poprzez 4 cyfrowy kod lub kod QR, wybrać grę i grać! Możliwość gier multiplayer i połączenia nawet kilku telefonów na raz!",
-    "html_url": "https://github.com/rejson59/AirPad",
-    "homepage": "https://air--pad.vercel.app",
-    "has_pages": true,
-    "language": "JavaScript",
-    "stargazers_count": 0,
-    "forks_count": 0,
-    "topics": [],
-    "created_at": "2026-09-07T15:34:36Z",
-    "updated_at": "2026-09-07T17:24:51Z"
+    "updated_at": "2026-09-08T21:07:48Z",
+    "pushed_at": "2026-09-08T21:05:51Z"
   },
   {
     "name": "QuickDraw",
@@ -429,7 +433,8 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-09-07T00:37:59Z",
-    "updated_at": "2026-09-07T01:13:03Z"
+    "updated_at": "2026-09-07T01:13:03Z",
+    "pushed_at": "2026-09-07T01:12:59Z"
   },
   {
     "name": "Lisi",
@@ -442,7 +447,8 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-08-30T19:53:31Z",
-    "updated_at": "2026-09-06T12:29:06Z"
+    "updated_at": "2026-09-06T12:29:06Z",
+    "pushed_at": "2026-09-06T12:28:59Z"
   },
   {
     "name": "ASI",
@@ -455,7 +461,8 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-09-04T19:05:51Z",
-    "updated_at": "2026-09-04T19:05:58Z"
+    "updated_at": "2026-09-04T19:05:58Z",
+    "pushed_at": "2026-09-04T19:05:52Z"
   },
   {
     "name": "SiteStore",
@@ -468,7 +475,8 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-04-05T10:52:40Z",
-    "updated_at": "2026-09-03T21:58:54Z"
+    "updated_at": "2026-09-03T21:58:54Z",
+    "pushed_at": "2026-09-03T21:58:50Z"
   },
   {
     "name": "ReysonAI",
@@ -481,7 +489,8 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-08-30T22:25:04Z",
-    "updated_at": "2026-08-31T00:23:12Z"
+    "updated_at": "2026-08-31T00:23:12Z",
+    "pushed_at": "2026-08-31T00:22:42Z"
   },
   {
     "name": "RejsonUI",
@@ -494,7 +503,8 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-08-21T00:12:26Z",
-    "updated_at": "2026-08-30T15:00:39Z"
+    "updated_at": "2026-08-30T15:00:39Z",
+    "pushed_at": "2026-08-30T17:41:07Z"
   },
   {
     "name": "CrystalChat",
@@ -507,7 +517,8 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-08-10T13:54:39Z",
-    "updated_at": "2026-08-19T17:39:03Z"
+    "updated_at": "2026-08-19T17:39:03Z",
+    "pushed_at": "2026-08-11T03:37:20Z"
   },
   {
     "name": "DiffrentReality",
@@ -520,7 +531,8 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-07-10T19:34:47Z",
-    "updated_at": "2026-07-10T20:25:35Z"
+    "updated_at": "2026-07-10T20:25:35Z",
+    "pushed_at": "2026-07-10T20:25:25Z"
   },
   {
     "name": "Private-valut",
@@ -533,7 +545,8 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2025-10-24T04:06:45Z",
-    "updated_at": "2025-10-24T04:11:57Z"
+    "updated_at": "2025-10-24T04:11:57Z",
+    "pushed_at": "2025-10-24T04:11:54Z"
   },
   {
     "name": "Jakuplayer",
@@ -546,6 +559,7 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2025-06-29T22:06:48Z",
-    "updated_at": "2025-06-29T22:39:00Z"
+    "updated_at": "2025-06-29T22:39:00Z",
+    "pushed_at": "2025-06-29T22:38:57Z"
   }
 ];
