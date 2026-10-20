@@ -13,8 +13,8 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-09-25T16:45:30Z",
-    "updated_at": "2026-10-20T16:12:41Z",
-    "pushed_at": "2026-10-20T16:12:35Z"
+    "updated_at": "2026-10-20T16:17:16Z",
+    "pushed_at": "2026-10-20T16:17:10Z"
   },
   {
     "name": "zaplecze-resellera",
@@ -28,7 +28,7 @@ window.PROJECTS_FALLBACK = [
     "topics": [],
     "created_at": "2026-10-18T10:00:55Z",
     "updated_at": "2026-10-19T21:12:45Z",
-    "pushed_at": "2026-10-20T15:38:20Z"
+    "pushed_at": "2026-10-20T16:26:03Z"
   },
   {
     "name": "zayra-voice",
@@ -295,20 +295,6 @@ window.PROJECTS_FALLBACK = [
     "created_at": "2026-09-14T07:58:40Z",
     "updated_at": "2026-09-15T17:00:41Z",
     "pushed_at": "2026-09-15T17:00:35Z"
-  },
-  {
-    "name": "PomyslyNaProjekty",
-    "description": null,
-    "html_url": "https://github.com/rejson59/PomyslyNaProjekty",
-    "homepage": null,
-    "has_pages": false,
-    "language": null,
-    "stargazers_count": 0,
-    "forks_count": 0,
-    "topics": [],
-    "created_at": "2026-09-13T20:53:54Z",
-    "updated_at": "2026-09-13T20:53:59Z",
-    "pushed_at": "2026-09-13T20:53:56Z"
   },
   {
     "name": "RealisticCarNight",
