@@ -13,8 +13,8 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-09-25T16:45:30Z",
-    "updated_at": "2026-10-20T15:27:57Z",
-    "pushed_at": "2026-10-01T13:24:11Z"
+    "updated_at": "2026-10-20T16:12:41Z",
+    "pushed_at": "2026-10-20T16:12:35Z"
   },
   {
     "name": "zaplecze-resellera",
@@ -169,20 +169,6 @@ window.PROJECTS_FALLBACK = [
     "created_at": "2026-09-12T16:17:05Z",
     "updated_at": "2026-09-24T08:41:32Z",
     "pushed_at": "2026-09-26T13:38:22Z"
-  },
-  {
-    "name": "Grow",
-    "description": "Naucz się krypto i akcji",
-    "html_url": "https://github.com/rejson59/Grow",
-    "homepage": null,
-    "has_pages": true,
-    "language": null,
-    "stargazers_count": 0,
-    "forks_count": 0,
-    "topics": [],
-    "created_at": "2026-09-23T09:57:29Z",
-    "updated_at": "2026-09-23T09:58:04Z",
-    "pushed_at": "2026-09-23T21:08:37Z"
   },
   {
     "name": "Nixi-v2",
@@ -409,20 +395,6 @@ window.PROJECTS_FALLBACK = [
     "pushed_at": "2026-09-08T21:20:10Z"
   },
   {
-    "name": "VibeFilm",
-    "description": "VibeFilm to strona internetowa umożliwiająca oglądanie filmów i seriali za darmo!",
-    "html_url": "https://github.com/rejson59/VibeFilm",
-    "homepage": null,
-    "has_pages": false,
-    "language": null,
-    "stargazers_count": 0,
-    "forks_count": 0,
-    "topics": [],
-    "created_at": "2026-09-08T21:05:49Z",
-    "updated_at": "2026-09-08T21:07:48Z",
-    "pushed_at": "2026-09-08T21:05:51Z"
-  },
-  {
     "name": "QuickDraw",
     "description": "QuickDraw to aplikacja ułatwiająca korzystanie z telefonu poprzez skróty wykonywane gestami.",
     "html_url": "https://github.com/rejson59/QuickDraw",
@@ -491,20 +463,6 @@ window.PROJECTS_FALLBACK = [
     "created_at": "2026-08-30T22:25:04Z",
     "updated_at": "2026-08-31T00:23:12Z",
     "pushed_at": "2026-08-31T00:22:42Z"
-  },
-  {
-    "name": "RejsonUI",
-    "description": "Moja informacyjna strona internetowa",
-    "html_url": "https://github.com/rejson59/RejsonUI",
-    "homepage": null,
-    "has_pages": true,
-    "language": "Python",
-    "stargazers_count": 0,
-    "forks_count": 0,
-    "topics": [],
-    "created_at": "2026-08-21T00:12:26Z",
-    "updated_at": "2026-08-30T15:00:39Z",
-    "pushed_at": "2026-08-30T17:41:07Z"
   },
   {
     "name": "CrystalChat",

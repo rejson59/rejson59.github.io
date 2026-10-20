@@ -148,21 +148,26 @@ a:hover { text-decoration-color: currentColor; }
 .profile-note { margin:14px 0 0; font-size:12px; color: var(--faint); border-top:1px dashed var(--border); padding-top:12px; }
 .profile-note.is-live { color: var(--live); }
 
-/* ---------- Sekcja Początki i Najlepsza strona ---------- */
+/* ---------- Sekcja wyróżnionych projektów (Początki, JoyPad, mconline) ---------- */
 .origins { padding: 28px 0 48px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin-top: 16px; background: linear-gradient(to bottom, color-mix(in srgb, var(--bg-elev) 18%, transparent), transparent 90%); }
-.showcase-grid { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:24px; align-items:stretch; }
-.showcase-item { display:flex; flex-direction:column; gap:18px; }
+.showcase-grid { display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap:18px; align-items:stretch; }
+.showcase-item { display:flex; flex-direction:column; gap:16px; }
 .showcase-item .section-head { margin-bottom:0; flex:1; align-items:flex-start; }
-.showcase-item .section-head h2 { max-width: 720px; line-height:1.22; font-size: clamp(20px, 2.3vw, 25px); letter-spacing:-0.02em; }
-.section-intro { margin:10px 0 0; color: var(--muted); font-size:14.4px; max-width: 70ch; line-height:1.72; }
+.showcase-item .section-head h2 { max-width: 720px; line-height:1.22; font-size: clamp(19px, 1.85vw, 22px); letter-spacing:-0.02em; }
+.section-intro { margin:8px 0 0; color: var(--muted); font-size:13.8px; max-width: 70ch; line-height:1.66; }
 .project-card.is-origins .card-inner,
-.project-card.is-featured .card-inner { border-color: color-mix(in srgb, var(--accent) 16%, var(--border)); box-shadow: var(--shadow); background: linear-gradient(165deg, var(--card), var(--card-2)); position:relative; overflow:hidden; height:100%; }
+.project-card.is-featured .card-inner,
+.project-card.is-minecraft .card-inner { border-color: color-mix(in srgb, var(--accent) 16%, var(--border)); box-shadow: var(--shadow); background: linear-gradient(165deg, var(--card), var(--card-2)); position:relative; overflow:hidden; height:100%; }
 .project-card.is-origins .card-inner::before,
-.project-card.is-featured .card-inner::before { content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background: var(--accent); opacity:.9; }
+.project-card.is-featured .card-inner::before,
+.project-card.is-minecraft .card-inner::before { content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background: var(--accent); opacity:.9; }
 .project-card.is-featured .card-inner { border-color: color-mix(in srgb, var(--live) 22%, var(--border)); }
 .project-card.is-featured .card-inner::before { background: var(--live); }
+.project-card.is-minecraft .card-inner { border-color: color-mix(in srgb, #64a83c 24%, var(--border)); }
+.project-card.is-minecraft .card-inner::before { background: #64a83c; }
 .project-card.is-origins .card-title,
-.project-card.is-featured .card-title { font-size: clamp(20px, 2.4vw, 24px); }
+.project-card.is-featured .card-title,
+.project-card.is-minecraft .card-title { font-size: clamp(19px, 2vw, 22px); }
 .origins-note { border:1px solid var(--border); border-radius:16px; padding:16px 20px; margin-top:22px; background: var(--bg-elev); box-shadow: var(--shadow); display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:14px; }
 .origins-note p { margin:0; color: var(--muted); font-size:13.4px; line-height:1.65; flex:1 1 320px; }
 .origins-note .btn { flex:none; justify-content:center; }
@@ -254,16 +259,21 @@ a:hover { text-decoration-color: currentColor; }
 .card-preview-hint { position:absolute; right:8px; bottom:8px; background: var(--live); color:#fff; font-size:10px; font-weight:700; padding:4px 8px; border-radius:999px; letter-spacing:.05em; box-shadow: 0 4px 12px rgba(0,0,0,.18); z-index:2; }
 .card-preview::after { content:""; position:absolute; inset:0; background: linear-gradient(to bottom, transparent 72%, color-mix(in srgb, var(--bg-elev) 45%, transparent) 100%); pointer-events:none; z-index:1; }
 
-/* Jakuplayer i JoyPad w wyróżnionych kartach */
+/* Jakuplayer, JoyPad i mconline w wyróżnionych kartach */
 .project-card.is-origins .card-preview {
   aspect-ratio: 16 / 9;
   height:auto;
-  --iframe-scale: 0.46;
+  --iframe-scale: 0.35;
 }
 .project-card.is-featured .card-preview {
   aspect-ratio: 16 / 9;
   height:auto;
-  --iframe-scale: 0.34;
+  --iframe-scale: 0.25;
+}
+.project-card.is-minecraft .card-preview {
+  aspect-ratio: 16 / 9;
+  height:auto;
+  --iframe-scale: 0.28;
 }
 .project-card[data-repo="Jakuplayer"] .card-preview {
   --iframe-scale: 0.35;
@@ -292,10 +302,16 @@ a:hover { text-decoration-color: currentColor; }
 :focus-visible { outline:2px solid var(--accent); outline-offset:2px; border-radius:4px; }
 
 /* ---------- Responsywność ---------- */
+@media (max-width: 980px) {
+  .showcase-grid { grid-template-columns:1fr; gap:32px; }
+  .project-card.is-origins .card-preview { --iframe-scale: 0.46; }
+  .project-card.is-featured .card-preview { --iframe-scale: 0.34; }
+  .project-card.is-minecraft .card-preview { --iframe-scale: 0.36; }
+}
+
 @media (max-width: 900px) {
   .hero { grid-template-columns:1fr; gap:28px; padding-top:36px; padding-bottom:24px; }
   .profile-card { max-width:none; }
-  .showcase-grid { grid-template-columns:1fr; gap:32px; }
   .origins { padding: 24px 0 28px; }
 }
 
@@ -322,6 +338,7 @@ a:hover { text-decoration-color: currentColor; }
   .card-preview,
   .project-card.is-origins .card-preview,
   .project-card.is-featured .card-preview,
+  .project-card.is-minecraft .card-preview,
   .project-card[data-repo="Jakuplayer"] .card-preview {
     aspect-ratio: 9 / 16;
     max-width: 350px;
