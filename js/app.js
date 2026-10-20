@@ -156,7 +156,13 @@
         return (b.stars - a.stars) || (new Date(b.updated) - new Date(a.updated));
       });
     } else {
-      copy.sort(function (a, b) { return new Date(b.updated) - new Date(a.updated); });
+      // domyślnie: najpierw LIVE (mają podgląd/produkt), potem surowe repo — w każdej grupie wg ostatniej aktualizacji
+      copy.sort(function (a, b) {
+        var aLive = a.liveUrl ? 1 : 0;
+        var bLive = b.liveUrl ? 1 : 0;
+        if (aLive !== bLive) return bLive - aLive;
+        return new Date(b.updated) - new Date(a.updated);
+      });
     }
     return copy;
   }
