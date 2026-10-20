@@ -46,6 +46,7 @@
       </a>
       <nav class="site-nav" aria-label="Nawigacja główna">
         <a href="#poczatki">Początki</a>
+        <a href="#najlepsza">Najlepsza</a>
         <a href="#projekty">Projekty</a>
         <a href="https://github.com/rejson59" target="_blank" rel="noopener noreferrer">GitHub
           <svg class="icon icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg>
@@ -111,44 +112,83 @@
       </aside>
     </section>
 
-    <!-- ============ POCZĄTKI — pierwsza działająca strona ============ -->
-    <section class="origins container" id="poczatki" aria-labelledby="origins-heading">
-      <div class="section-head">
-        <div>
-          <p class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span> Początki</p>
-          <h2 id="origins-heading">Spójrz na moje początki, tak wyglądała moja pierwsza działająca strona na githubie:</h2>
-          <p class="section-intro">Prosty odtwarzacz HTML — bez frameworków, wdrożony prosto na GitHub Pages. Działa do dziś i od niego zaczęło się regularne publikowanie.</p>
-        </div>
-      </div>
-      <div class="origins-grid">
-        <article class="project-card is-origins" aria-label="Jakuplayer — pierwsza działająca strona">
-          <div class="card-inner">
-            <div class="card-sheen" aria-hidden="true"></div>
-            <div class="card-top">
-              <span class="card-index mono">/ 01 — początek · 06.2025</span>
-              <span class="card-badges">
-                <span class="lang"><span class="lang-dot" style="background:#e34c26"></span> HTML</span>
-                <span class="live-badge">LIVE</span>
-              </span>
-            </div>
-            <a class="card-preview" href="https://rejson59.github.io/Jakuplayer/" target="_blank" rel="noopener noreferrer" aria-label="Podgląd Jakuplayer — otwórz live">
-              <div class="card-preview-frame" aria-hidden="true"><iframe src="https://rejson59.github.io/Jakuplayer/" loading="lazy" tabindex="-1" aria-hidden="true"></iframe><div class="card-preview-topbar"><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-url">rejson59.github.io/Jakuplayer/</span></div></div><span class="card-preview-hint">otwórz ↗</span>
-            </a>
-            <h3 class="card-title"><a href="https://rejson59.github.io/Jakuplayer/" target="_blank" rel="noopener noreferrer">Jakuplayer</a></h3>
-            <p class="card-desc">Słuchaj muzyki za darmo i bez ograniczeń — pierwsza w pełni działająca strona, jaką opublikowałem na GitHubie.</p>
-            <ul class="card-topics" aria-label="Tematy"><li>muzyka</li><li>pierwszy projekt</li><li>GitHub Pages</li></ul>
-            <div class="card-actions">
-              <a class="btn btn-live btn-sm" href="https://rejson59.github.io/Jakuplayer/" target="_blank" rel="noopener noreferrer">Otwórz Jakuplayer
-                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg>
-              </a>
-              <a class="btn btn-ghost btn-sm" href="https://github.com/rejson59/Jakuplayer" target="_blank" rel="noopener noreferrer">Kod na GitHubie</a>
+    <!-- ============ WYRÓŻNIONE: POCZĄTKI ORAZ NAJLEPSZA STRONA ============ -->
+    <section class="origins container" aria-label="Wyróżnione projekty">
+      <div class="showcase-grid">
+        <!-- 1. Początki — Jakuplayer -->
+        <div class="showcase-item" id="poczatki" aria-labelledby="origins-heading">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span> Początki</p>
+              <h2 id="origins-heading">Spójrz na moje początki, tak wyglądała moja pierwsza działająca strona na githubie:</h2>
+              <p class="section-intro">Prosty odtwarzacz HTML — bez frameworków, wdrożony prosto na GitHub Pages. Działa do dziś i od niego zaczęło się regularne publikowanie.</p>
             </div>
           </div>
-        </article>
-        <div class="origins-note">
-          <p class="mono">To od tego prostego playera nauczyłem się wdrożenia, domen Pages i aktualizacji bez backendu. Poniżej — wszystkie kolejne projekty.</p>
-          <a href="#projekty" class="btn btn-ghost btn-sm" id="origins-more-btn">Zobacz wszystkie 40 projektów ↓</a>
+          <article class="project-card is-origins" data-tilt aria-label="Jakuplayer — pierwsza działająca strona">
+            <div class="card-inner">
+              <div class="card-sheen" aria-hidden="true"></div>
+              <div class="card-top">
+                <span class="card-index mono">/ 01 — początek · 06.2025</span>
+                <span class="card-badges">
+                  <span class="lang"><span class="lang-dot" style="background:#e34c26"></span> HTML</span>
+                  <span class="live-badge">LIVE</span>
+                </span>
+              </div>
+              <a class="card-preview" href="https://rejson59.github.io/Jakuplayer/" target="_blank" rel="noopener noreferrer" aria-label="Podgląd Jakuplayer — otwórz live">
+                <div class="card-preview-frame" aria-hidden="true"><iframe src="https://rejson59.github.io/Jakuplayer/" loading="lazy" tabindex="-1" aria-hidden="true"></iframe><div class="card-preview-topbar"><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-url">rejson59.github.io/Jakuplayer/</span></div></div><span class="card-preview-hint">otwórz ↗</span>
+              </a>
+              <h3 class="card-title"><a href="https://rejson59.github.io/Jakuplayer/" target="_blank" rel="noopener noreferrer">Jakuplayer</a></h3>
+              <p class="card-desc">Słuchaj muzyki za darmo i bez ograniczeń — pierwsza w pełni działająca strona, jaką opublikowałem na GitHubie.</p>
+              <ul class="card-topics" aria-label="Tematy"><li>muzyka</li><li>pierwszy projekt</li><li>GitHub Pages</li></ul>
+              <div class="card-actions">
+                <a class="btn btn-live btn-sm" href="https://rejson59.github.io/Jakuplayer/" target="_blank" rel="noopener noreferrer">Otwórz Jakuplayer
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg>
+                </a>
+                <a class="btn btn-ghost btn-sm" href="https://github.com/rejson59/Jakuplayer" target="_blank" rel="noopener noreferrer">Kod na GitHubie</a>
+              </div>
+            </div>
+          </article>
         </div>
+
+        <!-- 2. Najlepsza i najbardziej rozbudowana strona — JoyPad -->
+        <div class="showcase-item" id="najlepsza" aria-labelledby="featured-heading">
+          <div class="section-head">
+            <div>
+              <p class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span> Najlepszy projekt</p>
+              <h2 id="featured-heading">Według mnie najlepsza i najbardziej rozbudowana strona:</h2>
+              <p class="section-intro">Domowa konsola w przeglądarce — komputer lub TV wyświetla grę, a telefony łączą się kodem QR jako bezprzewodowe kontrolery.</p>
+            </div>
+          </div>
+          <article class="project-card is-featured" data-tilt aria-label="JoyPad — najlepsza i najbardziej rozbudowana strona">
+            <div class="card-inner">
+              <div class="card-sheen" aria-hidden="true"></div>
+              <div class="card-top">
+                <span class="card-index mono">/ ★ — wyróżniony · JoyPad OS</span>
+                <span class="card-badges">
+                  <span class="lang"><span class="lang-dot" style="background:#3178c6"></span> TypeScript</span>
+                  <span class="live-badge">LIVE</span>
+                </span>
+              </div>
+              <a class="card-preview" href="https://rejson59.github.io/JoyPad/" target="_blank" rel="noopener noreferrer" aria-label="Podgląd JoyPad — otwórz live">
+                <div class="card-preview-frame" aria-hidden="true"><iframe src="https://rejson59.github.io/JoyPad/" loading="lazy" tabindex="-1" aria-hidden="true"></iframe><div class="card-preview-topbar"><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-url">rejson59.github.io/JoyPad/</span></div></div><span class="card-preview-hint">otwórz ↗</span>
+              </a>
+              <h3 class="card-title"><a href="https://rejson59.github.io/JoyPad/" target="_blank" rel="noopener noreferrer">JoyPad</a></h3>
+              <p class="card-desc">Zamień swój komputer i telefon na bezprzewodową konsolę! Wspólny ekran, osobiste pady na telefonach, gry 3D i arcade, haptyka oraz Moments.</p>
+              <ul class="card-topics" aria-label="Tematy"><li>konsola</li><li>multiplayer</li><li>telefon jako pad</li></ul>
+              <div class="card-actions">
+                <a class="btn btn-live btn-sm" href="https://rejson59.github.io/JoyPad/" target="_blank" rel="noopener noreferrer">Otwórz JoyPad
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg>
+                </a>
+                <a class="btn btn-ghost btn-sm" href="https://github.com/rejson59/JoyPad" target="_blank" rel="noopener noreferrer">Kod na GitHubie</a>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <div class="origins-note">
+        <p class="mono">Od prostego odtwarzacza HTML do pełnej platformy konsolowej z bezprzewodowymi kontrolerami — poniżej znajdziesz wszystkie moje projekty.</p>
+        <a href="#projekty" class="btn btn-ghost btn-sm" id="origins-more-btn">Zobacz wszystkie 40 projektów ↓</a>
       </div>
     </section>
 

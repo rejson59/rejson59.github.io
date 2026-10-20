@@ -148,18 +148,24 @@ a:hover { text-decoration-color: currentColor; }
 .profile-note { margin:14px 0 0; font-size:12px; color: var(--faint); border-top:1px dashed var(--border); padding-top:12px; }
 .profile-note.is-live { color: var(--live); }
 
-/* ---------- Sekcja Początki ---------- */
+/* ---------- Sekcja Początki i Najlepsza strona ---------- */
 .origins { padding: 28px 0 48px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); margin-top: 16px; background: linear-gradient(to bottom, color-mix(in srgb, var(--bg-elev) 18%, transparent), transparent 90%); }
-.origins .section-head { margin-bottom: 8px; }
-.origins .section-head h2 { max-width: 720px; line-height:1.22; font-size: clamp(20px, 2.8vw, 28px); letter-spacing:-0.02em; }
-.section-intro { margin:10px 0 0; color: var(--muted); font-size:14.6px; max-width: 70ch; line-height:1.75; }
-.origins-grid { display:grid; grid-template-columns: minmax(0,1.4fr) minmax(280px, 0.9fr); gap:20px; margin-top:20px; align-items:start; }
-.project-card.is-origins .card-inner { border-color: color-mix(in srgb, var(--accent) 16%, var(--border)); box-shadow: var(--shadow); background: linear-gradient(165deg, var(--card), var(--card-2)); position:relative; overflow:hidden; }
-.project-card.is-origins .card-inner::before { content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background: var(--accent); opacity:.9; }
-.project-card.is-origins .card-title { font-size: clamp(20px, 2.4vw, 24px); }
-.origins-note { border:1px solid var(--border); border-radius:16px; padding:18px; background: var(--bg-elev); box-shadow: var(--shadow); display:flex; flex-direction:column; justify-content:center; }
-.origins-note p { margin:0 0 14px; color: var(--muted); font-size:13.6px; line-height:1.65; }
-.origins-note .btn { width:100%; justify-content:center; }
+.showcase-grid { display:grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap:24px; align-items:stretch; }
+.showcase-item { display:flex; flex-direction:column; gap:18px; }
+.showcase-item .section-head { margin-bottom:0; flex:1; align-items:flex-start; }
+.showcase-item .section-head h2 { max-width: 720px; line-height:1.22; font-size: clamp(20px, 2.3vw, 25px); letter-spacing:-0.02em; }
+.section-intro { margin:10px 0 0; color: var(--muted); font-size:14.4px; max-width: 70ch; line-height:1.72; }
+.project-card.is-origins .card-inner,
+.project-card.is-featured .card-inner { border-color: color-mix(in srgb, var(--accent) 16%, var(--border)); box-shadow: var(--shadow); background: linear-gradient(165deg, var(--card), var(--card-2)); position:relative; overflow:hidden; height:100%; }
+.project-card.is-origins .card-inner::before,
+.project-card.is-featured .card-inner::before { content:""; position:absolute; left:0; top:0; bottom:0; width:3px; background: var(--accent); opacity:.9; }
+.project-card.is-featured .card-inner { border-color: color-mix(in srgb, var(--live) 22%, var(--border)); }
+.project-card.is-featured .card-inner::before { background: var(--live); }
+.project-card.is-origins .card-title,
+.project-card.is-featured .card-title { font-size: clamp(20px, 2.4vw, 24px); }
+.origins-note { border:1px solid var(--border); border-radius:16px; padding:16px 20px; margin-top:22px; background: var(--bg-elev); box-shadow: var(--shadow); display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:14px; }
+.origins-note p { margin:0; color: var(--muted); font-size:13.4px; line-height:1.65; flex:1 1 320px; }
+.origins-note .btn { flex:none; justify-content:center; }
 
 /* ---------- Sekcja projektów ---------- */
 .projects { padding-top: 44px; padding-bottom: 88px; }
@@ -248,11 +254,16 @@ a:hover { text-decoration-color: currentColor; }
 .card-preview-hint { position:absolute; right:8px; bottom:8px; background: var(--live); color:#fff; font-size:10px; font-weight:700; padding:4px 8px; border-radius:999px; letter-spacing:.05em; box-shadow: 0 4px 12px rgba(0,0,0,.18); z-index:2; }
 .card-preview::after { content:""; position:absolute; inset:0; background: linear-gradient(to bottom, transparent 72%, color-mix(in srgb, var(--bg-elev) 45%, transparent) 100%); pointer-events:none; z-index:1; }
 
-/* Jakuplayer — przybliżony, żeby interfejs odtwarzacza był wyraźny i czytelny */
+/* Jakuplayer i JoyPad w wyróżnionych kartach */
 .project-card.is-origins .card-preview {
   aspect-ratio: 16 / 9;
   height:auto;
-  --iframe-scale: 0.52;
+  --iframe-scale: 0.46;
+}
+.project-card.is-featured .card-preview {
+  aspect-ratio: 16 / 9;
+  height:auto;
+  --iframe-scale: 0.34;
 }
 .project-card[data-repo="Jakuplayer"] .card-preview {
   --iframe-scale: 0.35;
@@ -284,7 +295,7 @@ a:hover { text-decoration-color: currentColor; }
 @media (max-width: 900px) {
   .hero { grid-template-columns:1fr; gap:28px; padding-top:36px; padding-bottom:24px; }
   .profile-card { max-width:none; }
-  .origins-grid { grid-template-columns:1fr; }
+  .showcase-grid { grid-template-columns:1fr; gap:32px; }
   .origins { padding: 24px 0 28px; }
 }
 
@@ -304,11 +315,13 @@ a:hover { text-decoration-color: currentColor; }
   .toolbar-advanced-inner { flex-direction:column; }
   .card-actions { flex-direction:column; }
   .card-actions .btn { width:100%; }
+  .origins-note .btn { width:100%; }
   .stats { gap:8px; }
   .stat dd { font-size:20px; }
   /* Mobile: podglądy w formacie 9:16 i w mobilnej rozdzielczości wewnątrz iframe (~375–430 px) */
   .card-preview,
   .project-card.is-origins .card-preview,
+  .project-card.is-featured .card-preview,
   .project-card[data-repo="Jakuplayer"] .card-preview {
     aspect-ratio: 9 / 16;
     max-width: 350px;
