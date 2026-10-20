@@ -45,6 +45,7 @@
         <span class="brand-text">rejson59<span class="brand-suffix">.github.io</span></span>
       </a>
       <nav class="site-nav" aria-label="Nawigacja główna">
+        <a href="#poczatki">Początki</a>
         <a href="#projekty">Projekty</a>
         <a href="https://github.com/rejson59" target="_blank" rel="noopener noreferrer">GitHub
           <svg class="icon icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg>
@@ -110,6 +111,44 @@
       </aside>
     </section>
 
+    <!-- ============ POCZĄTKI — pierwsza działająca strona ============ -->
+    <section class="origins container" id="poczatki" aria-labelledby="origins-heading">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span> Początki</p>
+          <h2 id="origins-heading">Spójrz na moje początki, tak wyglądała moja pierwsza działająca strona na githubie:</h2>
+          <p class="section-intro">Prosty odtwarzacz HTML — bez frameworków, wdrożony prosto na GitHub Pages. Działa do dziś i od niego zaczęło się regularne publikowanie.</p>
+        </div>
+      </div>
+      <div class="origins-grid">
+        <article class="project-card is-origins" aria-label="Jakuplayer — pierwsza działająca strona">
+          <div class="card-inner">
+            <div class="card-sheen" aria-hidden="true"></div>
+            <div class="card-top">
+              <span class="card-index mono">/ 01 — początek · 06.2025</span>
+              <span class="card-badges">
+                <span class="lang"><span class="lang-dot" style="background:#e34c26"></span> HTML</span>
+                <span class="live-badge">LIVE</span>
+              </span>
+            </div>
+            <h3 class="card-title"><a href="https://rejson59.github.io/Jakuplayer/" target="_blank" rel="noopener noreferrer">Jakuplayer</a></h3>
+            <p class="card-desc">Słuchaj muzyki za darmo i bez ograniczeń — pierwsza w pełni działająca strona, jaką opublikowałem na GitHubie.</p>
+            <ul class="card-topics" aria-label="Tematy"><li>muzyka</li><li>pierwszy projekt</li><li>GitHub Pages</li></ul>
+            <div class="card-actions">
+              <a class="btn btn-primary btn-sm" href="https://rejson59.github.io/Jakuplayer/" target="_blank" rel="noopener noreferrer">Otwórz Jakuplayer
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg>
+              </a>
+              <a class="btn btn-ghost btn-sm" href="https://github.com/rejson59/Jakuplayer" target="_blank" rel="noopener noreferrer">Kod na GitHubie</a>
+            </div>
+          </div>
+        </article>
+        <div class="origins-note">
+          <p class="mono">To od tego prostego playera nauczyłem się wdrożenia, domen Pages i aktualizacji bez backendu. Poniżej — wszystkie kolejne projekty.</p>
+          <a href="#projekty" class="btn btn-ghost btn-sm">Zobacz pozostałe 42 projekty ↓</a>
+        </div>
+      </div>
+    </section>
+
     <!-- ============ PROJEKTY ============ -->
     <section class="projects container" id="projekty">
       <div class="section-head">
@@ -121,33 +160,37 @@
       </div>
 
       <div class="toolbar" role="search">
-        <label class="search">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-          <span class="sr-only">Szukaj projektów</span>
-          <input id="search" type="search" placeholder="Szukaj po nazwie lub opisie…" autocomplete="off">
-        </label>
-
-        <div class="chips" role="group" aria-label="Filtr wersji live">
-          <button class="chip is-active" type="button" data-live="all">Wszystkie</button>
-          <button class="chip" type="button" data-live="live">Tylko z wersją live</button>
+        <div class="toolbar-primary">
+          <label class="search">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+            <span class="sr-only">Szukaj projektów</span>
+            <input id="search" type="search" placeholder="Szukaj po nazwie lub opisie…" autocomplete="off">
+          </label>
+          <div class="chips" role="group" aria-label="Filtr wersji live">
+            <button class="chip is-active" type="button" data-live="all">Wszystkie</button>
+            <button class="chip" type="button" data-live="live">Tylko z wersją live</button>
+          </div>
         </div>
-
-        <label class="select">
-          <span class="sr-only">Filtruj po języku / technologii</span>
-          <select id="filter-lang">
-            <option value="all">Wszystkie technologie</option>
-          </select>
-        </label>
-
-        <label class="select">
-          <span class="sr-only">Sortowanie</span>
-          <select id="sort">
-            <option value="updated">Ostatnio aktualizowane</option>
-            <option value="created">Najnowsze projekty</option>
-            <option value="name">Nazwa: A–Z</option>
-            <option value="stars">Najwięcej gwiazdek</option>
-          </select>
-        </label>
+        <details class="toolbar-advanced">
+          <summary class="toolbar-summary">Więcej filtrów <span class="toolbar-summary-hint">język · sortowanie</span></summary>
+          <div class="toolbar-advanced-inner">
+            <label class="select">
+              <span class="sr-only">Filtruj po języku / technologii</span>
+              <select id="filter-lang">
+                <option value="all">Wszystkie technologie</option>
+              </select>
+            </label>
+            <label class="select">
+              <span class="sr-only">Sortowanie</span>
+              <select id="sort">
+                <option value="updated">Ostatnio aktualizowane</option>
+                <option value="created">Najnowsze projekty</option>
+                <option value="name">Nazwa: A–Z</option>
+                <option value="stars">Najwięcej gwiazdek</option>
+              </select>
+            </label>
+          </div>
+        </details>
       </div>
 
       <div class="grid" id="grid" aria-live="polite"></div>
