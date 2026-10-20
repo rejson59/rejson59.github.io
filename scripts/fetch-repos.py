@@ -36,6 +36,7 @@ def main() -> None:
             "topics": r.get("topics", []),
             "created_at": r.get("created_at"),
             "updated_at": r.get("updated_at"),
+            "pushed_at": r.get("pushed_at"),
         }
         for r in repos
         if r["name"] not in EXCLUDED and not r.get("fork")
