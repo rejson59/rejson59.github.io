@@ -15,6 +15,9 @@
   /* Repozytoria infrastrukturalne — to nie projekty, więc nie pokazujemy ich jako kart. */
   var EXCLUDED = { "rejson59": true, "rejson59.github.io": true };
 
+  /* Projekty wyróżnione w górnej sekcji — nie duplikujemy ich w dolnej siatce projektów. */
+  var FEATURED = { "Jakuplayer": true, "JoyPad": true, "mconline": true };
+
   /* Opisy dla projektów, które nie mają opisu na GitHubie (na podstawie ich README).
      Gdy dodasz opis w ustawieniach repozytorium na GitHubie, zastąpi on tekst stąd. */
   var DESCRIPTION_OVERRIDES = {
@@ -39,6 +42,7 @@
   /* ---------- Stan ---------- */
   var state = { query: "", liveOnly: false, lang: "all", sort: "updated" };
   var allProjects = [];
+  var gridProjects = [];
   var firstRenderDone = false;
   var cardCache = {}; /* name -> { el, sig, liveUrl } */
 
@@ -248,9 +252,17 @@
     return copy;
   }
 
+  function pluralProjects(n) {
+    var mod10 = n % 10;
+    var mod100 = n % 100;
+    if (n === 1) return "projekt";
+    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return "projekty";
+    return "projektów";
+  }
+
   function filteredProjects() {
     var q = state.query.trim().toLowerCase();
-    var list = allProjects.filter(function (p) {
+    var list = gridProjects.filter(function (p) {
       if (state.liveOnly && !p.liveUrl) return false;
       if (state.lang !== "all" && p.language !== state.lang) return false;
       if (q && (p.name + " " + p.description).toLowerCase().indexOf(q) === -1) return false;
@@ -284,7 +296,7 @@
     });
 
     emptyState.hidden = list.length > 0;
-    resultCount.textContent = "Wyświetlono " + list.length + " z " + allProjects.length + " projektów";
+    resultCount.textContent = "Wyświetlono " + list.length + " z " + gridProjects.length + " projektów";
     revealCards();
   }
 
@@ -296,13 +308,13 @@
     document.getElementById("stat-live").textContent = live;
     document.getElementById("stat-langs").textContent = Object.keys(langs).length;
     if (originsMoreBtn) {
-      originsMoreBtn.textContent = "Zobacz wszystkie " + allProjects.length + " projektów ↓";
+      originsMoreBtn.textContent = "Zobacz pozostałe " + gridProjects.length + " " + pluralProjects(gridProjects.length) + " ↓";
     }
   }
 
   function updateLangFilter() {
     var counts = {};
-    allProjects.forEach(function (p) {
+    gridProjects.forEach(function (p) {
       if (p.language) counts[p.language] = (counts[p.language] || 0) + 1;
     });
     var names = Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a]; });
@@ -318,6 +330,7 @@
 
   function setProjects(repos, isLive) {
     allProjects = prepare(repos);
+    gridProjects = allProjects.filter(function (p) { return !FEATURED[p.name]; });
     updateStats();
     updateLangFilter();
     render();
