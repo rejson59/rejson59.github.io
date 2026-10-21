@@ -19,7 +19,7 @@ OUT = Path(__file__).resolve().parent.parent / "js" / "projects-data.js"
 
 
 def main() -> None:
-    req = urllib.request.Request(API, headers={"User-Agent": "rejson59-portfolio"})
+    req = urllib.request.Request(API, headers={"User-Agent": "rejson59-site"})
     with urllib.request.urlopen(req) as resp:
         repos = json.load(resp)
 

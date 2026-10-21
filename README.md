@@ -1,12 +1,12 @@
-# rejson59.github.io — portfolio
+# rejson59.github.io — oficjalna strona internetowa
 
-Strona portfolio dostępna pod [https://rejson59.github.io/](https://rejson59.github.io/) — przegląd wszystkich publicznych projektów użytkownika [rejson59](https://github.com/rejson59) z GitHuba. Karty 3D, wyszukiwarka, filtry po języku i sortowanie. Dane pobierane na żywo z API GitHuba z fallbackiem w `js/projects-data.js`.
+Oficjalna strona internetowa dostępna pod [https://rejson59.github.io/](https://rejson59.github.io/) — przegląd projektów użytkownika [rejson59](https://github.com/rejson59) z GitHuba. Karty 3D, wyszukiwarka, filtry po języku i sortowanie. Dane pobierane na żywo z API GitHuba z fallbackiem w `js/projects-data.js`.
 
 ## Struktura plików
 
 ```
 .
-├── index.html            # strona główna (tytuł: „Rejson — projekty open source”)
+├── index.html            # strona główna (tytuł: „Rejson59 - oficjalna strona internetowa”)
 ├── 404.html              # własna strona 404
 ├── favicon.svg           # ikona strony
 ├── .nojekyll            # wyłącza Jekyll na GitHub Pages
