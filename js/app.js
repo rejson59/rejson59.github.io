@@ -40,7 +40,7 @@
   };
 
   /* ---------- Stan ---------- */
-  var state = { query: "", liveOnly: false, lang: "all", sort: "updated" };
+  var state = { query: "", liveOnly: false, lang: "all", sort: "created" };
   var allProjects = [];
   var gridProjects = [];
   var firstRenderDone = false;
@@ -111,7 +111,7 @@
   var ICON_ARROW = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg>';
   var ICON_STAR = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.8-4.5 4.3 1.1 6-5.4-2.9L6.6 19.7l1.1-6L3.2 9.4l6.1-.8z"/></svg>';
   var ICON_FORK = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="5" r="2.5"/><circle cx="18" cy="5" r="2.5"/><circle cx="12" cy="19" r="2.5"/><path d="M6 7.5v3a2.5 2.5 0 0 0 2.5 2.5H12M18 7.5v3A2.5 2.5 0 0 1 15.5 13H12M12 13v3.5"/></svg>';
-  var ICON_CLICK = '<svg class="icon icon-click" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13v-8.5a1.5 1.5 0 0 1 3 0v7.5"/><path d="M11 11.5v-2a1.5 1.5 0 0 1 3 0v2.5"/><path d="M14 10.5a1.5 1.5 0 0 1 3 0v1.5"/><path d="M17 11.5a1.5 1.5 0 0 1 3 0v4.5a6 6 0 0 1-6 6h-2a6 6 0 0 1-5.012-2.7l-.196-.3c-.312-.479-1.407-2.388-3.286-5.728a1.5 1.5 0 0 1 .536-2.022a1.867 1.867 0 0 1 2.28.28L8 13"/></svg>';
+  var ICON_CLICK = '<svg class="icon icon-click" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 2v2"/><path d="M5.6 4.4l1.4 1.4"/><path d="M16.4 4.4l-1.4 1.4"/><path d="M9 13V8a2 2 0 0 1 4 0v3h2a4 4 0 0 1 4 4v1a6 6 0 0 1-6 6h-1.5a5.5 5.5 0 0 1-4.6-2.5L4.3 15.6a1.7 1.7 0 0 1 2.5-2.2L9 15V13z"/></svg>';
   var numFmt = new Intl.NumberFormat("pl-PL");
 
   function projectViewsCount(name) {
@@ -129,28 +129,32 @@
     var views = projectViewsCount(p.name);
     var online = projectOnlineCount(p.name);
     var onlineActiveClass = online > 0 ? " is-active-now" : "";
+    var onlineBadge =
+      '<button class="card-metric is-online mono' + onlineActiveClass + '" type="button" data-project-online="' + esc(p.name) + '" data-tooltip-title="Osoby w projekcie (LIVE)" data-tooltip="Liczba osób aktualnie korzystających z projektu ' + esc(p.name) + ' na żywo." aria-label="Osoby aktualnie w projekcie ' + esc(p.name) + '">' +
+        '<span class="online-aura-dot" aria-hidden="true"></span>' +
+        '<span class="card-online-num">' + esc(numFmt.format(online)) + "</span>" +
+      "</button>";
     var viewsBadge =
-      '<span class="card-views mono" data-project-views="' + esc(p.name) + '">' +
-        '<span class="card-online-part' + onlineActiveClass + '" data-project-online="' + esc(p.name) + '" title="Osoby aktualnie na stronie projektu (na żywo)">' +
-          '<span class="online-dot" aria-hidden="true"></span>' +
-          '<span class="card-online-num">' + esc(numFmt.format(online)) + "</span>" +
-        "</span>" +
-        '<span class="card-views-sep" aria-hidden="true"></span>' +
-        '<span class="card-clicks-part" title="Łączna liczba kliknięć / wejść w projekt">' +
-          ICON_CLICK +
-          '<span class="card-views-num">' + esc(numFmt.format(views)) + "</span>" +
-        "</span>" +
-      "</span>";
+      '<button class="card-metric is-clicks mono" type="button" data-project-views="' + esc(p.name) + '" data-tooltip-title="Kliknięcia i wejścia w projekt" data-tooltip="Łączna liczba otwarć projektu ' + esc(p.name) + ' od jego utworzenia (z 15-min ochroną przed spamem)." aria-label="Łączna liczba wejść w projekt ' + esc(p.name) + '">' +
+        ICON_CLICK +
+        '<span class="card-views-num">' + esc(numFmt.format(views)) + "</span>" +
+      "</button>";
     var lang = p.language
       ? '<span class="lang"><span class="lang-dot" style="background:' +
         esc(LANG_COLORS[p.language] || "#8b949e") + '"></span>' + esc(p.language) + "</span>"
       : "";
     var liveBadge = p.liveUrl ? '<span class="live-badge">LIVE</span>' : "";
-    return viewsBadge + lang + liveBadge;
+    return onlineBadge + viewsBadge + lang + liveBadge;
   }
 
   function metaHTML(p) {
-    var meta = '<span class="meta-item mono">Aktualizacja: ' + esc(fmtDate(p.updated)) + "</span>";
+    var meta = "";
+    if (p.created) {
+      meta += '<span class="meta-item mono">Utworzono: ' + esc(fmtDate(p.created)) + "</span>";
+    }
+    if (p.updated) {
+      meta += '<span class="meta-item mono">Aktualizacja: ' + esc(fmtDate(p.updated)) + "</span>";
+    }
     if (p.stars > 0) meta += '<span class="meta-item">' + ICON_STAR + esc(p.stars) + "</span>";
     if (p.forks > 0) meta += '<span class="meta-item">' + ICON_FORK + esc(p.forks) + "</span>";
     return meta;
@@ -201,7 +205,7 @@
     return [
       p.name, p.description, p.url, p.liveUrl || "",
       p.language || "", p.stars, p.forks,
-      (p.topics || []).join(","), p.updated
+      (p.topics || []).join(","), p.created, p.updated
     ].join("|");
   }
 
@@ -265,25 +269,19 @@
       copy.sort(function (a, b) {
         var diff = projectViewsCount(b.name) - projectViewsCount(a.name);
         if (diff !== 0) return diff;
-        var aLive = a.liveUrl ? 1 : 0;
-        var bLive = b.liveUrl ? 1 : 0;
-        if (aLive !== bLive) return bLive - aLive;
-        return new Date(b.updated) - new Date(a.updated);
+        return new Date(b.created) - new Date(a.created);
       });
-    } else if (state.sort === "created") {
-      copy.sort(function (a, b) { return new Date(b.created) - new Date(a.created); });
+    } else if (state.sort === "oldest") {
+      copy.sort(function (a, b) { return new Date(a.created) - new Date(b.created); });
+    } else if (state.sort === "updated") {
+      copy.sort(function (a, b) { return new Date(b.updated) - new Date(a.updated); });
     } else if (state.sort === "stars") {
       copy.sort(function (a, b) {
-        return (b.stars - a.stars) || (new Date(b.updated) - new Date(a.updated));
+        return (b.stars - a.stars) || (new Date(b.created) - new Date(a.created));
       });
     } else {
-      // domyślnie: najpierw LIVE (mają podgląd/produkt), potem surowe repo — w każdej grupie wg ostatniej aktualizacji
-      copy.sort(function (a, b) {
-        var aLive = a.liveUrl ? 1 : 0;
-        var bLive = b.liveUrl ? 1 : 0;
-        if (aLive !== bLive) return bLive - aLive;
-        return new Date(b.updated) - new Date(a.updated);
-      });
+      // domyślnie ("created"): od najnowszych projektów według daty utworzenia
+      copy.sort(function (a, b) { return new Date(b.created) - new Date(a.created); });
     }
     return copy;
   }
@@ -367,9 +365,20 @@
     state.lang = langSelect.value;
   }
 
+  function updateFeaturedMeta() {
+    allProjects.forEach(function (p) {
+      if (!FEATURED[p.name]) return;
+      var el = document.querySelector('[data-featured-meta="' + p.name + '"]');
+      if (el) {
+        el.innerHTML = metaHTML(p);
+      }
+    });
+  }
+
   function setProjects(repos, isLive) {
     allProjects = prepare(repos);
     gridProjects = allProjects.filter(function (p) { return !FEATURED[p.name]; });
+    updateFeaturedMeta();
     updateStats();
     updateLangFilter();
     render();
@@ -487,7 +496,41 @@
     render();
   });
 
-  /* ---------- Motyw jasny/ciemny ---------- */
+  /* ---------- Motyw jasny/ciemny oraz mobilne menu hamburger ---------- */
+  var menuToggle = document.getElementById("menu-toggle");
+  var siteNav = document.getElementById("site-nav");
+
+  function closeMobileMenu() {
+    if (!menuToggle || !siteNav) return;
+    menuToggle.setAttribute("aria-expanded", "false");
+    siteNav.classList.remove("is-open");
+  }
+
+  if (menuToggle && siteNav) {
+    menuToggle.addEventListener("click", function (ev) {
+      ev.stopPropagation();
+      var isOpen = siteNav.classList.toggle("is-open");
+      menuToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    });
+
+    siteNav.addEventListener("click", function (ev) {
+      if (ev.target && ev.target.closest && ev.target.closest("a")) {
+        closeMobileMenu();
+      }
+    });
+
+    document.addEventListener("click", function (ev) {
+      if (!siteNav.classList.contains("is-open")) return;
+      if (!siteNav.contains(ev.target) && !menuToggle.contains(ev.target)) {
+        closeMobileMenu();
+      }
+    });
+
+    document.addEventListener("keydown", function (ev) {
+      if (ev.key === "Escape") closeMobileMenu();
+    });
+  }
+
   document.getElementById("theme-toggle").addEventListener("click", function () {
     var next = document.documentElement.dataset.theme === "light" ? "dark" : "light";
     document.documentElement.dataset.theme = next;
