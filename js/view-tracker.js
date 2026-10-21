@@ -181,6 +181,116 @@
     el.classList.add("is-bumped");
   }
 
+  /* ---------- Płynna animacja naliczania się liczników ---------- */
+  var reduceMotion =
+    window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var counterRevealObserver = null;
+
+  function ensureCounterRevealObserver() {
+    if (counterRevealObserver || !("IntersectionObserver" in window)) return;
+    counterRevealObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        var el = entry.target;
+        el._inViewForCounter = true;
+        counterRevealObserver.unobserve(el);
+        if (typeof el._pendingTargetVal === "number") {
+          runCounterAnimation(el, el._pendingTargetVal, false, el._pendingBadgeEl);
+        }
+      });
+    }, { threshold: 0.1 });
+  }
+
+  function runCounterAnimation(numEl, targetValue, shouldBump, badgeEl) {
+    if (!numEl) return;
+    var target = Math.max(0, Number(targetValue) || 0);
+
+    if (reduceMotion) {
+      numEl._currentVal = target;
+      numEl._targetVal = target;
+      numEl._hasAnimatedOnce = true;
+      numEl.textContent = fmtViews(target);
+      return;
+    }
+
+    var firstTime = !numEl._hasAnimatedOnce;
+    var prevTarget = typeof numEl._targetVal === "number" ? numEl._targetVal : 0;
+
+    if (!firstTime && prevTarget === target) {
+      return;
+    }
+
+    var from = firstTime ? 0 : (typeof numEl._currentVal === "number" ? numEl._currentVal : prevTarget);
+    numEl._hasAnimatedOnce = true;
+    numEl._targetVal = target;
+
+    if (numEl._countRaf) {
+      cancelAnimationFrame(numEl._countRaf);
+      numEl._countRaf = null;
+    }
+
+    if (shouldBump && badgeEl) {
+      bumpElement(badgeEl);
+    }
+
+    if (firstTime || target > 0 || from !== target) {
+      numEl.classList.remove("is-rolling");
+      void numEl.offsetWidth;
+      numEl.classList.add("is-rolling");
+    }
+
+    if (from === target) {
+      numEl._currentVal = target;
+      numEl.textContent = fmtViews(target);
+      return;
+    }
+
+    numEl.classList.add("is-counting");
+    var diff = Math.abs(target - from);
+    var duration = Math.min(960, Math.max(520, Math.round(460 + Math.log10(diff + 1) * 230)));
+    var startTs = null;
+
+    function step(ts) {
+      if (!startTs) startTs = ts;
+      var p = Math.min(1, (ts - startTs) / duration);
+      var eased = 1 - Math.pow(1 - p, 4);
+      var cur = Math.round(from + (target - from) * eased);
+      if (numEl._currentVal !== cur) {
+        numEl._currentVal = cur;
+        numEl.textContent = fmtViews(cur);
+      }
+      if (p < 1) {
+        numEl._countRaf = requestAnimationFrame(step);
+      } else {
+        numEl._currentVal = target;
+        numEl.textContent = fmtViews(target);
+        numEl.classList.remove("is-counting");
+        numEl._countRaf = null;
+      }
+    }
+
+    numEl._countRaf = requestAnimationFrame(step);
+  }
+
+  function animateCounterValue(numEl, targetValue, shouldBump, badgeEl, immediate) {
+    if (!numEl) return;
+    var target = Math.max(0, Number(targetValue) || 0);
+    numEl._pendingTargetVal = target;
+    numEl._pendingBadgeEl = badgeEl || null;
+
+    if (immediate || numEl._inViewForCounter || !("IntersectionObserver" in window)) {
+      numEl._inViewForCounter = true;
+      runCounterAnimation(numEl, target, shouldBump, badgeEl);
+      return;
+    }
+
+    if (!numEl._observedForCounter) {
+      numEl._observedForCounter = true;
+      ensureCounterRevealObserver();
+      counterRevealObserver.observe(numEl);
+    }
+  }
+
   function applyCountUpdate(slug, views, unique, animate) {
     if (!slug || typeof views !== "number" || views < 0) return;
     var key = String(slug).toLowerCase();
@@ -229,12 +339,9 @@
     if (key === SITE_SLUG.toLowerCase()) {
       var siteCountEl = document.getElementById("site-views-count");
       var siteBadgeEl = document.getElementById("site-views-badge");
+      if (siteBadgeEl) siteBadgeEl.classList.add("is-ready");
       if (siteCountEl) {
-        siteCountEl.textContent = fmtViews(views);
-      }
-      if (siteBadgeEl) {
-        siteBadgeEl.classList.add("is-ready");
-        if (shouldBump) bumpElement(siteBadgeEl);
+        animateCounterValue(siteCountEl, views, shouldBump, siteBadgeEl, true);
       }
     }
 
@@ -245,17 +352,17 @@
       var bSlug = (badge.getAttribute("data-project-views") || "").toLowerCase();
       if (bSlug === key) {
         var numEl = badge.querySelector(".card-views-num");
-        if (numEl) numEl.textContent = fmtViews(views);
-        if (shouldBump) bumpElement(badge);
+        if (numEl) animateCounterValue(numEl, views, shouldBump, badge, false);
       }
     }
   }
 
   function refreshOnlineDOMCounters() {
     var siteOnlineEl = document.getElementById("site-online-count");
+    var siteOnlineBadge = document.getElementById("site-online-badge");
     if (siteOnlineEl) {
       var siteOnline = getOnlineCount(SITE_SLUG);
-      siteOnlineEl.textContent = fmtViews(siteOnline);
+      animateCounterValue(siteOnlineEl, siteOnline, false, siteOnlineBadge, true);
     }
 
     var onlineEls = document.querySelectorAll("[data-project-online]");
@@ -264,7 +371,7 @@
       var slug = el.getAttribute("data-project-online") || "";
       var cnt = getOnlineCount(slug);
       var numEl = el.querySelector(".card-online-num");
-      if (numEl) numEl.textContent = fmtViews(cnt);
+      if (numEl) animateCounterValue(numEl, cnt, false, el, false);
       el.classList.toggle("is-active-now", cnt > 0);
     }
   }
@@ -274,8 +381,8 @@
     var siteCountEl = document.getElementById("site-views-count");
     var siteBadgeEl = document.getElementById("site-views-badge");
     if (siteCountEl && countsMap[SITE_SLUG.toLowerCase()]) {
-      siteCountEl.textContent = fmtViews(siteViews);
       if (siteBadgeEl) siteBadgeEl.classList.add("is-ready");
+      animateCounterValue(siteCountEl, siteViews, false, siteBadgeEl, true);
     }
 
     var badges = document.querySelectorAll("[data-project-views]");
@@ -284,7 +391,7 @@
       var slug = badge.getAttribute("data-project-views") || "";
       var numEl = badge.querySelector(".card-views-num");
       if (numEl) {
-        numEl.textContent = fmtViews(getCount(slug));
+        animateCounterValue(numEl, getCount(slug), false, badge, false);
       }
     }
 
@@ -699,7 +806,16 @@
     var title = target.getAttribute("data-tooltip-title") || "";
     var isOnline = target.classList.contains("is-online");
     var valEl = target.querySelector(".online-count, .views-count, .card-online-num, .card-views-num");
-    var valText = valEl ? (valEl.textContent || "0").trim() : "";
+    var valText = "";
+    if (valEl) {
+      if (typeof valEl._pendingTargetVal === "number") {
+        valText = fmtViews(valEl._pendingTargetVal);
+      } else if (typeof valEl._targetVal === "number") {
+        valText = fmtViews(valEl._targetVal);
+      } else {
+        valText = (valEl.textContent || "0").trim();
+      }
+    }
 
     var pop = ensureTooltipEl();
     pop.className = "metric-tooltip-popover " + (isOnline ? "is-online-tip" : "is-clicks-tip");
