@@ -619,6 +619,131 @@
     } catch (e) { /* ignorujemy */ }
   }
 
+  /* ---------- Dymki wyjaśniające (po najechaniu myszką lub kliknięciu/dotknięciu) ---------- */
+  var tooltipEl = null;
+  var activeTooltipTarget = null;
+  var tooltipPinnedByClick = false;
+
+  function ensureTooltipEl() {
+    if (tooltipEl) return tooltipEl;
+    tooltipEl = document.createElement("div");
+    tooltipEl.id = "metric-tooltip-popover";
+    tooltipEl.className = "metric-tooltip-popover";
+    tooltipEl.setAttribute("role", "tooltip");
+    tooltipEl.hidden = true;
+    document.body.appendChild(tooltipEl);
+    return tooltipEl;
+  }
+
+  function positionTooltip(target) {
+    if (!tooltipEl || !target || tooltipEl.hidden) return;
+    var rect = target.getBoundingClientRect();
+    var popRect = tooltipEl.getBoundingClientRect();
+    var vw = document.documentElement.clientWidth || window.innerWidth;
+    var vh = document.documentElement.clientHeight || window.innerHeight;
+    var pad = 10;
+
+    var top = rect.bottom + 8;
+    if (top + popRect.height + pad > vh && rect.top - popRect.height - 8 > pad) {
+      top = rect.top - popRect.height - 8;
+    }
+
+    var left = rect.left + rect.width / 2 - popRect.width / 2;
+    if (left < pad) left = pad;
+    if (left + popRect.width + pad > vw) left = Math.max(pad, vw - popRect.width - pad);
+
+    tooltipEl.style.top = Math.round(top) + "px";
+    tooltipEl.style.left = Math.round(left) + "px";
+  }
+
+  function showTooltipFor(target, pinned) {
+    if (!target) return;
+    var text = target.getAttribute("data-tooltip") || "";
+    if (!text) return;
+    var title = target.getAttribute("data-tooltip-title") || "";
+    var isOnline = target.classList.contains("is-online");
+    var valEl = target.querySelector(".online-count, .views-count, .card-online-num, .card-views-num");
+    var valText = valEl ? (valEl.textContent || "0").trim() : "";
+
+    var pop = ensureTooltipEl();
+    pop.className = "metric-tooltip-popover " + (isOnline ? "is-online-tip" : "is-clicks-tip");
+
+    var badgeChip = valText
+      ? '<span class="metric-tip-value mono">' +
+          (isOnline ? '<span class="online-aura-dot" aria-hidden="true"></span>' : "") +
+          valText + (isOnline ? " online" : "") +
+        "</span>"
+      : "";
+
+    pop.innerHTML =
+      '<div class="metric-tip-head">' +
+        '<strong class="metric-tip-title">' + title + "</strong>" +
+        badgeChip +
+      "</div>" +
+      '<p class="metric-tip-desc">' + text + "</p>";
+
+    pop.hidden = false;
+    activeTooltipTarget = target;
+    tooltipPinnedByClick = Boolean(pinned);
+    positionTooltip(target);
+  }
+
+  function hideTooltip() {
+    if (!tooltipEl) return;
+    tooltipEl.hidden = true;
+    activeTooltipTarget = null;
+    tooltipPinnedByClick = false;
+  }
+
+  function bindMetricTooltips() {
+    document.addEventListener("pointerover", function (ev) {
+      if (ev.pointerType && ev.pointerType !== "mouse") return;
+      var target = ev.target && ev.target.closest ? ev.target.closest("[data-tooltip]") : null;
+      if (!target) return;
+      if (tooltipPinnedByClick && activeTooltipTarget === target) return;
+      showTooltipFor(target, false);
+    });
+
+    document.addEventListener("pointerout", function (ev) {
+      if (ev.pointerType && ev.pointerType !== "mouse") return;
+      if (tooltipPinnedByClick) return;
+      var target = ev.target && ev.target.closest ? ev.target.closest("[data-tooltip]") : null;
+      if (!target) return;
+      var related = ev.relatedTarget;
+      if (related && target.contains(related)) return;
+      if (activeTooltipTarget === target) hideTooltip();
+    });
+
+    document.addEventListener("click", function (ev) {
+      var target = ev.target && ev.target.closest ? ev.target.closest("[data-tooltip]") : null;
+      if (target) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        if (activeTooltipTarget === target && tooltipPinnedByClick && tooltipEl && !tooltipEl.hidden) {
+          hideTooltip();
+        } else {
+          showTooltipFor(target, true);
+        }
+        return;
+      }
+      if (tooltipEl && !tooltipEl.hidden) {
+        hideTooltip();
+      }
+    });
+
+    window.addEventListener("scroll", function () {
+      if (activeTooltipTarget && tooltipEl && !tooltipEl.hidden) {
+        positionTooltip(activeTooltipTarget);
+      }
+    }, { passive: true });
+
+    window.addEventListener("resize", function () {
+      if (activeTooltipTarget && tooltipEl && !tooltipEl.hidden) {
+        positionTooltip(activeTooltipTarget);
+      }
+    });
+  }
+
   function bindCardClickTracking() {
     function handleCardInteraction(ev) {
       if (ev.type === "auxclick" && ev.button !== 1) return;
@@ -677,8 +802,9 @@
       }
     });
 
-    /* 2. Podpinamy zliczanie kliknięć w projekty na stronie głównej */
+    /* 2. Podpinamy zliczanie kliknięć w projekty oraz dymki wyjaśniające liczników */
     bindCardClickTracking();
+    bindMetricTooltips();
 
     /* 3. Uruchamiamy połączenie na żywo (Supabase Realtime WebSocket + heartbeat obecności) */
     if (window.self === window.top) {

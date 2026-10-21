@@ -44,28 +44,60 @@
         <svg class="brand-mark" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="14" fill="currentColor" opacity="0.12"/><path d="M20 46V18h13.2c6.1 0 10.4 3.7 10.4 9.2 0 4.2-2.4 7.3-6.2 8.6L45 46h-7.9l-6.4-9.3H26.6V46H20zm6.6-14.4h6.2c2.6 0 4.2-1.7 4.2-4.3s-1.6-4.2-4.2-4.2h-6.2v8.5z" fill="currentColor"/><circle cx="46" cy="44" r="3.4" fill="#6aa6ff"/></svg>
         <span class="brand-text">rejson59<span class="brand-suffix">.github.io</span></span>
       </a>
-      <nav class="site-nav" aria-label="Nawigacja główna">
-        <a href="#poczatki">Wyróżnione</a>
-        <a href="#projekty">Projekty</a>
-        <a href="https://github.com/rejson59" target="_blank" rel="noopener noreferrer">GitHub
-          <svg class="icon icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg>
-        </a>
-        <div id="site-views-badge" class="views-pill" role="status" aria-live="polite" aria-label="Statystyki strony na żywo">
-          <span class="views-segment is-online" title="Osoby aktualnie na tej stronie (na żywo)">
-            <span class="views-live-dot" aria-hidden="true"></span>
+
+      <div class="header-right">
+        <nav id="site-nav" class="site-nav" aria-label="Nawigacja główna">
+          <a href="#poczatki">Wyróżnione</a>
+          <a href="#projekty">Projekty</a>
+          <a href="https://github.com/rejson59" target="_blank" rel="noopener noreferrer">GitHub
+            <svg class="icon icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg>
+          </a>
+          <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Przełącz motyw jasny/ciemny">
+            <svg class="icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+            <svg class="icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+            <span class="theme-toggle-label">Zmień motyw (jasny / ciemny)</span>
+          </button>
+        </nav>
+
+        <div class="header-metrics" role="group" aria-label="Statystyki strony na żywo">
+          <button
+            id="site-online-badge"
+            class="metric-badge is-online"
+            type="button"
+            data-tooltip-title="Osoby aktualnie na stronie (LIVE)"
+            data-tooltip="Liczba osób, które w tej chwili przeglądają tę stronę na żywo."
+            aria-label="Osoby aktualnie na stronie"
+          >
+            <span class="online-aura-dot" aria-hidden="true"></span>
             <span id="site-online-count" class="online-count mono">1</span>
-          </span>
-          <span class="views-divider" aria-hidden="true"></span>
-          <span class="views-segment is-clicks" title="Łączna liczba kliknięć / wejść od stworzenia strony (blokada czasowa 15 min)">
-            <svg class="icon icon-click" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13v-8.5a1.5 1.5 0 0 1 3 0v7.5"/><path d="M11 11.5v-2a1.5 1.5 0 0 1 3 0v2.5"/><path d="M14 10.5a1.5 1.5 0 0 1 3 0v1.5"/><path d="M17 11.5a1.5 1.5 0 0 1 3 0v4.5a6 6 0 0 1-6 6h-2a6 6 0 0 1-5.012-2.7l-.196-.3c-.312-.479-1.407-2.388-3.286-5.728a1.5 1.5 0 0 1 .536-2.022a1.867 1.867 0 0 1 2.28.28L8 13"/></svg>
+          </button>
+
+          <button
+            id="site-views-badge"
+            class="metric-badge is-clicks"
+            type="button"
+            data-tooltip-title="Łączna liczba wejść i kliknięć"
+            data-tooltip="Wszystkie wejścia na stronę od jej utworzenia. Kolejne wejście tej samej osoby nalicza się po 15 minutach (ochrona przed spamowaniem odświeżaniem)."
+            aria-label="Łączna liczba wejść na stronę"
+          >
+            <svg class="icon icon-click" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 2v2"/><path d="M5.6 4.4l1.4 1.4"/><path d="M16.4 4.4l-1.4 1.4"/><path d="M9 13V8a2 2 0 0 1 4 0v3h2a4 4 0 0 1 4 4v1a6 6 0 0 1-6 6h-1.5a5.5 5.5 0 0 1-4.6-2.5L4.3 15.6a1.7 1.7 0 0 1 2.5-2.2L9 15V13z"/></svg>
             <span id="site-views-count" class="views-count mono">0</span>
-          </span>
+          </button>
         </div>
-        <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Przełącz motyw jasny/ciemny">
-          <svg class="icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
-          <svg class="icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+
+        <button
+          id="menu-toggle"
+          class="hamburger-btn"
+          type="button"
+          aria-expanded="false"
+          aria-controls="site-nav"
+          aria-label="Otwórz menu nawigacji"
+        >
+          <span class="hamburger-bar" aria-hidden="true"></span>
+          <span class="hamburger-bar" aria-hidden="true"></span>
+          <span class="hamburger-bar" aria-hidden="true"></span>
         </button>
-      </nav>
+      </div>
     </div>
   </header>
 
@@ -142,17 +174,28 @@
               <div class="card-top">
                 <span class="card-index mono">/ 01 — początek · 06.2025</span>
                 <span class="card-badges">
-                  <span class="card-views mono" data-project-views="Jakuplayer">
-                    <span class="card-online-part" data-project-online="Jakuplayer" title="Osoby aktualnie na stronie projektu (na żywo)">
-                      <span class="online-dot" aria-hidden="true"></span>
-                      <span class="card-online-num">0</span>
-                    </span>
-                    <span class="card-views-sep" aria-hidden="true"></span>
-                    <span class="card-clicks-part" title="Łączna liczba kliknięć / wejść w projekt">
-                      <svg class="icon icon-click" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13v-8.5a1.5 1.5 0 0 1 3 0v7.5"/><path d="M11 11.5v-2a1.5 1.5 0 0 1 3 0v2.5"/><path d="M14 10.5a1.5 1.5 0 0 1 3 0v1.5"/><path d="M17 11.5a1.5 1.5 0 0 1 3 0v4.5a6 6 0 0 1-6 6h-2a6 6 0 0 1-5.012-2.7l-.196-.3c-.312-.479-1.407-2.388-3.286-5.728a1.5 1.5 0 0 1 .536-2.022a1.867 1.867 0 0 1 2.28.28L8 13"/></svg>
-                      <span class="card-views-num">0</span>
-                    </span>
-                  </span>
+                  <button
+                    class="card-metric is-online mono"
+                    type="button"
+                    data-project-online="Jakuplayer"
+                    data-tooltip-title="Osoby w projekcie (LIVE)"
+                    data-tooltip="Liczba osób aktualnie korzystających z projektu Jakuplayer na żywo."
+                    aria-label="Osoby aktualnie w projekcie Jakuplayer"
+                  >
+                    <span class="online-aura-dot" aria-hidden="true"></span>
+                    <span class="card-online-num">0</span>
+                  </button>
+                  <button
+                    class="card-metric is-clicks mono"
+                    type="button"
+                    data-project-views="Jakuplayer"
+                    data-tooltip-title="Kliknięcia i wejścia w projekt"
+                    data-tooltip="Łączna liczba otwarć projektu Jakuplayer od jego utworzenia (z 15-min ochroną przed spamem)."
+                    aria-label="Łączna liczba wejść w projekt Jakuplayer"
+                  >
+                    <svg class="icon icon-click" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 2v2"/><path d="M5.6 4.4l1.4 1.4"/><path d="M16.4 4.4l-1.4 1.4"/><path d="M9 13V8a2 2 0 0 1 4 0v3h2a4 4 0 0 1 4 4v1a6 6 0 0 1-6 6h-1.5a5.5 5.5 0 0 1-4.6-2.5L4.3 15.6a1.7 1.7 0 0 1 2.5-2.2L9 15V13z"/></svg>
+                    <span class="card-views-num">0</span>
+                  </button>
                   <span class="lang"><span class="lang-dot" style="background:#e34c26"></span> HTML</span>
                   <span class="live-badge">LIVE</span>
                 </span>
@@ -163,6 +206,7 @@
               <h3 class="card-title"><a href="https://rejson59.github.io/Jakuplayer/" target="_blank" rel="noopener noreferrer">Jakuplayer</a></h3>
               <p class="card-desc">Słuchaj muzyki za darmo i bez ograniczeń — pierwsza w pełni działająca strona, jaką opublikowałem na GitHubie.</p>
               <ul class="card-topics" aria-label="Tematy"><li>muzyka</li><li>pierwszy projekt</li><li>GitHub Pages</li></ul>
+              <p class="card-meta" data-featured-meta="Jakuplayer"><span class="meta-item mono">Utworzono: 29 cze 2025</span><span class="meta-item mono">Aktualizacja: 29 cze 2025</span></p>
               <div class="card-actions">
                 <a class="btn btn-live btn-sm" href="https://rejson59.github.io/Jakuplayer/" target="_blank" rel="noopener noreferrer">Otwórz Jakuplayer
                   <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg>
@@ -188,17 +232,28 @@
               <div class="card-top">
                 <span class="card-index mono">/ ★ — wyróżniony · JoyPad OS</span>
                 <span class="card-badges">
-                  <span class="card-views mono" data-project-views="JoyPad">
-                    <span class="card-online-part" data-project-online="JoyPad" title="Osoby aktualnie na stronie projektu (na żywo)">
-                      <span class="online-dot" aria-hidden="true"></span>
-                      <span class="card-online-num">0</span>
-                    </span>
-                    <span class="card-views-sep" aria-hidden="true"></span>
-                    <span class="card-clicks-part" title="Łączna liczba kliknięć / wejść w projekt">
-                      <svg class="icon icon-click" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13v-8.5a1.5 1.5 0 0 1 3 0v7.5"/><path d="M11 11.5v-2a1.5 1.5 0 0 1 3 0v2.5"/><path d="M14 10.5a1.5 1.5 0 0 1 3 0v1.5"/><path d="M17 11.5a1.5 1.5 0 0 1 3 0v4.5a6 6 0 0 1-6 6h-2a6 6 0 0 1-5.012-2.7l-.196-.3c-.312-.479-1.407-2.388-3.286-5.728a1.5 1.5 0 0 1 .536-2.022a1.867 1.867 0 0 1 2.28.28L8 13"/></svg>
-                      <span class="card-views-num">0</span>
-                    </span>
-                  </span>
+                  <button
+                    class="card-metric is-online mono"
+                    type="button"
+                    data-project-online="JoyPad"
+                    data-tooltip-title="Osoby w projekcie (LIVE)"
+                    data-tooltip="Liczba osób aktualnie korzystających z projektu JoyPad na żywo."
+                    aria-label="Osoby aktualnie w projekcie JoyPad"
+                  >
+                    <span class="online-aura-dot" aria-hidden="true"></span>
+                    <span class="card-online-num">0</span>
+                  </button>
+                  <button
+                    class="card-metric is-clicks mono"
+                    type="button"
+                    data-project-views="JoyPad"
+                    data-tooltip-title="Kliknięcia i wejścia w projekt"
+                    data-tooltip="Łączna liczba otwarć projektu JoyPad od jego utworzenia (z 15-min ochroną przed spamem)."
+                    aria-label="Łączna liczba wejść w projekt JoyPad"
+                  >
+                    <svg class="icon icon-click" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 2v2"/><path d="M5.6 4.4l1.4 1.4"/><path d="M16.4 4.4l-1.4 1.4"/><path d="M9 13V8a2 2 0 0 1 4 0v3h2a4 4 0 0 1 4 4v1a6 6 0 0 1-6 6h-1.5a5.5 5.5 0 0 1-4.6-2.5L4.3 15.6a1.7 1.7 0 0 1 2.5-2.2L9 15V13z"/></svg>
+                    <span class="card-views-num">0</span>
+                  </button>
                   <span class="lang"><span class="lang-dot" style="background:#3178c6"></span> TypeScript</span>
                   <span class="live-badge">LIVE</span>
                 </span>
@@ -209,6 +264,7 @@
               <h3 class="card-title"><a href="https://rejson59.github.io/JoyPad/" target="_blank" rel="noopener noreferrer">JoyPad</a></h3>
               <p class="card-desc">Zamień swój komputer i telefon na bezprzewodową konsolę! Wspólny ekran, osobiste pady na telefonach, gry 3D i arcade, haptyka oraz Moments.</p>
               <ul class="card-topics" aria-label="Tematy"><li>konsola</li><li>multiplayer</li><li>telefon jako pad</li></ul>
+              <p class="card-meta" data-featured-meta="JoyPad"><span class="meta-item mono">Utworzono: 23 wrz 2026</span><span class="meta-item mono">Aktualizacja: 21 paź 2026</span></p>
               <div class="card-actions">
                 <a class="btn btn-live btn-sm" href="https://rejson59.github.io/JoyPad/" target="_blank" rel="noopener noreferrer">Otwórz JoyPad
                   <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg>
@@ -234,17 +290,28 @@
               <div class="card-top">
                 <span class="card-index mono">/ ⛏ — sandbox 3D · 1:1</span>
                 <span class="card-badges">
-                  <span class="card-views mono" data-project-views="mconline">
-                    <span class="card-online-part" data-project-online="mconline" title="Osoby aktualnie na stronie projektu (na żywo)">
-                      <span class="online-dot" aria-hidden="true"></span>
-                      <span class="card-online-num">0</span>
-                    </span>
-                    <span class="card-views-sep" aria-hidden="true"></span>
-                    <span class="card-clicks-part" title="Łączna liczba kliknięć / wejść w projekt">
-                      <svg class="icon icon-click" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13v-8.5a1.5 1.5 0 0 1 3 0v7.5"/><path d="M11 11.5v-2a1.5 1.5 0 0 1 3 0v2.5"/><path d="M14 10.5a1.5 1.5 0 0 1 3 0v1.5"/><path d="M17 11.5a1.5 1.5 0 0 1 3 0v4.5a6 6 0 0 1-6 6h-2a6 6 0 0 1-5.012-2.7l-.196-.3c-.312-.479-1.407-2.388-3.286-5.728a1.5 1.5 0 0 1 .536-2.022a1.867 1.867 0 0 1 2.28.28L8 13"/></svg>
-                      <span class="card-views-num">0</span>
-                    </span>
-                  </span>
+                  <button
+                    class="card-metric is-online mono"
+                    type="button"
+                    data-project-online="mconline"
+                    data-tooltip-title="Osoby w projekcie (LIVE)"
+                    data-tooltip="Liczba osób aktualnie grających w mconline na żywo."
+                    aria-label="Osoby aktualnie w projekcie mconline"
+                  >
+                    <span class="online-aura-dot" aria-hidden="true"></span>
+                    <span class="card-online-num">0</span>
+                  </button>
+                  <button
+                    class="card-metric is-clicks mono"
+                    type="button"
+                    data-project-views="mconline"
+                    data-tooltip-title="Kliknięcia i wejścia w projekt"
+                    data-tooltip="Łączna liczba otwarć projektu mconline od jego utworzenia (z 15-min ochroną przed spamem)."
+                    aria-label="Łączna liczba wejść w projekt mconline"
+                  >
+                    <svg class="icon icon-click" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 2v2"/><path d="M5.6 4.4l1.4 1.4"/><path d="M16.4 4.4l-1.4 1.4"/><path d="M9 13V8a2 2 0 0 1 4 0v3h2a4 4 0 0 1 4 4v1a6 6 0 0 1-6 6h-1.5a5.5 5.5 0 0 1-4.6-2.5L4.3 15.6a1.7 1.7 0 0 1 2.5-2.2L9 15V13z"/></svg>
+                    <span class="card-views-num">0</span>
+                  </button>
                   <span class="lang"><span class="lang-dot" style="background:#3178c6"></span> TypeScript</span>
                   <span class="live-badge">LIVE</span>
                 </span>
@@ -255,6 +322,7 @@
               <h3 class="card-title"><a href="https://rejson59.github.io/mconline/" target="_blank" rel="noopener noreferrer">mconline</a></h3>
               <p class="card-desc">Zagraj w moją własną przerobioną wersję Minecrafta w przeglądarce — budowanie, crafting z wyszukiwarką receptur, ekwipunek i obsługa dotyku na telefonie.</p>
               <ul class="card-topics" aria-label="Tematy"><li>Minecraft 1:1</li><li>sandbox 3D</li><li>bez instalacji</li></ul>
+              <p class="card-meta" data-featured-meta="mconline"><span class="meta-item mono">Utworzono: 25 wrz 2026</span><span class="meta-item mono">Aktualizacja: 21 paź 2026</span></p>
               <div class="card-actions">
                 <a class="btn btn-live btn-sm" href="https://rejson59.github.io/mconline/" target="_blank" rel="noopener noreferrer">Zagraj w mconline
                   <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg>
@@ -280,17 +348,28 @@
               <div class="card-top">
                 <span class="card-index mono">/ ✦ — 03:00 w nocy · UI &amp; animacje</span>
                 <span class="card-badges">
-                  <span class="card-views mono" data-project-views="VibeAnimations">
-                    <span class="card-online-part" data-project-online="VibeAnimations" title="Osoby aktualnie na stronie projektu (na żywo)">
-                      <span class="online-dot" aria-hidden="true"></span>
-                      <span class="card-online-num">0</span>
-                    </span>
-                    <span class="card-views-sep" aria-hidden="true"></span>
-                    <span class="card-clicks-part" title="Łączna liczba kliknięć / wejść w projekt">
-                      <svg class="icon icon-click" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 13v-8.5a1.5 1.5 0 0 1 3 0v7.5"/><path d="M11 11.5v-2a1.5 1.5 0 0 1 3 0v2.5"/><path d="M14 10.5a1.5 1.5 0 0 1 3 0v1.5"/><path d="M17 11.5a1.5 1.5 0 0 1 3 0v4.5a6 6 0 0 1-6 6h-2a6 6 0 0 1-5.012-2.7l-.196-.3c-.312-.479-1.407-2.388-3.286-5.728a1.5 1.5 0 0 1 .536-2.022a1.867 1.867 0 0 1 2.28.28L8 13"/></svg>
-                      <span class="card-views-num">0</span>
-                    </span>
-                  </span>
+                  <button
+                    class="card-metric is-online mono"
+                    type="button"
+                    data-project-online="VibeAnimations"
+                    data-tooltip-title="Osoby w projekcie (LIVE)"
+                    data-tooltip="Liczba osób aktualnie przeglądających VibeAnimations na żywo."
+                    aria-label="Osoby aktualnie w projekcie VibeAnimations"
+                  >
+                    <span class="online-aura-dot" aria-hidden="true"></span>
+                    <span class="card-online-num">0</span>
+                  </button>
+                  <button
+                    class="card-metric is-clicks mono"
+                    type="button"
+                    data-project-views="VibeAnimations"
+                    data-tooltip-title="Kliknięcia i wejścia w projekt"
+                    data-tooltip="Łączna liczba otwarć projektu VibeAnimations od jego utworzenia (z 15-min ochroną przed spamem)."
+                    aria-label="Łączna liczba wejść w projekt VibeAnimations"
+                  >
+                    <svg class="icon icon-click" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 2v2"/><path d="M5.6 4.4l1.4 1.4"/><path d="M16.4 4.4l-1.4 1.4"/><path d="M9 13V8a2 2 0 0 1 4 0v3h2a4 4 0 0 1 4 4v1a6 6 0 0 1-6 6h-1.5a5.5 5.5 0 0 1-4.6-2.5L4.3 15.6a1.7 1.7 0 0 1 2.5-2.2L9 15V13z"/></svg>
+                    <span class="card-views-num">0</span>
+                  </button>
                   <span class="lang"><span class="lang-dot" style="background:#3178c6"></span> TypeScript</span>
                   <span class="live-badge">LIVE</span>
                 </span>
@@ -301,6 +380,7 @@
               <h3 class="card-title"><a href="https://rejson59.github.io/VibeAnimations/" target="_blank" rel="noopener noreferrer">VibeAnimations</a></h3>
               <p class="card-desc">Galeria nieziemskich i genialnych pomysłów na wygląd przyszłych stron oraz aplikacji. Znajdź prompty, które pozwolą wygenerować projekt dokładnie tak, jak go sobie wyobrażasz!</p>
               <ul class="card-topics" aria-label="Tematy"><li>nocny projekt</li><li>animacje UI</li><li>galeria promptów</li></ul>
+              <p class="card-meta" data-featured-meta="VibeAnimations"><span class="meta-item mono">Utworzono: 10 wrz 2026</span><span class="meta-item mono">Aktualizacja: 11 wrz 2026</span></p>
               <div class="card-actions">
                 <a class="btn btn-live btn-sm" href="https://rejson59.github.io/VibeAnimations/" target="_blank" rel="noopener noreferrer">Otwórz VibeAnimations
                   <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg>
@@ -352,9 +432,10 @@
             <label class="select">
               <span class="sr-only">Sortowanie</span>
               <select id="sort">
+                <option value="created" selected>Od najnowszych (data utworzenia)</option>
+                <option value="oldest">Od najstarszych (data utworzenia)</option>
                 <option value="updated">Ostatnio aktualizowane</option>
-                <option value="views">Najwięcej wejść</option>
-                <option value="created">Najnowsze projekty</option>
+                <option value="views">Najwięcej kliknięć / wejść</option>
                 <option value="name">Nazwa: A–Z</option>
                 <option value="stars">Najwięcej gwiazdek</option>
               </select>
