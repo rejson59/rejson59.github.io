@@ -111,15 +111,27 @@
   var ICON_ARROW = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg>';
   var ICON_STAR = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.8-4.5 4.3 1.1 6-5.4-2.9L6.6 19.7l1.1-6L3.2 9.4l6.1-.8z"/></svg>';
   var ICON_FORK = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="5" r="2.5"/><circle cx="18" cy="5" r="2.5"/><circle cx="12" cy="19" r="2.5"/><path d="M6 7.5v3a2.5 2.5 0 0 0 2.5 2.5H12M18 7.5v3A2.5 2.5 0 0 1 15.5 13H12M12 13v3.5"/></svg>';
+  var ICON_EYE = '<svg class="icon icon-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>';
+  var numFmt = new Intl.NumberFormat("pl-PL");
+
+  function projectViewsCount(name) {
+    return window.RejsonViews ? window.RejsonViews.getCount(name) : 0;
+  }
 
   /* ---------- Renderowanie kart ---------- */
   function badgesHTML(p) {
+    var views = projectViewsCount(p.name);
+    var viewsBadge =
+      '<span class="card-views mono" data-project-views="' + esc(p.name) + '" title="Liczba wejść w projekt (aktualizowana na żywo)">' +
+        ICON_EYE +
+        '<span class="card-views-num">' + esc(numFmt.format(views)) + "</span>" +
+      "</span>";
     var lang = p.language
       ? '<span class="lang"><span class="lang-dot" style="background:' +
         esc(LANG_COLORS[p.language] || "#8b949e") + '"></span>' + esc(p.language) + "</span>"
       : "";
     var liveBadge = p.liveUrl ? '<span class="live-badge">LIVE</span>' : "";
-    return lang + liveBadge;
+    return viewsBadge + lang + liveBadge;
   }
 
   function metaHTML(p) {
@@ -234,6 +246,15 @@
     var copy = list.slice();
     if (state.sort === "name") {
       copy.sort(function (a, b) { return a.name.localeCompare(b.name, "pl"); });
+    } else if (state.sort === "views") {
+      copy.sort(function (a, b) {
+        var diff = projectViewsCount(b.name) - projectViewsCount(a.name);
+        if (diff !== 0) return diff;
+        var aLive = a.liveUrl ? 1 : 0;
+        var bLive = b.liveUrl ? 1 : 0;
+        if (aLive !== bLive) return bLive - aLive;
+        return new Date(b.updated) - new Date(a.updated);
+      });
     } else if (state.sort === "created") {
       copy.sort(function (a, b) { return new Date(b.created) - new Date(a.created); });
     } else if (state.sort === "stars") {
@@ -297,6 +318,9 @@
 
     emptyState.hidden = list.length > 0;
     resultCount.textContent = "Wyświetlono " + list.length + " z " + gridProjects.length + " projektów";
+    if (window.RejsonViews && typeof window.RejsonViews.refreshDOM === "function") {
+      window.RejsonViews.refreshDOM();
+    }
     revealCards();
   }
 
@@ -536,6 +560,14 @@
   }
 
   syncWithGitHub(true);
+
+  if (window.RejsonViews && typeof window.RejsonViews.onChange === "function") {
+    window.RejsonViews.onChange(function () {
+      if (state.sort === "views") {
+        render();
+      }
+    });
+  }
 
   /* Automatyczne odświeżanie po powrocie na kartę oraz cyklicznie w tle */
   document.addEventListener("visibilitychange", function () {

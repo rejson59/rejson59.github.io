@@ -1,6 +1,6 @@
 // Kopia zapasowa listy projektów (fallback, gdyby API GitHuba było niedostępne).
-// Wygenerowano: 2026-10-20 — odśwież: python3 scripts/fetch-repos.py
-window.PROJECTS_GENERATED_AT = "2026-10-20";
+// Wygenerowano: 2026-10-21 — odśwież: python3 scripts/fetch-repos.py
+window.PROJECTS_GENERATED_AT = "2026-10-21";
 window.PROJECTS_FALLBACK = [
   {
     "name": "mconline",
@@ -13,8 +13,50 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-09-25T16:45:30Z",
-    "updated_at": "2026-10-20T16:17:16Z",
-    "pushed_at": "2026-10-20T16:17:10Z"
+    "updated_at": "2026-10-21T19:34:50Z",
+    "pushed_at": "2026-10-21T19:34:45Z"
+  },
+  {
+    "name": "rejson-widgets",
+    "description": "Special widgets to my pages",
+    "html_url": "https://github.com/rejson59/rejson-widgets",
+    "homepage": null,
+    "has_pages": false,
+    "language": null,
+    "stargazers_count": 0,
+    "forks_count": 0,
+    "topics": [],
+    "created_at": "2026-10-21T13:21:06Z",
+    "updated_at": "2026-10-21T13:22:07Z",
+    "pushed_at": "2026-10-21T18:22:44Z"
+  },
+  {
+    "name": "JoyPad",
+    "description": "Zamień swój komputer i telefon na bezprzewodową konsolę!",
+    "html_url": "https://github.com/rejson59/JoyPad",
+    "homepage": "https://rejson59.github.io/JoyPad/",
+    "has_pages": true,
+    "language": "TypeScript",
+    "stargazers_count": 0,
+    "forks_count": 0,
+    "topics": [],
+    "created_at": "2026-09-23T08:18:54Z",
+    "updated_at": "2026-10-21T07:15:14Z",
+    "pushed_at": "2026-10-21T18:52:50Z"
+  },
+  {
+    "name": "Blessed-Optimizer",
+    "description": "Program, który daje spokój umysłu, uwalniając twoje urządzenie od bałaganu, zapewniając prywatność, maksymalną wydajność i pełną swobodę personalizacji komputera.",
+    "html_url": "https://github.com/rejson59/Blessed-Optimizer",
+    "homepage": "https://rejson59.github.io/Blessed-Optimizer/",
+    "has_pages": true,
+    "language": "C#",
+    "stargazers_count": 0,
+    "forks_count": 0,
+    "topics": [],
+    "created_at": "2026-10-03T18:48:48Z",
+    "updated_at": "2026-10-20T17:03:01Z",
+    "pushed_at": "2026-10-08T17:22:22Z"
   },
   {
     "name": "zaplecze-resellera",
@@ -27,8 +69,8 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-10-18T10:00:55Z",
-    "updated_at": "2026-10-19T21:12:45Z",
-    "pushed_at": "2026-10-20T16:26:03Z"
+    "updated_at": "2026-10-20T16:38:27Z",
+    "pushed_at": "2026-10-20T16:50:52Z"
   },
   {
     "name": "zayra-voice",
@@ -99,34 +141,6 @@ window.PROJECTS_FALLBACK = [
     "created_at": "2026-10-12T09:50:18Z",
     "updated_at": "2026-10-12T09:55:39Z",
     "pushed_at": "2026-10-12T17:48:17Z"
-  },
-  {
-    "name": "JoyPad",
-    "description": "Zamień swój komputer i telefon na bezprzewodową konsolę!",
-    "html_url": "https://github.com/rejson59/JoyPad",
-    "homepage": "https://rejson59.github.io/JoyPad/",
-    "has_pages": true,
-    "language": "TypeScript",
-    "stargazers_count": 0,
-    "forks_count": 0,
-    "topics": [],
-    "created_at": "2026-09-23T08:18:54Z",
-    "updated_at": "2026-10-08T17:10:16Z",
-    "pushed_at": "2026-10-09T16:31:40Z"
-  },
-  {
-    "name": "Blessed-Optimizer",
-    "description": "A program that grants you peace of mind by liberating your device from clutter, ensuring privacy, peak performance, and total freedom to customize your PC.",
-    "html_url": "https://github.com/rejson59/Blessed-Optimizer",
-    "homepage": null,
-    "has_pages": true,
-    "language": "C#",
-    "stargazers_count": 0,
-    "forks_count": 0,
-    "topics": [],
-    "created_at": "2026-10-03T18:48:48Z",
-    "updated_at": "2026-10-08T15:32:04Z",
-    "pushed_at": "2026-10-08T17:22:22Z"
   },
   {
     "name": "lumen-os",
