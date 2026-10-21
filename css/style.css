@@ -181,9 +181,11 @@ a:hover { text-decoration-color: currentColor; }
 }
 
 .online-count {
+  display: inline-block;
   font-size: 12.5px;
   letter-spacing: -0.01em;
   color: var(--live);
+  font-variant-numeric: tabular-nums;
 }
 .metric-badge .icon-click {
   width: 15px;
@@ -192,8 +194,46 @@ a:hover { text-decoration-color: currentColor; }
   flex: none;
 }
 .views-count {
+  display: inline-block;
   font-size: 12.5px;
   letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+.card-online-num,
+.card-views-num,
+.stat dd {
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes counterRollIn {
+  0% {
+    opacity: 0.2;
+    transform: translateY(44%) scale(0.92);
+    filter: blur(1.2px);
+  }
+  62% {
+    opacity: 1;
+    transform: translateY(-5%) scale(1.04);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+.is-rolling {
+  animation: counterRollIn 0.52s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.is-counting {
+  color: var(--accent-strong);
+  text-shadow: 0 0 10px color-mix(in srgb, var(--accent) 42%, transparent);
+  transition: color 0.25s ease, text-shadow 0.25s ease;
+}
+.is-online .is-counting {
+  color: var(--live);
+  text-shadow: 0 0 10px color-mix(in srgb, var(--live) 48%, transparent);
 }
 
 /* Przycisk menu hamburger (widoczny na telefonach obok liczników) */
@@ -495,63 +535,6 @@ a:hover { text-decoration-color: currentColor; }
 }
 .card-preview:hover { border-color: color-mix(in srgb, var(--live) 45%, var(--border)); transform: translateY(-2px); box-shadow: 0 8px 22px rgba(0,0,0,.18); }
 .card-preview-frame { position:absolute; inset:0; pointer-events:none; overflow:hidden; background: var(--bg); contain: strict; }
-.card-preview-poster {
-  position: absolute;
-  top: 22px;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 14px;
-  text-align: center;
-  background:
-    radial-gradient(240px 140px at 50% 25%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 72%),
-    linear-gradient(165deg, var(--card), var(--bg));
-  transition: opacity .25s ease;
-  z-index: 1;
-}
-.poster-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 8px;
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--live) 34%, var(--border));
-  background: color-mix(in srgb, var(--live) 10%, var(--bg-elev));
-  color: var(--live);
-  font-size: 9.5px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-}
-.poster-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--live);
-}
-.poster-title {
-  font-family: "Space Grotesk", "Inter", sans-serif;
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text);
-  letter-spacing: -0.015em;
-  max-width: 92%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.poster-host {
-  font-size: 10.5px;
-  color: var(--faint);
-  max-width: 92%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
 .card-preview-frame iframe {
   position:absolute;
   top:22px;
@@ -561,16 +544,17 @@ a:hover { text-decoration-color: currentColor; }
   transform-origin: top left;
   width: calc(100% / var(--iframe-scale));
   height: calc((100% - 22px) / var(--iframe-scale));
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity .25s ease;
 }
-.card-preview-frame.is-loaded iframe {
-  opacity: 1;
-  visibility: visible;
-}
-.card-preview-frame.is-loaded .card-preview-poster {
-  opacity: 0;
+.card-preview-snapshot {
+  position: absolute;
+  top: 22px;
+  left: 0;
+  width: 100%;
+  height: calc(100% - 22px);
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+  z-index: 1;
 }
 .card-preview-topbar { position:absolute; top:0; left:0; right:0; height:22px; background: color-mix(in srgb, var(--bg-elev) 96%, var(--bg)); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:4px; padding:0 8px; z-index:2; }
 .card-preview-dot { width:7px; height:7px; border-radius:50%; background: var(--border-strong); }

@@ -126,18 +126,17 @@
 
   /* ---------- Renderowanie kart ---------- */
   function badgesHTML(p) {
-    var views = projectViewsCount(p.name);
     var online = projectOnlineCount(p.name);
     var onlineActiveClass = online > 0 ? " is-active-now" : "";
     var onlineBadge =
       '<button class="card-metric is-online mono' + onlineActiveClass + '" type="button" data-project-online="' + esc(p.name) + '" data-tooltip-title="Osoby w projekcie (LIVE)" data-tooltip="Liczba osób aktualnie korzystających z projektu ' + esc(p.name) + ' na żywo." aria-label="Osoby aktualnie w projekcie ' + esc(p.name) + '">' +
         '<span class="online-aura-dot" aria-hidden="true"></span>' +
-        '<span class="card-online-num">' + esc(numFmt.format(online)) + "</span>" +
+        '<span class="card-online-num">0</span>' +
       "</button>";
     var viewsBadge =
       '<button class="card-metric is-clicks mono" type="button" data-project-views="' + esc(p.name) + '" data-tooltip-title="Kliknięcia i wejścia w projekt" data-tooltip="Łączna liczba otwarć projektu ' + esc(p.name) + ' od jego utworzenia (z 15-min ochroną przed spamem)." aria-label="Łączna liczba wejść w projekt ' + esc(p.name) + '">' +
         ICON_CLICK +
-        '<span class="card-views-num">' + esc(numFmt.format(views)) + "</span>" +
+        '<span class="card-views-num">0</span>' +
       "</button>";
     var lang = p.language
       ? '<span class="lang"><span class="lang-dot" style="background:' +
@@ -180,15 +179,7 @@
     var cleanHost = p.liveUrl ? p.liveUrl.replace(/^https?:\/\//, "") : "";
     var preview = p.liveUrl
       ? '<a class="card-preview" href="' + esc(p.liveUrl) + '" target="_blank" rel="noopener noreferrer" aria-label="Podgląd ' + esc(p.name) + ' — otwórz live">' +
-          '<div class="card-preview-frame" aria-hidden="true">' +
-            '<div class="card-preview-poster">' +
-              '<span class="poster-badge mono"><span class="poster-dot"></span>PODGLĄD LIVE</span>' +
-              '<strong class="poster-title">' + esc(p.name) + "</strong>" +
-              '<span class="poster-host mono">' + esc(cleanHost) + "</span>" +
-            "</div>" +
-            '<iframe data-src="' + esc(p.liveUrl) + '" tabindex="-1" aria-hidden="true"></iframe>' +
-            '<div class="card-preview-topbar"><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-url">' + esc(cleanHost) + "</span></div>" +
-          '</div><span class="card-preview-hint">otwórz ↗</span></a>'
+          '<div class="card-preview-frame" aria-hidden="true"><iframe src="' + esc(p.liveUrl) + '" loading="lazy" tabindex="-1" aria-hidden="true"></iframe><div class="card-preview-topbar"><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-url">' + esc(cleanHost) + '</span></div></div><span class="card-preview-hint">otwórz ↗</span></a>'
       : "";
 
     return (
@@ -272,26 +263,31 @@
 
   function sortProjects(list) {
     var copy = list.slice();
-    if (state.sort === "name") {
-      copy.sort(function (a, b) { return a.name.localeCompare(b.name, "pl"); });
-    } else if (state.sort === "views") {
-      copy.sort(function (a, b) {
+    copy.sort(function (a, b) {
+      /* Projekty bez działającej strony (GitHub Pages / live) zawsze na dole */
+      var liveDiff = (b.liveUrl ? 1 : 0) - (a.liveUrl ? 1 : 0);
+      if (liveDiff !== 0) return liveDiff;
+
+      if (state.sort === "name") {
+        return a.name.localeCompare(b.name, "pl");
+      }
+      if (state.sort === "views") {
         var diff = projectViewsCount(b.name) - projectViewsCount(a.name);
         if (diff !== 0) return diff;
         return new Date(b.created) - new Date(a.created);
-      });
-    } else if (state.sort === "oldest") {
-      copy.sort(function (a, b) { return new Date(a.created) - new Date(b.created); });
-    } else if (state.sort === "updated") {
-      copy.sort(function (a, b) { return new Date(b.updated) - new Date(a.updated); });
-    } else if (state.sort === "stars") {
-      copy.sort(function (a, b) {
+      }
+      if (state.sort === "oldest") {
+        return new Date(a.created) - new Date(b.created);
+      }
+      if (state.sort === "updated") {
+        return new Date(b.updated) - new Date(a.updated);
+      }
+      if (state.sort === "stars") {
         return (b.stars - a.stars) || (new Date(b.created) - new Date(a.created));
-      });
-    } else {
-      // domyślnie ("created"): od najnowszych projektów według daty utworzenia
-      copy.sort(function (a, b) { return new Date(b.created) - new Date(a.created); });
-    }
+      }
+      /* domyślnie ("created"): od najnowszych projektów według daty utworzenia */
+      return new Date(b.created) - new Date(a.created);
+    });
     return copy;
   }
 
@@ -326,7 +322,6 @@
     Array.prototype.slice.call(grid.children).forEach(function (child) {
       var repoName = child.getAttribute("data-repo");
       if (!repoName || !desiredSet[repoName]) {
-        unobserveCardPreview(child);
         grid.removeChild(child);
       }
     });
@@ -348,13 +343,49 @@
     observePreviewFrames(grid);
   }
 
+  function animateStatNumber(el, targetValue) {
+    if (!el) return;
+    var target = Math.max(0, Number(targetValue) || 0);
+    if (el._statTarget === target && el._statAnimated) return;
+    var from = el._statAnimated ? (Number(el._statCurrent) || 0) : 0;
+    el._statTarget = target;
+    el._statAnimated = true;
+
+    if (el._statRaf) cancelAnimationFrame(el._statRaf);
+    el.classList.remove("is-rolling");
+    void el.offsetWidth;
+    el.classList.add("is-rolling", "is-counting");
+
+    var duration = 760;
+    var startTs = null;
+    function step(ts) {
+      if (!startTs) startTs = ts;
+      var p = Math.min(1, (ts - startTs) / duration);
+      var eased = 1 - Math.pow(1 - p, 4);
+      var cur = Math.round(from + (target - from) * eased);
+      if (el._statCurrent !== cur) {
+        el._statCurrent = cur;
+        el.textContent = numFmt.format(cur);
+      }
+      if (p < 1) {
+        el._statRaf = requestAnimationFrame(step);
+      } else {
+        el._statCurrent = target;
+        el.textContent = numFmt.format(target);
+        el.classList.remove("is-counting");
+        el._statRaf = null;
+      }
+    }
+    el._statRaf = requestAnimationFrame(step);
+  }
+
   function updateStats() {
     var live = allProjects.filter(function (p) { return p.liveUrl; }).length;
     var langs = {};
     allProjects.forEach(function (p) { if (p.language) langs[p.language] = true; });
-    document.getElementById("stat-total").textContent = allProjects.length;
-    document.getElementById("stat-live").textContent = live;
-    document.getElementById("stat-langs").textContent = Object.keys(langs).length;
+    animateStatNumber(document.getElementById("stat-total"), allProjects.length);
+    animateStatNumber(document.getElementById("stat-live"), live);
+    animateStatNumber(document.getElementById("stat-langs"), Object.keys(langs).length);
     if (originsMoreBtn) {
       originsMoreBtn.textContent = "Zobacz pozostałe " + gridProjects.length + " " + pluralProjects(gridProjects.length) + " ↓";
     }
@@ -429,202 +460,293 @@
     firstRenderDone = true;
   }
 
-  /* ---------- Inteligentny zarządca ramek podglądu (iframe lifecycle) ----------
-     Zamiast ładować kilkanaście ciężkich aplikacji/gier WebGL naraz i trzymać je
-     w tle podczas scrollowania:
-     1) W trakcie scrollowania nie uruchamiamy żadnego nowego iframe'a (zero przycięć).
-     2) Ładujemy sekwencyjnie (1 naraz) tylko ramki faktycznie widoczne po zatrzymaniu scrolla.
-     3) Utrzymujemy sztywny limit aktywnych ramek (maks. 2 na telefonach / słabszych urządzeniach,
-        maks. 4 na desktopie) i natychmiast zwalniamy (about:blank) ramki przewinięte poza ekran. */
-  var saveDataMode = !!(navigator.connection && navigator.connection.saveData);
-  var isLowEndOrMobile =
-    window.matchMedia("(pointer: coarse), (max-width: 820px)").matches ||
-    (navigator.deviceMemory && navigator.deviceMemory <= 4) ||
-    (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
-  var MAX_ACTIVE_IFRAMES = isLowEndOrMobile ? 2 : 4;
-  var SCROLL_IDLE_MS = 280;
+  /* ---------- Zamrażanie podglądów (screenshot / zamrożony ekran) na słabszych urządzeniach ----------
+     - Na mocniejszych urządzeniach (komputery >4 rdzenie i >4 GB RAM) ramki <iframe> ładują się
+       normalnie i pozostają żywe tak jak wcześniej.
+     - Na słabszych urządzeniach (telefony, tablety, <=4 GB RAM lub <=4 rdzenie CPU):
+       przy wejściu na stronę ramki od razu się pobierają, a chwilę po wyrenderowaniu
+       zamieniają w zamrożony ekran / screenshot (konwersja <canvas>/WebGL do statycznego <img>,
+       zapis zrzutu w IndexedDB, zwolnienie kontekstu WebGL oraz zatrzymanie pętli
+       requestAnimationFrame/setInterval/CSS). Dzięki temu nie trzeba czekać podczas scrollowania,
+       a przewijanie działa całkowicie bez lagów. */
+  var isWeakDevice = (function () {
+    try {
+      if (navigator.connection && navigator.connection.saveData) return true;
+      if (navigator.deviceMemory && navigator.deviceMemory <= 4) return true;
+      if (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) return true;
+      if (window.matchMedia("(pointer: coarse), (max-width: 820px)").matches) return true;
+    } catch (e) { /* ignorujemy */ }
+    return false;
+  })();
 
-  var trackedFrames = [];
-  var activeFrames = [];
-  var loadingFrame = null;
-  var isScrolling = false;
-  var scrollIdleTimer = null;
-  var queueTimer = null;
-  var previewObserver = null;
+  var SNAPSHOT_DB_NAME = "rejson_iframe_snapshots_v1";
+  var SNAPSHOT_STORE = "snapshots";
+  var snapshotDbPromise = null;
 
-  function removeFromArray(arr, item) {
-    var idx = arr.indexOf(item);
-    if (idx !== -1) arr.splice(idx, 1);
+  function openSnapshotDb() {
+    if (snapshotDbPromise) return snapshotDbPromise;
+    snapshotDbPromise = new Promise(function (resolve) {
+      try {
+        if (!("indexedDB" in window)) {
+          resolve(null);
+          return;
+        }
+        var req = window.indexedDB.open(SNAPSHOT_DB_NAME, 1);
+        req.onupgradeneeded = function (ev) {
+          var db = ev.target.result;
+          if (!db.objectStoreNames.contains(SNAPSHOT_STORE)) {
+            db.createObjectStore(SNAPSHOT_STORE);
+          }
+        };
+        req.onsuccess = function (ev) {
+          resolve(ev.target.result);
+        };
+        req.onerror = function () {
+          resolve(null);
+        };
+      } catch (e) {
+        resolve(null);
+      }
+    });
+    return snapshotDbPromise;
   }
 
-  function setIframeUrlNoHistory(iframe, url) {
+  function snapshotCacheKey(repoName) {
+    var isPortrait = window.matchMedia("(max-width: 640px)").matches ? "m" : "d";
+    return String(repoName || "") + ":" + isPortrait;
+  }
+
+  function getCachedSnapshot(key) {
+    return openSnapshotDb().then(function (db) {
+      if (!db || !key) return null;
+      return new Promise(function (resolve) {
+        try {
+          var tx = db.transaction(SNAPSHOT_STORE, "readonly");
+          var req = tx.objectStore(SNAPSHOT_STORE).get(key);
+          req.onsuccess = function () {
+            resolve(req.result || null);
+          };
+          req.onerror = function () {
+            resolve(null);
+          };
+        } catch (e) {
+          resolve(null);
+        }
+      });
+    });
+  }
+
+  function saveCachedSnapshot(key, dataUrl) {
+    if (!key || !dataUrl) return;
+    openSnapshotDb().then(function (db) {
+      if (!db) return;
+      try {
+        var tx = db.transaction(SNAPSHOT_STORE, "readwrite");
+        tx.objectStore(SNAPSHOT_STORE).put(dataUrl, key);
+      } catch (e) { /* ignorujemy */ }
+    });
+  }
+
+  function releaseIframeRuntime(iframe) {
     if (!iframe) return;
     try {
       if (iframe.contentWindow && iframe.contentWindow.location) {
-        iframe.contentWindow.location.replace(url);
-        return;
-      }
-    } catch (e) { /* fallback poniżej */ }
-    iframe.setAttribute("src", url);
-  }
-
-  function unloadPreviewFrame(frame) {
-    if (!frame) return;
-    if (frame._loadTimeout) {
-      clearTimeout(frame._loadTimeout);
-      frame._loadTimeout = null;
-    }
-    if (loadingFrame === frame) {
-      loadingFrame = null;
-    }
-    frame._loading = false;
-    frame._loaded = false;
-    frame.classList.remove("is-loading", "is-loaded");
-    removeFromArray(activeFrames, frame);
-
-    var iframe = frame.querySelector("iframe[data-src]");
-    if (iframe) {
-      setIframeUrlNoHistory(iframe, "about:blank");
-    }
-  }
-
-  function schedulePreviewQueue(delay) {
-    if (saveDataMode) return;
-    if (queueTimer) clearTimeout(queueTimer);
-    queueTimer = setTimeout(processPreviewQueue, typeof delay === "number" ? delay : 90);
-  }
-
-  function processPreviewQueue() {
-    queueTimer = null;
-    if (saveDataMode || isScrolling || document.visibilityState === "hidden" || loadingFrame) {
-      return;
-    }
-
-    /* Najpierw zwalniamy załadowane ramki, które zdążyły wyjść poza ekran */
-    for (var i = activeFrames.length - 1; i >= 0; i--) {
-      if (!activeFrames[i]._inView) {
-        unloadPreviewFrame(activeFrames[i]);
-      }
-    }
-
-    if (activeFrames.length >= MAX_ACTIVE_IFRAMES) {
-      return;
-    }
-
-    var candidate = null;
-    for (var j = 0; j < trackedFrames.length; j++) {
-      var f = trackedFrames[j];
-      if (f._inView && !f._loaded && !f._loading && document.body.contains(f)) {
-        candidate = f;
-        break;
-      }
-    }
-
-    if (!candidate) return;
-
-    var iframe = candidate.querySelector("iframe[data-src]");
-    var url = iframe ? iframe.getAttribute("data-src") : "";
-    if (!iframe || !url) return;
-
-    loadingFrame = candidate;
-    candidate._loading = true;
-    candidate.classList.add("is-loading");
-
-    function finishLoad() {
-      if (candidate._loadTimeout) {
-        clearTimeout(candidate._loadTimeout);
-        candidate._loadTimeout = null;
-      }
-      if (loadingFrame === candidate) {
-        loadingFrame = null;
-      }
-      if (!candidate._loading) return;
-      candidate._loading = false;
-
-      if (!candidate._inView || !document.body.contains(candidate)) {
-        unloadPreviewFrame(candidate);
+        iframe.contentWindow.location.replace("about:blank");
       } else {
-        candidate._loaded = true;
-        candidate.classList.remove("is-loading");
-        candidate.classList.add("is-loaded");
-        if (activeFrames.indexOf(candidate) === -1) {
-          activeFrames.push(candidate);
-        }
+        iframe.setAttribute("src", "about:blank");
       }
-      schedulePreviewQueue(180);
+    } catch (e) {
+      iframe.setAttribute("src", "about:blank");
     }
-
-    iframe.onload = finishLoad;
-    candidate._loadTimeout = setTimeout(finishLoad, 1500);
-    setIframeUrlNoHistory(iframe, url);
+    iframe.style.display = "none";
   }
 
-  function ensurePreviewObserver() {
-    if (previewObserver || !("IntersectionObserver" in window)) return;
-    previewObserver = new IntersectionObserver(function (entries) {
-      var anyEntered = false;
-      entries.forEach(function (entry) {
-        var frame = entry.target;
-        var visible = entry.isIntersecting && entry.intersectionRatio >= 0.12;
-        frame._inView = visible;
-        if (visible) {
-          anyEntered = true;
-        } else if (frame._loaded || frame._loading) {
-          unloadPreviewFrame(frame);
+  function applySnapshotImgToFrame(frame, iframe, dataUrl) {
+    if (!frame || !dataUrl) return;
+    var existing = frame.querySelector(".card-preview-snapshot");
+    if (!existing) {
+      existing = document.createElement("img");
+      existing.className = "card-preview-snapshot";
+      existing.alt = "";
+      existing.decoding = "async";
+      frame.insertBefore(existing, frame.firstChild);
+    }
+    existing.src = dataUrl;
+    frame.classList.add("is-frozen");
+    if (iframe) releaseIframeRuntime(iframe);
+  }
+
+  function freezeIframeAsStaticScreen(frame, iframe, cacheKey) {
+    if (!frame || !iframe || frame._frozenDone) return;
+    frame._frozenDone = true;
+    frame.classList.add("is-frozen");
+
+    var win = null;
+    var doc = null;
+    try {
+      win = iframe.contentWindow;
+      doc = iframe.contentDocument || (win && win.document);
+    } catch (e) {
+      win = null;
+      doc = null;
+    }
+
+    if (!win || !doc) {
+      return;
+    }
+
+    var executed = false;
+    function performFreeze() {
+      if (executed) return;
+      executed = true;
+
+      try {
+        var vw = win.innerWidth || 1;
+        var vh = win.innerHeight || 1;
+        var canvases = Array.prototype.slice.call(doc.querySelectorAll("canvas"));
+        var fullScreenSnapshot = null;
+
+        canvases.forEach(function (canvas) {
+          try {
+            if (!canvas.width || !canvas.height) return;
+            var dataUrl = canvas.toDataURL("image/jpeg", 0.82);
+            if (!dataUrl || dataUrl.length < 256) return;
+
+            var rect = canvas.getBoundingClientRect();
+            if (canvases.length === 1 && rect.width >= vw * 0.75 && rect.height >= vh * 0.75) {
+              fullScreenSnapshot = dataUrl;
+            }
+
+            var img = doc.createElement("img");
+            img.src = dataUrl;
+            img.alt = "";
+            img.className = canvas.className || "";
+            img.style.cssText = canvas.style.cssText || "";
+            if (!img.style.width) img.style.width = (rect.width || canvas.width) + "px";
+            if (!img.style.height) img.style.height = (rect.height || canvas.height) + "px";
+            img.style.pointerEvents = "none";
+
+            if (canvas.parentNode) {
+              canvas.parentNode.replaceChild(img, canvas);
+            }
+
+            var gl =
+              canvas.getContext("webgl2") ||
+              canvas.getContext("webgl") ||
+              canvas.getContext("experimental-webgl");
+            if (gl) {
+              var loseExt = gl.getExtension("WEBGL_lose_context");
+              if (loseExt) loseExt.loseContext();
+            }
+            canvas.width = 1;
+            canvas.height = 1;
+          } catch (err) { /* ignorujemy pojedynczy canvas */ }
+        });
+
+        /* Jeśli cała zawartość ramki to pełnoekranowy canvas 3D/2D i nie ma nad nim nakładek UI,
+           zapisujemy zrzut w IndexedDB i zwalniamy cały iframe */
+        var bodyChildren = doc.body ? doc.body.children.length : 0;
+        if (fullScreenSnapshot && bodyChildren <= 2) {
+          saveCachedSnapshot(cacheKey, fullScreenSnapshot);
+          applySnapshotImgToFrame(frame, iframe, fullScreenSnapshot);
+          return;
         }
-      });
-      if (anyEntered && !isScrolling) {
-        schedulePreviewQueue(120);
+
+        /* Zatrzymujemy wideo/audio wewnątrz ramki */
+        Array.prototype.slice.call(doc.querySelectorAll("video, audio")).forEach(function (m) {
+          try {
+            m.muted = true;
+            m.pause();
+          } catch (err) { /* ignorujemy */ }
+        });
+
+        /* Wstrzykujemy arkusz zamrażający wszystkie animacje CSS i przejścia */
+        var style = doc.createElement("style");
+        style.textContent =
+          "*, *::before, *::after {" +
+          "  animation: none !important;" +
+          "  animation-play-state: paused !important;" +
+          "  transition: none !important;" +
+          "  will-change: auto !important;" +
+          "  backdrop-filter: none !important;" +
+          "  -webkit-backdrop-filter: none !important;" +
+          "}" +
+          "html, body {" +
+          "  overflow: hidden !important;" +
+          "  pointer-events: none !important;" +
+          "  user-select: none !important;" +
+          "}";
+        (doc.head || doc.documentElement).appendChild(style);
+
+        /* Zatrzymujemy wszystkie pętle JS (requestAnimationFrame, setInterval, setTimeout) */
+        var noop = function () { return 0; };
+        var maxTimerId = win.setTimeout(noop, 0);
+        for (var id = Math.max(1, maxTimerId - 2500); id <= maxTimerId + 40; id++) {
+          win.clearTimeout(id);
+          win.clearInterval(id);
+          if (win.cancelAnimationFrame) win.cancelAnimationFrame(id);
+        }
+        win.requestAnimationFrame = noop;
+        win.webkitRequestAnimationFrame = noop;
+        win.setInterval = noop;
+        win.setTimeout = noop;
+      } catch (e) { /* ignorujemy */ }
+    }
+
+    try {
+      if (win.requestAnimationFrame) {
+        win.requestAnimationFrame(performFreeze);
       }
-    }, {
-      rootMargin: "40px 0px",
-      threshold: [0, 0.12, 0.35]
-    });
+      setTimeout(performFreeze, 140);
+    } catch (e) {
+      performFreeze();
+    }
   }
 
   function observePreviewFrames(root) {
-    if (saveDataMode || !("IntersectionObserver" in window)) return;
-    ensurePreviewObserver();
+    /* Na mocniejszych urządzeniach zostawiamy ramki żywe i ładowane standardowo */
+    if (!isWeakDevice) return;
+
     var scope = root || document;
     var frames = scope.querySelectorAll(".card-preview-frame");
     frames.forEach(function (frame) {
-      if (frame._observed) return;
-      frame._observed = true;
-      frame._inView = false;
-      frame._loaded = false;
-      frame._loading = false;
-      trackedFrames.push(frame);
-      previewObserver.observe(frame);
+      if (frame._weakHandled) return;
+      frame._weakHandled = true;
+
+      var iframe = frame.querySelector("iframe");
+      if (!iframe) return;
+
+      var card = frame.closest(".project-card");
+      var repoName = card ? (card.getAttribute("data-repo") || "") : (iframe.getAttribute("src") || "");
+      var key = snapshotCacheKey(repoName);
+
+      /* Na słabszych urządzeniach pobieramy ramki od razu przy wejściu (bez czekania na scroll),
+         żeby od razu zamrozić je w gotowe ekrany/screenshoty */
+      iframe.removeAttribute("loading");
+
+      getCachedSnapshot(key).then(function (cachedDataUrl) {
+        if (cachedDataUrl) {
+          applySnapshotImgToFrame(frame, iframe, cachedDataUrl);
+          return;
+        }
+
+        function scheduleFreeze() {
+          if (frame._freezeScheduled) return;
+          frame._freezeScheduled = true;
+          setTimeout(function () {
+            freezeIframeAsStaticScreen(frame, iframe, key);
+          }, 1050);
+        }
+
+        iframe.addEventListener("load", scheduleFreeze, { once: true });
+        try {
+          if (iframe.contentDocument && iframe.contentDocument.readyState === "complete") {
+            scheduleFreeze();
+          }
+        } catch (e) { /* cross-origin */ }
+      });
     });
   }
-
-  function unobserveCardPreview(cardEl) {
-    if (!cardEl) return;
-    var frame = cardEl.querySelector(".card-preview-frame");
-    if (!frame) return;
-    frame._inView = false;
-    unloadPreviewFrame(frame);
-    if (previewObserver && frame._observed) {
-      previewObserver.unobserve(frame);
-    }
-    frame._observed = false;
-    removeFromArray(trackedFrames, frame);
-  }
-
-  window.addEventListener("scroll", function () {
-    isScrolling = true;
-    if (scrollIdleTimer) clearTimeout(scrollIdleTimer);
-    scrollIdleTimer = setTimeout(function () {
-      isScrolling = false;
-      schedulePreviewQueue(60);
-    }, SCROLL_IDLE_MS);
-  }, { passive: true });
-
-  document.addEventListener("visibilitychange", function () {
-    if (document.visibilityState === "visible") {
-      schedulePreviewQueue(150);
-    }
-  });
 
   /* ---------- Efekt 3D (tilt + połysk za kursorem) ---------- */
   var canTilt =
