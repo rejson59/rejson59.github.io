@@ -177,9 +177,18 @@
         }).join("") + "</ul>"
       : '<ul class="card-topics" hidden></ul>';
 
+    var cleanHost = p.liveUrl ? p.liveUrl.replace(/^https?:\/\//, "") : "";
     var preview = p.liveUrl
       ? '<a class="card-preview" href="' + esc(p.liveUrl) + '" target="_blank" rel="noopener noreferrer" aria-label="Podgląd ' + esc(p.name) + ' — otwórz live">' +
-          '<div class="card-preview-frame" aria-hidden="true"><iframe src="' + esc(p.liveUrl) + '" loading="lazy" tabindex="-1" aria-hidden="true"></iframe><div class="card-preview-topbar"><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-url">' + esc(p.liveUrl.replace(/^https?:\/\//, "")) + '</span></div></div><span class="card-preview-hint">otwórz ↗</span></a>'
+          '<div class="card-preview-frame" aria-hidden="true">' +
+            '<div class="card-preview-poster">' +
+              '<span class="poster-badge mono"><span class="poster-dot"></span>PODGLĄD LIVE</span>' +
+              '<strong class="poster-title">' + esc(p.name) + "</strong>" +
+              '<span class="poster-host mono">' + esc(cleanHost) + "</span>" +
+            "</div>" +
+            '<iframe data-src="' + esc(p.liveUrl) + '" tabindex="-1" aria-hidden="true"></iframe>' +
+            '<div class="card-preview-topbar"><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-url">' + esc(cleanHost) + "</span></div>" +
+          '</div><span class="card-preview-hint">otwórz ↗</span></a>'
       : "";
 
     return (
@@ -317,6 +326,7 @@
     Array.prototype.slice.call(grid.children).forEach(function (child) {
       var repoName = child.getAttribute("data-repo");
       if (!repoName || !desiredSet[repoName]) {
+        unobserveCardPreview(child);
         grid.removeChild(child);
       }
     });
@@ -335,6 +345,7 @@
       window.RejsonViews.refreshDOM();
     }
     revealCards();
+    observePreviewFrames(grid);
   }
 
   function updateStats() {
@@ -417,6 +428,203 @@
     });
     firstRenderDone = true;
   }
+
+  /* ---------- Inteligentny zarządca ramek podglądu (iframe lifecycle) ----------
+     Zamiast ładować kilkanaście ciężkich aplikacji/gier WebGL naraz i trzymać je
+     w tle podczas scrollowania:
+     1) W trakcie scrollowania nie uruchamiamy żadnego nowego iframe'a (zero przycięć).
+     2) Ładujemy sekwencyjnie (1 naraz) tylko ramki faktycznie widoczne po zatrzymaniu scrolla.
+     3) Utrzymujemy sztywny limit aktywnych ramek (maks. 2 na telefonach / słabszych urządzeniach,
+        maks. 4 na desktopie) i natychmiast zwalniamy (about:blank) ramki przewinięte poza ekran. */
+  var saveDataMode = !!(navigator.connection && navigator.connection.saveData);
+  var isLowEndOrMobile =
+    window.matchMedia("(pointer: coarse), (max-width: 820px)").matches ||
+    (navigator.deviceMemory && navigator.deviceMemory <= 4) ||
+    (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4);
+  var MAX_ACTIVE_IFRAMES = isLowEndOrMobile ? 2 : 4;
+  var SCROLL_IDLE_MS = 280;
+
+  var trackedFrames = [];
+  var activeFrames = [];
+  var loadingFrame = null;
+  var isScrolling = false;
+  var scrollIdleTimer = null;
+  var queueTimer = null;
+  var previewObserver = null;
+
+  function removeFromArray(arr, item) {
+    var idx = arr.indexOf(item);
+    if (idx !== -1) arr.splice(idx, 1);
+  }
+
+  function setIframeUrlNoHistory(iframe, url) {
+    if (!iframe) return;
+    try {
+      if (iframe.contentWindow && iframe.contentWindow.location) {
+        iframe.contentWindow.location.replace(url);
+        return;
+      }
+    } catch (e) { /* fallback poniżej */ }
+    iframe.setAttribute("src", url);
+  }
+
+  function unloadPreviewFrame(frame) {
+    if (!frame) return;
+    if (frame._loadTimeout) {
+      clearTimeout(frame._loadTimeout);
+      frame._loadTimeout = null;
+    }
+    if (loadingFrame === frame) {
+      loadingFrame = null;
+    }
+    frame._loading = false;
+    frame._loaded = false;
+    frame.classList.remove("is-loading", "is-loaded");
+    removeFromArray(activeFrames, frame);
+
+    var iframe = frame.querySelector("iframe[data-src]");
+    if (iframe) {
+      setIframeUrlNoHistory(iframe, "about:blank");
+    }
+  }
+
+  function schedulePreviewQueue(delay) {
+    if (saveDataMode) return;
+    if (queueTimer) clearTimeout(queueTimer);
+    queueTimer = setTimeout(processPreviewQueue, typeof delay === "number" ? delay : 90);
+  }
+
+  function processPreviewQueue() {
+    queueTimer = null;
+    if (saveDataMode || isScrolling || document.visibilityState === "hidden" || loadingFrame) {
+      return;
+    }
+
+    /* Najpierw zwalniamy załadowane ramki, które zdążyły wyjść poza ekran */
+    for (var i = activeFrames.length - 1; i >= 0; i--) {
+      if (!activeFrames[i]._inView) {
+        unloadPreviewFrame(activeFrames[i]);
+      }
+    }
+
+    if (activeFrames.length >= MAX_ACTIVE_IFRAMES) {
+      return;
+    }
+
+    var candidate = null;
+    for (var j = 0; j < trackedFrames.length; j++) {
+      var f = trackedFrames[j];
+      if (f._inView && !f._loaded && !f._loading && document.body.contains(f)) {
+        candidate = f;
+        break;
+      }
+    }
+
+    if (!candidate) return;
+
+    var iframe = candidate.querySelector("iframe[data-src]");
+    var url = iframe ? iframe.getAttribute("data-src") : "";
+    if (!iframe || !url) return;
+
+    loadingFrame = candidate;
+    candidate._loading = true;
+    candidate.classList.add("is-loading");
+
+    function finishLoad() {
+      if (candidate._loadTimeout) {
+        clearTimeout(candidate._loadTimeout);
+        candidate._loadTimeout = null;
+      }
+      if (loadingFrame === candidate) {
+        loadingFrame = null;
+      }
+      if (!candidate._loading) return;
+      candidate._loading = false;
+
+      if (!candidate._inView || !document.body.contains(candidate)) {
+        unloadPreviewFrame(candidate);
+      } else {
+        candidate._loaded = true;
+        candidate.classList.remove("is-loading");
+        candidate.classList.add("is-loaded");
+        if (activeFrames.indexOf(candidate) === -1) {
+          activeFrames.push(candidate);
+        }
+      }
+      schedulePreviewQueue(180);
+    }
+
+    iframe.onload = finishLoad;
+    candidate._loadTimeout = setTimeout(finishLoad, 1500);
+    setIframeUrlNoHistory(iframe, url);
+  }
+
+  function ensurePreviewObserver() {
+    if (previewObserver || !("IntersectionObserver" in window)) return;
+    previewObserver = new IntersectionObserver(function (entries) {
+      var anyEntered = false;
+      entries.forEach(function (entry) {
+        var frame = entry.target;
+        var visible = entry.isIntersecting && entry.intersectionRatio >= 0.12;
+        frame._inView = visible;
+        if (visible) {
+          anyEntered = true;
+        } else if (frame._loaded || frame._loading) {
+          unloadPreviewFrame(frame);
+        }
+      });
+      if (anyEntered && !isScrolling) {
+        schedulePreviewQueue(120);
+      }
+    }, {
+      rootMargin: "40px 0px",
+      threshold: [0, 0.12, 0.35]
+    });
+  }
+
+  function observePreviewFrames(root) {
+    if (saveDataMode || !("IntersectionObserver" in window)) return;
+    ensurePreviewObserver();
+    var scope = root || document;
+    var frames = scope.querySelectorAll(".card-preview-frame");
+    frames.forEach(function (frame) {
+      if (frame._observed) return;
+      frame._observed = true;
+      frame._inView = false;
+      frame._loaded = false;
+      frame._loading = false;
+      trackedFrames.push(frame);
+      previewObserver.observe(frame);
+    });
+  }
+
+  function unobserveCardPreview(cardEl) {
+    if (!cardEl) return;
+    var frame = cardEl.querySelector(".card-preview-frame");
+    if (!frame) return;
+    frame._inView = false;
+    unloadPreviewFrame(frame);
+    if (previewObserver && frame._observed) {
+      previewObserver.unobserve(frame);
+    }
+    frame._observed = false;
+    removeFromArray(trackedFrames, frame);
+  }
+
+  window.addEventListener("scroll", function () {
+    isScrolling = true;
+    if (scrollIdleTimer) clearTimeout(scrollIdleTimer);
+    scrollIdleTimer = setTimeout(function () {
+      isScrolling = false;
+      schedulePreviewQueue(60);
+    }, SCROLL_IDLE_MS);
+  }, { passive: true });
+
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "visible") {
+      schedulePreviewQueue(150);
+    }
+  });
 
   /* ---------- Efekt 3D (tilt + połysk za kursorem) ---------- */
   var canTilt =
@@ -609,6 +817,8 @@
 
   /* ---------- Start ---------- */
   document.getElementById("year").textContent = new Date().getFullYear();
+
+  observePreviewFrames(document);
 
   var initialCache = readCache();
   if (initialCache && initialCache.data) {

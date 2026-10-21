@@ -76,6 +76,8 @@ a:hover { text-decoration-color: currentColor; }
 /* ---------- Tło ---------- */
 .backdrop {
   position: fixed; inset:0; z-index:-1;
+  pointer-events: none;
+  contain: strict;
   background:
     radial-gradient(860px 520px at 78% -10%, rgba(106,166,255,0.09), transparent 60%),
     radial-gradient(640px 400px at 12% 10%, rgba(106,166,255,0.04), transparent 60%),
@@ -327,8 +329,11 @@ a:hover { text-decoration-color: currentColor; }
 .hero-actions .btn { min-width: 148px; }
 
 /* ---------- Karta profilu ---------- */
-.profile-card, .project-card { perspective: 1000px; }
-.profile-card { position:relative; border-radius: var(--radius-xl); border:1px solid var(--border); background: linear-gradient(165deg, var(--card), var(--card-2)); box-shadow: var(--shadow); padding:22px; transform-style: preserve-3d; }
+.profile-card { position:relative; border-radius: var(--radius-xl); border:1px solid var(--border); background: linear-gradient(165deg, var(--card), var(--card-2)); box-shadow: var(--shadow); padding:22px; contain: layout paint style; }
+@media (hover: hover) and (pointer: fine) {
+  .profile-card, .project-card { perspective: 1000px; }
+  .profile-card { transform-style: preserve-3d; }
+}
 .profile-top { display:flex; align-items:center; gap:16px; }
 .avatar-ring { display:grid; place-items:center; padding:3px; border-radius:50%; border:1px solid var(--border-strong); background: conic-gradient(from 180deg, transparent 0 42%, rgba(106,166,255,0.45) 56%, transparent 70% 100%); flex:none; }
 .avatar { width:82px; height:82px; border-radius:50%; display:block; background: var(--bg-elev); }
@@ -405,10 +410,14 @@ a:hover { text-decoration-color: currentColor; }
 /* ---------- Karty projektów ---------- */
 .grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap:18px; }
 .hero > *, .showcase-item, .project-card, .card-inner, .grid > *, .stat { min-width:0; max-width:100%; }
-.card-inner { position:relative; display:flex; flex-direction:column; border-radius: var(--radius-lg); border:1px solid var(--border); background: linear-gradient(165deg, var(--card), var(--card-2)); box-shadow: var(--shadow); padding:20px; overflow:hidden; transform-style: preserve-3d; transition: border-color .2s, box-shadow .2s, transform .2s; }
+.card-inner { position:relative; display:flex; flex-direction:column; border-radius: var(--radius-lg); border:1px solid var(--border); background: linear-gradient(165deg, var(--card), var(--card-2)); box-shadow: var(--shadow); padding:20px; overflow:hidden; contain: layout paint style; transition: border-color .2s, box-shadow .2s, transform .2s; }
 .project-card:hover .card-inner, .project-card:focus-within .card-inner { border-color: color-mix(in srgb, var(--accent) 18%, var(--border)); box-shadow: var(--shadow-hover); transform: translateY(-2px); }
-.card-sheen { position:absolute; inset:0; border-radius:inherit; pointer-events:none; opacity:0; transition: opacity .25s; background: radial-gradient(480px circle at var(--mx,50%) var(--my,50%), var(--sheen), transparent 46%); }
-.project-card:hover .card-sheen, .profile-card:hover .card-sheen { opacity:1; }
+.card-sheen { display:none; }
+@media (hover: hover) and (pointer: fine) {
+  .card-inner { transform-style: preserve-3d; }
+  .card-sheen { display:block; position:absolute; inset:0; border-radius:inherit; pointer-events:none; opacity:0; transition: opacity .25s; background: radial-gradient(480px circle at var(--mx,50%) var(--my,50%), var(--sheen), transparent 46%); }
+  .project-card:hover .card-sheen, .profile-card:hover .card-sheen { opacity:1; }
+}
 .card-top { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:6px 10px; margin-bottom:12px; }
 .card-index { font-size:11.5px; color: var(--faint); letter-spacing:.07em; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .card-badges { display:flex; align-items:center; gap:6px; flex-shrink:0; flex-wrap:wrap; justify-content:flex-end; }
@@ -481,10 +490,68 @@ a:hover { text-decoration-color: currentColor; }
   background: var(--bg-elev);
   margin-bottom:12px;
   text-decoration:none;
+  contain: layout paint style;
   transition: border-color .18s, transform .18s, box-shadow .18s;
 }
 .card-preview:hover { border-color: color-mix(in srgb, var(--live) 45%, var(--border)); transform: translateY(-2px); box-shadow: 0 8px 22px rgba(0,0,0,.18); }
-.card-preview-frame { position:absolute; inset:0; pointer-events:none; overflow:hidden; background: var(--bg); }
+.card-preview-frame { position:absolute; inset:0; pointer-events:none; overflow:hidden; background: var(--bg); contain: strict; }
+.card-preview-poster {
+  position: absolute;
+  top: 22px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px;
+  text-align: center;
+  background:
+    radial-gradient(240px 140px at 50% 25%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 72%),
+    linear-gradient(165deg, var(--card), var(--bg));
+  transition: opacity .25s ease;
+  z-index: 1;
+}
+.poster-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--live) 34%, var(--border));
+  background: color-mix(in srgb, var(--live) 10%, var(--bg-elev));
+  color: var(--live);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+.poster-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--live);
+}
+.poster-title {
+  font-family: "Space Grotesk", "Inter", sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.015em;
+  max-width: 92%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.poster-host {
+  font-size: 10.5px;
+  color: var(--faint);
+  max-width: 92%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .card-preview-frame iframe {
   position:absolute;
   top:22px;
@@ -494,9 +561,18 @@ a:hover { text-decoration-color: currentColor; }
   transform-origin: top left;
   width: calc(100% / var(--iframe-scale));
   height: calc((100% - 22px) / var(--iframe-scale));
-  filter: saturate(0.96) contrast(0.98);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .25s ease;
 }
-.card-preview-topbar { position:absolute; top:0; left:0; right:0; height:22px; background: color-mix(in srgb, var(--bg-elev) 92%, var(--bg)); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:4px; padding:0 8px; backdrop-filter: blur(6px); z-index:2; }
+.card-preview-frame.is-loaded iframe {
+  opacity: 1;
+  visibility: visible;
+}
+.card-preview-frame.is-loaded .card-preview-poster {
+  opacity: 0;
+}
+.card-preview-topbar { position:absolute; top:0; left:0; right:0; height:22px; background: color-mix(in srgb, var(--bg-elev) 96%, var(--bg)); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:4px; padding:0 8px; z-index:2; }
 .card-preview-dot { width:7px; height:7px; border-radius:50%; background: var(--border-strong); }
 .card-preview-dot:nth-child(1){ background:#ff5f57; } .card-preview-dot:nth-child(2){ background:#ffbd2e; } .card-preview-dot:nth-child(3){ background:#28c940; }
 .card-preview-url { margin-left:6px; font-size:10px; color: var(--faint); font-family:"JetBrains Mono", monospace; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; letter-spacing:-0.02em; }
@@ -676,6 +752,24 @@ a:hover { text-decoration-color: currentColor; }
   .views-count, .online-count { font-size:11px; }
   .hamburger-btn { width:30px; height:30px; }
   .hero-actions { grid-template-columns: 1fr; }
+}
+
+@media (hover: none), (pointer: coarse) {
+  .site-header {
+    background: color-mix(in srgb, var(--bg) 96%, var(--bg-elev));
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  .site-nav,
+  .metric-tooltip-popover {
+    background: var(--card);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+  .project-card:hover .card-inner,
+  .card-preview:hover {
+    transform: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

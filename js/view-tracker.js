@@ -316,17 +316,31 @@
       })
       .then(function (rows) {
         if (Array.isArray(rows)) {
+          var anyChanged = false;
           rows.forEach(function (r) {
             if (r && r.project_slug) {
-              applyCountUpdate(
-                r.project_slug,
-                Number(r.views_count) || 0,
-                Number(r.unique_visitors_count) || 0,
-                false
-              );
+              var slug = r.project_slug;
+              var views = Number(r.views_count) || 0;
+              var unique = Number(r.unique_visitors_count) || 0;
+              var key = String(slug).toLowerCase();
+              var prev = countsMap[key] ? countsMap[key].views : null;
+              var canonical = canonicalSlugMap[key] || slug;
+              canonicalSlugMap[key] = canonical;
+              countsMap[key] = {
+                slug: canonical,
+                views: views,
+                unique: unique
+              };
+              if (prev !== views) anyChanged = true;
             }
           });
-          saveCachedCounts();
+          if (anyChanged) {
+            saveCachedCounts();
+            refreshAllDOMCounters();
+            subscribers.slice().forEach(function (fn) {
+              try { fn(SITE_SLUG, getCount(SITE_SLUG), countsMap); } catch (e) { /* ignorujemy */ }
+            });
+          }
         }
         return countsMap;
       })
@@ -656,6 +670,28 @@
     tooltipEl.style.left = Math.round(left) + "px";
   }
 
+  var tooltipListenersAttached = false;
+
+  function onTooltipViewportChange() {
+    if (activeTooltipTarget && tooltipEl && !tooltipEl.hidden) {
+      positionTooltip(activeTooltipTarget);
+    }
+  }
+
+  function attachTooltipViewportListeners() {
+    if (tooltipListenersAttached) return;
+    tooltipListenersAttached = true;
+    window.addEventListener("scroll", onTooltipViewportChange, { passive: true });
+    window.addEventListener("resize", onTooltipViewportChange);
+  }
+
+  function detachTooltipViewportListeners() {
+    if (!tooltipListenersAttached) return;
+    tooltipListenersAttached = false;
+    window.removeEventListener("scroll", onTooltipViewportChange);
+    window.removeEventListener("resize", onTooltipViewportChange);
+  }
+
   function showTooltipFor(target, pinned) {
     if (!target) return;
     var text = target.getAttribute("data-tooltip") || "";
@@ -685,6 +721,7 @@
     pop.hidden = false;
     activeTooltipTarget = target;
     tooltipPinnedByClick = Boolean(pinned);
+    attachTooltipViewportListeners();
     positionTooltip(target);
   }
 
@@ -693,6 +730,7 @@
     tooltipEl.hidden = true;
     activeTooltipTarget = null;
     tooltipPinnedByClick = false;
+    detachTooltipViewportListeners();
   }
 
   function bindMetricTooltips() {
@@ -728,18 +766,6 @@
       }
       if (tooltipEl && !tooltipEl.hidden) {
         hideTooltip();
-      }
-    });
-
-    window.addEventListener("scroll", function () {
-      if (activeTooltipTarget && tooltipEl && !tooltipEl.hidden) {
-        positionTooltip(activeTooltipTarget);
-      }
-    }, { passive: true });
-
-    window.addEventListener("resize", function () {
-      if (activeTooltipTarget && tooltipEl && !tooltipEl.hidden) {
-        positionTooltip(activeTooltipTarget);
       }
     });
   }
