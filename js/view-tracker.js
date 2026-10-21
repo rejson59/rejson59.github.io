@@ -511,10 +511,29 @@
     document.addEventListener("auxclick", handleCardInteraction, true);
   }
 
+  /* Globalny Service Worker w domenie rejson59.github.io (scope: "/")
+     Automatycznie przechwytuje bezpośrednie wejścia na dowolny projekt
+     https://rejson59.github.io/<NazwaProjektu>/ bez konieczności ręcznego
+     dopisywania skryptu osobno w każdym repozytorium projektu. */
+  function registerGlobalServiceWorker() {
+    try {
+      if (
+        "serviceWorker" in navigator &&
+        window.self === window.top &&
+        (window.location.hostname || "").toLowerCase() === "rejson59.github.io"
+      ) {
+        navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(function () {
+          /* ignorujemy */
+        });
+      }
+    } catch (e) { /* ignorujemy */ }
+  }
+
   /* ---------- Inicjalizacja ---------- */
   function init() {
     loadCachedCounts();
     refreshAllDOMCounters();
+    registerGlobalServiceWorker();
 
     var currentSlug = detectCurrentSlug();
 
