@@ -910,16 +910,43 @@
     document.addEventListener("auxclick", handleCardInteraction, true);
   }
 
+  function isInsideCardThumbnail() {
+    try {
+      if (window.name === "rejson-card-preview") return true;
+      if (window.self !== window.top && window.frameElement) {
+        var fe = window.frameElement;
+        if (
+          fe.classList &&
+          (fe.classList.contains("card-preview-iframe") || fe.hasAttribute("data-card-preview"))
+        ) {
+          return true;
+        }
+        if (fe.closest && fe.closest(".card-preview-frame")) {
+          return true;
+        }
+      }
+    } catch (e) {
+      return false;
+    }
+    return false;
+  }
+
   function registerGlobalServiceWorker() {
     try {
       if (
         "serviceWorker" in navigator &&
-        window.self === window.top &&
-        (window.location.hostname || "").toLowerCase() === "rejson59.github.io"
+        !isInsideCardThumbnail()
       ) {
-        navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(function () {
-          /* ignorujemy */
-        });
+        navigator.serviceWorker
+          .register("/sw.js?v=2", { scope: "/", updateViaCache: "none" })
+          .then(function (reg) {
+            try {
+              if (reg && typeof reg.update === "function") reg.update();
+            } catch (e2) {}
+          })
+          .catch(function () {
+            /* ignorujemy */
+          });
       }
     } catch (e) { /* ignorujemy */ }
   }
@@ -934,7 +961,7 @@
     /* 1. Pobieramy aktualny stan wszystkich liczników oraz obecności na żywo z Supabase */
     fetchAllCounts().then(function () {
       refreshAllDOMCounters();
-      if (window.self === window.top) {
+      if (!isInsideCardThumbnail()) {
         registerView(currentActiveSlug);
         sendPresenceHeartbeat(currentActiveSlug, "ping");
         if (currentActiveSlug === SITE_SLUG) {
@@ -949,7 +976,7 @@
     bindMetricTooltips();
 
     /* 3. Uruchamiamy połączenie na żywo (Supabase Realtime WebSocket + heartbeat obecności) */
-    if (window.self === window.top) {
+    if (!isInsideCardThumbnail()) {
       connectRealtime();
 
       document.addEventListener("visibilitychange", function () {

@@ -60,7 +60,7 @@ self.addEventListener("fetch", function (event) {
     if (req.destination && req.destination !== "document") return;
 
     var url = new URL(req.url);
-    if (url.hostname.toLowerCase() !== "rejson59.github.io") return;
+    if (url.origin !== self.location.origin) return;
 
     var parts = (url.pathname || "/").split("/").filter(function (s) {
       return s && !/\.html?$/i.test(s);
@@ -73,7 +73,7 @@ self.addEventListener("fetch", function (event) {
       var slug = parts[0];
       event.waitUntil(registerDirectProjectVisit(slug));
 
-      if (slug.toLowerCase() !== "rejson-widgets") {
+      if (slug.toLowerCase() !== "rejson-widgets" && slug.toLowerCase() !== "js" && slug.toLowerCase() !== "css") {
         event.respondWith(
           fetch(req).then(function (res) {
             if (!res || res.redirected || res.status !== 200) {
@@ -90,10 +90,10 @@ self.addEventListener("fetch", function (event) {
               var safeSlug = slug.replace(/[^A-Za-z0-9._-]/g, "");
               var inject = "";
               if (html.indexOf("view-tracker.js") === -1) {
-                inject += '\n<script src="https://rejson59.github.io/js/view-tracker.js" defer></script>';
+                inject += '\n<script src="/js/view-tracker.js" defer></script>';
               }
               if (html.indexOf("rejson-widgets/widget.js") === -1) {
-                inject += '\n<script src="https://rejson59.github.io/rejson-widgets/widget.js" data-project="' + safeSlug + '" defer></script>';
+                inject += '\n<script src="/rejson-widgets/widget.js?v=2" data-project="' + safeSlug + '" defer></script>';
               }
               if (!inject) {
                 return new Response(html, {
@@ -108,6 +108,7 @@ self.addEventListener("fetch", function (event) {
               var headers = new Headers(res.headers);
               headers.delete("content-length");
               headers.delete("content-encoding");
+              headers.delete("content-security-policy");
               return new Response(updatedHtml, {
                 status: res.status,
                 statusText: res.statusText,

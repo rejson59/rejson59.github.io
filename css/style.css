@@ -756,6 +756,31 @@ a:hover { text-decoration-color: currentColor; }
   }
 }
 
+/* Przycisk-pigułka zgłaszania błędu / pomysłu na karcie projektu (rejson-widgets) */
+.btn-feedback {
+  background: color-mix(in srgb, var(--accent) 10%, var(--bg-elev));
+  color: var(--ink);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line));
+  border-radius: 999px;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.btn-feedback:hover {
+  background: color-mix(in srgb, var(--accent) 18%, var(--bg-elev));
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+  transform: translateY(-1px);
+}
+.feedback-pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  flex: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior:auto; }
   *,*::before,*::after{ animation-duration:.01ms !important; transition-duration:.01ms !important; }
