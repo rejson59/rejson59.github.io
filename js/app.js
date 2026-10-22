@@ -73,7 +73,9 @@
   function liveUrlFor(repo) {
     var home = (repo.homepage || "").trim();
     if (home) return home;
-    if (repo.has_pages) return "https://" + GH_USER + ".github.io/" + repo.name + "/";
+    if (repo.has_pages || repo.name === "rejson-widgets") {
+      return "https://" + GH_USER + ".github.io/" + repo.name + "/";
+    }
     return null;
   }
 
@@ -479,8 +481,9 @@
     return false;
   })();
 
-  var SNAPSHOT_DB_NAME = "rejson_iframe_snapshots_v1";
+  var SNAPSHOT_DB_NAME = "rejson_iframe_snapshots_v2";
   var SNAPSHOT_STORE = "snapshots";
+  var FREEZE_DELAY_MS = 5000; /* ~5 sekund na pełne zakończenie animacji ładowania wewnątrz projektu */
   var snapshotDbPromise = null;
 
   function openSnapshotDb() {
@@ -491,6 +494,9 @@
           resolve(null);
           return;
         }
+        try {
+          window.indexedDB.deleteDatabase("rejson_iframe_snapshots_v1");
+        } catch (e0) { /* ignorujemy */ }
         var req = window.indexedDB.open(SNAPSHOT_DB_NAME, 1);
         req.onupgradeneeded = function (ev) {
           var db = ev.target.result;
@@ -735,7 +741,7 @@
           frame._freezeScheduled = true;
           setTimeout(function () {
             freezeIframeAsStaticScreen(frame, iframe, key);
-          }, 1050);
+          }, FREEZE_DELAY_MS);
         }
 
         iframe.addEventListener("load", scheduleFreeze, { once: true });

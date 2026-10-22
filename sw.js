@@ -67,9 +67,58 @@ self.addEventListener("fetch", function (event) {
     });
 
     /* Dla podstron projektów (np. /mconline/, /JoyPad/, /Jakuplayer/) rejestrujemy
-       bezpośrednie wejście w tle (strona główna rejestruje swoje wejście sama). */
+       bezpośrednie wejście w tle oraz automatycznie wstrzykujemy pigułkę rejson-widgets
+       i tracker obecności LIVE. */
     if (parts.length > 0) {
-      event.waitUntil(registerDirectProjectVisit(parts[0]));
+      var slug = parts[0];
+      event.waitUntil(registerDirectProjectVisit(slug));
+
+      if (slug.toLowerCase() !== "rejson-widgets") {
+        event.respondWith(
+          fetch(req).then(function (res) {
+            if (!res || res.redirected || res.status !== 200) {
+              if (res && res.redirected && res.url) {
+                return Response.redirect(res.url, 302);
+              }
+              return res;
+            }
+            var ct = (res.headers && res.headers.get("content-type")) || "";
+            if (ct.toLowerCase().indexOf("text/html") === -1) {
+              return res;
+            }
+            return res.text().then(function (html) {
+              var safeSlug = slug.replace(/[^A-Za-z0-9._-]/g, "");
+              var inject = "";
+              if (html.indexOf("view-tracker.js") === -1) {
+                inject += '\n<script src="https://rejson59.github.io/js/view-tracker.js" defer></script>';
+              }
+              if (html.indexOf("rejson-widgets/widget.js") === -1) {
+                inject += '\n<script src="https://rejson59.github.io/rejson-widgets/widget.js" data-project="' + safeSlug + '" defer></script>';
+              }
+              if (!inject) {
+                return new Response(html, {
+                  status: res.status,
+                  statusText: res.statusText,
+                  headers: res.headers
+                });
+              }
+              var updatedHtml = /<\/body>/i.test(html)
+                ? html.replace(/<\/body>/i, inject + "\n</body>")
+                : html + inject;
+              var headers = new Headers(res.headers);
+              headers.delete("content-length");
+              headers.delete("content-encoding");
+              return new Response(updatedHtml, {
+                status: res.status,
+                statusText: res.statusText,
+                headers: headers
+              });
+            });
+          }).catch(function () {
+            return fetch(req);
+          })
+        );
+      }
     }
   } catch (e) { /* ignorujemy */ }
 });

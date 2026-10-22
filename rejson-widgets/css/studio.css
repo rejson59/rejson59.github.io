@@ -1,0 +1,294 @@
+/* ==========================================================================
+   Rejson Widgets — Czysty, minimalistyczny styl Liquid Glass
+   ========================================================================== */
+
+:root {
+  --bg: #0b0e14;
+  --bg-elev: rgba(255, 255, 255, 0.045);
+  --card: rgba(18, 23, 34, 0.66);
+  --card-solid: #111622;
+  --border: rgba(255, 255, 255, 0.1);
+  --border-strong: rgba(255, 255, 255, 0.2);
+  --text: #f3f6fc;
+  --muted: rgba(235, 242, 255, 0.6);
+  --faint: rgba(220, 230, 248, 0.38);
+  --accent: #6aa6ff;
+  --accent-strong: #8fc0ff;
+  --accent-ink: #080d16;
+  --danger: #fb7185;
+  --header-bg: rgba(11, 14, 20, 0.72);
+  --shadow: 0 24px 60px -16px rgba(0, 0, 0, 0.55);
+  --code-bg: rgba(255, 255, 255, 0.04);
+}
+
+[data-theme="light"] {
+  --bg: #f6f8fc;
+  --bg-elev: rgba(15, 23, 42, 0.045);
+  --card: rgba(255, 255, 255, 0.75);
+  --card-solid: #ffffff;
+  --border: rgba(15, 23, 42, 0.09);
+  --border-strong: rgba(15, 23, 42, 0.18);
+  --text: #0f172a;
+  --muted: rgba(15, 23, 42, 0.6);
+  --faint: rgba(15, 23, 42, 0.38);
+  --accent: #2563eb;
+  --accent-strong: #1d4ed8;
+  --accent-ink: #ffffff;
+  --danger: #e11d48;
+  --header-bg: rgba(246, 248, 252, 0.76);
+  --shadow: 0 22px 54px -16px rgba(15, 23, 42, 0.12);
+  --code-bg: rgba(15, 23, 42, 0.04);
+}
+
+/* Kolorowa scena do testowania refrakcji szkła w rogu */
+body[data-backdrop="vivid"] {
+  background:
+    radial-gradient(620px circle at 86% 84%, rgba(56, 189, 248, 0.34), transparent 55%),
+    radial-gradient(540px circle at 92% 62%, rgba(168, 85, 247, 0.36), transparent 52%),
+    radial-gradient(680px circle at 18% 20%, rgba(52, 211, 153, 0.2), transparent 55%),
+    #0b1020;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  transition: background 0.35s ease, color 0.25s ease;
+}
+
+h1, h2, h3 {
+  font-family: "Space Grotesk", "Inter", sans-serif;
+  letter-spacing: -0.025em;
+  line-height: 1.14;
+  margin: 0;
+}
+
+.mono { font-family: "JetBrains Mono", ui-monospace, monospace; }
+.container { max-width: 980px; margin-inline: auto; padding-inline: 22px; }
+
+.studio-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(700px 420px at 50% -10%, rgba(106, 166, 255, 0.12), transparent 65%);
+}
+
+/* Minimalistyczny pasek górny */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: var(--header-bg);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--border);
+}
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: 58px;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  text-decoration: none;
+  color: var(--text);
+  font: 600 15.5px/1 "Space Grotesk", sans-serif;
+}
+
+.brand-mark { width: 26px; height: 26px; }
+.brand-suffix { color: var(--faint); font-weight: 500; }
+.header-nav { display: flex; align-items: center; gap: 10px; }
+
+.theme-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-elev);
+  color: var(--muted);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+.theme-btn:hover { color: var(--text); border-color: var(--border-strong); }
+[data-theme="dark"] .icon-sun { display: block; }
+[data-theme="dark"] .icon-moon { display: none; }
+[data-theme="light"] .icon-sun { display: none; }
+[data-theme="light"] .icon-moon { display: block; }
+
+/* Przyciski */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font: 500 13px/1 "Inter", sans-serif;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: var(--text);
+  color: var(--bg);
+  font-weight: 600;
+}
+.btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+
+.btn-glass {
+  background: var(--bg-elev);
+  color: var(--text);
+  border-color: var(--border);
+}
+.btn-glass:hover { border-color: var(--border-strong); }
+.btn-sm { height: 32px; padding: 0 13px; font-size: 12.5px; }
+
+.glass-card {
+  border-radius: 22px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+}
+
+/* Minimalistyczny środek strony Studio */
+.minimal-hero {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 68px 20px 80px;
+  text-align: center;
+}
+
+.minimal-hero h1 {
+  font-size: clamp(28px, 4.2vw, 42px);
+  margin-bottom: 12px;
+}
+
+.minimal-lead {
+  margin: 0 auto 28px;
+  color: var(--muted);
+  font-size: 15.5px;
+  max-width: 48ch;
+}
+
+/* Jednolinijkowy pasek kopiowania kodu */
+.embed-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 8px 8px 16px;
+  border-radius: 999px;
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+.embed-code {
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  white-space: nowrap;
+  font-size: 12.2px;
+  color: var(--text);
+  scrollbar-width: none;
+}
+.embed-code::-webkit-scrollbar { display: none; }
+
+/* Minimalistyczny konfigurator w jednej czystej karcie */
+.mini-studio {
+  padding: 20px 22px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.mini-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.mini-label {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.pill-group { display: flex; gap: 5px; flex-wrap: wrap; }
+.pill-opt {
+  padding: 5.5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  font: 500 12px/1 "Inter", sans-serif;
+  cursor: pointer;
+  transition: all 0.16s ease;
+}
+.pill-opt:hover { color: var(--text); }
+.pill-opt.is-active {
+  background: var(--text);
+  border-color: var(--text);
+  color: var(--bg);
+}
+
+.ctrl-input, .ctrl-select {
+  width: 100%;
+  padding: 8.5px 12px;
+  border-radius: 11px;
+  border: 1px solid var(--border);
+  background: var(--code-bg);
+  color: var(--text);
+  font: 400 13px/1.3 "Inter", sans-serif;
+  outline: none;
+}
+.ctrl-input:focus, .ctrl-select:focus { border-color: var(--border-strong); }
+
+.code-block {
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  font: 400 12px/1.55 "JetBrains Mono", monospace;
+  overflow-x: auto;
+  white-space: pre-wrap;
+}
+
+.mini-actions {
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 600px) {
+  .embed-bar { border-radius: 18px; flex-direction: column; align-items: stretch; padding: 12px; }
+  .minimal-hero { padding-top: 44px; }
+}
