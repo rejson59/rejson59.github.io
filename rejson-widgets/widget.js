@@ -6,7 +6,30 @@
 (function (window, document) {
   "use strict";
 
-  if (window.self !== window.top && !window.REJSON_WIDGET_ALLOW_IFRAME) return;
+  function isInsideCardThumbnail() {
+    if (window.REJSON_WIDGET_ALLOW_IFRAME) return false;
+    try {
+      if (window.name === "rejson-card-preview") return true;
+      if (window.self !== window.top && window.frameElement) {
+        var fe = window.frameElement;
+        if (
+          fe.classList &&
+          (fe.classList.contains("card-preview-iframe") || fe.hasAttribute("data-card-preview"))
+        ) {
+          return true;
+        }
+        if (fe.closest && fe.closest(".card-preview-frame")) {
+          return true;
+        }
+      }
+    } catch (e) {
+      /* Cross-origin parent (np. podgląd Live Preview w Arena.ai) — główne okno aplikacji */
+      return false;
+    }
+    return false;
+  }
+
+  if (isInsideCardThumbnail()) return;
   if (window.__REJSON_WIDGET_MOUNTED__) return;
   window.__REJSON_WIDGET_MOUNTED__ = true;
 
@@ -18,7 +41,7 @@
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6YnF6ZmltdHJvaXhubGR6amVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1OTYzOTEsImV4cCI6MjEwODE3MjM5MX0.oeZWOaNd6p3wZBZQQu3QWjRHlrkxV_BFQRNSN-6YntE";
 
   var VOTER_KEY_NAME = "rejson_widgets_voter_id_v1";
-  var PREFS_KEY_PREFIX = "rejson_widget_prefs_v2:";
+  var PREFS_KEY_PREFIX = "rejson_widget_prefs_v3:";
   var MIRROR_KEY = "rejson_widgets_mirror_v1";
 
   var DEFAULT_BOARD_FALLBACK = [
@@ -452,7 +475,15 @@
     "  transition: opacity 0.15s ease, filter 0.16s ease, transform 0.18s ease;",
     "  z-index: 2;",
     "}",
-    ".rj-vessel:not(.is-open):hover { filter: brightness(1.06); }",
+    ".rj-vessel:not(.is-open) {",
+    "  background: rgba(18, 24, 36, 0.86);",
+    "  box-shadow: 0 14px 36px -6px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(122, 178, 255, 0.32), 0 0 22px -4px rgba(122, 178, 255, 0.28), inset 0 1px 0.5px var(--rj-rim-a);",
+    "}",
+    ":host([data-theme='light']) .rj-vessel:not(.is-open) {",
+    "  background: rgba(255, 255, 255, 0.9);",
+    "  box-shadow: 0 14px 34px -6px rgba(15, 23, 42, 0.22), 0 0 0 1px rgba(37, 99, 235, 0.24), inset 0 1px 0.5px var(--rj-rim-a);",
+    "}",
+    ".rj-vessel:not(.is-open):hover { filter: brightness(1.08); }",
     ".rj-vessel.is-open .rj-closed {",
     "  opacity: 0;",
     "  filter: blur(4px);",
@@ -463,11 +494,11 @@
     ".rj-closed.is-icon-only .rj-label-txt { display: none; }",
 
     ".rj-dot {",
-    "  width: 6px;",
-    "  height: 6px;",
+    "  width: 8px;",
+    "  height: 8px;",
     "  border-radius: 50%;",
     "  background: var(--rj-accent);",
-    "  box-shadow: 0 0 8px color-mix(in srgb, var(--rj-accent) 70%, transparent);",
+    "  box-shadow: 0 0 10px var(--rj-accent), 0 0 0 3px rgba(122, 178, 255, 0.18);",
     "  flex: none;",
     "  transition: background-color 0.25s ease, box-shadow 0.25s ease;",
     "}",
@@ -850,7 +881,7 @@
       return { w: 40, h: 40, r: 20 };
     }
     var txtLen = (config.label || "Feedback").length;
-    return { w: Math.max(92, Math.round(52 + txtLen * 7.2)), h: 38, r: 19 };
+    return { w: Math.max(112, Math.round(48 + txtLen * 7.8)), h: 40, r: 20 };
   }
 
   function openTargetMetrics() {
@@ -1290,8 +1321,26 @@
     if (!state.open) return;
     var path = e.composedPath ? e.composedPath() : [];
     if (path.indexOf(vesselEl) !== -1 || e.target === hostEl) return;
-    if (e.target && e.target.closest && e.target.closest("[data-rj-keep]")) return;
+    if (
+      e.target &&
+      e.target.closest &&
+      (e.target.closest("[data-rj-keep]") || e.target.closest("[data-feedback-project]"))
+    ) {
+      return;
+    }
     closeMorph();
+  });
+
+  /* Otwieranie widżetu dla konkretnego projektu po kliknięciu przycisku z data-feedback-project */
+  document.addEventListener("click", function (e) {
+    if (!e.target || !e.target.closest) return;
+    var trigger = e.target.closest("[data-feedback-project]");
+    if (!trigger) return;
+    e.preventDefault();
+    e.stopPropagation();
+    var proj = trigger.getAttribute("data-feedback-project");
+    var modeType = trigger.getAttribute("data-feedback-type") || "bug";
+    openMorph(modeType, proj);
   });
 
   /* Przeciąganie zamkniętej kapsułki w dowolny róg lub do krawędzi ekranu */

@@ -167,7 +167,9 @@
       : "";
     var codeBtn = '<a class="btn btn-ghost btn-sm" href="' + esc(p.url) + '" target="_blank" rel="noopener noreferrer">' +
       ICON_GITHUB + " Kod źródłowy</a>";
-    return liveBtn + codeBtn;
+    var feedbackBtn = '<button class="btn btn-feedback btn-sm" type="button" data-feedback-project="' + esc(p.name) + '" data-rj-keep>' +
+      '<span class="feedback-pill-dot" aria-hidden="true"></span>Zgłoś błąd / pomysł</button>';
+    return liveBtn + codeBtn + feedbackBtn;
   }
 
   function cardHTML(p, index) {
@@ -181,7 +183,7 @@
     var cleanHost = p.liveUrl ? p.liveUrl.replace(/^https?:\/\//, "") : "";
     var preview = p.liveUrl
       ? '<a class="card-preview" href="' + esc(p.liveUrl) + '" target="_blank" rel="noopener noreferrer" aria-label="Podgląd ' + esc(p.name) + ' — otwórz live">' +
-          '<div class="card-preview-frame" aria-hidden="true"><iframe src="' + esc(p.liveUrl) + '" loading="lazy" tabindex="-1" aria-hidden="true"></iframe><div class="card-preview-topbar"><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-url">' + esc(cleanHost) + '</span></div></div><span class="card-preview-hint">otwórz ↗</span></a>'
+          '<div class="card-preview-frame" aria-hidden="true"><iframe src="' + esc(p.liveUrl) + '" name="rejson-card-preview" data-card-preview="1" loading="lazy" tabindex="-1" aria-hidden="true"></iframe><div class="card-preview-topbar"><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-url">' + esc(cleanHost) + '</span></div></div><span class="card-preview-hint">otwórz ↗</span></a>'
       : "";
 
     return (
