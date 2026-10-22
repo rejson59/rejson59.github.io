@@ -1,8 +1,8 @@
 /*!
- * Rejson59 Global View Tracker Service Worker (scope: "/")
+ * Rejson59 Global View Tracker & Feedback Pill Service Worker (scope: "/", v2.0)
  * Automatycznie zlicza bezpośrednie wejścia na dowolny projekt w domenie
- * https://rejson59.github.io/<NazwaProjektu>/ bez konieczności ręcznego
- * dopisywania skryptu osobno w każdym repozytorium projektu.
+ * https://rejson59.github.io/<NazwaProjektu>/ oraz wstrzykuje pigułkę
+ * rejson-widgets bez konieczności ręcznego dopisywania skryptu w każdym repo.
  * Ignoruje ramki podglądu <iframe> (destination === "iframe").
  */
 
