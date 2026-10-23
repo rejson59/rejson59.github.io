@@ -5,14 +5,14 @@
 :root {
   --idea: #8ab4ff;
   --bug: #fb7185;
-  --vote: #6ee7b7;
+  --vote: #fb7185;
   --progress: #fbbf24;
 }
 
 [data-theme="light"] {
   --idea: #2563eb;
   --bug: #e11d48;
-  --vote: #047857;
+  --vote: #e11d48;
   --progress: #b45309;
 }
 
@@ -205,7 +205,8 @@
   45% { transform: scale(1.16); box-shadow: 0 0 0 5px color-mix(in srgb, var(--vote) 22%, transparent); }
   100% { transform: scale(1); }
 }
-.board-vote-arrow { font-size: 14px; line-height: 1; }
+.board-vote-heart { width: 16px; height: 16px; display: block; }
+.board-vote.is-voted .board-vote-heart { fill: currentColor; }
 .board-vote-num { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .board-likes-hint { color: var(--vote); }
 .board-likes-hint b { color: var(--vote); font-weight: 700; }

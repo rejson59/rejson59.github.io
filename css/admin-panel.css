@@ -1,0 +1,278 @@
+/* ==========================================================================
+   Główny Panel Admina — zakładki, odwiedzający na żywo, strumień zdarzeń
+   (uzupełnienie: rejson-widgets/css/studio.css + admin.css + css/activity.css)
+   ========================================================================== */
+
+/* ---------- Zakładki ---------- */
+.admin-tabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 22px 0 18px;
+}
+
+.admin-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--glass);
+  color: var(--muted);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-tab:hover {
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+}
+
+.admin-tab.is-active {
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--accent) 70%, var(--border));
+  background: color-mix(in srgb, var(--accent) 16%, var(--glass));
+  box-shadow: 0 4px 18px -6px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+/* Sekcje zakładki aktywności — odstępy między kartami */
+#tab-activity > .glass-card,
+#tab-activity > .kpi-grid {
+  margin-bottom: 18px;
+}
+
+.panel-card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.panel-card-head h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.panel-card-note {
+  margin: 0 0 14px;
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.panel-sub-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+/* ---------- Odwiedzający na żywo ---------- */
+.pa-visitors {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pa-visitor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg-elev) 70%, transparent);
+}
+
+.pa-visitor-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pa-fp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 52px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 9px;
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+  background: color-mix(in srgb, var(--accent) 12%, var(--bg-elev));
+  color: var(--accent);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.pa-who {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.pa-who .act-user-avatar { margin-right: 6px; }
+
+.pa-visitor-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.pa-time-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-elev);
+  font-size: 11.5px;
+  color: var(--muted);
+}
+
+.pa-open-projects {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.pa-open-projects .act-user-proj { font-size: 11px; }
+
+/* Ścieżka kroków */
+.pa-trail {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.pa-trail-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  opacity: 0.8;
+}
+
+.pa-trail-step {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pa-trail-slug {
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--glass);
+  color: var(--text);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.pa-trail-step.is-latest .pa-trail-slug {
+  border-color: color-mix(in srgb, var(--ok, #34d399) 55%, var(--border));
+  background: color-mix(in srgb, var(--ok, #34d399) 12%, var(--glass));
+}
+
+.pa-trail-time {
+  font-size: 10.5px;
+  color: var(--muted);
+}
+
+.pa-trail-arrow {
+  color: var(--muted);
+  opacity: 0.55;
+  font-size: 11px;
+}
+
+.pa-empty {
+  padding: 18px 6px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* ---------- Strumień zdarzeń ---------- */
+.pa-events {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.pa-event {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+.pa-event:hover {
+  border-color: var(--border);
+  background: color-mix(in srgb, var(--bg-elev) 60%, transparent);
+}
+
+.pa-event-icon { flex: none; font-size: 14px; }
+
+.pa-event-body { min-width: 0; flex: 1; }
+
+.pa-event-who {
+  font-weight: 700;
+  margin-right: 6px;
+}
+
+.pa-event-text { color: var(--muted); word-break: break-word; }
+
+.pa-event-proj {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-elev);
+  font-size: 10.5px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.pa-event-time {
+  flex: none;
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* Drobne dopasowania responsywne */
+@media (max-width: 640px) {
+  .admin-tab { flex: 1; justify-content: center; }
+  .pa-visitor-meta { margin-left: 0; }
+  .pa-event-time { display: none; }
+}

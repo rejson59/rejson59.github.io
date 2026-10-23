@@ -3,151 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel Admina — Rejson Widgets</title>
+  <title>Panel Admina — Rejson59</title>
+  <meta name="robots" content="noindex, nofollow">
+  <meta http-equiv="refresh" content="0; url=../admin.html">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <meta name="theme-color" content="#0a0e16">
-
-  <script>
-    (function () {
-      try {
-        var saved = localStorage.getItem("theme");
-        if (saved === "light" || saved === "dark") {
-          document.documentElement.dataset.theme = saved;
-        }
-      } catch (e) {}
-    })();
-  </script>
-
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/studio.css">
-  <link rel="stylesheet" href="css/admin.css">
 </head>
-<body>
-
-  <div class="studio-backdrop" aria-hidden="true"></div>
-
-  <header class="site-header">
-    <div class="container header-inner">
-      <a class="brand" href="./">
-        <img class="brand-mark" src="favicon.svg" alt="" width="32" height="32">
-        <span>rejson-widgets<span class="brand-suffix"> / admin</span></span>
-      </a>
-
-      <nav class="header-nav">
-        <span class="mono" id="cloud-mode-badge" style="font-size:12px;color:var(--muted)">Łączenie z chmurą…</span>
-        <a class="btn btn-glass btn-sm" href="board.html">Publiczna tablica</a>
-        <a class="btn btn-glass btn-sm" href="./">← Studio Widżetu</a>
-        <button class="btn btn-glass btn-sm" id="btn-logout" type="button" hidden>Wyloguj</button>
-        <button id="theme-toggle" class="theme-btn" type="button" aria-label="Przełącz motyw">
-          <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
-          <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
-        </button>
-      </nav>
-    </div>
-  </header>
-
-  <!-- ============ EKRAN LOGOWANIA / AKTYWACJI WŁAŚCICIELA SUPABASE ============ -->
-  <section class="auth-shell" id="auth-view" hidden>
-    <div class="glass-card auth-card">
-      <div class="eyebrow">
-        <span class="eyebrow-dot"></span>
-        <span>Supabase Auth · Ochrona Row Level Security</span>
-      </div>
-      <h1 id="auth-title">Logowanie do Panelu Admina</h1>
-      <p class="auth-sub" id="auth-sub"></p>
-
-      <div class="auth-error" id="auth-error" hidden style="margin-bottom:12px"></div>
-
-      <form class="form-stack" id="auth-form">
-        <div>
-          <label class="field-label" for="auth-email">E-mail administratora</label>
-          <input class="ctrl-input" id="auth-email" type="email" required placeholder="twoj@email.pl" autocomplete="username">
-        </div>
-        <div>
-          <label class="field-label" for="auth-pass">Hasło (min. 6 znaków)</label>
-          <input class="ctrl-input" id="auth-pass" type="password" minlength="6" required placeholder="••••••••" autocomplete="current-password">
-        </div>
-        <button class="btn btn-primary" id="auth-submit-btn" type="submit" style="margin-top:4px;height:42px">
-          Zaloguj się
-        </button>
-      </form>
-
-      <div class="auth-divider">lub sprawdź pełny interfejs od razu bez logowania</div>
-      <button class="btn btn-glass" id="btn-sandbox-enter" type="button" style="width:100%">
-        Otwórz Podgląd Sandbox (Demo)
-      </button>
-    </div>
-  </section>
-
-  <!-- ============ GŁÓWNE CENTRUM DOWODZENIA REJSON59 ============ -->
-  <main class="container admin-main" id="dash-view" hidden>
-    <div class="kpi-grid">
-      <div class="glass-card kpi-card">
-        <span class="kpi-label">Wszystkie zgłoszenia</span>
-        <span class="kpi-num" id="kpi-total">0</span>
-        <span class="kpi-sub" id="kpi-projects-note">Wszystkie strony</span>
-      </div>
-      <div class="glass-card kpi-card">
-        <span class="kpi-label">Nowe do przejrzenia</span>
-        <span class="kpi-num" id="kpi-new">0</span>
-        <span class="kpi-sub">Oczekujące na reakcję</span>
-      </div>
-      <div class="glass-card kpi-card">
-        <span class="kpi-label">Zgłoszone błędy</span>
-        <span class="kpi-num" id="kpi-bugs">0</span>
-        <span class="kpi-sub" id="kpi-bugs-crit">Diagnostyka + logi JS</span>
-      </div>
-      <div class="glass-card kpi-card">
-        <span class="kpi-label">Pomysły na aktualizacje</span>
-        <span class="kpi-num" id="kpi-ideas">0</span>
-        <span class="kpi-sub" id="kpi-votes">0 głosów</span>
-      </div>
-    </div>
-
-    <div class="glass-card toolbar-card">
-      <div class="toolbar-row">
-        <div class="proj-pills" id="project-pills"></div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button type="button" class="btn btn-glass btn-sm" id="btn-refresh">Odśwież</button>
-          <button type="button" class="btn btn-glass btn-sm" id="btn-clear-demo">Usuń wpisy [DEMO]</button>
-        </div>
-      </div>
-
-      <div class="toolbar-row">
-        <input class="ctrl-input" id="admin-search" style="flex:1;min-width:220px" placeholder="Szukaj po tytule, opisie, autorze, URL lub błędzie konsoli…">
-        <div class="pill-group">
-          <button type="button" class="pill-opt is-active" data-type-filter="all">Wszystkie</button>
-          <button type="button" class="pill-opt" data-type-filter="bug">Błędy</button>
-          <button type="button" class="pill-opt" data-type-filter="idea">Pomysły</button>
-        </div>
-        <select class="ctrl-select" id="filter-status" style="width:auto">
-          <option value="all">Wszystkie statusy</option>
-          <option value="new">Nowe</option>
-          <option value="under_review">Rozważane</option>
-          <option value="planned">Planowane</option>
-          <option value="in_progress">W trakcie</option>
-          <option value="completed">Wdrożone</option>
-          <option value="closed">Zamknięte</option>
-        </select>
-        <select class="ctrl-select" id="sort-by" style="width:auto">
-          <option value="newest">Najnowsze</option>
-          <option value="votes">Najwięcej głosów</option>
-          <option value="priority">Najwyższy priorytet</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="workspace-split">
-      <div class="feed-list" id="submissions-feed"></div>
-      <aside class="glass-card inspector-card" id="inspector-panel"></aside>
-    </div>
-  </main>
-
-  <div class="toast-banner" id="admin-toast" hidden></div>
-
-  <script src="js/supabase-config.js"></script>
-  <script src="js/admin.js"></script>
+<body style="font-family:sans-serif;background:#0a0e16;color:#e6edf7;display:flex;min-height:100vh;align-items:center;justify-content:center;margin:0">
+  <p style="text-align:center">
+    Panel Admina przeniósł się do głównego panelu strony.<br>
+    <a style="color:#7dd3fc" href="../admin.html">Przejdź do Głównego Panelu Admina →</a>
+  </p>
+  <script>
+    window.location.replace("../admin.html");
+  </script>
 </body>
 </html>

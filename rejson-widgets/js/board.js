@@ -1,7 +1,7 @@
 /* ==========================================================================
    Rejson Widgets — Publiczna Tablica Pomysłów i Błędów
    - dane na żywo z Supabase (list_public_board + get_ecosystem_summary)
-   - głosowanie ▲ tym samym kluczem co pigułka widgetu
+   - polubienia ❤ tym samym kluczem co pigułka widgetu
    - w trybie offline: lokalne demo z pamięci podręcznej przeglądarki
    ========================================================================== */
 
@@ -266,7 +266,7 @@
           '" aria-label="' +
           (it.has_voted ? "Cofnij polubienie tego zgłoszenia" : "Polub to zgłoszenie — pokaż, że Ci się podoba") +
           '">' +
-          '    <span class="board-vote-arrow">▲</span>' +
+          '    <svg class="board-vote-heart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>' +
           '    <span class="board-vote-num">' +
           Number(it.upvotes_count || 0) +
           "</span>" +
