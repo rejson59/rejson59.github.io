@@ -118,6 +118,10 @@
   var numFmt = new Intl.NumberFormat("pl-PL");
 
   function projectViewsCount(name) {
+    /* Licznik kliknięć pokazuje wejścia z dzisiejszego dnia (czas polski) */
+    if (window.RejsonViews && typeof window.RejsonViews.getTodayCount === "function") {
+      return window.RejsonViews.getTodayCount(name);
+    }
     return window.RejsonViews ? window.RejsonViews.getCount(name) : 0;
   }
 
@@ -137,7 +141,7 @@
         '<span class="card-online-num">0</span>' +
       "</button>";
     var viewsBadge =
-      '<button class="card-metric is-clicks mono" type="button" data-project-views="' + esc(p.name) + '" data-tooltip-title="Kliknięcia i wejścia w projekt" data-tooltip="Łączna liczba otwarć projektu ' + esc(p.name) + ' od jego utworzenia (z 15-min ochroną przed spamem)." aria-label="Łączna liczba wejść w projekt ' + esc(p.name) + '">' +
+      '<button class="card-metric is-clicks mono" type="button" data-project-views="' + esc(p.name) + '" data-tooltip-title="Kliknięcia dzisiaj" data-tooltip="Liczba otwarć projektu ' + esc(p.name) + ' dzisiaj — licznik resetuje się o północy czasu polskiego (z 15-min ochroną przed spamem)." aria-label="Liczba kliknięć w projekt ' + esc(p.name) + ' dzisiaj">' +
         ICON_CLICK +
         '<span class="card-views-num">0</span>' +
       "</button>";
