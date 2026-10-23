@@ -928,3 +928,19 @@
 .adm-hour-key-visits { background: var(--accent); }
 .adm-hour-key-clicks { background: #8b5cf6; }
 .adm-hour-legend .adm-hour-key:first-child { margin-left: 0; }
+
+/* ---------- Zarządzanie kontami społeczności ---------- */
+.commp-user-actions {
+  display: inline-flex;
+  gap: 6px;
+  flex: none;
+}
+.commp-user-actions .btn { padding: 5px 12px; font-size: 11.5px; }
+.commp-user-actions .commp-del { color: #f87171; border-color: rgba(248, 113, 113, 0.35); }
+.commp-user-actions .commp-del:hover { border-color: #f87171; }
+
+/* Identyfikator pochodny (IP + przeglądarka) — przerywana ramka */
+.pa-fp.is-derived {
+  border-style: dashed;
+  opacity: 0.85;
+}

@@ -11,13 +11,27 @@
 (function (window, document) {
   "use strict";
 
-  var REFRESH_MS = 8000;
+  var REFRESH_MS = 6000;        /* główny cykl: aktywność na żywo */
+  var SLOW_CYCLE_DIV = 3;       /* co 3. cykl (≈18 s): społeczność + statystyki dzienne */
   var PRESENCE_WINDOW = 90;
   var SITE_SLUG = "rejson59.github.io";
 
   var numFmt = new Intl.NumberFormat("pl-PL");
   var refreshTimer = null;
+  var countdownTimer = null;
+  var refreshTick = 0;
+  var lastFetchAt = 0;
   var panelActive = false;
+
+  /* Anti-flicker: sekcja jest przerenderowywana tylko, gdy dane się zmieniły.
+     Sygnatura = stabilny JSON źródłowych danych. */
+  var renderSigs = {};
+  function changed(key, value) {
+    var sig = JSON.stringify(value);
+    if (renderSigs[key] === sig) return false;
+    renderSigs[key] = sig;
+    return true;
+  }
 
   function $(id) {
     return document.getElementById(id);
@@ -240,7 +254,7 @@
   /* ---------- Histogram otwartych stron ---------- */
   function renderHistogram(histo) {
     var wrap = $("act-histogram");
-    if (!wrap) return;
+    if (!wrap || !changed("histogram", histo)) return;
 
     var keys = Object.keys(histo || {}).filter(function (k) {
       return (Number(histo[k]) || 0) > 0;
@@ -277,7 +291,7 @@
   /* ---------- Zalogowani użytkownicy Społeczności online (kompaktowo) ---------- */
   function renderIdentified(users) {
     var wrap = $("act-users");
-    if (!wrap) return;
+    if (!wrap || !changed("identified", users)) return;
 
     if (!Array.isArray(users) || !users.length) {
       wrap.innerHTML =
@@ -322,7 +336,7 @@
   /* ---------- Odwiedzający na żywo (identyfikator + ścieżka + akcje) ---------- */
   function renderVisitors(visitors) {
     var wrap = $("pa-visitors");
-    if (!wrap) return;
+    if (!wrap || !changed("visitors", visitors)) return;
 
     if (!Array.isArray(visitors) || !visitors.length) {
       wrap.innerHTML =
@@ -380,7 +394,13 @@
       return (
         '<div class="pa-visitor">' +
           '<div class="pa-visitor-head">' +
-            '<span class="pa-fp mono" title="Trwały identyfikator przeglądarki — przeżywa wyczyszczenie danych strony">#' + esc(fp) + "</span>" +
+            '<span class="pa-fp mono' + (v.via === "browser" ? " is-derived" : "") + '"' +
+              (v.via === "browser"
+                ? ' title="Przybliżony identyfikator przeglądarki (IP + przeglądarka) — gość bez pełnego odcisku, np. stary licznik w projekcie"'
+                : v.via === "session"
+                ? ' title="Identyfikator sesji — przeglądarka nie podała odcisku ani danych połączenia"'
+                : ' title="Trwały identyfikator przeglądarki — przeżywa wyczyszczenie danych strony"') +
+            ">#" + esc(fp) + "</span>" +
             whoLabel(v.username, fp, v.is_owner) +
             '<span class="pa-visitor-meta">' +
               '<span class="pa-time-chip">🟢 online ' + esc(relTime(v.last_seen_at)) + "</span>" +
@@ -401,7 +421,7 @@
   /* ---------- Wizualna mapa podstron (kto jest gdzie) ---------- */
   function renderPagesMap(pages) {
     var wrap = $("act-map");
-    if (!wrap) return;
+    if (!wrap || !changed("map", pages)) return;
     if (!Array.isArray(pages) || !pages.length) {
       wrap.innerHTML =
         '<div class="pa-empty">Nikt nie jest teraz online — gdy tylko ktoś wejdzie, jego kropka pojawi się na mapie odpowiedniej podstrony.</div>';
@@ -452,6 +472,8 @@
   function renderHourly(hours) {
     var wrap = $("act-hourly-chart");
     if (!wrap) return;
+    var hourNow = new Date().getHours();
+    if (!changed("hourly", [hours, hourNow])) return;
     if (!Array.isArray(hours) || !hours.length) {
       wrap.innerHTML = '<span class="adm-histo-empty">Brak danych na dziś — wykres pojawi się po pierwszych wejściach.</span>';
       return;
@@ -487,7 +509,7 @@
   /* ---------- Globalny strumień kliknięć ---------- */
   function renderClicks(clicks) {
     var wrap = $("pa-clicks");
-    if (!wrap) return;
+    if (!wrap || !changed("clicks", clicks)) return;
 
     if (!Array.isArray(clicks) || !clicks.length) {
       wrap.innerHTML =
@@ -528,7 +550,7 @@
 
   function renderEvents(events) {
     var wrap = $("pa-events");
-    if (!wrap) return;
+    if (!wrap || !changed("events", events)) return;
 
     if (!Array.isArray(events) || !events.length) {
       wrap.innerHTML =
@@ -612,11 +634,12 @@
   function stampUpdated() {
     var updated = $("act-updated");
     if (!updated) return;
+    lastFetchAt = Date.now();
     var now = new Date();
     var hh = ("0" + now.getHours()).slice(-2);
     var mm = ("0" + now.getMinutes()).slice(-2);
     var ss = ("0" + now.getSeconds()).slice(-2);
-    updated.textContent = "ostatnia aktualizacja: " + hh + ":" + mm + ":" + ss;
+    updated.textContent = "ostatnia aktualizacja: " + hh + ":" + mm + ":" + ss + " · odświeżam co " + (REFRESH_MS / 1000) + " s";
   }
 
   /* ---------- Zakładka Społeczność ---------- */
@@ -648,6 +671,13 @@
                   '<span class="pa-time-chip">❤ ' + fmt(u.likes_received) + "</span>" +
                   '<span class="pa-time-chip">dołączył(a): ' + esc(relTime(u.created_at)) + "</span>" +
                 "</span>" +
+                /* Zarządzanie kontem — konta specjalne (właściciel, bot) są chronione */
+                (u.is_owner || u.is_bot
+                  ? ""
+                  : '<span class="commp-user-actions">' +
+                    '<button class="btn btn-glass btn-sm" type="button" data-acc-reset-pin="' + esc(u.username) + '" title="Wygeneruj nowy 4-cyfrowy PIN — stare sesje użytkownika zostaną wylogowane">Nowy PIN</button>' +
+                    '<button class="btn btn-glass btn-sm commp-del" type="button" data-acc-delete="' + esc(u.username) + '" title="Usuń konto wraz z wpisami, komentarzami i polubieniami">Usuń konto</button>' +
+                  "</span>") +
               "</div>"
             );
           }).join("")
@@ -691,6 +721,48 @@
       .catch(function () { return null; });
   }
 
+  /* ---------- Zarządzanie kontami społeczności ---------- */
+  function bindAccountManagement() {
+    var wrap = $("comm-users");
+    if (!wrap) return;
+    wrap.addEventListener("click", function (e) {
+      var t = e.target && e.target.closest ? e.target.closest("button[data-acc-reset-pin], button[data-acc-delete]") : null;
+      if (!t) return;
+
+      var resetUser = t.getAttribute("data-acc-reset-pin");
+      var delUser = t.getAttribute("data-acc-delete");
+
+      if (resetUser) {
+        if (!window.confirm("Zresetować PIN konta „" + resetUser + "”? Stare sesje zostaną wylogowane, a nowy PIN zobaczysz raz — podaj go użytkownikowi.")) return;
+        t.disabled = true;
+        window.RejsonCloud.rpc("admin_reset_community_pin", { p_username: resetUser }, true)
+          .then(function (res) {
+            alert(
+              "Nowy PIN dla „" + ((res && res.username) || resetUser) + "”: " +
+              ((res && res.new_pin) || "?") +
+              "\n\nZapisz go teraz — nie da się go odczytać później (w bazie przechowujemy tylko hash)."
+            );
+          })
+          .catch(function (err) {
+            alert(err && err.message ? err.message : "Nie udało się zresetować PIN-u.");
+          })
+          .finally(function () { t.disabled = false; });
+        return;
+      }
+
+      if (delUser) {
+        if (!window.confirm("Na pewno usunąć konto „" + delUser + "”? Zniknie wraz ze wszystkimi wpisami, komentarzami i polubieniami.")) return;
+        t.disabled = true;
+        window.RejsonCloud.rpc("admin_delete_community_user", { p_username: delUser }, true)
+          .then(function () { fetchCommunity(); })
+          .catch(function (err) {
+            alert(err && err.message ? err.message : "Nie udało się usunąć konta.");
+            t.disabled = false;
+          });
+      }
+    });
+  }
+
   function bindCommunityModeration() {
     var wrap = $("comm-posts");
     if (!wrap) return;
@@ -731,7 +803,7 @@
     var maxTotal = 0;
     days.forEach(function (d) { maxTotal = Math.max(maxTotal, Number(d.total) || 0); });
 
-    if (chart) {
+    if (chart && changed("dailyc", days)) {
       var allZero = maxTotal === 0;
       chart.innerHTML = days.map(function (d) {
         var total = Number(d.total) || 0;
@@ -759,7 +831,7 @@
       }
     }
 
-    if (topWrap) {
+    if (topWrap && changed("topw", data.top_week)) {
       var top = Array.isArray(data.top_week) ? data.top_week : [];
       if (!top.length) {
         topWrap.innerHTML = '<div class="pa-empty">Jeszcze za mało danych — ranking zapełni się po pierwszych dniach z licznikiem dziennym.</div>';
@@ -823,12 +895,16 @@
 
   function startRefresh() {
     stopRefresh();
+    refreshTick = 0;
     fetchAdminActivity();
     fetchCommunity();
     fetchDailyStats();
     refreshTimer = setInterval(function () {
-      if (document.visibilityState === "visible") {
-        fetchAdminActivity();
+      if (document.visibilityState !== "visible") return;
+      refreshTick += 1;
+      fetchAdminActivity();
+      /* cięższe zapytania rzadziej — panel odświeża się płynnie bez obciążania bazy */
+      if (refreshTick % SLOW_CYCLE_DIV === 1) {
         fetchCommunity();
         fetchDailyStats();
       }
@@ -848,12 +924,24 @@
     bindAuthForm();
     bindLogout();
     bindCommunityModeration();
+    bindAccountManagement();
 
     document.addEventListener("visibilitychange", function () {
       if (document.visibilityState === "visible" && panelActive) {
         fetchAdminActivity();
       }
     });
+
+    /* Odliczanie „za N s” przy liczniku aktualizacji */
+    countdownTimer = setInterval(function () {
+      var updated = $("act-updated");
+      if (!updated || !panelActive || !lastFetchAt) return;
+      var elapsed = Math.floor((Date.now() - lastFetchAt) / 1000);
+      var cycle = REFRESH_MS / 1000;
+      var left = Math.max(0, cycle - (elapsed % cycle));
+      var base = updated.textContent.replace(/ · za \d+ s$/, "");
+      updated.textContent = base + " · za " + left + " s";
+    }, 1000);
 
     var session = null;
     try {
