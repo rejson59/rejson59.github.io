@@ -373,11 +373,13 @@
       var avatarEl = document.getElementById("user-avatar");
       if (nameEl) {
         nameEl.innerHTML =
-          esc(session.username) + ownerBadgeHTML(session.username);
+          esc(session.username) + ownerBadgeHTML(session.username) + botBadgeHTML(isAgentName(session.username));
       }
       if (avatarEl) {
         avatarEl.textContent = (session.username.charAt(0) || "?").toUpperCase();
       }
+      /* dociągnij listę projektów do otagowania wpisu */
+      loadProjectsForTags();
     } else {
       loginCard.hidden = false;
       composer.hidden = true;
@@ -421,6 +423,13 @@
           "</div>" +
           '<p class="post-content">' + esc(p.content) + "</p>" +
           postMediaHTML(p.media) +
+          (Array.isArray(p.tags) && p.tags.length
+            ? '<div class="post-tags">' +
+              p.tags.map(function (t) {
+                return '<button type="button" class="post-tag" data-feed-tag="' + esc(t) + '" title="Pokaż tylko wpisy z tym projektem">#' + esc(tagLabel(t)) + "</button>";
+              }).join("") +
+              "</div>"
+            : "") +
           '<div class="post-foot">' +
             '<button class="comm-pill-btn comm-like-btn' + (liked ? " is-liked" : "") + '" type="button" data-like-post="' + esc(p.id) + '"' +
               ' title="' + (liked ? "Cofnij polubienie" : "Polub ten wpis") + '" aria-label="' + (liked ? "Cofnij polubienie wpisu" : "Polub ten wpis") + '">' +
@@ -535,11 +544,16 @@
     return rpc("community_list_posts", {
       p_limit: 40,
       p_offset: 0,
-      p_token: session && session.token ? session.token : null
+      p_token: session && session.token ? session.token : null,
+      p_tag: activeTag
     })
       .then(function (data) {
         var posts = (data && Array.isArray(data.posts)) ? data.posts : [];
         lastPostsTotal = (data && Number(data.total)) || posts.length;
+        if (data && Array.isArray(data.available_tags)) {
+          feedTagsKnown = data.available_tags;
+          renderFeedTags();
+        }
         renderPosts(posts);
         return posts;
       })
@@ -552,6 +566,76 @@
         }
         return [];
       });
+  }
+
+  /* ================= OZNACZANIE PROJEKTÓW (tagi przy wpisach) ================= */
+  var selectedTags = [];      /* tagi wybrane w kompozytorze */
+  var projectsList = null;    /* lista slugów projektów z licznika wejść */
+  var activeTag = null;       /* aktywny filtr feedu */
+  var feedTagsKnown = [];     /* tagi obecne przy wpisach (z serwera) */
+
+  function tagLabel(slug) {
+    return String(slug || "") === "rejson59.github.io" ? "Strona główna" : String(slug || "");
+  }
+
+  function loadProjectsForTags() {
+    if (projectsList) return Promise.resolve(projectsList);
+    /* Awaryjna lista projektów (gdy REST nie zwróci licznika wejść) —
+       kolejność jak na stronie głównej. */
+    var FALLBACK_PROJECTS = ["rejson59.github.io", "Jakuplayer", "JoyPad", "mconline", "VibeAnimations"];
+    return fetch(SUPABASE_URL + "/rest/v1/page_views?select=project_slug&order=views_count.desc", {
+      headers: {
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": "Bearer " + SUPABASE_ANON_KEY
+      },
+      cache: "no-store"
+    })
+      .then(function (res) { return res.ok ? res.json() : []; })
+      .then(function (rows) {
+        projectsList = (Array.isArray(rows) ? rows : [])
+          .map(function (r) { return r && r.project_slug; })
+          .filter(function (s, i, arr) { return s && arr.indexOf(s) === i; });
+        if (!projectsList.length) projectsList = FALLBACK_PROJECTS.slice();
+        renderComposerTags();
+        return projectsList;
+      })
+      .catch(function () {
+        projectsList = FALLBACK_PROJECTS.slice();
+        renderComposerTags();
+        return projectsList;
+      });
+  }
+
+  function renderComposerTags() {
+    var wrap = document.getElementById("post-tags");
+    var chips = document.getElementById("post-tags-chips");
+    if (!wrap || !chips) return;
+    if (!projectsList || !projectsList.length) { wrap.hidden = true; return; }
+    wrap.hidden = false;
+    chips.innerHTML = projectsList.map(function (slug) {
+      var on = selectedTags.indexOf(slug) !== -1;
+      return (
+        '<button type="button" class="comm-tag-chip' + (on ? " is-active" : "") + '" data-tag-pick="' + esc(slug) + '"' +
+        (on ? ' aria-pressed="true"' : "") + ">#" + esc(tagLabel(slug)) + "</button>"
+      );
+    }).join("");
+  }
+
+  function renderFeedTags() {
+    var wrap = document.getElementById("feed-tags");
+    var chips = document.getElementById("feed-tags-chips");
+    if (!wrap || !chips) return;
+    /* tagi z wpisów + ewentualnie aktywny filtr spoza listy */
+    var tags = feedTagsKnown.slice();
+    if (activeTag && tags.indexOf(activeTag) === -1) tags.unshift(activeTag);
+    if (!tags.length && !activeTag) { wrap.hidden = true; return; }
+    wrap.hidden = false;
+    var head =
+      '<button type="button" class="comm-tag-chip' + (!activeTag ? " is-active" : "") + '" data-feed-tag="">Wszystkie</button>';
+    chips.innerHTML = head + tags.map(function (slug) {
+      var on = activeTag === slug;
+      return '<button type="button" class="comm-tag-chip' + (on ? " is-active" : "") + '" data-feed-tag="' + esc(slug) + '"' + (on ? ' aria-pressed="true"' : "") + ">#" + esc(tagLabel(slug)) + "</button>";
+    }).join("");
   }
 
   /* ================= KOMENTARZE (z odpowiedziami, 2 poziomy) ================= */
@@ -764,6 +848,16 @@
         dropDraft("r:" + replyCancel.getAttribute("data-reply-cancel"));
         delete openReplyForms[replyCancel.getAttribute("data-reply-cancel")];
         loadComments(replyCancel.getAttribute("data-post"));
+        return;
+      }
+
+      /* Kliknięcie tagu przy wpisie — filtruje feed po projekcie */
+      var tagChip = target.closest("[data-feed-tag]");
+      if (tagChip) {
+        var picked = tagChip.getAttribute("data-feed-tag");
+        activeTag = picked || null;
+        renderFeedTags();
+        loadPosts(true);
         return;
       }
 
@@ -1050,7 +1144,8 @@
       rpc("community_create_post", {
         p_token: session.token,
         p_content: content,
-        p_media: mediaPayload
+        p_media: mediaPayload,
+        p_tags: selectedTags.slice(0, 6)
       })
         .then(function () {
           textarea.value = "";
@@ -1060,6 +1155,8 @@
             }
           });
           attachedMedia = [];
+          selectedTags = [];
+          renderComposerTags();
           renderMediaPreview();
           refreshSubmitState();
           return loadPosts(true);
@@ -1074,33 +1171,63 @@
   }
 
   /* ================= KTO JEST TERAZ ONLINE ================= */
+  var ONLINE_CACHE_KEY = "rejson_comm_online_cache_v1";
+
+  function onlineUserHTML(u) {
+    var name = String(u.username || "?");
+    var isAgent = isAgentName(name) || u.is_bot === true;
+    var tabs = Number(u.tabs) || 1;
+    var projects = Array.isArray(u.projects) ? u.projects.length : 0;
+    return (
+      '<span class="comm-online-user">' +
+        '<span class="comm-online-dot" aria-hidden="true"></span>' +
+        '<span class="comm-avatar comm-avatar-sm' + (isAgent ? " comm-avatar-bot" : "") + '" aria-hidden="true">' + esc((name.charAt(0) || "?").toUpperCase()) +
+          (isAgent ? '<img src="' + AGENT_AVATAR_SRC + '" alt="" loading="lazy" onerror="this.remove()">' : "") +
+        "</span>" +
+        esc(name) + ownerBadgeHTML(name) + botBadgeHTML(isAgent) +
+        (tabs > 1 ? '<span class="comm-online-count mono" title="Ta sama osoba ma tyle kart otwartych">' + tabs + " karty</span>" : "") +
+        (projects > 1 ? '<span class="comm-online-count mono" title="Ile stron/projektów ma teraz otwarte">' + projects + " strony</span>" : "") +
+      "</span>"
+    );
+  }
+
+  function renderOnlineUsers(users) {
+    var box = document.getElementById("comm-online");
+    if (!box) return;
+    if (!users.length) {
+      box.innerHTML =
+        '<span class="comm-online-empty">Nikogo z zalogowanych nie ma teraz online — zaloguj się, a pokażesz się tutaj ze swoją nazwą.</span>';
+      return;
+    }
+    box.innerHTML = users.map(onlineUserHTML).join("");
+  }
+
   function loadOnline() {
     var box = document.getElementById("comm-online");
     if (!box) return;
-    rpc("get_activity_overview", { p_window_seconds: 90 })
-      .then(function (data) {
-        var users = (data && Array.isArray(data.identified_users)) ? data.identified_users : [];
-        if (!users.length) {
-          box.innerHTML =
-            '<span class="comm-online-empty">Nikogo z zalogowanych nie ma teraz online — zaloguj się, a pokażesz się tutaj ze swoją nazwą.</span>';
-          return;
-        }
-        box.innerHTML = users.map(function (u) {
-          var name = String(u.username || "?");
-          var projects = Array.isArray(u.projects) ? u.projects.length : 0;
-          return (
-            '<span class="comm-online-user">' +
-              '<span class="comm-online-dot" aria-hidden="true"></span>' +
-              '<span class="comm-avatar comm-avatar-sm' + (isAgent ? " comm-avatar-bot" : "") + '" aria-hidden="true">' + esc((name.charAt(0) || "?").toUpperCase()) +
-                (isAgent ? '<img src="' + AGENT_AVATAR_SRC + '" alt="" loading="lazy" onerror="this.remove()">' : "") +
-              "</span>" +
-              esc(name) + ownerBadgeHTML(name) + botBadgeHTML(isAgentName(name)) +
-              (projects > 1 ? '<span class="comm-online-count mono" title="Ile stron/projektów ma teraz otwarte">' + projects + " strony</span>" : "") +
-            "</span>"
-          );
-        }).join("");
+    return rpc("community_online_users", { p_window_seconds: 90 })
+      .then(function (users) {
+        var list = Array.isArray(users) ? users : [];
+        renderOnlineUsers(list);
+        try {
+          localStorage.setItem(ONLINE_CACHE_KEY, JSON.stringify({ at: Date.now(), users: list }));
+        } catch (e) { /* ignorujemy */ }
+        return list;
       })
       .catch(function () { /* cicho — sekcja opcjonalna */ });
+  }
+
+  /* Błyskawiczny start: pokaż ostatnio znanych (cache świeższy niż 2 min),
+     zanim leci żądanie — żadnego wielosekundowego „Ładowanie…”. */
+  function primeOnlineFromCache() {
+    try {
+      var raw = localStorage.getItem(ONLINE_CACHE_KEY);
+      if (!raw) return;
+      var parsed = JSON.parse(raw);
+      if (!parsed || typeof parsed.at !== "number" || !Array.isArray(parsed.users)) return;
+      if (Date.now() - parsed.at > 2 * 60 * 1000) return;
+      renderOnlineUsers(parsed.users);
+    } catch (e) { /* ignorujemy */ }
   }
 
   /* ================= MOTYW ================= */
@@ -1142,6 +1269,37 @@
     var refreshBtn = document.getElementById("feed-refresh");
     if (refreshBtn) refreshBtn.addEventListener("click", function () { loadPosts(true); loadOnline(); });
 
+    /* Tagi projektów: wybór w kompozytorze + pasek filtrów nad feedem */
+    var composerChips = document.getElementById("post-tags-chips");
+    if (composerChips) {
+      composerChips.addEventListener("click", function (ev) {
+        var chip = ev.target && ev.target.closest ? ev.target.closest("[data-tag-pick]") : null;
+        if (!chip) return;
+        var slug = chip.getAttribute("data-tag-pick");
+        var idx = selectedTags.indexOf(slug);
+        if (idx !== -1) {
+          selectedTags.splice(idx, 1);
+        } else if (selectedTags.length < 6) {
+          selectedTags.push(slug);
+        }
+        renderComposerTags();
+      });
+    }
+    var feedChips = document.getElementById("feed-tags-chips");
+    if (feedChips) {
+      feedChips.addEventListener("click", function (ev) {
+        var chip = ev.target && ev.target.closest ? ev.target.closest("[data-feed-tag]") : null;
+        if (!chip) return;
+        activeTag = chip.getAttribute("data-feed-tag") || null;
+        renderFeedTags();
+        loadPosts(true);
+      });
+    }
+
+    if (session) loadProjectsForTags();
+
+    /* szybki start sekcji online z cache, potem świeży strzał */
+    primeOnlineFromCache();
     loadOnline();
 
     feedTimer = setInterval(function () {

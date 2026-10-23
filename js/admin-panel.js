@@ -295,11 +295,13 @@
         })
         .join("");
       var isOwner = String(name).toLowerCase() === "rejson59";
+      var tabs = Number(u.tabs) || 1;
       return (
         '<div class="adm-online-user">' +
           '<span class="adm-dot" aria-hidden="true"></span>' +
           '<span class="commp-avatar" aria-hidden="true">' + esc(name.charAt(0).toUpperCase()) + "</span>" +
-          '<span class="commp-name">' + esc(name) + (isOwner ? ownerBadge(true) : "") + botBadge(isAgentName(name)) + "</span>" +
+          '<span class="commp-name">' + esc(name) + (isOwner ? ownerBadge(true) : "") + botBadge(isAgentName(name)) +
+            (tabs > 1 ? '<span class="pa-time-chip" title="Karty tej osoby">🗔 ' + fmt(tabs) + "</span>" : "") + "</span>" +
           (projHtml || '<span class="adm-proj-chip">—</span>') +
         "</div>"
       );
@@ -383,6 +385,9 @@
             '<span class="pa-visitor-meta">' +
               '<span class="pa-time-chip">🟢 online ' + esc(relTime(v.last_seen_at)) + "</span>" +
               '<span class="pa-time-chip">⏱ na stronach: ' + esc(fmtDuration(secs)) + "</span>" +
+              (Number(v.tabs) > 1
+                ? '<span class="pa-time-chip" title="Ta sama osoba ma otwarte kilka kart — liczymy ją raz">🗔 ' + fmt(v.tabs) + " karty</span>"
+                : "") +
             "</span>" +
           "</div>" +
           openHtml +
@@ -391,6 +396,92 @@
         "</div>"
       );
     }).join("");
+  }
+
+  /* ---------- Wizualna mapa podstron (kto jest gdzie) ---------- */
+  function renderPagesMap(pages) {
+    var wrap = $("act-map");
+    if (!wrap) return;
+    if (!Array.isArray(pages) || !pages.length) {
+      wrap.innerHTML =
+        '<div class="pa-empty">Nikt nie jest teraz online — gdy tylko ktoś wejdzie, jego kropka pojawi się na mapie odpowiedniej podstrony.</div>';
+      return;
+    }
+
+    var maxPeople = 1;
+    pages.forEach(function (p) { maxPeople = Math.max(maxPeople, Number(p.people_count) || 0); });
+
+    wrap.innerHTML = pages.map(function (p) {
+      var slug = String(p.slug || "");
+      var isPage = slug.toLowerCase() === SITE_SLUG;
+      var peopleCount = Number(p.people_count) || 0;
+      var tabs = Number(p.tabs) || 0;
+      var people = Array.isArray(p.people) ? p.people : [];
+      var intensity = Math.max(0.25, Math.min(1, peopleCount / maxPeople));
+      var href = isPage ? "/" : "/" + encodeURIComponent(slug);
+
+      var peopleHtml = people.map(function (person) {
+        var who = String(person.who || "Gość");
+        var initial = (who.charAt(0) || "?").toUpperCase();
+        return (
+          '<span class="adm-map-person" title="' + esc(who) + (Number(person.tabs) > 1 ? " · " + person.tabs + " karty" : "") + '">' +
+            '<span class="adm-map-person-ava' + (person.is_username ? " is-ident" : "") + '" aria-hidden="true">' + esc(initial) + "</span>" +
+            '<span class="adm-map-person-name">' + esc(who) + "</span>" +
+          "</span>"
+        );
+      }).join("");
+
+      return (
+        '<a class="adm-map-node' + (isPage ? " is-site" : "") + '" href="' + href + '" target="_blank" rel="noopener"' +
+          ' style="--map-intensity:' + intensity.toFixed(2) + '">' +
+          '<span class="adm-map-node-head">' +
+            '<span class="adm-map-dot" aria-hidden="true"></span>' +
+            '<span class="adm-proj-chip' + (isPage ? " is-page" : "") + '">' + esc(isPage ? slug + " (strona główna)" : slug) + "</span>" +
+            '<span class="adm-map-counts">' +
+              '<span class="adm-map-num mono" title="Unikalne osoby tutaj">' + fmt(peopleCount) + " 👤</span>" +
+              (tabs > peopleCount ? '<span class="adm-map-num mono adm-dim" title="Otwarte karty">' + fmt(tabs) + " 🗔</span>" : "") +
+            "</span>" +
+          "</span>" +
+          '<span class="adm-map-people">' + peopleHtml + "</span>" +
+        "</a>"
+      );
+    }).join("");
+  }
+
+  /* ---------- Wykres godzinowy: dziś (wejścia + kliknięcia) ---------- */
+  function renderHourly(hours) {
+    var wrap = $("act-hourly-chart");
+    if (!wrap) return;
+    if (!Array.isArray(hours) || !hours.length) {
+      wrap.innerHTML = '<span class="adm-histo-empty">Brak danych na dziś — wykres pojawi się po pierwszych wejściach.</span>';
+      return;
+    }
+    var maxV = 1, maxC = 1;
+    hours.forEach(function (h) {
+      maxV = Math.max(maxV, Number(h.visits) || 0);
+      maxC = Math.max(maxC, Number(h.clicks) || 0);
+    });
+    var nowHour = new Date().getHours();
+    wrap.innerHTML = hours.map(function (h) {
+      var v = Number(h.visits) || 0;
+      var c = Number(h.clicks) || 0;
+      var isNow = Number(h.hour) === nowHour;
+      var label = ("0" + h.hour).slice(-2) + ":00";
+      return (
+        '<div class="adm-hour-col' + (isNow ? " is-now" : "") + '" title="' + esc(
+          label + " — wejścia: " + v + " · kliknięcia: " + c
+        ) + '">' +
+          '<span class="adm-hour-bars">' +
+            '<span class="adm-hour-bar adm-hour-visits" style="height:' + Math.max(3, Math.round((v / maxV) * 100)) + '%"></span>' +
+            '<span class="adm-hour-bar adm-hour-clicks" style="height:' + Math.max(3, Math.round((c / maxC) * 100)) + '%"></span>' +
+          "</span>" +
+          (Number(h.hour) % 3 === 0 || isNow
+            ? '<span class="adm-hour-lbl mono">' + esc(label) + "</span>"
+            : '<span class="adm-hour-lbl mono"></span>') +
+        "</div>"
+      );
+    }).join("") +
+    '<div class="adm-hour-legend"><span class="adm-hour-key adm-hour-key-visits"></span> wejścia <span class="adm-hour-key adm-hour-key-clicks"></span> kliknięcia</div>';
   }
 
   /* ---------- Globalny strumień kliknięć ---------- */
@@ -505,6 +596,7 @@
     renderHistogram(multi.open_projects_histogram);
     renderIdentified(data.identified_users);
     renderVisitors(data.visitors);
+    renderPagesMap(data.pages_map);
     renderClicks(data.clicks);
     renderEvents(data.events);
 
@@ -629,6 +721,7 @@
   }
 
   function renderDailyData(data) {
+    renderHourly(data && data.hours_today);
     var chart = $("act-daily-chart");
     var topWrap = $("act-top-week");
     if (!chart && !topWrap) return;

@@ -671,6 +671,61 @@ video.post-media-item {
 }
 
 /* ============================================================
+   Oznaczanie projektów — chipsy w kompozytorze, tagi przy wpisach
+   i pasek filtrowania feedu (szkło pigułkowe jak reszta)
+   ============================================================ */
+.comm-tags {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 10px 0 2px;
+}
+.comm-tags-filter { margin: 0 0 14px; }
+.comm-tags-label {
+  font-size: 12px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.comm-tags-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.comm-tag-chip,
+.post-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.26);
+  background: rgba(148, 163, 184, 0.09);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  color: var(--muted);
+  font: 600 12px/1.4 "Inter", sans-serif;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+.comm-tag-chip:hover,
+.post-tag:hover { color: var(--text); border-color: rgba(148, 163, 184, 0.5); }
+.comm-tag-chip.is-active,
+.post-tag.is-active {
+  color: #fff;
+  border-color: rgba(122, 178, 255, 0.65);
+  background: linear-gradient(135deg, rgba(90, 130, 215, 0.5), rgba(60, 90, 170, 0.5));
+}
+[data-theme="light"] .comm-tag-chip.is-active,
+[data-theme="light"] .post-tag.is-active {
+  color: #1e4fd0;
+  background: linear-gradient(135deg, rgba(47, 109, 246, 0.16), rgba(47, 109, 246, 0.10));
+}
+.post-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 10px;
+}
+.post-tag { padding: 3px 10px; font-size: 11.5px; }
+
+/* ============================================================
    Niematerialne szkło — rozmycie bez pomalowanego tła.
    Nakładamy na elementach karty wpisu, żeby „obraz znikał pod powierzchnią",
    ale element nie miał widocznego prostokąta tła.

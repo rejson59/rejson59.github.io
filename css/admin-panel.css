@@ -787,3 +787,144 @@
   white-space: nowrap;
   vertical-align: 1px;
 }
+
+/* ---------- Mapa podstron na żywo ---------- */
+.adm-map {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 12px;
+}
+.adm-map-node {
+  --map-intensity: 0.35;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 13px 15px;
+  border-radius: 18px;
+  text-decoration: none;
+  color: inherit;
+  border: 1px solid color-mix(in srgb, var(--accent) calc(20% + var(--map-intensity) * 45%), var(--border));
+  background:
+    radial-gradient(120% 130% at 15% 0%, color-mix(in srgb, var(--accent) calc(5% + var(--map-intensity) * 16%), transparent), transparent 70%),
+    color-mix(in srgb, var(--card) 78%, transparent);
+  backdrop-filter: blur(14px) saturate(1.5);
+  -webkit-backdrop-filter: blur(14px) saturate(1.5);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+.adm-map-node:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--accent) 60%, var(--border-strong));
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.3);
+}
+.adm-map-node.is-site {
+  border-style: dashed;
+}
+.adm-map-node-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.adm-map-dot {
+  width: 9px;
+  height: 9px;
+  flex: none;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 0 4px color-mix(in srgb, #34d399 22%, transparent);
+  animation: commOnlinePulse 2s ease-in-out infinite;
+}
+.adm-map-counts { margin-left: auto; display: inline-flex; gap: 8px; }
+.adm-map-num { font-size: 11.5px; font-weight: 700; color: var(--muted); }
+.adm-map-people {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 24px;
+}
+.adm-map-person {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px 3px 4px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(148, 163, 184, 0.09);
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.adm-map-person-ava {
+  width: 18px;
+  height: 18px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 25%, var(--bg-elev));
+  color: var(--accent-strong);
+  font-size: 9.5px;
+  font-weight: 700;
+}
+.adm-map-person-ava.is-ident { background: linear-gradient(135deg, #2f6df6, #8b5cf6); color: #fff; }
+.adm-map-node:hover .adm-map-person { color: var(--text); }
+
+/* ---------- Wykres godzinowy (dziś) ---------- */
+.adm-hourly {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 130px;
+  padding: 6px 2px 0;
+  position: relative;
+  flex-wrap: wrap;
+}
+.adm-hour-col {
+  flex: 1 1 0;
+  min-width: 16px;
+  height: 104px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 4px;
+  border-radius: 7px 7px 4px 4px;
+  padding: 4px 1px 0;
+}
+.adm-hour-col.is-now { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.adm-hour-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 78px;
+  width: 100%;
+  justify-content: center;
+}
+.adm-hour-bar {
+  width: 45%;
+  max-width: 10px;
+  border-radius: 4px 4px 2px 2px;
+  transition: height 0.45s cubic-bezier(0.22, 0.8, 0.3, 1);
+}
+.adm-hour-visits { background: linear-gradient(180deg, var(--accent-strong), color-mix(in srgb, var(--accent) 65%, transparent)); }
+.adm-hour-clicks { background: linear-gradient(180deg, #a78bfa, color-mix(in srgb, #8b5cf6 60%, transparent)); }
+.adm-hour-lbl { font-size: 9px; color: var(--faint); height: 12px; white-space: nowrap; }
+.adm-hour-legend {
+  width: 100%;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  font-size: 11px;
+  color: var(--muted);
+  padding-top: 8px;
+}
+.adm-hour-key {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  display: inline-block;
+  margin-right: 4px;
+}
+.adm-hour-key-visits { background: var(--accent); }
+.adm-hour-key-clicks { background: #8b5cf6; }
+.adm-hour-legend .adm-hour-key:first-child { margin-left: 0; }
