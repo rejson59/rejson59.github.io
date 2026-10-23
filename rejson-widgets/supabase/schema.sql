@@ -284,3 +284,49 @@ REVOKE ALL ON public.page_trail FROM anon, authenticated;
 -- get_admin_activity(p_window_seconds) — TYLKO dla administratora (is_widget_admin):
 --   overview + visitors[identyfikator, nazwa, otwarte projekty, czas, ścieżka]
 --   + events[zgłoszenia, polubienia, wpisy i komentarze Społeczności]
+
+-- ============================================================
+-- Bogate śledzenie akcji + polubienia Społeczności + właściciel
+-- ============================================================
+-- Dziennik kliknięć/akcji (tylko panel admina, zachowane do 24 h)
+CREATE TABLE IF NOT EXISTS public.activity_events (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  session_key text NOT NULL,
+  fingerprint_id text,
+  username text,
+  project_slug text,
+  kind text NOT NULL,
+  target text NOT NULL,
+  at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS activity_events_session_at_idx ON public.activity_events (session_key, at DESC);
+CREATE INDEX IF NOT EXISTS activity_events_at_idx ON public.activity_events (at DESC);
+ALTER TABLE public.activity_events ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.activity_events FROM anon, authenticated;
+
+-- Odcisk przeglądarki przy zgłoszeniach i polubieniach (identyfikator zamiast „Anonima")
+ALTER TABLE public.submissions ADD COLUMN IF NOT EXISTS fingerprint_id text;
+ALTER TABLE public.submission_votes ADD COLUMN IF NOT EXISTS fingerprint_id text;
+
+-- Właściciel społeczności + polubienia wpisów
+ALTER TABLE public.community_users ADD COLUMN IF NOT EXISTS is_owner boolean NOT NULL DEFAULT false;
+UPDATE public.community_users SET is_owner = true WHERE lower(username) = 'rejson59';
+
+CREATE TABLE IF NOT EXISTS public.community_likes (
+  post_id uuid NOT NULL REFERENCES public.community_posts(id) ON DELETE CASCADE,
+  user_id uuid NOT NULL REFERENCES public.community_users(id) ON DELETE CASCADE,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (post_id, user_id)
+);
+ALTER TABLE public.community_likes ENABLE ROW LEVEL SECURITY;
+CREATE POLICY community_likes_select_public
+  ON public.community_likes FOR SELECT TO anon, authenticated USING (true);
+REVOKE INSERT, UPDATE, DELETE ON public.community_likes FROM anon, authenticated;
+
+-- RPC (SECURITY DEFINER, definicje w migracjach na produkcji):
+-- log_activity_event(kind,target,slug,visitor,token,fp) — zapis kliknięcia (anty-spam 3s)
+-- toggle_upvote(+p_fp) / submit_feedback(+p_fp) — identyfikator przy głosach i zgłoszeniach
+-- community_list_posts(+p_token) → +likes_count/has_liked/is_owner; community_list_comments → +is_owner
+-- community_toggle_post_like(token, post)
+-- get_admin_activity → +visitors[].actions +clicks[] +lepsze etykiety (Gość #1234)
+-- get_admin_community → członkowie/wpisy/statystyki; admin_delete_post(post) — moderacja

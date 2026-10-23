@@ -358,7 +358,8 @@
     try {
       var res = await cloud.rpc("toggle_upvote", {
         p_submission_id: id,
-        p_voter_key: cloud.getVoterKey()
+        p_voter_key: cloud.getVoterKey(),
+        p_fp: cloud.fpId ? cloud.fpId() : null
       });
       if (res && typeof res.upvotes_count === "number") {
         item.has_voted = Boolean(res.voted);

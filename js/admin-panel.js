@@ -1,9 +1,12 @@
 /*!
  * Główny Panel Admina — logowanie (ten sam e-mail i hasło co w panelu zgłoszeń),
- * zakładki oraz szczegółowa aktywność na żywo:
- * odwiedzający z trwałym 4-cyfrowym identyfikatorem przeglądarki,
- * ich ścieżki kroków (do 24 h) i strumień zdarzeń ze wszystkich projektów.
- * Dane pochodzą z admin-only RPC public.get_admin_activity (Supabase).
+ * zakładki oraz SZCZEGÓŁOWA aktywność na żywo:
+ *  - odwiedzający z trwałym 4-cyfrowym identyfikatorem (nikt nie jest anonimowy),
+ *  - ścieżki kroków + dokładna lista akcji (co klikał i kiedy),
+ *  - globalny strumień kliknięć wszystkich użytkowników,
+ *  - strumień zdarzeń (zgłoszenia, polubienia, wpisy, komentarze),
+ *  - zakładka Społeczność (członkowie, moderacja wpisów).
+ * Dane: admin-only RPC public.get_admin_activity / get_admin_community.
  */
 (function (window, document) {
   "use strict";
@@ -32,7 +35,30 @@
     return numFmt.format(Math.max(0, Number(n) || 0));
   }
 
-  /* ---------- Płynna animacja liczby do nowej wartości ---------- */
+  /* Odznaka właściciela (złota korona) */
+  function ownerBadge(isOwner) {
+    return isOwner
+      ? '<span class="adm-owner-badge" title="Twórca strony">👑 Właściciel</span>'
+      : "";
+  }
+
+  /* Czytelna etykieta osoby: nazwa albo stały identyfikator — nigdy "Anonim" */
+  function whoLabel(username, fp, isOwner) {
+    if (username) {
+      return (
+        '<span class="pa-who">' +
+        esc(username) + ownerBadge(isOwner) +
+        "</span>"
+      );
+    }
+    return (
+      '<span class="pa-who pa-who-guest">Gość <span class="pa-fp-mini mono">#' +
+      esc(fp && fp !== "----" ? fp : "????") +
+      "</span>" + ownerBadge(isOwner) + "</span>"
+    );
+  }
+
+  /* ---------- Płynna animacja liczby ---------- */
   var reduceMotion =
     window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -41,7 +67,6 @@
     target = Math.max(0, Number(target) || 0);
     var prev = typeof el._val === "number" ? el._val : 0;
     if (el._val === target) return;
-
     if (el._raf) cancelAnimationFrame(el._raf);
 
     function finish(v) {
@@ -49,10 +74,7 @@
       el.textContent = fmt(v);
     }
 
-    if (reduceMotion || prev === target) {
-      finish(target);
-      return;
-    }
+    if (reduceMotion || prev === target) { finish(target); return; }
 
     el.classList.remove("act-bump");
     void el.offsetWidth;
@@ -64,8 +86,7 @@
       if (!startTs) startTs = ts;
       var p = Math.min(1, (ts - startTs) / duration);
       var eased = 1 - Math.pow(1 - p, 3);
-      var cur = Math.round(prev + (target - prev) * eased);
-      el.textContent = fmt(cur);
+      el.textContent = fmt(Math.round(prev + (target - prev) * eased));
       if (p < 1) {
         el._raf = requestAnimationFrame(step);
       } else {
@@ -76,7 +97,7 @@
     el._raf = requestAnimationFrame(step);
   }
 
-  /* ---------- Czas względny po polsku ---------- */
+  /* ---------- Czas ---------- */
   function relTime(iso) {
     if (!iso) return "—";
     var t = Date.parse(iso);
@@ -97,10 +118,10 @@
     var t = Date.parse(iso);
     if (isNaN(t)) return "--:--";
     var d = new Date(t);
-    return ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);
+    return ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2) +
+      ":" + ("0" + d.getSeconds()).slice(-2);
   }
 
-  /* Czas przebywania: "3 min 48 s" / "1 godz. 12 min" */
   function fmtDuration(seconds) {
     var s = Math.max(0, Number(seconds) || 0);
     if (s < 60) return s + " s";
@@ -111,6 +132,12 @@
   }
 
   /* ---------- Zakładki ---------- */
+  var TAB_IDS = {
+    activity: "tab-activity",
+    submissions: "tab-submissions",
+    community: "tab-community"
+  };
+
   function bindTabs() {
     var btns = document.querySelectorAll(".admin-tab");
     for (var i = 0; i < btns.length; i++) {
@@ -122,16 +149,17 @@
             btns[j].classList.toggle("is-active", active);
             btns[j].setAttribute("aria-selected", active ? "true" : "false");
           }
-          var actEl = $("tab-activity");
-          var subEl = $("tab-submissions");
-          if (actEl) actEl.hidden = tab !== "activity";
-          if (subEl) subEl.hidden = tab !== "submissions";
+          Object.keys(TAB_IDS).forEach(function (key) {
+            var el = $(TAB_IDS[key]);
+            if (el) el.hidden = key !== tab;
+          });
+          if (tab === "community") fetchCommunity();
         });
       })(btns[i]);
     }
   }
 
-  /* ---------- Widoki: logowanie / panel ---------- */
+  /* ---------- Logowanie ---------- */
   function showAuth() {
     panelActive = false;
     stopRefresh();
@@ -157,12 +185,8 @@
   function verifyAdmin() {
     if (!window.RejsonCloud || !window.RejsonCloud.rpc) return Promise.resolve(false);
     return window.RejsonCloud.rpc("admin_setup_status", {}, true)
-      .then(function (status) {
-        return Boolean(status && status.is_admin);
-      })
-      .catch(function () {
-        return false;
-      });
+      .then(function (status) { return Boolean(status && status.is_admin); })
+      .catch(function () { return false; });
   }
 
   function bindAuthForm() {
@@ -179,7 +203,6 @@
 
       window.RejsonCloud.signInOwner(email, pass, false)
         .then(function () {
-          /* Pełne przeładowanie — panel zgłoszeń też wejdzie z aktywną sesją */
           window.location.reload();
         })
         .catch(function (err) {
@@ -198,14 +221,12 @@
     var btn = $("panel-logout");
     if (!btn) return;
     btn.addEventListener("click", function () {
-      try {
-        window.RejsonCloud.setStoredSession(null);
-      } catch (e) { /* ignorujemy */ }
+      try { window.RejsonCloud.setStoredSession(null); } catch (e) { /* ignorujemy */ }
       window.location.reload();
     });
   }
 
-  /* ---------- Render: histogram otwartych stron ---------- */
+  /* ---------- Histogram otwartych stron ---------- */
   function renderHistogram(histo) {
     var wrap = $("act-histogram");
     if (!wrap) return;
@@ -242,60 +263,35 @@
       .join("");
   }
 
-  /* ---------- Render: zalogowani użytkownicy Społeczności ---------- */
-  function renderIdentified(users) {
-    var wrap = $("act-users");
-    if (!wrap) return;
-
-    if (!Array.isArray(users) || !users.length) {
-      wrap.innerHTML =
-        '<span class="act-histogram-empty">Brak zalogowanych użytkowników online.</span>';
-      return;
+  /* ---------- Ikony rodzajów akcji ---------- */
+  function actionIcon(kind) {
+    switch (kind) {
+      case "like": return "❤";
+      case "unlike": return "💔";
+      case "submit": return "📨";
+      case "open": return "📂";
+      default: return "🖱";
     }
-
-    wrap.innerHTML = users.map(function (u) {
-      var name = String(u.username || "?");
-      var initial = name.charAt(0).toUpperCase();
-      var projects = Array.isArray(u.projects) ? u.projects : [];
-      var projHtml = projects
-        .map(function (slug) {
-          var isPage = String(slug).toLowerCase() === SITE_SLUG;
-          return '<span class="act-user-proj' + (isPage ? " is-page" : "") + '">' + esc(slug) + "</span>";
-        })
-        .join("");
-      return (
-        '<div class="act-user">' +
-          '<span class="act-user-name"><span class="act-user-avatar" aria-hidden="true">' + esc(initial) + "</span>" + esc(name) + "</span>" +
-          '<span class="act-user-sep">przegląda teraz:</span>' +
-          '<span class="act-user-projects">' + (projHtml || '<span class="act-user-proj">—</span>') + "</span>" +
-        "</div>"
-      );
-    }).join("");
   }
 
-  /* ---------- Render: odwiedzający na żywo z identyfikatorami i ścieżkami ---------- */
+  /* ---------- Odwiedzający na żywo (identyfikator + ścieżka + akcje) ---------- */
   function renderVisitors(visitors) {
     var wrap = $("pa-visitors");
     if (!wrap) return;
 
     if (!Array.isArray(visitors) || !visitors.length) {
       wrap.innerHTML =
-        '<div class="pa-empty">Nikt nie jest teraz online — jak tylko ktoś wejdzie na stronę lub do projektu, zobaczysz go tutaj ze swoim identyfikatorem i trasą.</div>';
+        '<div class="pa-empty">Nikt nie jest teraz online — jak tylko ktoś wejdzie na stronę lub do projektu, zobaczysz go tutaj z identyfikatorem, trasą i każdym kliknięciem.</div>';
       return;
     }
 
     wrap.innerHTML = visitors.map(function (v) {
       var fp = String(v.fingerprint_id || "----");
-      var username = v.username ? String(v.username) : null;
       var secs = Number(v.seconds_active) || 0;
       var openProjects = Array.isArray(v.open_projects) ? v.open_projects : [];
       var trail = Array.isArray(v.trail) ? v.trail.slice() : [];
-      /* ścieżka w bazie od najnowszej — do wyświetlenia odwracamy od najstarszej */
+      var actions = Array.isArray(v.actions) ? v.actions.slice() : [];
       trail.reverse();
-
-      var whoHtml = username
-        ? '<span class="pa-who"><span class="act-user-avatar" aria-hidden="true">' + esc(username.charAt(0).toUpperCase()) + "</span>" + esc(username) + "</span>"
-        : '<span class="pa-who" style="color:var(--muted)">Gość (niezalogowany)</span>';
 
       var openHtml = openProjects.length
         ? '<div class="pa-open-projects"><span>Otwarte teraz:</span>' +
@@ -313,7 +309,7 @@
             return (
               '<span class="pa-trail-step' + (isLatest ? " is-latest" : "") + '">' +
                 '<span class="pa-trail-slug">' + esc(step.slug) + "</span>" +
-                '<span class="pa-trail-time">' + esc(clockTime(step.at)) + "</span>" +
+                '<span class="pa-trail-time">' + esc(clockTime(step.at).slice(0, 5)) + "</span>" +
               "</span>" +
               (isLatest ? "" : '<span class="pa-trail-arrow">→</span>')
             );
@@ -321,11 +317,26 @@
           "</div>"
         : "";
 
+      var actionsHtml = actions.length
+        ? '<div class="pa-actions"><span class="pa-trail-label">Ostatnie akcje</span><div class="pa-actions-list">' +
+          actions.slice(0, 8).map(function (a) {
+            return (
+              '<div class="pa-action">' +
+                '<span class="pa-action-icon" aria-hidden="true">' + actionIcon(a.kind) + "</span>" +
+                '<span class="pa-action-text">' + esc(a.target || "") + "</span>" +
+                (a.project ? '<span class="pa-event-proj">' + esc(a.project) + "</span>" : "") +
+                '<span class="pa-action-time mono">' + esc(clockTime(a.at)) + "</span>" +
+              "</div>"
+            );
+          }).join("") +
+          "</div></div>"
+        : '<div class="pa-actions"><span class="pa-trail-label">Ostatnie akcje</span><span class="pa-actions-empty">brak zarejestrowanych kliknięć (nowy licznik działa od teraz)</span></div>';
+
       return (
         '<div class="pa-visitor">' +
           '<div class="pa-visitor-head">' +
             '<span class="pa-fp mono" title="Trwały identyfikator przeglądarki — przeżywa wyczyszczenie danych strony">#' + esc(fp) + "</span>" +
-            whoHtml +
+            whoLabel(v.username, fp, v.is_owner) +
             '<span class="pa-visitor-meta">' +
               '<span class="pa-time-chip">🟢 online ' + esc(relTime(v.last_seen_at)) + "</span>" +
               '<span class="pa-time-chip">⏱ na stronach: ' + esc(fmtDuration(secs)) + "</span>" +
@@ -333,17 +344,45 @@
           "</div>" +
           openHtml +
           trailHtml +
+          actionsHtml +
         "</div>"
       );
     }).join("");
   }
 
-  /* ---------- Render: strumień zdarzeń ---------- */
+  /* ---------- Globalny strumień kliknięć ---------- */
+  function renderClicks(clicks) {
+    var wrap = $("pa-clicks");
+    if (!wrap) return;
+
+    if (!Array.isArray(clicks) || !clicks.length) {
+      wrap.innerHTML =
+        '<div class="pa-empty">Jeszcze brak zarejestrowanych kliknięć — licznik działa od teraz, więc wejdź na stronę i kliknij coś, aby zobaczyć pierwsze wpisy.</div>';
+      return;
+    }
+
+    wrap.innerHTML = clicks.map(function (c) {
+      return (
+        '<div class="pa-event">' +
+          '<span class="pa-event-icon" aria-hidden="true">' + actionIcon(c.kind) + "</span>" +
+          '<span class="pa-event-body">' +
+            whoLabel(c.username, c.fp, c.is_owner) +
+            '<span class="pa-event-text"> kliknął(-a): ' + esc(c.target || "") + "</span>" +
+            (c.project ? '<span class="pa-event-proj">' + esc(c.project) + "</span>" : "") +
+          "</span>" +
+          '<span class="pa-event-time" title="' + esc(clockTime(c.at)) + '">' + esc(relTime(c.at)) + "</span>" +
+        "</div>"
+      );
+    }).join("");
+  }
+
+  /* ---------- Strumień zdarzeń ---------- */
   var EVENT_ICONS = {
     feedback: "💡",
     like: "❤",
     post: "📝",
-    comment: "💬"
+    comment: "💬",
+    like_post: "❤"
   };
 
   function eventIcon(ev) {
@@ -371,7 +410,7 @@
         '<div class="pa-event">' +
           '<span class="pa-event-icon" aria-hidden="true">' + eventIcon(ev) + "</span>" +
           '<span class="pa-event-body">' +
-            '<span class="pa-event-who">' + esc(ev.who || "Anonim") + "</span>" +
+            '<span class="pa-event-who">' + esc(ev.who || "Gość") + "</span>" +
             '<span class="pa-event-text">' + esc(ev.text || "") + "</span>" +
             proj +
           "</span>" +
@@ -381,7 +420,7 @@
     }).join("");
   }
 
-  /* ---------- Render: wiersze projektów ---------- */
+  /* ---------- Wiersze projektów ---------- */
   function rowHTML(p) {
     var online = Number(p.online) || 0;
     var today = Number(p.views_today) || 0;
@@ -401,7 +440,7 @@
     );
   }
 
-  /* ---------- Główny render ---------- */
+  /* ---------- Główny render aktywności ---------- */
   function render(data) {
     if (!data || typeof data !== "object") return;
     var totals = data.totals || {};
@@ -421,8 +460,8 @@
     }
 
     renderHistogram(multi.open_projects_histogram);
-    renderIdentified(data.identified_users);
     renderVisitors(data.visitors);
+    renderClicks(data.clicks);
     renderEvents(data.events);
 
     var rows = $("act-rows");
@@ -444,6 +483,92 @@
     updated.textContent = "ostatnia aktualizacja: " + hh + ":" + mm + ":" + ss;
   }
 
+  /* ---------- Zakładka Społeczność ---------- */
+  function renderCommunity(data) {
+    if (!data || typeof data !== "object") return;
+    var stats = data.stats || {};
+    var users = Array.isArray(data.users) ? data.users : [];
+    var posts = Array.isArray(data.posts) ? data.posts : [];
+
+    animateNum($("comm-kpi-users"), stats.users);
+    animateNum($("comm-kpi-posts"), stats.posts);
+    animateNum($("comm-kpi-comments"), stats.comments);
+    animateNum($("comm-kpi-likes"), stats.likes);
+
+    var usersWrap = $("comm-users");
+    if (usersWrap) {
+      usersWrap.innerHTML = users.length
+        ? users.map(function (u) {
+            return (
+              '<div class="commp-user">' +
+                '<span class="commp-user-main">' +
+                  (u.online ? '<span class="commp-dot" title="online teraz" aria-hidden="true"></span>' : "") +
+                  '<span class="commp-avatar" aria-hidden="true">' + esc((String(u.username).charAt(0) || "?").toUpperCase()) + "</span>" +
+                  '<span class="commp-name">' + esc(u.username) + ownerBadge(u.is_owner) + "</span>" +
+                "</span>" +
+                '<span class="commp-user-stats">' +
+                  '<span class="pa-time-chip">📝 ' + fmt(u.posts_count) + "</span>" +
+                  '<span class="pa-time-chip">💬 ' + fmt(u.comments_count) + "</span>" +
+                  '<span class="pa-time-chip">❤ ' + fmt(u.likes_received) + "</span>" +
+                  '<span class="pa-time-chip">dołączył(a): ' + esc(relTime(u.created_at)) + "</span>" +
+                "</span>" +
+              "</div>"
+            );
+          }).join("")
+        : '<div class="pa-empty">Brak członków — pierwszy użytkownik może założyć konto na stronie Społeczności.</div>';
+    }
+
+    var postsWrap = $("comm-posts");
+    if (postsWrap) {
+      postsWrap.innerHTML = posts.length
+        ? posts.map(function (p) {
+            return (
+              '<div class="commp-post">' +
+                '<div class="commp-post-head">' +
+                  '<span class="commp-avatar" aria-hidden="true">' + esc((String(p.author_name).charAt(0) || "?").toUpperCase()) + "</span>" +
+                  '<span class="commp-name">' + esc(p.author_name) + ownerBadge(p.is_owner) + "</span>" +
+                  '<span class="pa-time-chip">❤ ' + fmt(p.likes_count) + "</span>" +
+                  '<span class="pa-time-chip">💬 ' + fmt(p.comments_count) + "</span>" +
+                  '<span class="pa-event-time">' + esc(relTime(p.created_at)) + "</span>" +
+                  '<button class="btn btn-glass btn-sm commp-del" type="button" data-admin-del-post="' + esc(p.id) + '" title="Usuń ten wpis">Usuń</button>' +
+                "</div>" +
+                '<p class="commp-post-content">' + esc(p.content) + "</p>" +
+              "</div>"
+            );
+          }).join("")
+        : '<div class="pa-empty">Brak wpisów.</div>';
+    }
+  }
+
+  function fetchCommunity() {
+    if (!panelActive || !window.RejsonCloud || !window.RejsonCloud.rpc) {
+      return Promise.resolve(null);
+    }
+    return window.RejsonCloud.rpc("get_admin_community", {}, true)
+      .then(function (data) {
+        renderCommunity(data);
+        return data;
+      })
+      .catch(function () { return null; });
+  }
+
+  function bindCommunityModeration() {
+    var wrap = $("comm-posts");
+    if (!wrap) return;
+    wrap.addEventListener("click", function (e) {
+      var btn = e.target && e.target.closest ? e.target.closest("[data-admin-del-post]") : null;
+      if (!btn) return;
+      if (!window.confirm("Usunąć ten wpis wraz z komentarzami i polubieniami?")) return;
+      btn.disabled = true;
+      window.RejsonCloud.rpc("admin_delete_post", { p_post_id: btn.getAttribute("data-admin-del-post") }, true)
+        .then(function () { fetchCommunity(); })
+        .catch(function (err) {
+          alert(err && err.message ? err.message : "Nie udało się usunąć wpisu.");
+          btn.disabled = false;
+        });
+    });
+  }
+
   /* ---------- Pobieranie: admin-only RPC ---------- */
   function fetchAdminActivity() {
     if (!panelActive || !window.RejsonCloud || !window.RejsonCloud.rpc) {
@@ -457,7 +582,6 @@
       .catch(function (err) {
         var msg = err && err.message ? String(err.message) : "";
         if (msg.indexOf("uprawnień") !== -1 || msg.indexOf("JWT") !== -1 || (err && err.status === 401)) {
-          /* Sesja wygasła — wracamy do ekranu logowania */
           try { window.RejsonCloud.setStoredSession(null); } catch (e) { /* ignorujemy */ }
           showAuth();
           return null;
@@ -470,9 +594,11 @@
   function startRefresh() {
     stopRefresh();
     fetchAdminActivity();
+    fetchCommunity();
     refreshTimer = setInterval(function () {
       if (document.visibilityState === "visible") {
         fetchAdminActivity();
+        fetchCommunity();
       }
     }, REFRESH_MS);
   }
@@ -489,6 +615,7 @@
     bindTabs();
     bindAuthForm();
     bindLogout();
+    bindCommunityModeration();
 
     document.addEventListener("visibilitychange", function () {
       if (document.visibilityState === "visible" && panelActive) {

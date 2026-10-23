@@ -102,6 +102,17 @@
     return '<span class="comm-avatar" aria-hidden="true">' + esc(initial) + "</span>";
   }
 
+  /* Odznaka właściciela strony obok nazwy */
+  function isOwnerName(name, flagFromDb) {
+    if (flagFromDb === true) return true;
+    return String(name || "").toLowerCase() === "rejson59";
+  }
+
+  function ownerBadgeHTML(name, flagFromDb) {
+    if (!isOwnerName(name, flagFromDb)) return "";
+    return '<span class="comm-owner-badge" title="Twórca strony rejson59.github.io">👑 Właściciel</span>';
+  }
+
   /* ================= LOGOWANIE / REJESTRACJA ================= */
   function setAuthError(msg) {
     var el = document.getElementById("auth-error");
@@ -232,7 +243,10 @@
       composer.hidden = false;
       var nameEl = document.getElementById("user-name");
       var avatarEl = document.getElementById("user-avatar");
-      if (nameEl) nameEl.textContent = session.username;
+      if (nameEl) {
+        nameEl.innerHTML =
+          esc(session.username) + ownerBadgeHTML(session.username);
+      }
       if (avatarEl) {
         avatarEl.textContent = (session.username.charAt(0) || "?").toUpperCase();
       }
@@ -258,13 +272,15 @@
     feed.innerHTML = posts.map(function (p) {
       var mine = session && session.username === p.author_name;
       var commentsCount = Number(p.comments_count) || 0;
+      var likesCount = Number(p.likes_count) || 0;
+      var liked = Boolean(p.has_liked);
       var expanded = expandedPosts[p.id];
       return (
         '<article class="post-card" data-post-id="' + esc(p.id) + '">' +
           '<div class="post-head">' +
             avatarFor(p.author_name) +
             '<div class="post-head-meta">' +
-              '<span class="post-author">' + esc(p.author_name) + "</span>" +
+              '<span class="post-author">' + esc(p.author_name) + ownerBadgeHTML(p.author_name, p.is_owner) + "</span>" +
               '<span class="post-time mono">' + relTime(p.created_at) + "</span>" +
             "</div>" +
             (mine
@@ -273,6 +289,11 @@
           "</div>" +
           '<p class="post-content">' + esc(p.content) + "</p>" +
           '<div class="post-foot">' +
+            '<button class="comm-pill-btn comm-like-btn' + (liked ? " is-liked" : "") + '" type="button" data-like-post="' + esc(p.id) + '"' +
+              ' title="' + (liked ? "Cofnij polubienie" : "Polub ten wpis") + '" aria-label="' + (liked ? "Cofnij polubienie wpisu" : "Polub ten wpis") + '">' +
+              '<svg class="comm-like-heart" viewBox="0 0 24 24" fill="' + (liked ? "currentColor" : "none") + '" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> ' +
+              '<span class="comm-like-num">' + likesCount + "</span>" +
+            "</button>" +
             '<button class="comm-pill-btn' + (expanded ? " is-open" : "") + '" type="button" data-toggle-comments="' + esc(p.id) + '">💬 ' +
               commentsCount + " " + commentWord(commentsCount) +
             "</button>" +
@@ -308,7 +329,11 @@
   }
 
   function loadPosts(silent) {
-    return rpc("community_list_posts", { p_limit: 40, p_offset: 0 })
+    return rpc("community_list_posts", {
+      p_limit: 40,
+      p_offset: 0,
+      p_token: session && session.token ? session.token : null
+    })
       .then(function (data) {
         var posts = (data && Array.isArray(data.posts)) ? data.posts : [];
         lastPostsTotal = (data && Number(data.total)) || posts.length;
@@ -344,7 +369,7 @@
               avatarFor(c.author_name) +
               '<div class="comment-body">' +
                 '<div class="comment-head">' +
-                  '<span class="comment-author">' + esc(c.author_name) + "</span>" +
+                  '<span class="comment-author">' + esc(c.author_name) + ownerBadgeHTML(c.author_name, c.is_owner) + "</span>" +
                   '<span class="comment-time mono">' + relTime(c.created_at) + "</span>" +
                   (mine
                     ? '<button class="comment-delete" type="button" data-delete-comment="' + esc(c.id) + '" data-post="' + esc(postId) + '" title="Usuń komentarz" aria-label="Usuń komentarz">✕</button>'
@@ -391,6 +416,33 @@
     feed.addEventListener("click", function (ev) {
       var target = ev.target;
       if (!target || !target.closest) return;
+
+      var likeBtn = target.closest("[data-like-post]");
+      if (likeBtn) {
+        var likePostId = likeBtn.getAttribute("data-like-post");
+        if (!session) {
+          /* niezalogowany — podpowiadamy, gdzie się zalogować */
+          var loginCard = document.getElementById("login-card");
+          if (loginCard) {
+            loginCard.hidden = false;
+            loginCard.classList.remove("comm-flash");
+            void loginCard.offsetWidth;
+            loginCard.classList.add("comm-flash");
+            loginCard.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+          var nameInput = document.getElementById("auth-username");
+          if (nameInput) nameInput.focus();
+          return;
+        }
+        likeBtn.disabled = true;
+        rpc("community_toggle_post_like", { p_token: session.token, p_post_id: likePostId })
+          .then(function () { loadPosts(true); })
+          .catch(function (err) {
+            alert(err.message || "Nie udało się polubić wpisu.");
+            likeBtn.disabled = false;
+          });
+        return;
+      }
 
       var toggle = target.closest("[data-toggle-comments]");
       if (toggle) {
@@ -494,6 +546,34 @@
     refresh();
   }
 
+  /* ================= KTO JEST TERAZ ONLINE ================= */
+  function loadOnline() {
+    var box = document.getElementById("comm-online");
+    if (!box) return;
+    rpc("get_activity_overview", { p_window_seconds: 90 })
+      .then(function (data) {
+        var users = (data && Array.isArray(data.identified_users)) ? data.identified_users : [];
+        if (!users.length) {
+          box.innerHTML =
+            '<span class="comm-online-empty">Nikogo z zalogowanych nie ma teraz online — zaloguj się, a pokażesz się tutaj ze swoją nazwą.</span>';
+          return;
+        }
+        box.innerHTML = users.map(function (u) {
+          var name = String(u.username || "?");
+          var projects = Array.isArray(u.projects) ? u.projects.length : 0;
+          return (
+            '<span class="comm-online-user">' +
+              '<span class="comm-online-dot" aria-hidden="true"></span>' +
+              '<span class="comm-avatar comm-avatar-sm" aria-hidden="true">' + esc((name.charAt(0) || "?").toUpperCase()) + "</span>" +
+              esc(name) + ownerBadgeHTML(name) +
+              (projects > 1 ? '<span class="comm-online-count mono" title="Ile stron/projektów ma teraz otwarte">' + projects + " strony</span>" : "") +
+            "</span>"
+          );
+        }).join("");
+      })
+      .catch(function () { /* cicho — sekcja opcjonalna */ });
+  }
+
   /* ================= MOTYW ================= */
   function setupTheme() {
     var btn = document.getElementById("theme-toggle");
@@ -531,14 +611,22 @@
     if (logoutBtn) logoutBtn.addEventListener("click", handleLogout);
 
     var refreshBtn = document.getElementById("feed-refresh");
-    if (refreshBtn) refreshBtn.addEventListener("click", function () { loadPosts(true); });
+    if (refreshBtn) refreshBtn.addEventListener("click", function () { loadPosts(true); loadOnline(); });
+
+    loadOnline();
 
     feedTimer = setInterval(function () {
-      if (document.visibilityState === "visible") loadPosts(true);
+      if (document.visibilityState === "visible") {
+        loadPosts(true);
+        loadOnline();
+      }
     }, FEED_REFRESH_MS);
 
     document.addEventListener("visibilitychange", function () {
-      if (document.visibilityState === "visible") loadPosts(true);
+      if (document.visibilityState === "visible") {
+        loadPosts(true);
+        loadOnline();
+      }
     });
 
     /* Jeśli sesja wygasła po stronie serwera, wyloguj migawkowo w tle */

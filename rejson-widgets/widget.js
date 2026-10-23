@@ -1093,6 +1093,56 @@
     };
   }
 
+  /* Trwały 4-cyfrowy identyfikator przeglądarki (odcisk) — ten sam algorytm
+     co na stronie głównej, więc tożsamość jest spójna z panelem admina. */
+  function fpId() {
+    try {
+      var scr = window.screen || {};
+      var parts = [
+        navigator.userAgent || "",
+        navigator.language || "",
+        (navigator.languages || []).join(","),
+        navigator.platform || "",
+        scr.width || 0, scr.height || 0,
+        scr.availWidth || 0, scr.availHeight || 0,
+        scr.colorDepth || 0, scr.pixelDepth || 0,
+        window.devicePixelRatio || 1,
+        new Date().getTimezoneOffset(),
+        navigator.hardwareConcurrency || 0,
+        navigator.deviceMemory || 0,
+        navigator.maxTouchPoints || 0,
+        navigator.cookieEnabled ? 1 : 0,
+        navigator.doNotTrack || ""
+      ];
+      var str = parts.join("|");
+      var h = 0x811c9dc5;
+      for (var i = 0; i < str.length; i++) {
+        h ^= str.charCodeAt(i);
+        h = (h + ((h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24))) >>> 0;
+      }
+      return String(1000 + (h % 9000));
+    } catch (e) {
+      return "";
+    }
+  }
+
+  /* Statystyki akcji dla panelu admina (tylko właściciel je widzi) */
+  function trackAction(kind, target) {
+    try {
+      var visitorId = "";
+      try {
+        visitorId = localStorage.getItem("rejson_views_visitor_id_v1") || "";
+      } catch (e) {}
+      callRPC("log_activity_event", {
+        p_kind: kind,
+        p_target: target,
+        p_slug: config.project || null,
+        p_visitor_id: visitorId || null,
+        p_fp: fpId()
+      }).catch(function () {});
+    } catch (e) { /* ignorujemy */ }
+  }
+
   function callRPC(name, body) {
     var ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
     var t = ctrl
@@ -1170,12 +1220,16 @@
       p_author_contact: null,
       p_page_url: window.location.href,
       p_diagnostics: state.type === "bug" ? collectDiagnostics() : {},
-      p_voter_key: getVoterId()
+      p_voter_key: getVoterId(),
+      p_fp: fpId()
     };
 
     try {
       var created = await callRPC("submit_feedback", payload);
-      if (created) state.boardItems.unshift(created);
+      if (created) {
+        state.boardItems.unshift(created);
+        trackAction("submit", (state.type === "bug" ? "zgłoszenie błędu" : "nowy pomysł") + ": „" + shortTitle.slice(0, 80) + "”");
+      }
     } catch (err) {
       var m = getMirror();
       var localItem = {
@@ -1227,12 +1281,14 @@
     try {
       var res = await callRPC("toggle_upvote", {
         p_submission_id: id,
-        p_voter_key: getVoterId()
+        p_voter_key: getVoterId(),
+        p_fp: fpId()
       });
       if (res && typeof res.upvotes_count === "number") {
         item.has_voted = Boolean(res.voted);
         item.upvotes_count = res.upvotes_count;
         renderSlot();
+        trackAction(res.voted ? "like" : "unlike", "❤ pomysł: „" + String(item.title || "").slice(0, 80) + "”");
       }
     } catch (e) {}
   }
@@ -1248,8 +1304,10 @@
     if (target === "bug" || target === "idea") {
       state.type = target;
       state.view = "form";
+      trackAction("open", "otworzył formularz: " + (target === "bug" ? "zgłoś błąd" : "zgłoś pomysł"));
     } else if (target === "board") {
       state.view = "board";
+      trackAction("open", "otworzył listę pomysłów w pigułce");
     } else if (state.view === "sent") {
       state.view = "form";
     }

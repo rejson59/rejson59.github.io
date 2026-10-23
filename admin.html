@@ -86,6 +86,7 @@
     <div class="admin-tabs" role="tablist" aria-label="Sekcje panelu admina">
       <button type="button" class="admin-tab is-active" id="tab-btn-activity" data-tab="activity" role="tab" aria-selected="true">📊 Aktywność szczegółowa</button>
       <button type="button" class="admin-tab" id="tab-btn-submissions" data-tab="submissions" role="tab" aria-selected="false">🗂 Zgłoszenia</button>
+      <button type="button" class="admin-tab" id="tab-btn-community" data-tab="community" role="tab" aria-selected="false">👥 Społeczność</button>
     </div>
 
     <!-- ============ ZAKŁADKA: AKTYWNOŚĆ SZCZEGÓŁOWA ============ -->
@@ -134,30 +135,32 @@
 
       <div class="glass-card">
         <div class="panel-card-head">
-          <h2>👤 Odwiedzający na żywo — identyfikatory i ścieżki kroków</h2>
+          <h2>👤 Odwiedzający na żywo — identyfikatory, ścieżki i każda akcja</h2>
           <span class="panel-card-note" style="margin:0">odświeżane co 8 s</span>
         </div>
         <p class="panel-card-note">
-          Każdy odwiedzający ma <strong>stały 4-cyfrowy identyfikator</strong> liczony z odcisku przeglądarki (sprzęt + ustawienia),
-          który <strong>przeżywa całkowite wyczyszczenie danych strony</strong>. Zalogowani członkowie Społeczności pojawiają się dodatkowo pod swoją nazwą.
-          Ścieżka pokazuje kolejne strony i projekty odwiedzone przez daną osobę (zachowane do 24 h).
+          <strong>Nikt nie jest anonimowy:</strong> każdy odwiedzający ma <strong>stały 4-cyfrowy identyfikator</strong> (Gość #1234)
+          liczony z odcisku przeglądarki — przeżywa nawet całkowite wyczyszczenie danych strony.
+          Zalogowani członkowie Społeczności pojawiają się pod swoją nazwą (właściciel ma odznakę 👑).
+          Ścieżka pokazuje odwiedzone strony (do 24 h), a lista akcji — co dokładnie i kiedy klikał.
         </p>
         <div class="pa-visitors" id="pa-visitors"></div>
       </div>
 
       <div class="glass-card">
         <div class="panel-card-head">
-          <h2>⚡ Ostatnie zdarzenia na stronie i w projektach</h2>
+          <h2>🖱 Kliknięcia i akcje na żywo — wszystkich odwiedzających</h2>
         </div>
-        <p class="panel-card-note">Zgłoszenia błędów, nowe pomysły, polubienia ❤ oraz wpisy i komentarze Społeczności — wszystko w jednym strumieniu.</p>
-        <div class="pa-events" id="pa-events"></div>
+        <p class="panel-card-note">Dokładny strumień: kto, kiedy i co kliknął — karty projektów, linki, przyciski, serca, formularze. Dzięki temu widać, co ludzi najbardziej interesuje.</p>
+        <div class="pa-clicks" id="pa-clicks"></div>
       </div>
 
       <div class="glass-card">
         <div class="panel-card-head">
-          <h2>Zalogowani użytkownicy Społeczności online</h2>
+          <h2>⚡ Ostatnie zdarzenia na stronie i w projektach</h2>
         </div>
-        <div class="act-users" id="act-users"></div>
+        <p class="panel-card-note">Zgłoszenia błędów, nowe pomysły, polubienia ❤ oraz wpisy, komentarze i reakcje Społeczności — wszystko w jednym strumieniu.</p>
+        <div class="pa-events" id="pa-events"></div>
       </div>
 
       <div class="glass-card act-projects">
@@ -178,6 +181,49 @@
       </div>
 
       <p class="act-updated" id="act-updated"></p>
+    </section>
+
+    <!-- ============ ZAKŁADKA: SPOŁECZNOŚĆ ============ -->
+    <section id="tab-community" role="tabpanel" aria-label="Społeczność" hidden>
+
+      <div class="kpi-grid">
+        <div class="glass-card kpi-card">
+          <span class="kpi-label">Członkowie społeczności</span>
+          <span class="kpi-num" id="comm-kpi-users">0</span>
+          <span class="kpi-sub">zarejestrowane nazwy + PIN</span>
+        </div>
+        <div class="glass-card kpi-card">
+          <span class="kpi-label">Wpisy</span>
+          <span class="kpi-num" id="comm-kpi-posts">0</span>
+          <span class="kpi-sub">wszystkie opublikowane</span>
+        </div>
+        <div class="glass-card kpi-card">
+          <span class="kpi-label">Komentarze</span>
+          <span class="kpi-num" id="comm-kpi-comments">0</span>
+          <span class="kpi-sub">pod wpisami</span>
+        </div>
+        <div class="glass-card kpi-card">
+          <span class="kpi-label">Polubienia wpisów ❤</span>
+          <span class="kpi-num" id="comm-kpi-likes">0</span>
+          <span class="kpi-sub">co się podoba społeczności</span>
+        </div>
+      </div>
+
+      <div class="glass-card">
+        <div class="panel-card-head">
+          <h2>👥 Członkowie społeczności</h2>
+          <span class="panel-card-note" style="margin:0">kto online widzisz na zielono</span>
+        </div>
+        <div class="commp-users" id="comm-users"></div>
+      </div>
+
+      <div class="glass-card">
+        <div class="panel-card-head">
+          <h2>📝 Ostatnie wpisy (moderacja)</h2>
+          <span class="panel-card-note" style="margin:0">możesz usuwać każdy wpis</span>
+        </div>
+        <div class="commp-posts" id="comm-posts"></div>
+      </div>
     </section>
 
     <!-- ============ ZAKŁADKA: ZGŁOSZENIA (osadzony panel rejson-widgets) ============ -->
