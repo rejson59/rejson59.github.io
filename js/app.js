@@ -109,7 +109,6 @@
   }
 
   /* ---------- Ikony SVG ---------- */
-  var ICON_GITHUB = '<svg class="icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.55v-2.15c-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.69-1.28-1.69-1.04-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.02 1.76 2.69 1.25 3.35.96.1-.75.4-1.25.72-1.54-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11.1 11.1 0 0 1 5.8 0c2.21-1.49 3.18-1.18 3.18-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.38-5.25 1.28 1.12.72 1.63.4.55 0 1.14-.01 2.06 0 1.09.01.82.72 1.84-.55 6.29-1.51C23.5 21.39 23.5 17.08 23.5 12 23.5 5.65 18.35.5 12 .5z"/></svg>';
   var ICON_ARROW = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg>';
   var ICON_STAR = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.8-4.5 4.3 1.1 6-5.4-2.9L6.6 19.7l1.1-6L3.2 9.4l6.1-.8z"/></svg>';
   var ICON_FORK = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="5" r="2.5"/><circle cx="18" cy="5" r="2.5"/><circle cx="12" cy="19" r="2.5"/><path d="M6 7.5v3a2.5 2.5 0 0 0 2.5 2.5H12M18 7.5v3A2.5 2.5 0 0 1 15.5 13H12M12 13v3.5"/></svg>';
@@ -175,11 +174,9 @@
     var liveBtn = p.liveUrl
       ? '<a class="btn btn-live btn-sm" href="' + esc(p.liveUrl) + '" target="_blank" rel="noopener noreferrer">Wersja live ' + ICON_ARROW + "</a>"
       : "";
-    var codeBtn = '<a class="btn btn-ghost btn-sm" href="' + esc(p.url) + '" target="_blank" rel="noopener noreferrer">' +
-      ICON_GITHUB + " Kod źródłowy</a>";
     var feedbackBtn = '<button class="btn btn-feedback btn-sm" type="button" data-feedback-project="' + esc(p.name) + '" data-rj-keep>' +
       '<span class="feedback-pill-dot" aria-hidden="true"></span>Zgłoś błąd / pomysł</button>';
-    return liveBtn + codeBtn + feedbackBtn;
+    return liveBtn + feedbackBtn;
   }
 
   function cardHTML(p, index) {
@@ -205,7 +202,7 @@
             '<span class="card-badges">' + badgesHTML(p) + "</span>" +
           "</div>" +
           preview +
-          '<h3 class="card-title"><a href="' + esc(p.url) + '" target="_blank" rel="noopener noreferrer">' + esc(p.name) + "</a></h3>" +
+          '<h3 class="card-title"><a href="' + esc(p.liveUrl || p.url) + '" target="_blank" rel="noopener noreferrer">' + esc(p.name) + "</a></h3>" +
           '<p class="card-desc">' + esc(p.description) + "</p>" +
           topics +
           '<p class="card-meta">' + metaHTML(p) + "</p>" +
