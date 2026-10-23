@@ -202,3 +202,59 @@ $function$;
 
 GRANT EXECUTE ON FUNCTION public.heartbeat_page_presence(text, text, text, integer, text) TO anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.count_total_online(integer) TO anon, authenticated;
+
+-- ============================================================
+-- Społeczność (spolecznosc.html) + nazwana obecność (Aktywność)
+-- Migracje wykonane na produkcji: community_portal_and_named_presence,
+-- fix_community_session_user_volatility
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS public.community_users (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  username text NOT NULL,
+  username_lower text NOT NULL GENERATED ALWAYS AS (lower(username)) STORED UNIQUE,
+  pin_hash text NOT NULL,               -- sha256('rejson_pin_v1:'||lower(username)||':'||pin)
+  created_at timestamptz NOT NULL DEFAULT now(),
+  last_login_at timestamptz
+);
+ALTER TABLE public.community_users ENABLE ROW LEVEL SECURITY;
+
+CREATE TABLE IF NOT EXISTS public.community_sessions (
+  token_hash text PRIMARY KEY,          -- sha256('rejson_comm_sess_v1:'||token)
+  user_id uuid NOT NULL REFERENCES public.community_users(id) ON DELETE CASCADE,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  last_seen_at timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE public.community_sessions ENABLE ROW LEVEL SECURITY;
+
+CREATE TABLE IF NOT EXISTS public.community_posts (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  author_id uuid NOT NULL REFERENCES public.community_users(id) ON DELETE CASCADE,
+  author_name text NOT NULL,
+  content text NOT NULL CHECK (char_length(trim(content)) BETWEEN 3 AND 2000),
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE public.community_posts ENABLE ROW LEVEL SECURITY;
+CREATE POLICY community_posts_select_public
+  ON public.community_posts FOR SELECT TO anon, authenticated USING (true);
+
+CREATE TABLE IF NOT EXISTS public.community_comments (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  post_id uuid NOT NULL REFERENCES public.community_posts(id) ON DELETE CASCADE,
+  author_id uuid NOT NULL REFERENCES public.community_users(id) ON DELETE CASCADE,
+  author_name text NOT NULL,
+  content text NOT NULL CHECK (char_length(trim(content)) BETWEEN 1 AND 1000),
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE public.community_comments ENABLE ROW LEVEL SECURITY;
+CREATE POLICY community_comments_select_public
+  ON public.community_comments FOR SELECT TO anon, authenticated USING (true);
+
+ALTER TABLE public.page_presence ADD COLUMN IF NOT EXISTS username text;
+
+-- RPC (SECURITY DEFINER, definicje w migracjach na produkcji):
+-- community_username_valid / _status / community_register / community_login /
+-- community_whoami / community_session_user / community_create_post /
+-- community_list_posts / community_list_comments / community_add_comment /
+-- community_delete_post / community_delete_comment /
+-- heartbeat_page_presence(+p_token) / get_activity_overview(+identified_users)

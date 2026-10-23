@@ -601,24 +601,42 @@
       });
   }
 
+  /* ---------- Token sesji społeczności (zalogowany użytkownik w obecności) ---------- */
+  function getCommunityToken() {
+    try {
+      var raw = localStorage.getItem("rejson_community_session_v1");
+      if (!raw) return null;
+      var parsed = JSON.parse(raw);
+      if (parsed && typeof parsed.token === "string" && parsed.token.length >= 16) {
+        return parsed.token;
+      }
+    } catch (e) { /* ignorujemy */ }
+    return null;
+  }
+
   function sendPresenceHeartbeat(slug, action) {
     if (!window.fetch || window.self !== window.top) return Promise.resolve(null);
     var targetSlug = String(slug || currentActiveSlug || SITE_SLUG).trim();
     if (!targetSlug) return Promise.resolve(null);
     var key = targetSlug.toLowerCase();
 
+    var bodyObj = {
+      p_slug: canonicalSlugMap[key] || targetSlug,
+      p_session_id: getSessionId(),
+      p_action: action || "ping",
+      p_window_seconds: PRESENCE_WINDOW_SECONDS,
+      /* Stały identyfikator przeglądarki — kilka otwartych kart tej samej osoby
+         liczy się jako jedna obecność na całej stronie i w projektach. */
+      p_visitor_id: getVisitorId()
+    };
+    /* Zalogowany w portalu społeczności? Dołącz token, aby Aktywność pokazała nazwę */
+    var commToken = getCommunityToken();
+    if (commToken) bodyObj.p_token = commToken;
+
     return fetch(SUPABASE_URL + "/rest/v1/rpc/heartbeat_page_presence", {
       method: "POST",
       headers: supaHeaders(),
-      body: JSON.stringify({
-        p_slug: canonicalSlugMap[key] || targetSlug,
-        p_session_id: getSessionId(),
-        p_action: action || "ping",
-        p_window_seconds: PRESENCE_WINDOW_SECONDS,
-        /* Stały identyfikator przeglądarki — kilka otwartych kart tej samej osoby
-           liczy się jako jedna obecność na całej stronie i w projektach. */
-        p_visitor_id: getVisitorId()
-      }),
+      body: JSON.stringify(bodyObj),
       keepalive: true,
       cache: "no-store"
     })

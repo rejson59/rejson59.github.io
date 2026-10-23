@@ -839,3 +839,61 @@ a:hover { text-decoration-color: currentColor; }
   .reveal{ opacity:1; transform:none; }
   .live-badge::before, .online-aura-dot::after{ animation:none; }
 }
+
+/* ============================================================
+   Pigułka wersji / ostatniej aktualizacji na kartach projektów
+   ============================================================ */
+.card-update-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 10px;
+  padding: 4px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-elev);
+  font-size: 11.5px;
+  line-height: 1.3;
+  max-width: 100%;
+  width: fit-content;
+}
+.card-update-pill .pill-version {
+  color: var(--accent-strong);
+  font-weight: 600;
+  flex: none;
+}
+.card-update-pill .pill-note {
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ============================================================
+   Baner zachęty do Tablicy pomysłów
+   ============================================================ */
+.board-cta { margin-top: 4px; margin-bottom: 28px; }
+.board-cta-inner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 14px 18px;
+  border-radius: var(--radius-lg);
+  border: 1px solid color-mix(in srgb, var(--accent) 34%, var(--border));
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 9%, var(--card)), var(--card));
+  box-shadow: var(--shadow);
+}
+.board-cta-icon { font-size: 20px; flex: none; }
+.board-cta-text {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--muted);
+  flex: 1;
+  min-width: 260px;
+  line-height: 1.55;
+}
+.board-cta-text strong { color: var(--text); }
+.board-cta-text .mono { color: var(--accent-strong); }
+.board-cta-text #board-cta-counts { color: var(--faint); }
+.board-cta-text #board-cta-counts strong.mono { color: var(--accent-strong); }
