@@ -51,6 +51,7 @@
         <nav id="site-nav" class="site-nav" aria-label="Nawigacja główna">
           <a href="#poczatki">Wyróżnione</a>
           <a href="#projekty">Projekty</a>
+          <a href="rejson-widgets/board.html">Tablica pomysłów</a>
           <a href="https://github.com/rejson59" target="_blank" rel="noopener noreferrer">GitHub
             <svg class="icon icon-xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg>
           </a>
@@ -62,6 +63,19 @@
         </nav>
 
         <div class="header-metrics" role="group" aria-label="Statystyki strony na żywo">
+          <button
+            id="site-total-online-badge"
+            class="metric-badge is-total-online"
+            type="button"
+            data-tooltip-title="Łącznie osoby online — cała strona i projekty (LIVE)"
+            data-tooltip="Wszyscy użytkownicy aktualnie online na rejson59.github.io oraz wewnątrz dowolnego projektu. Jeśli ktoś ma otwarte kilka projektów w jednej przeglądarce, liczymy go tylko raz. Odświeżanie co kilka sekund."
+            aria-label="Łączna liczba osób aktualnie online na całej stronie i we wszystkich projektach"
+          >
+            <span class="online-aura-dot" aria-hidden="true"></span>
+            <span class="metric-badge-caption">Wszyscy</span>
+            <span id="site-total-online-count" class="online-count mono">1</span>
+          </button>
+
           <button
             id="site-online-badge"
             class="metric-badge is-online"
@@ -473,6 +487,8 @@
       <p>© <span id="year">2026</span> Rejson · rejson59.github.io</p>
       <p class="footer-links">
         <a href="https://github.com/rejson59" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <span aria-hidden="true">·</span>
+        <a href="rejson-widgets/board.html">Tablica pomysłów i błędów</a>
         <span aria-hidden="true">·</span>
         <a href="rejson-widgets/admin.html">Panel zgłoszeń</a>
         <span aria-hidden="true">·</span>
