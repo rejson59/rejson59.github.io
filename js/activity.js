@@ -109,6 +109,36 @@
     );
   }
 
+  function renderIdentified(users) {
+    var wrap = document.getElementById("act-users");
+    if (!wrap) return;
+
+    if (!Array.isArray(users) || !users.length) {
+      wrap.innerHTML =
+        '<span class="act-histogram-empty">Brak zalogowanych użytkowników online — zaloguj się w Społeczności, a pojawisz się tutaj ze swoimi otwartymi stronami.</span>';
+      return;
+    }
+
+    wrap.innerHTML = users.map(function (u) {
+      var name = String(u.username || "?");
+      var initial = (name.trim().charAt(0) || "?").toUpperCase();
+      var projects = Array.isArray(u.projects) ? u.projects : [];
+      var projHtml = projects
+        .map(function (slug) {
+          var isPage = String(slug).toLowerCase() === SITE_SLUG.toLowerCase();
+          return '<span class="act-user-proj' + (isPage ? " is-page" : "") + '">' + esc(slug) + "</span>";
+        })
+        .join("");
+      return (
+        '<div class="act-user">' +
+          '<span class="act-user-name"><span class="act-user-avatar" aria-hidden="true">' + esc(initial) + "</span>" + esc(name) + "</span>" +
+          '<span class="act-user-sep">przegląda teraz:</span>' +
+          '<span class="act-user-projects">' + (projHtml || '<span class="act-user-proj">—</span>') + "</span>" +
+        "</div>"
+      );
+    }).join("");
+  }
+
   function renderHistogram(histo) {
     var wrap = document.getElementById("act-histogram");
     var emptyEl = document.getElementById("act-histogram-empty");
@@ -165,6 +195,7 @@
     }
 
     renderHistogram(multi.open_projects_histogram);
+    renderIdentified(data.identified_users);
 
     var rows = document.getElementById("act-rows");
     if (rows) {

@@ -221,3 +221,46 @@
   .act-kpi-grid { grid-template-columns: 1fr; }
   .activity-main { padding-top: 26px; }
 }
+
+/* ---------- Zalogowani użytkownicy online ---------- */
+.act-users { display: flex; flex-wrap: wrap; gap: 10px; }
+
+.act-user {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--live) 34%, var(--border));
+  background: var(--bg-elev);
+}
+.act-user-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 13px;
+}
+.act-user-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  color: var(--accent-ink);
+  font-size: 11px;
+  font-weight: 700;
+  flex: none;
+}
+.act-user-sep { font-size: 12px; color: var(--faint); }
+.act-user-projects { display: inline-flex; gap: 5px; flex-wrap: wrap; }
+.act-user-proj {
+  font: 500 11px "JetBrains Mono", monospace;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+.act-user-proj.is-page { color: var(--live); border-color: color-mix(in srgb, var(--live) 40%, var(--border)); }

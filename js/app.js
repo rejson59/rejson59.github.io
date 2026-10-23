@@ -170,6 +170,18 @@
     return meta;
   }
 
+  /* Pigułka wersji i ostatniej aktualizacji projektu (dane: js/project-updates.js) */
+  function updatePillHTML(p) {
+    var info = window.PROJECT_UPDATES ? window.PROJECT_UPDATES[p.name] : null;
+    if (!info || !info.version) return "";
+    return (
+      '<p class="card-update-pill" title="Wersja ' + esc(info.version) + " — " + esc(info.note || "") + '">' +
+        '<span class="pill-version mono">' + esc(info.version) + "</span>" +
+        '<span class="pill-note">' + esc(info.note || "") + "</span>" +
+      "</p>"
+    );
+  }
+
   function actionsHTML(p) {
     var liveBtn = p.liveUrl
       ? '<a class="btn btn-live btn-sm" href="' + esc(p.liveUrl) + '" target="_blank" rel="noopener noreferrer">Wersja live ' + ICON_ARROW + "</a>"
@@ -205,6 +217,7 @@
           '<h3 class="card-title"><a href="' + esc(p.liveUrl || p.url) + '" target="_blank" rel="noopener noreferrer">' + esc(p.name) + "</a></h3>" +
           '<p class="card-desc">' + esc(p.description) + "</p>" +
           topics +
+          updatePillHTML(p) +
           '<p class="card-meta">' + metaHTML(p) + "</p>" +
           '<div class="card-actions">' + actionsHTML(p) + "</div>" +
         "</div>" +
@@ -965,6 +978,35 @@
   }
 
   syncWithGitHub(true);
+
+  /* Zachęta do tablicy pomysłów — licznik zgłoszeń i głosów na żywo */
+  (function fillBoardCtaCounts() {
+    var el = document.getElementById("board-cta-counts");
+    if (!el || !window.fetch) return;
+    var SUPABASE_URL = "https://hzbqzfimtroixnldzjeq.supabase.co";
+    var SUPABASE_ANON_KEY =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6YnF6ZmltdHJvaXhubGR6amVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1OTYzOTEsImV4cCI6MjEwODE3MjM5MX0.oeZWOaNd6p3wZBZQQu3QWjRHlrkxV_BFQRNSN-6YntE";
+    fetch(SUPABASE_URL + "/rest/v1/rpc/get_ecosystem_summary", {
+      method: "POST",
+      headers: {
+        "apikey": SUPABASE_ANON_KEY,
+        "Authorization": "Bearer " + SUPABASE_ANON_KEY,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ p_project_slug: null }),
+      cache: "no-store"
+    })
+      .then(function (res) { return res.ok ? res.json() : null; })
+      .then(function (data) {
+        if (!data) return;
+        var items = Number(data.total_items) || 0;
+        var votes = Number(data.total_votes) || 0;
+        if (items > 0) {
+          el.innerHTML = 'już <strong class="mono">' + items + (items === 1 ? " zgłoszenie" : " zgłoszeń") + "</strong> i <strong class=\"mono\">" + votes + (votes === 1 ? " głos" : " głosów") + "</strong> od społeczności";
+        }
+      })
+      .catch(function () { /* zostaje tekst domyślny */ });
+  })();
 
   if (window.RejsonViews && typeof window.RejsonViews.onChange === "function") {
     window.RejsonViews.onChange(function () {
