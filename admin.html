@@ -86,6 +86,7 @@
       <button type="button" class="adm-tab is-active" id="tab-btn-activity" data-tab="activity" role="tab" aria-selected="true">📊 Aktywność <span class="adm-tab-note">na żywo</span></button>
       <button type="button" class="adm-tab" id="tab-btn-submissions" data-tab="submissions" role="tab" aria-selected="false">🗂 Zgłoszenia</button>
       <button type="button" class="adm-tab" id="tab-btn-community" data-tab="community" role="tab" aria-selected="false">👥 Społeczność</button>
+      <button type="button" class="adm-tab" id="tab-btn-visitors" data-tab="visitors" role="tab" aria-selected="false">👤 Identyfikatory <span class="adm-tab-note">profile</span></button>
     </nav>
 
     <!-- ============ ZAKŁADKA: AKTYWNOŚĆ SZCZEGÓŁOWA ============ -->
@@ -341,6 +342,49 @@
           </div>
         </header>
         <div class="commp-posts" id="comm-posts"></div>
+      </section>
+    </section>
+
+    <!-- ============ ZAKŁADKA: IDENTYFIKATORY (profil każdego odwiedzającego) ============ -->
+    <section id="tab-visitors" role="tabpanel" aria-label="Identyfikatory odwiedzających" hidden>
+
+      <section class="adm-card">
+        <header class="adm-card-head">
+          <span class="adm-card-ico" aria-hidden="true">👤</span>
+          <div class="adm-card-titles">
+            <h2>Lista identyfikatorów</h2>
+            <p class="adm-card-sub">Każda rozpoznana osoba ma swój stały identyfikator przeglądarki (lub przybliżony ID z IP + przeglądarki). Kliknij wiersz, aby zobaczyć pełny profil: ścieżki, kliknięcia, zgłoszenia i aktywność w społeczności.</p>
+          </div>
+        </header>
+
+        <div class="vif-toolbar">
+          <input type="search" id="vif-search" class="vif-search" placeholder="Szukaj: ID, nazwa lub strona…" aria-label="Szukaj identyfikatora">
+          <label class="filter-field">
+            <span class="filter-label">Zakres</span>
+            <select id="vif-days" class="ctrl-select">
+              <option value="1">24 godziny</option>
+              <option value="7" selected>7 dni</option>
+              <option value="14">14 dni</option>
+              <option value="30">30 dni</option>
+            </select>
+          </label>
+          <span class="mono vif-count" id="vif-count"></span>
+        </div>
+
+        <div class="vif-list" id="vif-list">
+          <div class="pa-empty">Ładowanie listy identyfikatorów…</div>
+        </div>
+      </section>
+
+      <section class="adm-card" id="vif-profile-card" hidden>
+        <header class="adm-card-head">
+          <button type="button" class="btn btn-glass btn-sm" id="vif-back">← Wróć do listy</button>
+          <div class="adm-card-titles">
+            <h2 id="vif-profile-title">Profil</h2>
+            <p class="adm-card-sub" id="vif-profile-sub"></p>
+          </div>
+        </header>
+        <div id="vif-profile"></div>
       </section>
     </section>
 
