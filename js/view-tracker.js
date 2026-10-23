@@ -1291,8 +1291,12 @@
     refreshAllDOMCounters();
     registerGlobalServiceWorker();
 
-    /* 1. Pobieramy aktualny stan wszystkich liczników, obecności na żywo
-       oraz łącznej liczby unikalnych osób online z Supabase */
+    /* 1. Natychmiast meldujemy obecność na tej podstronie (szybka synchronizacja
+       przejść widać w panelu), a w tle pobieramy stan liczników z Supabase */
+    if (!isInsideCardThumbnail()) {
+      sendPresenceHeartbeat(currentActiveSlug, "ping");
+      fetchTotalOnline();
+    }
     fetchAllCounts().then(function () {
       refreshAllDOMCounters();
       if (!isInsideCardThumbnail()) {
@@ -1304,9 +1308,6 @@
         }
       }
     });
-    if (!isInsideCardThumbnail()) {
-      fetchTotalOnline();
-    }
 
     /* 2. Podpinamy zliczanie kliknięć w projekty, dymki wyjaśniające liczników
        oraz rejestr akcji odwiedzających (szczegóły tylko w panelu admina) */
