@@ -670,3 +670,120 @@
   .pa-event-time { display: none; }
   .pa-trail-label { min-width: 0; }
 }
+
+/* ---------- Wykres wejść (14 dni) ---------- */
+.adm-chart {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  padding-top: 4px;
+  overflow-x: auto;
+  flex-wrap: wrap;
+  row-gap: 14px;
+}
+.adm-chart-col {
+  flex: 1 1 0;
+  min-width: 34px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.adm-chart-val {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  min-height: 13px;
+}
+.adm-chart-barwrap {
+  height: 120px;
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.adm-chart-bar {
+  width: min(26px, 72%);
+  border-radius: 7px 7px 3px 3px;
+  background: linear-gradient(180deg,
+      color-mix(in srgb, var(--accent) 85%, #8b5cf6),
+      color-mix(in srgb, var(--accent) 55%, transparent));
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 20%, transparent);
+  transition: height 0.45s cubic-bezier(0.22, 0.8, 0.3, 1), filter 0.15s ease;
+}
+.adm-chart-col:hover .adm-chart-bar {
+  filter: brightness(1.35) saturate(1.2);
+}
+.adm-chart-col.is-today .adm-chart-bar {
+  background: linear-gradient(180deg, #34d399, color-mix(in srgb, #34d399 45%, transparent));
+  box-shadow: 0 0 14px -2px rgba(52, 211, 153, 0.55);
+}
+.adm-chart-day {
+  font-size: 9.5px;
+  color: var(--faint);
+  white-space: nowrap;
+}
+.adm-chart-col.is-today .adm-chart-day { color: #34d399; font-weight: 700; }
+.adm-chart-hint {
+  width: 100%;
+  text-align: center;
+  color: var(--faint);
+  font-size: 12px;
+  padding-top: 6px;
+}
+
+/* ---------- Top projekty tygodnia ---------- */
+.adm-topweek {
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  padding-top: 4px;
+}
+.adm-tw-row {
+  display: grid;
+  grid-template-columns: 30px 1fr 56px;
+  align-items: center;
+  gap: 10px;
+}
+.adm-tw-rank { font-size: 15px; text-align: center; font-weight: 700; color: var(--muted); }
+.adm-tw-body { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.adm-tw-name { overflow: hidden; text-overflow: ellipsis; }
+.adm-tw-track {
+  height: 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--border) 55%, transparent);
+  overflow: hidden;
+}
+.adm-tw-bar {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 60%, #8b5cf6));
+  transition: width 0.5s cubic-bezier(0.22, 0.8, 0.3, 1);
+}
+.adm-tw-num {
+  font-size: 13px;
+  font-weight: 700;
+  text-align: right;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Odznaka bota (Agent AI) ---------- */
+.adm-bot-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 7px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent) 50%, var(--border));
+  background: linear-gradient(120deg, color-mix(in srgb, var(--accent) 18%, transparent), color-mix(in srgb, #8b5cf6 14%, transparent));
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  vertical-align: 1px;
+}

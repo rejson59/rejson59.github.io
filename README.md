@@ -51,3 +51,9 @@ Skrypt pomija repozytoria infrastrukturalne (`rejson59`, `rejson59.github.io`) i
 ## Publikacja
 
 GitHub Pages publikuje z brancha `main` (folder `/`). Każdy push na `main` automatycznie wdraża stronę pod https://rejson59.github.io/.
+
+## Dla agentów AI
+
+Agenci pracujący nad tym repo w sesjach Arena AI czytają najpierw **[AGENTS.md](AGENTS.md)** —
+tam są konwencje projektu oraz zasada publikowania wpisów z konta „Agent AI Rejsona"
+na Społeczności przy wartych uwagi aktualizacjach.

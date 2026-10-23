@@ -6,15 +6,17 @@
  * (ostatni `git push` wg GitHub API, format: vRRRR.MM.DD).
  * Dopisek (note) pojawia się tylko wtedy, gdy dana zmiana NAPRAWDĘ
  * została wdrożona — żadnych wymyślonych notatek.
- * Aktualizowane przy kolejnych wdrożeniach strony (stan: 23.10.2026).
+ *
+ * PLIK GENEROWANY AUTOMATYCZNIE (GitHub Action raz na dobę +
+ * scripts/update-project-updates.py). Ręcznie edytuj TYLKO dopiski note.
  */
 window.PROJECT_UPDATES = {
+  "JoyPad": { version: "v2026.10.23" },
   "rejson59.github.io": { version: "v2026.10.23", note: "Nowa podstrona Społeczność" },
   "Jakuplayer": { version: "v2026.10.23" },
   "roblox-online": { version: "v2026.10.23" },
   "kompi": { version: "v2026.10.23" },
   "mconline": { version: "v2026.10.22" },
-  "JoyPad": { version: "v2026.10.22" },
   "zaplecze-resellera": { version: "v2026.10.21" },
   "zayra-voice": { version: "v2026.10.18" },
   "FocusIt": { version: "v2026.10.13" },
