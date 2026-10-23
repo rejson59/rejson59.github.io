@@ -946,3 +946,26 @@ a:hover { text-decoration-color: currentColor; }
 .board-cta-text .mono { color: var(--accent-strong); }
 .board-cta-text #board-cta-counts { color: var(--faint); }
 .board-cta-text #board-cta-counts strong.mono { color: var(--accent-strong); }
+
+/* Dwie zachęty obok siebie: tablica pomysłów + społeczność */
+.cta-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  align-items: stretch;
+  margin-top: 4px;
+  margin-bottom: 28px;
+}
+.cta-grid .board-cta,
+.cta-grid .comm-cta { margin: 0; }
+.cta-grid .board-cta-inner { height: 100%; box-sizing: border-box; align-items: center; }
+.comm-cta-inner {
+  border-color: color-mix(in srgb, #8b5cf6 36%, var(--border));
+  background: linear-gradient(135deg, color-mix(in srgb, #8b5cf6 11%, var(--card)), var(--card));
+}
+@media (max-width: 860px) {
+  .cta-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .board-cta-inner .btn { width: 100%; justify-content: center; }
+}
