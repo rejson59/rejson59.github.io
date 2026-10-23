@@ -22,7 +22,7 @@
   var COOLDOWN_PREFIX = "rejson_views_cd_v1:";
   var CACHE_COUNTS_KEY = "rejson_views_counts_cache_v1";
 
-  var countsMap = {}; /* lower(slug) -> { slug, views, unique } */
+  var countsMap = {}; /* lower(slug) -> { slug, views, unique, viewsToday } */
   var onlineMap = {}; /* lower(slug) -> number of active online users */
   var canonicalSlugMap = {}; /* lower(slug) -> canonicalSlug */
   var currentActiveSlug = SITE_SLUG;
@@ -39,7 +39,13 @@
       bc.onmessage = function (ev) {
         if (!ev || !ev.data) return;
         if (ev.data.slug != null && typeof ev.data.views === "number") {
-          applyCountUpdate(ev.data.slug, ev.data.views, ev.data.unique, true);
+          applyCountUpdate(
+            ev.data.slug,
+            ev.data.views,
+            ev.data.unique,
+            true,
+            typeof ev.data.viewsToday === "number" ? ev.data.viewsToday : undefined
+          );
         }
         if (ev.data.onlineMap && typeof ev.data.onlineMap === "object") {
           applyOnlineMap(ev.data.onlineMap);
@@ -126,6 +132,27 @@
     } catch (e) { /* ignorujemy */ }
   }
 
+  /* ---------- Dzień dzisiejszy wg strefy Europe/Warsaw (licznik "kliknięcia dziś") ---------- */
+  function todayWarsawDateStr(dateObj) {
+    var now = dateObj instanceof Date ? dateObj : new Date();
+    try {
+      var parts = new Intl.DateTimeFormat("en-US", {
+        timeZone: "Europe/Warsaw",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+      }).formatToParts(now);
+      var y = "", m = "", d = "";
+      for (var i = 0; i < parts.length; i++) {
+        if (parts[i].type === "year") y = parts[i].value;
+        else if (parts[i].type === "month") m = parts[i].value;
+        else if (parts[i].type === "day") d = parts[i].value;
+      }
+      if (y && m && d) return y + "-" + m + "-" + d;
+    } catch (e) { /* fallback poniżej */ }
+    return now.toISOString().slice(0, 10);
+  }
+
   /* ---------- Cache stanu liczników w localStorage (natychmiastowy start) ---------- */
   function loadCachedCounts() {
     try {
@@ -133,13 +160,17 @@
       if (!raw) return;
       var parsed = JSON.parse(raw);
       if (parsed && typeof parsed === "object") {
+        var cacheDate = typeof parsed.__cacheDate === "string" ? parsed.__cacheDate : "";
+        var today = todayWarsawDateStr();
         Object.keys(parsed).forEach(function (k) {
           var item = parsed[k];
           if (item && typeof item.views === "number") {
             countsMap[k.toLowerCase()] = {
               slug: item.slug || k,
               views: item.views,
-              unique: item.unique || 0
+              unique: item.unique || 0,
+              /* Licznik dzienny z cache uznajemy tylko, gdy cache pochodzi z dzisiejszego dnia */
+              viewsToday: cacheDate === today ? (Number(item.viewsToday) || 0) : 0
             };
             canonicalSlugMap[k.toLowerCase()] = item.slug || k;
           }
@@ -150,7 +181,19 @@
 
   function saveCachedCounts() {
     try {
-      localStorage.setItem(CACHE_COUNTS_KEY, JSON.stringify(countsMap));
+      var payload = { __cacheDate: todayWarsawDateStr() };
+      Object.keys(countsMap).forEach(function (k) {
+        var entry = countsMap[k];
+        if (entry && typeof entry.views === "number") {
+          payload[k] = {
+            slug: entry.slug,
+            views: entry.views,
+            unique: entry.unique || 0,
+            viewsToday: entry.viewsToday || 0
+          };
+        }
+      });
+      localStorage.setItem(CACHE_COUNTS_KEY, JSON.stringify(payload));
     } catch (e) { /* ignorujemy */ }
   }
 
@@ -166,6 +209,13 @@
     if (!slug) return 0;
     var entry = countsMap[String(slug).toLowerCase()];
     return entry && typeof entry.unique === "number" ? entry.unique : 0;
+  }
+
+  /* Liczba kliknięć / wejść naliczonych dzisiaj (dzień wg czasu polskiego, reset o północy) */
+  function getTodayCount(slug) {
+    if (!slug) return 0;
+    var entry = countsMap[String(slug).toLowerCase()];
+    return entry && typeof entry.viewsToday === "number" ? entry.viewsToday : 0;
   }
 
   function getOnlineCount(slug) {
@@ -301,7 +351,7 @@
     }
   }
 
-  function applyCountUpdate(slug, views, unique, animate) {
+  function applyCountUpdate(slug, views, unique, animate, viewsToday) {
     if (!slug || typeof views !== "number" || views < 0) return;
     var key = String(slug).toLowerCase();
     var prev = countsMap[key] ? countsMap[key].views : null;
@@ -311,7 +361,10 @@
     countsMap[key] = {
       slug: canonical,
       views: views,
-      unique: typeof unique === "number" ? unique : (countsMap[key] ? countsMap[key].unique : 0)
+      unique: typeof unique === "number" ? unique : (countsMap[key] ? countsMap[key].unique : 0),
+      viewsToday: typeof viewsToday === "number" && viewsToday >= 0
+        ? viewsToday
+        : (countsMap[key] ? (countsMap[key].viewsToday || 0) : 0)
     };
 
     var changed = prev !== views;
@@ -368,13 +421,13 @@
   function updateDOMCounters(slug, views, shouldBump) {
     var key = String(slug || "").toLowerCase();
 
-    /* 1. Główny licznik strony w prawym górnym rogu */
+    /* 1. Główny licznik strony w prawym górnym rogu (kliknięcia dzisiaj) */
     if (key === SITE_SLUG.toLowerCase()) {
       var siteCountEl = document.getElementById("site-views-count");
       var siteBadgeEl = document.getElementById("site-views-badge");
       if (siteBadgeEl) siteBadgeEl.classList.add("is-ready");
       if (siteCountEl) {
-        animateCounterValue(siteCountEl, views, shouldBump, siteBadgeEl, true);
+        animateCounterValue(siteCountEl, getTodayCount(slug), shouldBump, siteBadgeEl, true);
       }
       var siteUniqueEl = document.getElementById("site-unique-count");
       var siteUniqueBadge = document.getElementById("site-unique-badge");
@@ -384,14 +437,14 @@
       }
     }
 
-    /* 2. Liczniki kliknięć i unikalnych wyświetleń na kartach projektów */
+    /* 2. Liczniki kliknięć (dziś) i unikalnych wyświetleń na kartach projektów */
     var badges = document.querySelectorAll("[data-project-views]");
     for (var i = 0; i < badges.length; i++) {
       var badge = badges[i];
       var bSlug = (badge.getAttribute("data-project-views") || "").toLowerCase();
       if (bSlug === key) {
         var numEl = badge.querySelector(".card-views-num");
-        if (numEl) animateCounterValue(numEl, views, shouldBump, badge, false);
+        if (numEl) animateCounterValue(numEl, getTodayCount(slug), shouldBump, badge, false);
       }
     }
 
@@ -445,7 +498,7 @@
   }
 
   function refreshAllDOMCounters() {
-    var siteViews = getCount(SITE_SLUG);
+    var siteViews = getTodayCount(SITE_SLUG);
     var siteCountEl = document.getElementById("site-views-count");
     var siteBadgeEl = document.getElementById("site-views-badge");
     if (siteCountEl && countsMap[SITE_SLUG.toLowerCase()]) {
@@ -466,7 +519,7 @@
       var slug = badge.getAttribute("data-project-views") || "";
       var numEl = badge.querySelector(".card-views-num");
       if (numEl) {
-        animateCounterValue(numEl, getCount(slug), false, badge, false);
+        animateCounterValue(numEl, getTodayCount(slug), false, badge, false);
       }
     }
 
@@ -495,7 +548,7 @@
   function fetchAllCounts() {
     if (!window.fetch) return Promise.resolve(countsMap);
     return fetch(
-      SUPABASE_URL + "/rest/v1/page_views?select=project_slug,views_count,unique_visitors_count",
+      SUPABASE_URL + "/rest/v1/page_views?select=project_slug,views_count,unique_visitors_count,views_today_count,views_today_date",
       {
         method: "GET",
         headers: supaHeaders(),
@@ -509,21 +562,28 @@
       .then(function (rows) {
         if (Array.isArray(rows)) {
           var anyChanged = false;
+          var todayStr = todayWarsawDateStr();
           rows.forEach(function (r) {
             if (r && r.project_slug) {
               var slug = r.project_slug;
               var views = Number(r.views_count) || 0;
               var unique = Number(r.unique_visitors_count) || 0;
+              /* Licznik dzienny obowiązuje tylko, gdy data wiersza to dzisiejszy dzień (czas polski) */
+              var viewsToday = r.views_today_date === todayStr
+                ? (Number(r.views_today_count) || 0)
+                : 0;
               var key = String(slug).toLowerCase();
               var prev = countsMap[key] ? countsMap[key].views : null;
+              var prevToday = countsMap[key] ? (countsMap[key].viewsToday || 0) : null;
               var canonical = canonicalSlugMap[key] || slug;
               canonicalSlugMap[key] = canonical;
               countsMap[key] = {
                 slug: canonical,
                 views: views,
-                unique: unique
+                unique: unique,
+                viewsToday: viewsToday
               };
-              if (prev !== views) anyChanged = true;
+              if (prev !== views || prevToday !== viewsToday) anyChanged = true;
             }
           });
           if (anyChanged) {
@@ -678,10 +738,11 @@
           markLocalCooldown(data.project_slug, nextWait);
           var views = Number(data.views_count) || 0;
           var unique = Number(data.unique_visitors_count) || 0;
-          applyCountUpdate(data.project_slug, views, unique, Boolean(data.counted));
+          var viewsToday = Number(data.views_today_count) || 0;
+          applyCountUpdate(data.project_slug, views, unique, Boolean(data.counted), viewsToday);
           if (bc && data.counted) {
             try {
-              bc.postMessage({ slug: data.project_slug, views: views, unique: unique });
+              bc.postMessage({ slug: data.project_slug, views: views, unique: unique, viewsToday: viewsToday });
             } catch (e) { /* ignorujemy */ }
           }
         }
@@ -786,7 +847,10 @@
             record.project_slug,
             Number(record.views_count) || 0,
             Number(record.unique_visitors_count) || 0,
-            true
+            true,
+            record.views_today_date === todayWarsawDateStr()
+              ? (Number(record.views_today_count) || 0)
+              : 0
           );
         }
       } catch (e) { /* ignorujemy */ }
@@ -1139,6 +1203,7 @@
   window.RejsonViews = {
     getCount: getCount,
     getUniqueCount: getUniqueCount,
+    getTodayCount: getTodayCount,
     getOnlineCount: getOnlineCount,
     getTotalOnlineCount: getTotalOnlineCount,
     registerView: registerView,
