@@ -24,7 +24,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="rejson-widgets/css/studio.css">
   <link rel="stylesheet" href="rejson-widgets/css/admin.css">
-  <link rel="stylesheet" href="css/activity.css">
   <link rel="stylesheet" href="css/admin-panel.css">
 </head>
 <body>
@@ -58,7 +57,7 @@
         <span>Supabase Auth · tylko właściciel</span>
       </div>
       <h1>Główny Panel Admina</h1>
-      <p class="auth-sub">Zaloguj się swoim e-mailem i hasłem administratora. W środku czeka <strong>szczegółowa aktywność na żywo</strong> — odwiedzający z trwałym identyfikatorem przeglądarki, ich ścieżki krok po kroku, zdarzenia ze wszystkich projektów — a także pełne <strong>zgłoszenia i pomysły</strong> z tablicy publicznej.</p>
+      <p class="auth-sub">Zaloguj się swoim e-mailem i hasłem administratora. W środku czeka <strong>szczegółowa aktywność na żywo</strong> — odwiedzający z trwałym identyfikatorem przeglądarki, ich ścieżki krok po kroku, każde kliknięcie — a także pełne <strong>zgłoszenia</strong> i zarządzanie <strong>Społecznością</strong>.</p>
 
       <div class="auth-error" id="panel-auth-error" hidden style="margin-bottom:12px"></div>
 
@@ -83,147 +82,215 @@
   <!-- ============ GŁÓWNY PANEL (zakładki) ============ -->
   <main class="container admin-main" id="panel-dash" hidden>
 
-    <div class="admin-tabs" role="tablist" aria-label="Sekcje panelu admina">
-      <button type="button" class="admin-tab is-active" id="tab-btn-activity" data-tab="activity" role="tab" aria-selected="true">📊 Aktywność szczegółowa</button>
-      <button type="button" class="admin-tab" id="tab-btn-submissions" data-tab="submissions" role="tab" aria-selected="false">🗂 Zgłoszenia</button>
-      <button type="button" class="admin-tab" id="tab-btn-community" data-tab="community" role="tab" aria-selected="false">👥 Społeczność</button>
-    </div>
+    <nav class="adm-tabs" role="tablist" aria-label="Sekcje panelu admina">
+      <button type="button" class="adm-tab is-active" id="tab-btn-activity" data-tab="activity" role="tab" aria-selected="true">📊 Aktywność <span class="adm-tab-note">na żywo</span></button>
+      <button type="button" class="adm-tab" id="tab-btn-submissions" data-tab="submissions" role="tab" aria-selected="false">🗂 Zgłoszenia</button>
+      <button type="button" class="adm-tab" id="tab-btn-community" data-tab="community" role="tab" aria-selected="false">👥 Społeczność</button>
+    </nav>
 
     <!-- ============ ZAKŁADKA: AKTYWNOŚĆ SZCZEGÓŁOWA ============ -->
     <section id="tab-activity" role="tabpanel" aria-label="Aktywność szczegółowa">
 
-      <div class="kpi-grid act-kpi-grid">
-        <div class="glass-card act-kpi">
-          <span class="act-kpi-num" id="kpi-online">0</span>
-          <span class="act-kpi-label">Osób online teraz</span>
-          <span class="act-kpi-sub">okno 90 sekund · unikalni odwiedzający</span>
-        </div>
-        <div class="glass-card act-kpi">
-          <span class="act-kpi-num" id="kpi-views-today">0</span>
-          <span class="act-kpi-label">Kliknięcia dziś (łącznie)</span>
-          <span class="act-kpi-sub">strona + wszystkie projekty, dzień wg czasu polskiego</span>
-        </div>
-        <div class="glass-card act-kpi" id="kpi-multi-card">
-          <span class="act-kpi-num" id="kpi-multi">0</span>
-          <span class="act-kpi-label">Osoby z 2+ stronami naraz</span>
-          <span class="act-kpi-sub">przeglądają kilka projektów równocześnie</span>
-        </div>
-        <div class="glass-card act-kpi">
-          <span class="act-kpi-num" id="kpi-max-open">0</span>
-          <span class="act-kpi-label">Maks. otwartych stron</span>
-          <span class="act-kpi-sub">rekord jednej osoby na tej chwili</span>
-        </div>
-        <div class="glass-card act-kpi">
-          <span class="act-kpi-num" id="kpi-views-total">0</span>
-          <span class="act-kpi-label">Wejścia łącznie (wszystko)</span>
-          <span class="act-kpi-sub">od początku liczenia, bez limitu anty-spam</span>
-        </div>
-        <div class="glass-card act-kpi">
-          <span class="act-kpi-num" id="kpi-unique-total">0</span>
-          <span class="act-kpi-label">Unikalne osoby (wszystko)</span>
-          <span class="act-kpi-sub">każdy użytkownik liczony raz na projekt</span>
-        </div>
-      </div>
-
-      <div class="glass-card act-multi">
-        <div class="panel-card-head">
-          <h2>Ile stron naraz mają otwarte użytkownicy</h2>
-        </div>
-        <div class="act-histogram" id="act-histogram"></div>
-        <p class="panel-card-note act-multi-explainer">Rozkład pokazuje, ilu odwiedzających ogląda teraz więcej niż jedną stronę lub projekt jednocześnie (np. stronę główną + 3 projekty w zapomnianych kartach).</p>
-      </div>
-
-      <div class="glass-card">
-        <div class="panel-card-head">
-          <h2>👤 Odwiedzający na żywo — identyfikatory, ścieżki i każda akcja</h2>
-          <span class="panel-card-note" style="margin:0">odświeżane co 8 s</span>
-        </div>
-        <p class="panel-card-note">
-          <strong>Nikt nie jest anonimowy:</strong> każdy odwiedzający ma <strong>stały 4-cyfrowy identyfikator</strong> (Gość #1234)
-          liczony z odcisku przeglądarki — przeżywa nawet całkowite wyczyszczenie danych strony.
-          Zalogowani członkowie Społeczności pojawiają się pod swoją nazwą (właściciel ma odznakę 👑).
-          Ścieżka pokazuje odwiedzone strony (do 24 h), a lista akcji — co dokładnie i kiedy klikał.
-        </p>
-        <div class="pa-visitors" id="pa-visitors"></div>
-      </div>
-
-      <div class="glass-card">
-        <div class="panel-card-head">
-          <h2>🖱 Kliknięcia i akcje na żywo — wszystkich odwiedzających</h2>
-        </div>
-        <p class="panel-card-note">Dokładny strumień: kto, kiedy i co kliknął — karty projektów, linki, przyciski, serca, formularze. Dzięki temu widać, co ludzi najbardziej interesuje.</p>
-        <div class="pa-clicks" id="pa-clicks"></div>
-      </div>
-
-      <div class="glass-card">
-        <div class="panel-card-head">
-          <h2>⚡ Ostatnie zdarzenia na stronie i w projektach</h2>
-        </div>
-        <p class="panel-card-note">Zgłoszenia błędów, nowe pomysły, polubienia ❤ oraz wpisy, komentarze i reakcje Społeczności — wszystko w jednym strumieniu.</p>
-        <div class="pa-events" id="pa-events"></div>
-      </div>
-
-      <div class="glass-card act-projects">
-        <div class="panel-card-head">
-          <h2>Wszystkie projekty — kliknięcia i obecność</h2>
-        </div>
-        <div class="act-table" role="table" aria-label="Statystyki projektów">
-          <div class="act-row act-row-head" role="row">
-            <span class="act-proj-name" role="columnheader">Projekt</span>
-            <span class="act-col-num" role="columnheader">Online</span>
-            <span class="act-col-num" role="columnheader">Kliknięcia dziś</span>
-            <span class="act-col-num" role="columnheader">Wejścia łącznie</span>
-            <span class="act-col-num" role="columnheader">Unikalne osoby</span>
-            <span class="act-col-num" role="columnheader">Ostatnia aktywność</span>
+      <div class="adm-kpis">
+        <div class="adm-kpi adm-kpi--live">
+          <span class="adm-kpi-ico" aria-hidden="true">🟢</span>
+          <div class="adm-kpi-body">
+            <span class="adm-kpi-num" id="kpi-online">0</span>
+            <span class="adm-kpi-label">Osób online teraz</span>
+            <span class="adm-kpi-sub">okno 90 s · unikalni</span>
           </div>
-          <div id="act-rows"></div>
+        </div>
+        <div class="adm-kpi">
+          <span class="adm-kpi-ico" aria-hidden="true">🖱</span>
+          <div class="adm-kpi-body">
+            <span class="adm-kpi-num" id="kpi-views-today">0</span>
+            <span class="adm-kpi-label">Kliknięcia dziś</span>
+            <span class="adm-kpi-sub">strona + projekty (czas pl.)</span>
+          </div>
+        </div>
+        <div class="adm-kpi" id="kpi-multi-card">
+          <span class="adm-kpi-ico" aria-hidden="true">🗔</span>
+          <div class="adm-kpi-body">
+            <span class="adm-kpi-num" id="kpi-multi">0</span>
+            <span class="adm-kpi-label">2+ strony naraz</span>
+            <span class="adm-kpi-sub">kilka kart jednocześnie</span>
+          </div>
+        </div>
+        <div class="adm-kpi">
+          <span class="adm-kpi-ico" aria-hidden="true">🏆</span>
+          <div class="adm-kpi-body">
+            <span class="adm-kpi-num" id="kpi-max-open">0</span>
+            <span class="adm-kpi-label">Maks. otwartych stron</span>
+            <span class="adm-kpi-sub">rekord jednej osoby</span>
+          </div>
+        </div>
+        <div class="adm-kpi">
+          <span class="adm-kpi-ico" aria-hidden="true">📈</span>
+          <div class="adm-kpi-body">
+            <span class="adm-kpi-num" id="kpi-views-total">0</span>
+            <span class="adm-kpi-label">Wejścia łącznie</span>
+            <span class="adm-kpi-sub">od początku liczenia</span>
+          </div>
+        </div>
+        <div class="adm-kpi">
+          <span class="adm-kpi-ico" aria-hidden="true">🙂</span>
+          <div class="adm-kpi-body">
+            <span class="adm-kpi-num" id="kpi-unique-total">0</span>
+            <span class="adm-kpi-label">Unikalne osoby</span>
+            <span class="adm-kpi-sub">raz na projekt na osobę</span>
+          </div>
         </div>
       </div>
 
-      <p class="act-updated" id="act-updated"></p>
+      <!-- Odwiedzający — pełna szerokość -->
+      <section class="adm-card">
+        <header class="adm-card-head">
+          <span class="adm-card-ico" aria-hidden="true">👤</span>
+          <div class="adm-card-titles">
+            <h2>Odwiedzający na żywo</h2>
+            <p class="adm-card-sub">Każdy ma trwały identyfikator <span class="mono">#1234</span> (przeżywa wyczyszczenie danych). Widać otwarte strony, ścieżkę kroków i każde kliknięcie tej osoby.</p>
+          </div>
+          <span class="adm-live-chip"><span class="adm-live-dot" aria-hidden="true"></span>odświeżanie co 8 s</span>
+        </header>
+        <div class="pa-visitors" id="pa-visitors"></div>
+      </section>
+
+      <!-- Dwa strumienie obok siebie -->
+      <div class="adm-grid2">
+        <section class="adm-card">
+          <header class="adm-card-head">
+            <span class="adm-card-ico" aria-hidden="true">🖱</span>
+            <div class="adm-card-titles">
+              <h2>Kliknięcia na żywo</h2>
+              <p class="adm-card-sub">Kto, kiedy i co kliknął — dzięki temu widać, co ludzi najbardziej interesuje.</p>
+            </div>
+          </header>
+          <div class="pa-clicks adm-stream" id="pa-clicks"></div>
+        </section>
+
+        <section class="adm-card">
+          <header class="adm-card-head">
+            <span class="adm-card-ico" aria-hidden="true">⚡</span>
+            <div class="adm-card-titles">
+              <h2>Ostatnie zdarzenia</h2>
+              <p class="adm-card-sub">Zgłoszenia, polubienia ❤, wpisy i komentarze Społeczności.</p>
+            </div>
+          </header>
+          <div class="pa-events adm-stream" id="pa-events"></div>
+        </section>
+      </div>
+
+      <!-- Rozkład + kto online obok siebie -->
+      <div class="adm-grid2">
+        <section class="adm-card">
+          <header class="adm-card-head">
+            <span class="adm-card-ico" aria-hidden="true">🗔</span>
+            <div class="adm-card-titles">
+              <h2>Ile stron naraz mają otwarte</h2>
+              <p class="adm-card-sub">Rozkład: ilu odwiedzających ogląda więcej niż jedną stronę jednocześnie.</p>
+            </div>
+          </header>
+          <div class="adm-histo" id="act-histogram"></div>
+        </section>
+
+        <section class="adm-card">
+          <header class="adm-card-head">
+            <span class="adm-card-ico" aria-hidden="true">🟢</span>
+            <div class="adm-card-titles">
+              <h2>Zalogowani teraz online</h2>
+              <p class="adm-card-sub">Członkowie Społeczności widoczni po nazwie (właściciel ma odznakę 👑).</p>
+            </div>
+          </header>
+          <div class="adm-online-users" id="act-users"></div>
+        </section>
+      </div>
+
+      <!-- Tabela projektów — pełna szerokość -->
+      <section class="adm-card">
+        <header class="adm-card-head">
+          <span class="adm-card-ico" aria-hidden="true">📊</span>
+          <div class="adm-card-titles">
+            <h2>Wszystkie projekty — kliknięcia i obecność</h2>
+            <p class="adm-card-sub">Tabela aktualizuje się co 8 sekund.</p>
+          </div>
+        </header>
+        <div class="adm-table-wrap">
+          <div class="adm-table" role="table" aria-label="Statystyki projektów">
+            <div class="adm-trow adm-thead" role="row">
+              <span role="columnheader">Projekt</span>
+              <span class="adm-num" role="columnheader">Online</span>
+              <span class="adm-num" role="columnheader">Kliknięcia dziś</span>
+              <span class="adm-num" role="columnheader">Wejścia łącznie</span>
+              <span class="adm-num" role="columnheader">Unikalne osoby</span>
+              <span class="adm-num" role="columnheader">Ostatnia aktywność</span>
+            </div>
+            <div id="act-rows"></div>
+          </div>
+        </div>
+      </section>
+
+      <p class="adm-updated" id="act-updated"></p>
     </section>
 
     <!-- ============ ZAKŁADKA: SPOŁECZNOŚĆ ============ -->
     <section id="tab-community" role="tabpanel" aria-label="Społeczność" hidden>
 
-      <div class="kpi-grid">
-        <div class="glass-card kpi-card">
-          <span class="kpi-label">Członkowie społeczności</span>
-          <span class="kpi-num" id="comm-kpi-users">0</span>
-          <span class="kpi-sub">zarejestrowane nazwy + PIN</span>
+      <div class="adm-kpis adm-kpis--four">
+        <div class="adm-kpi">
+          <span class="adm-kpi-ico" aria-hidden="true">👥</span>
+          <div class="adm-kpi-body">
+            <span class="adm-kpi-num" id="comm-kpi-users">0</span>
+            <span class="adm-kpi-label">Członkowie</span>
+            <span class="adm-kpi-sub">zarejestrowane nazwy + PIN</span>
+          </div>
         </div>
-        <div class="glass-card kpi-card">
-          <span class="kpi-label">Wpisy</span>
-          <span class="kpi-num" id="comm-kpi-posts">0</span>
-          <span class="kpi-sub">wszystkie opublikowane</span>
+        <div class="adm-kpi">
+          <span class="adm-kpi-ico" aria-hidden="true">📝</span>
+          <div class="adm-kpi-body">
+            <span class="adm-kpi-num" id="comm-kpi-posts">0</span>
+            <span class="adm-kpi-label">Wpisy</span>
+            <span class="adm-kpi-sub">wszystkie opublikowane</span>
+          </div>
         </div>
-        <div class="glass-card kpi-card">
-          <span class="kpi-label">Komentarze</span>
-          <span class="kpi-num" id="comm-kpi-comments">0</span>
-          <span class="kpi-sub">pod wpisami</span>
+        <div class="adm-kpi">
+          <span class="adm-kpi-ico" aria-hidden="true">💬</span>
+          <div class="adm-kpi-body">
+            <span class="adm-kpi-num" id="comm-kpi-comments">0</span>
+            <span class="adm-kpi-label">Komentarze</span>
+            <span class="adm-kpi-sub">pod wpisami</span>
+          </div>
         </div>
-        <div class="glass-card kpi-card">
-          <span class="kpi-label">Polubienia wpisów ❤</span>
-          <span class="kpi-num" id="comm-kpi-likes">0</span>
-          <span class="kpi-sub">co się podoba społeczności</span>
+        <div class="adm-kpi">
+          <span class="adm-kpi-ico" aria-hidden="true">❤</span>
+          <div class="adm-kpi-body">
+            <span class="adm-kpi-num" id="comm-kpi-likes">0</span>
+            <span class="adm-kpi-label">Polubienia wpisów</span>
+            <span class="adm-kpi-sub">co się podoba społeczności</span>
+          </div>
         </div>
       </div>
 
-      <div class="glass-card">
-        <div class="panel-card-head">
-          <h2>👥 Członkowie społeczności</h2>
-          <span class="panel-card-note" style="margin:0">kto online widzisz na zielono</span>
-        </div>
+      <section class="adm-card">
+        <header class="adm-card-head">
+          <span class="adm-card-ico" aria-hidden="true">👥</span>
+          <div class="adm-card-titles">
+            <h2>Członkowie społeczności</h2>
+            <p class="adm-card-sub">Zielona kropka = online teraz. Przy każdym: wpisy, komentarze, zebrane ❤ i data dołączenia.</p>
+          </div>
+        </header>
         <div class="commp-users" id="comm-users"></div>
-      </div>
+      </section>
 
-      <div class="glass-card">
-        <div class="panel-card-head">
-          <h2>📝 Ostatnie wpisy (moderacja)</h2>
-          <span class="panel-card-note" style="margin:0">możesz usuwać każdy wpis</span>
-        </div>
+      <section class="adm-card">
+        <header class="adm-card-head">
+          <span class="adm-card-ico" aria-hidden="true">📝</span>
+          <div class="adm-card-titles">
+            <h2>Ostatnie wpisy — moderacja</h2>
+            <p class="adm-card-sub">Możesz usuwać każdy wpis (razem z komentarzami i polubieniami).</p>
+          </div>
+        </header>
         <div class="commp-posts" id="comm-posts"></div>
-      </div>
+      </section>
     </section>
 
     <!-- ============ ZAKŁADKA: ZGŁOSZENIA (osadzony panel rejson-widgets) ============ -->

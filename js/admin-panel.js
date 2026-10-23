@@ -76,9 +76,9 @@
 
     if (reduceMotion || prev === target) { finish(target); return; }
 
-    el.classList.remove("act-bump");
+    el.classList.remove("adm-bump");
     void el.offsetWidth;
-    el.classList.add("act-bump");
+    el.classList.add("adm-bump");
 
     var duration = 650;
     var startTs = null;
@@ -139,7 +139,7 @@
   };
 
   function bindTabs() {
-    var btns = document.querySelectorAll(".admin-tab");
+    var btns = document.querySelectorAll(".adm-tab");
     for (var i = 0; i < btns.length; i++) {
       (function (btn) {
         btn.addEventListener("click", function () {
@@ -237,7 +237,7 @@
     keys.sort(function (a, b) { return Number(a) - Number(b); });
 
     if (!keys.length) {
-      wrap.innerHTML = '<span class="act-histogram-empty">Nikt nie jest teraz online — odwiedź stronę, a pojawią się dane.</span>';
+      wrap.innerHTML = '<span class="adm-histo-empty">Nikt nie jest teraz online — odwiedź stronę, a pojawią się dane.</span>';
       return;
     }
 
@@ -254,13 +254,45 @@
         var ppl = Number(histo[k]) || 0;
         var multi = pages >= 2;
         return (
-          '<span class="act-histo-chip' + (multi ? " is-multi" : "") + '">' +
+          '<span class="adm-histo-chip' + (multi ? " is-multi" : "") + '">' +
             "<strong>" + pages + (pages === 1 ? " strona" : " strony") + "</strong> — " +
             ppl + " " + osobaWord(ppl) +
           "</span>"
         );
       })
       .join("");
+  }
+
+  /* ---------- Zalogowani użytkownicy Społeczności online (kompaktowo) ---------- */
+  function renderIdentified(users) {
+    var wrap = $("act-users");
+    if (!wrap) return;
+
+    if (!Array.isArray(users) || !users.length) {
+      wrap.innerHTML =
+        '<span class="adm-histo-empty">Brak zalogowanych użytkowników online.</span>';
+      return;
+    }
+
+    wrap.innerHTML = users.map(function (u) {
+      var name = String(u.username || "?");
+      var projects = Array.isArray(u.projects) ? u.projects : [];
+      var projHtml = projects
+        .map(function (slug) {
+          var isPage = String(slug).toLowerCase() === SITE_SLUG;
+          return '<span class="adm-proj-chip' + (isPage ? " is-page" : "") + '">' + esc(slug) + "</span>";
+        })
+        .join("");
+      var isOwner = String(name).toLowerCase() === "rejson59";
+      return (
+        '<div class="adm-online-user">' +
+          '<span class="adm-dot" aria-hidden="true"></span>' +
+          '<span class="commp-avatar" aria-hidden="true">' + esc(name.charAt(0).toUpperCase()) + "</span>" +
+          '<span class="commp-name">' + esc(name) + (isOwner ? ownerBadge(true) : "") + "</span>" +
+          (projHtml || '<span class="adm-proj-chip">—</span>') +
+        "</div>"
+      );
+    }).join("");
   }
 
   /* ---------- Ikony rodzajów akcji ---------- */
@@ -294,10 +326,10 @@
       trail.reverse();
 
       var openHtml = openProjects.length
-        ? '<div class="pa-open-projects"><span>Otwarte teraz:</span>' +
+        ? '<div class="pa-open-projects"><span class="pa-trail-label">Otwarte teraz</span>' +
           openProjects.map(function (slug) {
             var isPage = String(slug).toLowerCase() === SITE_SLUG;
-            return '<span class="act-user-proj' + (isPage ? " is-page" : "") + '">' + esc(slug) + "</span>";
+            return '<span class="adm-proj-chip' + (isPage ? " is-page" : "") + '">' + esc(slug) + "</span>";
           }).join("") +
           "</div>"
         : "";
@@ -426,16 +458,16 @@
     var today = Number(p.views_today) || 0;
     var isSite = String(p.project_slug).toLowerCase() === SITE_SLUG;
     return (
-      '<div class="act-row' + (isSite ? " is-site" : "") + '" role="row">' +
-        '<span class="act-proj-name" role="cell">' +
-          (online > 0 ? '<span class="online-aura-dot" aria-hidden="true"></span>' : "") +
-          '<span class="act-proj-slug">' + esc(p.project_slug) + "</span>" +
+      '<div class="adm-trow' + (isSite ? " is-site" : "") + '" role="row">' +
+        '<span class="adm-tname" role="cell">' +
+          (online > 0 ? '<span class="adm-dot" aria-hidden="true"></span>' : "") +
+          '<span class="adm-tslug">' + esc(p.project_slug) + "</span>" +
         "</span>" +
-        '<span class="act-col-num act-online' + (online > 0 ? " is-live" : " act-dim") + '" role="cell" data-label="Online">' + fmt(online) + "</span>" +
-        '<span class="act-col-num act-today" role="cell" data-label="Kliknięcia dziś">' + fmt(today) + "</span>" +
-        '<span class="act-col-num act-dim" role="cell" data-label="Wejścia łącznie">' + fmt(p.views_total) + "</span>" +
-        '<span class="act-col-num act-dim" role="cell" data-label="Unikalne osoby">' + fmt(p.unique_visitors) + "</span>" +
-        '<span class="act-col-num act-rel" role="cell" data-label="Ostatnia aktywność">' + relTime(p.last_viewed_at) + "</span>" +
+        '<span class="adm-num adm-online' + (online > 0 ? " is-live" : " adm-dim") + '" role="cell">' + fmt(online) + "</span>" +
+        '<span class="adm-num adm-today" role="cell">' + fmt(today) + "</span>" +
+        '<span class="adm-num adm-dim" role="cell">' + fmt(p.views_total) + "</span>" +
+        '<span class="adm-num adm-dim" role="cell">' + fmt(p.unique_visitors) + "</span>" +
+        '<span class="adm-num adm-rel" role="cell">' + relTime(p.last_viewed_at) + "</span>" +
       "</div>"
     );
   }
@@ -460,6 +492,7 @@
     }
 
     renderHistogram(multi.open_projects_histogram);
+    renderIdentified(data.identified_users);
     renderVisitors(data.visitors);
     renderClicks(data.clicks);
     renderEvents(data.events);
