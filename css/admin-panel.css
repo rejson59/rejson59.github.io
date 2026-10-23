@@ -1036,3 +1036,84 @@
   .vif-row-seen { margin-left: 0; }
   .vif-row-arrow { display: none; }
 }
+
+/* ==========================================================================
+   Mobile — cały panel wygodny na telefonie
+   ========================================================================== */
+
+/* Zakładki: poziomy scroll zamiast łamania na wiele wierszy */
+@media (max-width: 860px) {
+  .adm-tabs {
+    top: 8px;
+    width: 100%;
+    margin: 12px 0 16px;
+    padding: 5px;
+    border-radius: 14px;
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .adm-tabs::-webkit-scrollbar { display: none; }
+  .adm-tab { flex: none; padding: 8px 14px; }
+}
+
+@media (max-width: 720px) {
+  /* węższe margina strony */
+  .admin-main.container { padding-inline: 14px; }
+
+  /* nagłówek strony */
+  .site-header .header-nav { gap: 6px; }
+  .site-header .btn { padding: 7px 11px; font-size: 12px; }
+
+  /* karty */
+  .adm-card { border-radius: 16px; }
+
+  /* wykres 14 dni — scroll poziomy zamiast zawijania */
+  .adm-chart { flex-wrap: nowrap; overflow-x: auto; row-gap: 0; padding-bottom: 8px; }
+  .adm-chart-col { flex: 0 0 auto; }
+
+  /* odwiedzający (zakładka Aktywność) */
+  .pa-visitor { padding: 12px 13px; }
+  .pa-visitor-head { gap: 8px; }
+  .pa-visitor-meta { flex-basis: 100%; }
+  .pa-fp { min-width: 46px; height: 28px; font-size: 13.5px; }
+
+  /* zakładka Identyfikatory */
+  .vif-toolbar { flex-direction: column; align-items: stretch; gap: 8px; }
+  .vif-search { flex: none; width: 100%; box-sizing: border-box; }
+  .vif-toolbar .ctrl-select { width: 100%; }
+  .vif-count { text-align: right; }
+  .vif-row { gap: 8px 10px; padding: 10px 12px; }
+  .vif-row-name { min-width: 0; flex: 1; }
+  .vif-row-stats { flex-basis: 100%; }
+  .vif-kpis { gap: 6px; }
+  .vif-kpis .pa-time-chip { font-size: 10.5px; padding: 3px 9px; }
+  .vif-sub, .vif-comm-item { align-items: stretch; flex-direction: column; gap: 6px; }
+  .vif-sub-title, .vif-comm-text { min-width: 0; flex: none; }
+
+  /* zarządzanie kontami: akcje pod nazwą */
+  .commp-user-actions { flex-wrap: wrap; }
+}
+
+@media (max-width: 480px) {
+  .brand-suffix { display: none; }
+  .site-header .header-inner { padding-inline: 12px; }
+  .auth-shell { padding-inline: 12px; }
+  .glass-card.auth-card { padding: 22px 16px; }
+  .adm-tabs { margin-top: 10px; }
+  .adm-card { padding: 13px; }
+  .adm-kpi { padding: 12px; }
+  .adm-kpi-num { font-size: 21px; }
+  .adm-kpi-ico { width: 34px; height: 34px; font-size: 16px; }
+  .vif-kpis .pa-time-chip { font-size: 10px; }
+  .pa-trail-arrow { display: none; }
+}
+
+/* Większe, wygodne dotknięcia na ekranach dotykowych */
+@media (hover: none), (pointer: coarse) {
+  .adm-tab { padding: 11px 16px; }
+  .vif-row { padding: 12px 14px; }
+  .pa-visitor-head .pa-time-chip { padding-block: 5px; }
+}
