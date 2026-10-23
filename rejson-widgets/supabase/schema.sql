@@ -330,3 +330,55 @@ REVOKE INSERT, UPDATE, DELETE ON public.community_likes FROM anon, authenticated
 -- community_toggle_post_like(token, post)
 -- get_admin_activity → +visitors[].actions +clicks[] +lepsze etykiety (Gość #1234)
 -- get_admin_community → członkowie/wpisy/statystyki; admin_delete_post(post) — moderacja
+
+-- ============================================================
+-- 2026-10-23 · Społeczność 2.0: media w wpisach, odpowiedzi, agent AI, dzienne wejścia
+-- (pełne definicje funkcji: supabase/2026-10-23_community-media-replies-agent.sql)
+-- ============================================================
+
+-- Odpowiedzi na komentarze (drzewko 1-poziomowe)
+ALTER TABLE public.community_comments ADD COLUMN IF NOT EXISTS reply_to uuid REFERENCES public.community_comments(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS community_comments_parent_idx ON public.community_comments (reply_to);
+
+-- Konta-boty (oficjalny „Agent AI Rejsona" publikuje zapowiedzi nowości)
+ALTER TABLE public.community_users ADD COLUMN IF NOT EXISTS is_bot boolean NOT NULL DEFAULT false;
+ALTER TABLE public.community_posts  ADD COLUMN IF NOT EXISTS media jsonb NOT NULL DEFAULT '[]'::jsonb;
+
+-- Pliki wpisów w bazie (bytea; zapis/odczyt wyłącznie przez RPC — anon nie ma bezpośredniego SELECT)
+CREATE TABLE IF NOT EXISTS public.community_media (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  post_id uuid REFERENCES public.community_posts(id) ON DELETE SET NULL,
+  mime text NOT NULL,
+  data bytea NOT NULL,
+  size_bytes integer NOT NULL,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE public.community_media ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.community_media FROM anon, authenticated;
+
+-- Sekrety konfiguracyjne (np. token publikacji agenta — trzymany też w AGENTS.md, tylko dla opiekuna)
+CREATE TABLE IF NOT EXISTS public.agent_config (
+  key text PRIMARY KEY,
+  value text NOT NULL
+);
+REVOKE ALL ON public.agent_config FROM anon, authenticated;
+
+-- Dzienne wejścia (feed wykresu w panelu admina; wypełniane triggerem z page_views)
+CREATE TABLE IF NOT EXISTS public.page_views_daily (
+  day date NOT NULL,
+  project text NOT NULL,
+  views integer NOT NULL DEFAULT 0,
+  uniq text[] NOT NULL DEFAULT '{}',
+  PRIMARY KEY (day, project)
+);
+REVOKE ALL ON public.page_views_daily FROM anon, authenticated;
+
+-- RPC (SECURITY DEFINER):
+-- community_create_post(token,type,content,media)        — wpisy z załącznikami (url | id z community_media)
+-- community_upload_media(token,mime,data_b64)            — upload obrazów/GIF-ów (≤54 KB) i video (≤300 KB)
+-- community_get_media(id)                                — odczyt binariów do b64 (front robi data: URL)
+-- community_add_comment(token,post,content,reply_to)     — odpowiedzi; community_list_comments → +reply_to
+-- community_agent_post(secret,content,media_jsonb)       — publikacja z konta bota (≤3 wpisy/dobę)
+-- get_admin_daily_views(project,days)                    -- wykres wejść 14 dni (wywołuje go panel admina)
+-- get_admin_top_week_projects()                          -- „🏆 Top projekty tygodnia" wg wejść 7 dni
+-- Po zmianach sygnatur: DROP starej wersji + GRANT EXECUTE + NOTIFY pgrst, 'reload schema'.

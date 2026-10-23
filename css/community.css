@@ -1,6 +1,23 @@
 /* ============================================================
    Portal społeczności — szklany, pigułkowy styl (dopełnienie css/style.css)
+   Własny, „groźniejszy" mrok: ciemny granat + stalowa poświata.
    ============================================================ */
+
+body.community-page {
+  background:
+    radial-gradient(1100px 560px at 88% -8%, rgba(64, 96, 180, 0.26), transparent 62%),
+    radial-gradient(900px 520px at -10% 18%, rgba(24, 44, 92, 0.55), transparent 60%),
+    radial-gradient(700px 480px at 60% 108%, rgba(50, 78, 150, 0.18), transparent 65%),
+    linear-gradient(178deg, #0a0e1a 0%, #070a13 46%, #05070e 100%);
+  background-attachment: fixed;
+}
+[data-theme="light"] body.community-page {
+  background:
+    radial-gradient(1100px 560px at 88% -8%, rgba(90, 130, 220, 0.16), transparent 60%),
+    radial-gradient(900px 520px at -10% 18%, rgba(120, 150, 220, 0.12), transparent 60%),
+    linear-gradient(178deg, #f4f6fc 0%, #eef1f9 100%);
+  background-attachment: fixed;
+}
 
 .comm-main { padding: 36px 22px 70px; max-width: 780px; }
 
@@ -17,12 +34,26 @@
   max-width: 460px;
 }
 .comm-auth-inner {
-  border-radius: var(--radius-xl);
-  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
-  background: linear-gradient(160deg, color-mix(in srgb, var(--accent) 8%, var(--card)), var(--card));
-  box-shadow: var(--shadow);
-  padding: 22px 24px;
+  border-radius: 28px;
+  padding: 24px 26px;
 }
+.comm-card, .comm-auth-inner, .comm-online-card, .comm-existing-inner {
+  position: relative;
+  background: var(--rj-glass-bg);
+  -webkit-backdrop-filter: var(--rj-glass-blur);
+  backdrop-filter: var(--rj-glass-blur);
+  border: var(--rj-glass-border);
+  box-shadow: var(--rj-glass-shadow);
+}
+.comm-card::before, .comm-auth-inner::before, .comm-online-card::before, .comm-existing-inner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--rj-glass-sheen);
+  pointer-events: none;
+}
+.comm-card > *, .comm-auth-inner > *, .comm-online-card > *, .comm-existing-inner > * { position: relative; }
 .comm-auth-inner h2 { font-size: 20px; margin: 0 0 6px; }
 .comm-auth-sub { margin: 0 0 16px; color: var(--muted); font-size: 13px; line-height: 1.55; }
 
@@ -68,24 +99,28 @@
 
 /* ---------- Komponowanie wpisu ---------- */
 .comm-composer {
+  position: relative;
   margin: 0 auto 24px;
   max-width: 460px;
-  border-radius: 22px;
+  border-radius: 26px;
   padding: 18px 20px;
-  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--border));
-  background:
-    radial-gradient(120% 100% at 10% 0%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 60%),
-    color-mix(in srgb, var(--card) 76%, transparent);
-  backdrop-filter: blur(18px) saturate(1.6);
-  -webkit-backdrop-filter: blur(18px) saturate(1.6);
-  box-shadow:
-    0 14px 36px rgba(0, 0, 0, 0.30),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  border: var(--rj-glass-border);
+  background: var(--rj-glass-bg);
+  backdrop-filter: var(--rj-glass-blur);
+  -webkit-backdrop-filter: var(--rj-glass-blur);
+  box-shadow: var(--rj-glass-shadow);
 }
+.comm-composer::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--rj-glass-sheen);
+  pointer-events: none;
+}
+.comm-composer > * { position: relative; }
 [data-theme="light"] .comm-composer {
-  background:
-    radial-gradient(120% 100% at 10% 0%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 60%),
-    color-mix(in srgb, #ffffff 76%, transparent);
+  background: rgba(255, 255, 255, 0.72);
   box-shadow:
     0 12px 32px rgba(17, 21, 29, 0.10),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
@@ -162,35 +197,37 @@
 /* ---------- Wpis — szklana karta w stylistyce pigułki „Zgłoś błąd / pomysł" ---------- */
 .post-card {
   position: relative;
-  border-radius: 22px;
-  border: 1px solid color-mix(in srgb, var(--accent) 26%, var(--border));
-  background:
-    radial-gradient(120% 90% at 8% 0%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 55%),
-    color-mix(in srgb, var(--card) 76%, transparent);
-  backdrop-filter: blur(18px) saturate(1.6);
-  -webkit-backdrop-filter: blur(18px) saturate(1.6);
-  box-shadow:
-    0 14px 36px rgba(0, 0, 0, 0.30),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  border-radius: 26px;
+  border: var(--rj-glass-border);
+  background: var(--rj-glass-bg);
+  backdrop-filter: var(--rj-glass-blur);
+  -webkit-backdrop-filter: var(--rj-glass-blur);
+  box-shadow: var(--rj-glass-shadow);
   padding: 16px 18px;
   margin-bottom: 14px;
   transition: border-color 0.18s ease, transform 0.18s ease, box-shadow 0.18s ease;
 }
-.post-card:hover {
-  border-color: color-mix(in srgb, var(--accent) 42%, var(--border-strong));
-  transform: translateY(-1px);
-  box-shadow:
-    0 18px 44px rgba(0, 0, 0, 0.38),
-    inset 0 1px 0 rgba(255, 255, 255, 0.10);
+.post-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--rj-glass-sheen);
+  pointer-events: none;
 }
+.post-card > * { position: relative; }
+.post-card:hover {
+  border-color: rgba(148, 163, 184, 0.45);
+  transform: translateY(-1px);
+}
+body.community-page .post-card:hover { border-color: rgba(110, 140, 200, 0.6); }
 [data-theme="light"] .post-card {
-  background:
-    radial-gradient(120% 90% at 8% 0%, color-mix(in srgb, var(--accent) 9%, transparent), transparent 55%),
-    color-mix(in srgb, #ffffff 74%, transparent);
+  background: rgba(255, 255, 255, 0.72);
   box-shadow:
     0 12px 32px rgba(17, 21, 29, 0.10),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
+[data-theme="light"] body.community-page .post-card { background: rgba(248, 250, 255, 0.74); }
 [data-theme="light"] .post-card:hover {
   box-shadow:
     0 18px 42px rgba(17, 21, 29, 0.15),
@@ -199,19 +236,19 @@
 
 /* Wpis oficjalnego agenta AI — wyraźna, „przypięta" rama z akcentem */
 .post-card.is-bot {
-  border-color: color-mix(in srgb, var(--accent) 48%, transparent);
+  border-color: rgba(120, 160, 235, 0.55);
   background:
-    radial-gradient(130% 100% at 10% 0%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 58%),
-    color-mix(in srgb, var(--card) 80%, transparent);
+    radial-gradient(130% 100% at 10% 0%, rgba(106, 140, 220, 0.16), transparent 58%),
+    var(--rj-glass-bg);
   box-shadow:
-    0 16px 40px rgba(0, 0, 0, 0.34),
-    0 0 30px -8px color-mix(in srgb, var(--accent) 42%, transparent),
+    var(--rj-glass-shadow),
+    0 0 34px -8px rgba(90, 130, 215, 0.45),
     inset 0 1px 0 rgba(255, 255, 255, 0.10);
 }
 [data-theme="light"] .post-card.is-bot {
   background:
-    radial-gradient(130% 100% at 10% 0%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 58%),
-    color-mix(in srgb, #ffffff 78%, transparent);
+    radial-gradient(130% 100% at 10% 0%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 58%),
+    rgba(255, 255, 255, 0.78);
   box-shadow:
     0 14px 36px rgba(17, 21, 29, 0.12),
     0 0 26px -8px color-mix(in srgb, var(--accent) 35%, transparent),
@@ -356,6 +393,7 @@
 .comm-online-card {
   margin-top: 22px;
   padding: 16px 18px;
+  border-radius: 26px;
 }
 .comm-online-card h2 {
   display: flex;
@@ -379,11 +417,14 @@
   gap: 7px;
   padding: 5px 12px 5px 6px;
   border-radius: 999px;
-  border: 1px solid var(--border);
-  background: var(--bg-elev);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(148, 163, 184, 0.08);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
   font-size: 12.5px;
   font-weight: 600;
 }
+[data-theme="light"] .comm-online-user { background: rgba(255, 255, 255, 0.55); border-color: rgba(17, 21, 29, 0.10); }
 .comm-online-dot {
   width: 8px;
   height: 8px;
@@ -627,4 +668,51 @@ video.post-media-item {
 
 @media (max-width: 560px) {
   .comment-replies { margin-left: 8px; padding-left: 10px; }
+}
+
+/* ============================================================
+   Niematerialne szkło — rozmycie bez pomalowanego tła.
+   Nakładamy na elementach karty wpisu, żeby „obraz znikał pod powierzchnią",
+   ale element nie miał widocznego prostokąta tła.
+   ============================================================ */
+
+.post-head,               /* nagłówek z avatarem i autorem */
+.post-content,            /* treść wpisu */
+.post-actions,            /* pasek polubień / komentarzy */
+.comm-comments,           /* właściwa sekcja komentarzy */
+.comm-identity, .identity-chip, .comm-settings-btn,
+.post-delete,
+.comment-delete,
+.comments-toggle, .comm-comments-toggle {
+  position: relative;
+  background: transparent;
+  -webkit-backdrop-filter: var(--rj-glass-blur);
+  backdrop-filter: var(--rj-glass-blur);
+  border: 0;
+  border-radius: 14px;
+  box-shadow: none;
+}
+
+/* komentarze: kolor pojawia się dopiero przy najechaniu */
+.comment-row,
+.comment-reply-card {
+  margin: 0 -6px;
+  padding: 4px 8px 6px;
+}
+.comment-row,
+.comment-reply-card,
+.comments-list > * {
+  background: transparent;
+  border-radius: 14px;
+  transition: background 180ms ease;
+}
+.comment-row:hover,
+.comment-reply-card:hover,
+.comments-list > *:hover {
+  background: rgba(148, 163, 184, 0.10);
+}
+[data-theme="light"] .comment-row:hover,
+[data-theme="light"] .comment-reply-card:hover,
+[data-theme="light"] .comments-list > *:hover {
+  background: rgba(255, 255, 255, 0.45);
 }
