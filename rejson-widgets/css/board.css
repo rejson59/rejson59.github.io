@@ -198,9 +198,17 @@
   border-color: color-mix(in srgb, var(--vote) 55%, var(--border));
   background: color-mix(in srgb, var(--vote) 12%, var(--bg-elev));
   color: var(--vote);
+  animation: likePulse 0.5s cubic-bezier(0.22, 0.8, 0.3, 1);
+}
+@keyframes likePulse {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.16); box-shadow: 0 0 0 5px color-mix(in srgb, var(--vote) 22%, transparent); }
+  100% { transform: scale(1); }
 }
 .board-vote-arrow { font-size: 14px; line-height: 1; }
 .board-vote-num { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.board-likes-hint { color: var(--vote); }
+.board-likes-hint b { color: var(--vote); font-weight: 700; }
 
 .board-item-body { min-width: 0; flex: 1; }
 

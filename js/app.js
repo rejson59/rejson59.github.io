@@ -114,6 +114,7 @@
   var ICON_STAR = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.8-4.5 4.3 1.1 6-5.4-2.9L6.6 19.7l1.1-6L3.2 9.4l6.1-.8z"/></svg>';
   var ICON_FORK = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="5" r="2.5"/><circle cx="18" cy="5" r="2.5"/><circle cx="12" cy="19" r="2.5"/><path d="M6 7.5v3a2.5 2.5 0 0 0 2.5 2.5H12M18 7.5v3A2.5 2.5 0 0 1 15.5 13H12M12 13v3.5"/></svg>';
   var ICON_CLICK = '<svg class="icon icon-click" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 2v2"/><path d="M5.6 4.4l1.4 1.4"/><path d="M16.4 4.4l-1.4 1.4"/><path d="M9 13V8a2 2 0 0 1 4 0v3h2a4 4 0 0 1 4 4v1a6 6 0 0 1-6 6h-1.5a5.5 5.5 0 0 1-4.6-2.5L4.3 15.6a1.7 1.7 0 0 1 2.5-2.2L9 15V13z"/></svg>';
+  var ICON_EYE = '<svg class="icon icon-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12s3.5-6.5 9.5-6.5S21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></svg>';
   var numFmt = new Intl.NumberFormat("pl-PL");
 
   function projectViewsCount(name) {
@@ -140,12 +141,17 @@
         ICON_CLICK +
         '<span class="card-views-num">0</span>' +
       "</button>";
+    var uniqueBadge =
+      '<button class="card-metric is-unique mono" type="button" data-project-unique="' + esc(p.name) + '" data-tooltip-title="Osoby, które wyświetliły projekt" data-tooltip="Liczba różnych osób, które kiedykolwiek wyświetliły projekt ' + esc(p.name) + ' — każdy użytkownik liczony jest tylko raz." aria-label="Liczba unikalnych osób, które wyświetliły projekt ' + esc(p.name) + '">' +
+        ICON_EYE +
+        '<span class="card-unique-num">0</span>' +
+      "</button>";
     var lang = p.language
       ? '<span class="lang"><span class="lang-dot" style="background:' +
         esc(LANG_COLORS[p.language] || "#8b949e") + '"></span>' + esc(p.language) + "</span>"
       : "";
     var liveBadge = p.liveUrl ? '<span class="live-badge">LIVE</span>' : "";
-    return onlineBadge + viewsBadge + lang + liveBadge;
+    return onlineBadge + viewsBadge + uniqueBadge + lang + liveBadge;
   }
 
   function metaHTML(p) {

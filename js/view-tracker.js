@@ -161,6 +161,13 @@
     return entry && typeof entry.views === "number" ? entry.views : 0;
   }
 
+  /* Łączna liczba unikalnych osób, które wyświetliły dany projekt (raz na użytkownika) */
+  function getUniqueCount(slug) {
+    if (!slug) return 0;
+    var entry = countsMap[String(slug).toLowerCase()];
+    return entry && typeof entry.unique === "number" ? entry.unique : 0;
+  }
+
   function getOnlineCount(slug) {
     if (!slug) return 0;
     var key = String(slug).toLowerCase();
@@ -369,9 +376,15 @@
       if (siteCountEl) {
         animateCounterValue(siteCountEl, views, shouldBump, siteBadgeEl, true);
       }
+      var siteUniqueEl = document.getElementById("site-unique-count");
+      var siteUniqueBadge = document.getElementById("site-unique-badge");
+      if (siteUniqueBadge) siteUniqueBadge.classList.add("is-ready");
+      if (siteUniqueEl) {
+        animateCounterValue(siteUniqueEl, getUniqueCount(slug), shouldBump, siteUniqueBadge, true);
+      }
     }
 
-    /* 2. Liczniki na kartach projektów (wyróżnionych i pozostałych) */
+    /* 2. Liczniki kliknięć i unikalnych wyświetleń na kartach projektów */
     var badges = document.querySelectorAll("[data-project-views]");
     for (var i = 0; i < badges.length; i++) {
       var badge = badges[i];
@@ -379,6 +392,21 @@
       if (bSlug === key) {
         var numEl = badge.querySelector(".card-views-num");
         if (numEl) animateCounterValue(numEl, views, shouldBump, badge, false);
+      }
+    }
+
+    var uniqueBadges = document.querySelectorAll("[data-project-unique]");
+    for (var u = 0; u < uniqueBadges.length; u++) {
+      var uBadge = uniqueBadges[u];
+      var uSlug = (uBadge.getAttribute("data-project-unique") || "").toLowerCase();
+      if (uSlug === key) {
+        var uNumEl = uBadge.querySelector(".card-unique-num");
+        if (uNumEl) {
+          var uVal = getUniqueCount(slug);
+          var uChanged = uBadge._lastUniqueVal !== undefined && uBadge._lastUniqueVal !== uVal;
+          uBadge._lastUniqueVal = uVal;
+          animateCounterValue(uNumEl, uVal, shouldBump || uChanged, uBadge, false);
+        }
       }
     }
   }
@@ -425,6 +453,13 @@
       animateCounterValue(siteCountEl, siteViews, false, siteBadgeEl, true);
     }
 
+    var siteUniqueEl = document.getElementById("site-unique-count");
+    var siteUniqueBadge = document.getElementById("site-unique-badge");
+    if (siteUniqueEl && countsMap[SITE_SLUG.toLowerCase()]) {
+      if (siteUniqueBadge) siteUniqueBadge.classList.add("is-ready");
+      animateCounterValue(siteUniqueEl, getUniqueCount(SITE_SLUG), false, siteUniqueBadge, true);
+    }
+
     var badges = document.querySelectorAll("[data-project-views]");
     for (var i = 0; i < badges.length; i++) {
       var badge = badges[i];
@@ -432,6 +467,16 @@
       var numEl = badge.querySelector(".card-views-num");
       if (numEl) {
         animateCounterValue(numEl, getCount(slug), false, badge, false);
+      }
+    }
+
+    var uniqueBadges = document.querySelectorAll("[data-project-unique]");
+    for (var u = 0; u < uniqueBadges.length; u++) {
+      var uBadge = uniqueBadges[u];
+      var uSlug = uBadge.getAttribute("data-project-unique") || "";
+      var uNumEl = uBadge.querySelector(".card-unique-num");
+      if (uNumEl) {
+        animateCounterValue(uNumEl, getUniqueCount(uSlug), false, uBadge, false);
       }
     }
 
@@ -1093,6 +1138,7 @@
 
   window.RejsonViews = {
     getCount: getCount,
+    getUniqueCount: getUniqueCount,
     getOnlineCount: getOnlineCount,
     getTotalOnlineCount: getTotalOnlineCount,
     registerView: registerView,

@@ -66,6 +66,14 @@
     return date.toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
   }
 
+  function likesWord(n) {
+    var mod10 = n % 10;
+    var mod100 = n % 100;
+    if (n === 1) return "osobie";
+    if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return "osobom";
+    return "osobom";
+  }
+
   var toastTimer = 0;
   function notify(msg) {
     toastEl.textContent = msg;
@@ -253,7 +261,11 @@
           (it.has_voted ? " is-voted" : "") +
           '" data-vote="' +
           esc(it.id) +
-          '" aria-label="Zagłosuj na to zgłoszenie">' +
+          '" title="' +
+          (it.has_voted ? "Cofnij polubienie" : "Polub — pokaż, że Ci się podoba") +
+          '" aria-label="' +
+          (it.has_voted ? "Cofnij polubienie tego zgłoszenia" : "Polub to zgłoszenie — pokaż, że Ci się podoba") +
+          '">' +
           '    <span class="board-vote-arrow">▲</span>' +
           '    <span class="board-vote-num">' +
           Number(it.upvotes_count || 0) +
@@ -285,6 +297,12 @@
             ? '<p class="board-item-desc">' + esc(it.description) + "</p>"
             : "") +
           '    <div class="board-item-meta">' +
+          '      <span class="board-likes-hint">' +
+          "👍 Podoba się <b>" +
+          Number(it.upvotes_count || 0) +
+          "</b> " +
+          likesWord(Number(it.upvotes_count || 0)) +
+          "</span>" +
           "      <span>" +
           esc(it.author_name || "Anonim") +
           "</span>" +
