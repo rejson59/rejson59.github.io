@@ -397,6 +397,10 @@
       return;
     }
 
+    /* Zanim przebudujemy DOM, zapamiętaj rozpisane komentarze i fokus —
+       inaczej auto-odświeżenie (co 12 s) kasowało wpisywany tekst. */
+    feedDrafts = mergeDrafts(feedDrafts, snapshotCommentDrafts());
+
     feed.innerHTML = posts.map(function (p) {
       var mine = session && session.username === p.author_name;
       var commentsCount = Number(p.comments_count) || 0;
@@ -439,6 +443,9 @@
 
     hydrateLazyMedia(feed);
 
+    /* Przywróć szkice w formularzach komentarzy (te już obecne w DOM) */
+    restoreCommentDrafts(feedDrafts);
+
     /* Dociągnij komentarze w rozwiniętych wpisach po odświeżeniu listy */
     Object.keys(expandedPosts).forEach(function (postId) {
       if (expandedPosts[postId]) loadComments(postId);
@@ -457,6 +464,71 @@
         '<button class="btn btn-primary btn-sm" type="submit">Wyślij</button>' +
       "</form>"
     );
+  }
+
+  /* ---------- Szkice komentarzy: przeżywają przebudowę DOM przy odświeżeniu feedu ---------- */
+  var feedDrafts = []; /* ostatni znany stan pól komentarzy (klucz → wartość/fokus/kareta) */
+
+  function snapshotCommentDrafts() {
+    var out = [];
+    var inputs = document.querySelectorAll("#posts-feed .comment-input");
+    for (var i = 0; i < inputs.length; i++) {
+      var inp = inputs[i];
+      var form = inp.closest ? inp.closest("form") : null;
+      if (!form) continue;
+      var mainId = form.getAttribute("data-comment-form");
+      var replyId = form.getAttribute("data-reply-form");
+      var key = mainId ? "c:" + mainId : replyId ? "r:" + replyId : null;
+      if (!key) continue;
+      var focused = document.activeElement === inp;
+      var value = inp.value || "";
+      if (!value && !focused) continue;
+      out.push({
+        key: key,
+        value: value,
+        focused: focused,
+        caret: focused ? inp.selectionStart : 0
+      });
+    }
+    return out;
+  }
+
+  function mergeDrafts(base, extra) {
+    var seen = {};
+    var merged = [];
+    (extra || []).concat(base || []).forEach(function (d) {
+      if (!d || seen[d.key]) return;
+      seen[d.key] = true;
+      merged.push(d);
+    });
+    return merged;
+  }
+
+  function restoreCommentDrafts(drafts) {
+    (drafts || []).forEach(function (d) {
+      var sel = d.key.charAt(0) === "c"
+        ? 'form[data-comment-form="' + d.key.slice(2) + '"] .comment-input'
+        : 'form[data-reply-form="' + d.key.slice(2) + '"] .comment-input';
+      var inp = document.querySelector(sel);
+      if (!inp) return;
+      if (d.value && inp.value !== d.value) inp.value = d.value;
+      if (d.focused) {
+        inp.focus({ preventScroll: true });
+        try { inp.setSelectionRange(d.caret, d.caret); } catch (e) { /* starsze przeglądarki */ }
+      }
+    });
+  }
+
+  /* Czy użytkownik pisze teraz w którymś polu feedu? (wtedy odkładamy auto-odświeżenie) */
+  function feedHasActiveInput() {
+    var ae = document.activeElement;
+    if (!ae || (ae.tagName !== "INPUT" && ae.tagName !== "TEXTAREA")) return false;
+    var feed = document.getElementById("posts-feed");
+    return !!(feed && feed.contains(ae));
+  }
+
+  function dropDraft(key) {
+    feedDrafts = (feedDrafts || []).filter(function (d) { return d.key !== key; });
   }
 
   function loadPosts(silent) {
@@ -514,6 +586,8 @@
 
   function loadComments(postId) {
     var list = document.querySelector('[data-comments-list="' + postId + '"]');
+    /* lista zawiera formularze odpowiedzi — zachowaj ich szkice przed przebudową */
+    feedDrafts = mergeDrafts(feedDrafts, snapshotCommentDrafts());
     return rpc("community_list_comments", { p_post_id: postId })
       .then(function (comments) {
         if (!list) return;
@@ -546,6 +620,8 @@
             (replies ? '<div class="comment-replies">' + replies + "</div>" : "")
           );
         }).join("");
+        /* przywróć szkice (głównie odpowiedzi) po przebudowie listy */
+        restoreCommentDrafts(feedDrafts);
       })
       .catch(function () {
         if (list) list.innerHTML = '<p class="comments-empty">Nie udało się pobrać komentarzy.</p>';
@@ -559,6 +635,8 @@
 
     if (expandedPosts[postId]) {
       expandedPosts[postId] = false;
+      /* zwiń sekcję — ale najpierw zachowaj szkice pól komentarzy */
+      feedDrafts = mergeDrafts(feedDrafts, snapshotCommentDrafts());
       container.hidden = true;
       container.innerHTML = "";
       if (toggleBtn) toggleBtn.classList.remove("is-open");
@@ -683,6 +761,7 @@
 
       var replyCancel = target.closest("[data-reply-cancel]");
       if (replyCancel) {
+        dropDraft("r:" + replyCancel.getAttribute("data-reply-cancel"));
         delete openReplyForms[replyCancel.getAttribute("data-reply-cancel")];
         loadComments(replyCancel.getAttribute("data-post"));
         return;
@@ -719,6 +798,7 @@
         })
           .then(function () {
             delete openReplyForms[parentId];
+            dropDraft("r:" + parentId);
             return loadComments(rPostId).then(loadPosts(true));
           })
           .catch(function (err) {
@@ -743,6 +823,7 @@
       rpc("community_add_comment", { p_token: session.token, p_post_id: postId, p_content: content })
         .then(function () {
           input.value = "";
+          dropDraft("c:" + postId);
           return loadComments(postId).then(loadPosts(true));
         })
         .catch(function (err) {
@@ -1064,17 +1145,18 @@
     loadOnline();
 
     feedTimer = setInterval(function () {
-      if (document.visibilityState === "visible") {
-        loadPosts(true);
-        loadOnline();
-      }
+      if (document.visibilityState !== "visible") return;
+      /* użytkownik pisze komentarz — odłóż odświeżenie, nie wyrywaj mu pola spod palców */
+      if (feedHasActiveInput()) return;
+      loadPosts(true);
+      loadOnline();
     }, FEED_REFRESH_MS);
 
     document.addEventListener("visibilitychange", function () {
-      if (document.visibilityState === "visible") {
-        loadPosts(true);
-        loadOnline();
-      }
+      if (document.visibilityState !== "visible") return;
+      if (feedHasActiveInput()) return;
+      loadPosts(true);
+      loadOnline();
     });
 
     /* Jeśli sesja wygasła po stronie serwera, wyloguj migawkowo w tle */
