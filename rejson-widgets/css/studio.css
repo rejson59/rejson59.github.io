@@ -50,6 +50,11 @@ body[data-backdrop="vivid"] {
 }
 
 *, *::before, *::after { box-sizing: border-box; }
+
+/* Atrybut [hidden] musi zawsze wygrywać z regułami display (np. .auth-shell, .btn) —
+   inaczej ekran logowania / przyciski nie znikają po przełączeniu widoków */
+[hidden] { display: none !important; }
+
 html { scroll-behavior: smooth; }
 
 body {
