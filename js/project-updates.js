@@ -12,7 +12,7 @@
  */
 window.PROJECT_UPDATES = {
   "JoyPad": { version: "v2026.10.23" },
-  "rejson59.github.io": { version: "v2026.10.23", note: "Nowa podstrona Społeczność" },
+  "rejson59.github.io": { version: "v2026.10.23", note: "Społeczność 2.0: zdjęcia i filmy w postach, wątki odpowiedzi, agent AI" },
   "Jakuplayer": { version: "v2026.10.23" },
   "roblox-online": { version: "v2026.10.23" },
   "kompi": { version: "v2026.10.23" },
