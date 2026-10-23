@@ -1003,8 +1003,8 @@
           "</div>") +
         '<div class="rj-board-foot">' +
         '  <span>Zgłoszenia i pomysły</span>' +
-        '  <a href="/rejson-widgets/board.html" target="_blank" rel="noopener noreferrer">Publiczna tablica ↗</a>' +
-        '  <a href="/rejson-widgets/admin.html" target="_blank" rel="noopener noreferrer">Panel ↗</a>' +
+        '  <a href="/rejson-widgets/board" target="_blank" rel="noopener noreferrer">Publiczna tablica ↗</a>' +
+        '  <a href="/admin" target="_blank" rel="noopener noreferrer">Panel ↗</a>' +
         "</div>";
       kickMorphSpring();
       return;
