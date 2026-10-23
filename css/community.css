@@ -679,7 +679,8 @@ video.post-media-item {
 .post-head,               /* nagłówek z avatarem i autorem */
 .post-content,            /* treść wpisu */
 .post-actions,            /* pasek polubień / komentarzy */
-.comm-comments,           /* właściwa sekcja komentarzy */
+/* UWAGA: .post-comments i pola formularzy celowo POZA tą listą —
+   backdrop-filter bez tła pod pływającym formularzem wymazywał wpisywany tekst. */
 .comm-identity, .identity-chip, .comm-settings-btn,
 .post-delete,
 .comment-delete,
@@ -691,6 +692,39 @@ video.post-media-item {
   border: 0;
   border-radius: 14px;
   box-shadow: none;
+}
+
+/* Pola i przyciski formularzy komentarzy — stabilne tło zamiast rozmycia,
+   bo backdrop-filter pod pływającym formularzem zlewał treść z postem. */
+.comment-input,
+.comment-form .btn {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.comment-input {
+  background: rgba(10, 14, 25, 0.82);
+  border: 1px solid rgba(148, 163, 184, 0.24);
+}
+.comment-input:focus {
+  background: rgba(10, 14, 25, 0.92);
+  border-color: rgba(122, 178, 255, 0.55);
+}
+[data-theme="light"] .comment-input { background: rgba(255, 255, 255, 0.9); }
+.comment-form .btn[type="submit"] {
+  color: #fff;
+  border: 1px solid rgba(122, 178, 255, 0.5);
+  background: linear-gradient(135deg, rgba(90, 130, 215, 0.65), rgba(60, 90, 170, 0.65));
+}
+.comment-form .btn[type="submit"]:hover {
+  background: linear-gradient(135deg, rgba(106, 150, 240, 0.75), rgba(72, 104, 190, 0.75));
+}
+.comment-form .btn:not([type="submit"]) {
+  background: rgba(148, 163, 184, 0.12);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+}
+[data-theme="light"] .comment-form .btn:not([type="submit"]) {
+  background: rgba(255, 255, 255, 0.65);
+  border-color: rgba(17, 21, 29, 0.12);
 }
 
 /* komentarze: kolor pojawia się dopiero przy najechaniu */
