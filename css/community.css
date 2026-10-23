@@ -243,3 +243,103 @@
   .comment-form { flex-direction: column; }
   .comment-form .btn { align-self: flex-end; }
 }
+
+/* ---------- Odznaka właściciela ---------- */
+.comm-owner-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 7px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, #fbbf24 55%, var(--border));
+  background: color-mix(in srgb, #fbbf24 14%, var(--bg-elev));
+  color: #f59e0b;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  vertical-align: 1px;
+  white-space: nowrap;
+}
+
+/* ---------- Polubienia wpisów ---------- */
+.comm-like-btn .comm-like-heart { width: 13px; height: 13px; }
+.comm-like-btn:hover { color: #fb7185; border-color: color-mix(in srgb, #fb7185 45%, var(--border)); }
+.comm-like-btn.is-liked {
+  color: #fb7185;
+  border-color: color-mix(in srgb, #fb7185 55%, var(--border));
+  background: color-mix(in srgb, #fb7185 12%, var(--bg-elev));
+  animation: commLikePulse 0.45s cubic-bezier(0.22, 0.8, 0.3, 1);
+}
+.comm-like-num { font-variant-numeric: tabular-nums; font-weight: 700; }
+@keyframes commLikePulse {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.14); }
+  100% { transform: scale(1); }
+}
+
+/* Podświetlenie karty logowania (np. gdy ktoś próbuje polubić bez konta) */
+.comm-flash {
+  animation: commFlash 1.1s ease;
+}
+@keyframes commFlash {
+  0%, 100% { box-shadow: 0 0 0 0 transparent; }
+  30% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 45%, transparent); }
+}
+
+/* ---------- Kto jest teraz online ---------- */
+.comm-online-card {
+  margin-top: 22px;
+  padding: 16px 18px;
+}
+.comm-online-card h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 700;
+}
+.comm-online {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-height: 30px;
+}
+.comm-online-empty { color: var(--muted); font-size: 12.5px; }
+.comm-online-user {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 12px 5px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-elev);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.comm-online-dot {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #34d399 25%, transparent);
+  animation: commOnlinePulse 2.2s ease-in-out infinite;
+}
+.comm-online-user .comm-online-dot { width: 7px; height: 7px; box-shadow: none; animation: none; }
+@keyframes commOnlinePulse {
+  0%, 100% { box-shadow: 0 0 0 3px color-mix(in srgb, #34d399 25%, transparent); }
+  50% { box-shadow: 0 0 0 6px color-mix(in srgb, #34d399 12%, transparent); }
+}
+.comm-avatar-sm { width: 22px; height: 22px; font-size: 10px; }
+.comm-online-count {
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--glass);
+  color: var(--muted);
+  font-size: 10.5px;
+}

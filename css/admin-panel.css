@@ -276,3 +276,136 @@
   .pa-visitor-meta { margin-left: 0; }
   .pa-event-time { display: none; }
 }
+
+/* ---------- Wszyscy mają identyfikator (koniec „Anonima") ---------- */
+.pa-who-guest { color: var(--text); }
+.pa-fp-mini {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  margin-left: 2px;
+  border-radius: 7px;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border));
+  background: color-mix(in srgb, var(--accent) 10%, var(--bg-elev));
+  color: var(--accent);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  vertical-align: 1px;
+}
+
+/* Odznaka właściciela (panel admina) */
+.adm-owner-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 6px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, #fbbf24 55%, var(--border));
+  background: color-mix(in srgb, #fbbf24 14%, transparent);
+  color: #f59e0b;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* ---------- Lista akcji użytkownika ---------- */
+.pa-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12px;
+}
+.pa-actions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  max-height: 190px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.pa-actions-empty { color: var(--muted); font-size: 11.5px; }
+.pa-action {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--bg-elev) 55%, transparent);
+  font-size: 12px;
+}
+.pa-action-icon { flex: none; font-size: 12px; }
+.pa-action-text { min-width: 0; flex: 1; color: var(--text); word-break: break-word; }
+.pa-action-time { flex: none; color: var(--muted); font-size: 10.5px; }
+
+/* ---------- Globalny strumień kliknięć ---------- */
+.pa-clicks {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 460px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* ---------- Zakładka Społeczność ---------- */
+.commp-users { display: flex; flex-direction: column; gap: 8px; }
+.commp-user {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg-elev) 70%, transparent);
+}
+.commp-user-main { display: inline-flex; align-items: center; gap: 9px; }
+.commp-user-stats { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.commp-name { font-size: 13.5px; font-weight: 700; }
+.commp-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--accent) 18%, var(--bg-elev));
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+}
+.commp-dot {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #34d399 25%, transparent);
+}
+.commp-posts { display: flex; flex-direction: column; gap: 10px; }
+.commp-post {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--bg-elev) 70%, transparent);
+}
+.commp-post-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+.commp-post-content {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+  word-break: break-word;
+}
+.commp-del { margin-left: auto; color: #fb7185; }

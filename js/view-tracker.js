@@ -572,6 +572,95 @@
     refreshOnlineDOMCounters();
   }
 
+  /* ---------- Rejestr kliknięć / akcji odwiedzających ----------
+     Każde znaczące kliknięcie trafia do dziennika (tylko panel admina):
+     karty projektów, linki, przyciski, serca polubień, przełącznik motywu.
+     Kazda osoba jest identyfikowana trwałym identyfikatorem #1234. */
+  var lastLoggedEvent = {};
+
+  function describeClickTarget(el) {
+    if (!el || !el.closest) return null;
+    try {
+      var themeBtn = el.closest("#theme-toggle, .theme-btn, .theme-toggle");
+      if (themeBtn) return "przełącznik motywu jasny/ciemny";
+
+      var voteBtn = el.closest(".board-vote, [data-vote]");
+      if (voteBtn) return "serce ❤ przy zgłoszeniu";
+
+      var card = el.closest(".project-card");
+      if (card) {
+        var t = card.querySelector(".card-title");
+        var name = card.getAttribute("data-repo") || (t && t.textContent) || "projekt";
+        return "kartę projektu „" + String(name).trim().slice(0, 40) + "”";
+      }
+
+      var pill = el.closest(".card-update-pill");
+      if (pill) return "pigułkę wersji";
+
+      if (el.closest("input, textarea, select, [contenteditable]")) return null;
+
+      var link = el.closest("a[href]");
+      if (link) {
+        var txt = (link.textContent || "").trim().replace(/\s+/g, " ").slice(0, 50);
+        var href = link.getAttribute("href") || "";
+        if (!txt) txt = href.slice(0, 50);
+        var ext = /^https?:\/\//i.test(href) ? " (zewnętrzny)" : "";
+        return "link „" + txt + "”" + ext;
+      }
+
+      var btn = el.closest("button, [role=\"button\"]");
+      if (btn) {
+        var txt2 = (btn.getAttribute("aria-label") || btn.textContent || "").trim().replace(/\s+/g, " ").slice(0, 50);
+        if (txt2) return "przycisk „" + txt2 + "”";
+        return "przycisk";
+      }
+    } catch (e) { /* ignorujemy */ }
+    return null;
+  }
+
+  function logActivityEvent(kind, target, slug) {
+    if (!window.fetch || !target) return;
+    var cleanTarget = String(target).slice(0, 140);
+    var dedupeKey = kind + "|" + cleanTarget + "|" + (slug || "");
+    var now = Date.now();
+    if (lastLoggedEvent[dedupeKey] && now - lastLoggedEvent[dedupeKey] < 3000) return;
+    lastLoggedEvent[dedupeKey] = now;
+    /* porządki w mapie anty-spam */
+    var keys = Object.keys(lastLoggedEvent);
+    if (keys.length > 60) {
+      for (var i = 0; i < keys.length; i++) {
+        if (now - lastLoggedEvent[keys[i]] > 30000) delete lastLoggedEvent[keys[i]];
+      }
+    }
+
+    var body = {
+      p_kind: String(kind || "click").slice(0, 24),
+      p_target: cleanTarget,
+      p_slug: slug || currentActiveSlug || SITE_SLUG,
+      p_visitor_id: getVisitorId(),
+      p_fp: getFingerprintId()
+    };
+    var commToken = getCommunityToken();
+    if (commToken) body.p_token = commToken;
+
+    fetch(SUPABASE_URL + "/rest/v1/rpc/log_activity_event", {
+      method: "POST",
+      headers: supaHeaders(),
+      body: JSON.stringify(body),
+      keepalive: true,
+      cache: "no-store"
+    }).catch(function () { /* ignorujemy */ });
+  }
+
+  function bindClickTracking() {
+    document.addEventListener("click", function (ev) {
+      if (window.self !== window.top) return;
+      var desc = describeClickTarget(ev.target);
+      if (!desc) return;
+      logActivityEvent("click", desc);
+    }, true);
+  }
+
   /* ---------- Komunikacja z Supabase (REST + RPC) ---------- */
   function supaHeaders() {
     return {
@@ -1219,9 +1308,11 @@
       fetchTotalOnline();
     }
 
-    /* 2. Podpinamy zliczanie kliknięć w projekty oraz dymki wyjaśniające liczników */
+    /* 2. Podpinamy zliczanie kliknięć w projekty, dymki wyjaśniające liczników
+       oraz rejestr akcji odwiedzających (szczegóły tylko w panelu admina) */
     bindCardClickTracking();
     bindMetricTooltips();
+    bindClickTracking();
 
     /* 3. Uruchamiamy połączenie na żywo (Supabase Realtime WebSocket + szybki heartbeat obecności) */
     if (!isInsideCardThumbnail()) {

@@ -319,10 +319,45 @@
     };
   }
 
+  /* Trwały 4-cyfrowy identyfikator przeglądarki (odcisk) — ten sam algorytm
+     co na stronie głównej (view-tracker.js), więc tożsamość jest spójna
+     w panelu admina między tablicą, widgetem i stroną. */
+  function fingerprintId() {
+    try {
+      var scr = window.screen || {};
+      var parts = [
+        navigator.userAgent || "",
+        navigator.language || "",
+        (navigator.languages || []).join(","),
+        navigator.platform || "",
+        scr.width || 0, scr.height || 0,
+        scr.availWidth || 0, scr.availHeight || 0,
+        scr.colorDepth || 0, scr.pixelDepth || 0,
+        window.devicePixelRatio || 1,
+        new Date().getTimezoneOffset(),
+        navigator.hardwareConcurrency || 0,
+        navigator.deviceMemory || 0,
+        navigator.maxTouchPoints || 0,
+        navigator.cookieEnabled ? 1 : 0,
+        navigator.doNotTrack || ""
+      ];
+      var str = parts.join("|");
+      var h = 0x811c9dc5;
+      for (var i = 0; i < str.length; i++) {
+        h ^= str.charCodeAt(i);
+        h = (h + ((h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24))) >>> 0;
+      }
+      return String(1000 + (h % 9000));
+    } catch (e) {
+      return "";
+    }
+  }
+
   global.RejsonCloud = {
     url: SUPABASE_URL,
     anonKey: SUPABASE_ANON_KEY,
     getVoterKey: getVoterKey,
+    fpId: fingerprintId,
     getStoredSession: getStoredSession,
     setStoredSession: setStoredSession,
     rpc: rpc,
