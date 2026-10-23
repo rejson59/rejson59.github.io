@@ -96,6 +96,42 @@
     return id;
   }
 
+  /* ---------- Trwały 4-cyfrowy identyfikator przeglądarki (odcisk) ----------
+     Liczony wyłącznie z trwałych cech sprzętu i przeglądarki (bez danych
+     przechowywanych), więc przeżywa całkowite wyczyszczenie danych strony.
+     Służy wyłącznie do statystyk popularności w prywatnym panelu admina. */
+  function getFingerprintId() {
+    try {
+      var scr = window.screen || {};
+      var parts = [
+        navigator.userAgent || "",
+        navigator.language || "",
+        (navigator.languages || []).join(","),
+        navigator.platform || "",
+        scr.width || 0, scr.height || 0,
+        scr.availWidth || 0, scr.availHeight || 0,
+        scr.colorDepth || 0, scr.pixelDepth || 0,
+        window.devicePixelRatio || 1,
+        new Date().getTimezoneOffset(),
+        navigator.hardwareConcurrency || 0,
+        navigator.deviceMemory || 0,
+        navigator.maxTouchPoints || 0,
+        navigator.cookieEnabled ? 1 : 0,
+        navigator.doNotTrack || ""
+      ];
+      var str = parts.join("|");
+      /* FNV-1a 32-bit — szybki i stabilny hash */
+      var h = 0x811c9dc5;
+      for (var i = 0; i < str.length; i++) {
+        h ^= str.charCodeAt(i);
+        h = (h + ((h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24))) >>> 0;
+      }
+      return String(1000 + (h % 9000));
+    } catch (e) {
+      return "";
+    }
+  }
+
   function getSessionId() {
     var sid = "";
     try {
@@ -627,9 +663,11 @@
       p_window_seconds: PRESENCE_WINDOW_SECONDS,
       /* Stały identyfikator przeglądarki — kilka otwartych kart tej samej osoby
          liczy się jako jedna obecność na całej stronie i w projektach. */
-      p_visitor_id: getVisitorId()
+      p_visitor_id: getVisitorId(),
+      /* Trwały 4-cyfrowy identyfikator przeglądarki (odcisk) — do statystyk admina */
+      p_fp: getFingerprintId()
     };
-    /* Zalogowany w portalu społeczności? Dołącz token, aby Aktywność pokazała nazwę */
+    /* Zalogowany w portalu społeczności? Dołącz token, aby panel admina pokazał nazwę */
     var commToken = getCommunityToken();
     if (commToken) bodyObj.p_token = commToken;
 

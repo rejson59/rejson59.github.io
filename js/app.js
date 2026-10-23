@@ -170,14 +170,18 @@
     return meta;
   }
 
-  /* Pigułka wersji i ostatniej aktualizacji projektu (dane: js/project-updates.js) */
+  /* Pigułka wersji projektu (dane: js/project-updates.js — wersja zgodna
+     z rzeczywistą datą ostatniej aktualizacji repozytorium; dopisek tylko,
+     gdy dana zmiana naprawdę została wdrożona) */
   function updatePillHTML(p) {
     var info = window.PROJECT_UPDATES ? window.PROJECT_UPDATES[p.name] : null;
     if (!info || !info.version) return "";
+    var tip = "Wersja zgodna z datą ostatniej aktualizacji repozytorium (" + esc(info.version.replace(/^v/, "")) + ")";
+    var note = info.note ? '<span class="pill-note">' + esc(info.note) + "</span>" : "";
     return (
-      '<p class="card-update-pill" title="Wersja ' + esc(info.version) + " — " + esc(info.note || "") + '">' +
+      '<p class="card-update-pill" title="' + tip + '">' +
         '<span class="pill-version mono">' + esc(info.version) + "</span>" +
-        '<span class="pill-note">' + esc(info.note || "") + "</span>" +
+        note +
       "</p>"
     );
   }

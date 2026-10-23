@@ -258,3 +258,29 @@ ALTER TABLE public.page_presence ADD COLUMN IF NOT EXISTS username text;
 -- community_list_posts / community_list_comments / community_add_comment /
 -- community_delete_post / community_delete_comment /
 -- heartbeat_page_presence(+p_token) / get_activity_overview(+identified_users)
+
+-- ============================================================
+-- Szczegółowe śledzenie kroków odwiedzających (dla panelu admina)
+-- ============================================================
+-- Identyfikator odcisku przeglądarki (4 cyfry, trwały po wyczyszczeniu danych)
+ALTER TABLE public.page_presence ADD COLUMN IF NOT EXISTS fingerprint_id text;
+ALTER TABLE public.page_presence ADD COLUMN IF NOT EXISTS first_seen_at timestamptz;
+
+-- Ścieżka kroków: kolejne strony/projekty odwiedzone przez daną sesję (do 24 h)
+CREATE TABLE IF NOT EXISTS public.page_trail (
+  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  session_key text NOT NULL,
+  fingerprint_id text,
+  username text,
+  project_slug text NOT NULL,
+  at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS page_trail_session_at_idx ON public.page_trail (session_key, at DESC);
+ALTER TABLE public.page_trail ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.page_trail FROM anon, authenticated;
+
+-- RPC (SECURITY DEFINER, definicje w migracjach na produkcji):
+-- heartbeat_page_presence(+p_fp) — zapis odcisku + dopis kroku do page_trail
+-- get_admin_activity(p_window_seconds) — TYLKO dla administratora (is_widget_admin):
+--   overview + visitors[identyfikator, nazwa, otwarte projekty, czas, ścieżka]
+--   + events[zgłoszenia, polubienia, wpisy i komentarze Społeczności]

@@ -238,7 +238,7 @@
     document.getElementById("kpi-bugs-crit").textContent =
       critBugs > 0 ? critBugs + " o wysokim priorytecie" : "Brak błędów krytycznych";
     document.getElementById("kpi-ideas").textContent = String(ideas);
-    document.getElementById("kpi-votes").textContent = votes + " głosów łącznie";
+    document.getElementById("kpi-votes").textContent = votes + " polubień łącznie";
 
     /* Pigułki projektów */
     var pillsHTML =
@@ -336,7 +336,7 @@
           (!it.is_public ? '<span class="tag-badge">Prywatne</span>' : "") +
           (it.is_demo ? '<span class="tag-badge">DEMO</span>' : "") +
           "    </div>" +
-          '    <span class="mono" style="font-size:12px;color:var(--muted)">▲ ' +
+          '    <span class="mono" style="font-size:12px;color:#fb7185">❤ ' +
           Number(it.upvotes_count || 0) +
           "</span>" +
           "  </div>" +
