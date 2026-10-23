@@ -1,1 +1,22 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="#11151d"/><rect x="1" y="1" width="62" height="62" rx="13" fill="none" stroke="#2a3345" stroke-width="2"/><path d="M20 46V18h13.2c6.1 0 10.4 3.7 10.4 9.2 0 4.2-2.4 7.3-6.2 8.6L45 46h-7.9l-6.4-9.3H26.6V46H20zm6.6-14.4h6.2c2.6 0 4.2-1.7 4.2-4.3s-1.6-4.2-4.2-4.2h-6.2v8.5z" fill="#e8ecf1"/><circle cx="46" cy="44" r="3.4" fill="#6aa6ff"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="glassBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1b2638"/>
+      <stop offset="55%" stop-color="#0f1521"/>
+      <stop offset="100%" stop-color="#17253e"/>
+    </linearGradient>
+    <linearGradient id="glassRim" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#b8d6ff" stop-opacity="0.85"/>
+      <stop offset="45%" stop-color="#6aa6ff" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#7ef0c8" stop-opacity="0.7"/>
+    </linearGradient>
+    <linearGradient id="accentOrb" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8fbdff"/>
+      <stop offset="100%" stop-color="#3fb68b"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="2" width="60" height="60" rx="16" fill="url(#glassBg)" stroke="url(#glassRim)" stroke-width="2.2"/>
+  <ellipse cx="24" cy="14" rx="18" ry="7" fill="#ffffff" opacity="0.1"/>
+  <path d="M19 46V18h13.2c6.1 0 10.4 3.7 10.4 9.2 0 4.2-2.4 7.3-6.2 8.6L44 46h-7.9l-6.4-9.3H25.6V46H19zm6.6-14.4h6.2c2.6 0 4.2-1.7 4.2-4.3s-1.6-4.2-4.2-4.2h-6.2v8.5z" fill="#eef4ff"/>
+  <circle cx="46.5" cy="43.5" r="4.5" fill="url(#accentOrb)"/>
+</svg>
