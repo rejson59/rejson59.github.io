@@ -44,6 +44,9 @@
         if (ev.data.onlineMap && typeof ev.data.onlineMap === "object") {
           applyOnlineMap(ev.data.onlineMap);
         }
+        if (typeof ev.data.totalOnline === "number") {
+          applyTotalOnline(ev.data.totalOnline, true);
+        }
       };
     }
   } catch (e) { /* BroadcastChannel opcjonalny */ }
@@ -316,6 +319,29 @@
     }
   }
 
+  /* ---------- Łączna liczba unikalnych osób online na całej domenie ---------- */
+  var totalOnlineCount = 0;
+
+  function getTotalOnlineCount() {
+    /* Jeśli przeglądamy stronę w głównym oknie, na pewno jest min. 1 osoba online */
+    if (window.self === window.top) {
+      return Math.max(1, totalOnlineCount);
+    }
+    return totalOnlineCount;
+  }
+
+  function applyTotalOnline(n, shouldBump) {
+    var num = Math.max(0, Number(n) || 0);
+    var changed = num !== totalOnlineCount;
+    totalOnlineCount = num;
+    var totalEl = document.getElementById("site-total-online-count");
+    var totalBadge = document.getElementById("site-total-online-badge");
+    if (totalBadge) totalBadge.classList.add("is-ready");
+    if (totalEl) {
+      animateCounterValue(totalEl, getTotalOnlineCount(), Boolean(shouldBump && changed), totalBadge, true);
+    }
+  }
+
   function applyOnlineMap(activeCountsObj) {
     if (!activeCountsObj || typeof activeCountsObj !== "object") return;
     var nextMap = {};
@@ -362,7 +388,9 @@
     var siteOnlineBadge = document.getElementById("site-online-badge");
     if (siteOnlineEl) {
       var siteOnline = getOnlineCount(SITE_SLUG);
-      animateCounterValue(siteOnlineEl, siteOnline, false, siteOnlineBadge, true);
+      var siteChanged = siteOnlineEl._lastOnlineVal !== undefined && siteOnlineEl._lastOnlineVal !== siteOnline;
+      siteOnlineEl._lastOnlineVal = siteOnline;
+      animateCounterValue(siteOnlineEl, siteOnline, siteChanged, siteOnlineBadge, true);
     }
 
     var onlineEls = document.querySelectorAll("[data-project-online]");
@@ -371,8 +399,20 @@
       var slug = el.getAttribute("data-project-online") || "";
       var cnt = getOnlineCount(slug);
       var numEl = el.querySelector(".card-online-num");
-      if (numEl) animateCounterValue(numEl, cnt, false, el, false);
+      var changed = el._lastOnlineVal !== undefined && el._lastOnlineVal !== cnt;
+      el._lastOnlineVal = cnt;
+      if (numEl) animateCounterValue(numEl, cnt, changed, el, false);
       el.classList.toggle("is-active-now", cnt > 0);
+    }
+
+    /* Łączny licznik wszystkich osób online na całej stronie i w projektach */
+    var totalEl = document.getElementById("site-total-online-count");
+    var totalBadge = document.getElementById("site-total-online-badge");
+    if (totalEl) {
+      var totalVal = getTotalOnlineCount();
+      var totalChanged = totalEl._lastOnlineVal !== undefined && totalEl._lastOnlineVal !== totalVal;
+      totalEl._lastOnlineVal = totalVal;
+      animateCounterValue(totalEl, totalVal, totalChanged, totalBadge, true);
     }
   }
 
@@ -469,7 +509,10 @@
         p_slug: canonicalSlugMap[key] || targetSlug,
         p_session_id: getSessionId(),
         p_action: action || "ping",
-        p_window_seconds: PRESENCE_WINDOW_SECONDS
+        p_window_seconds: PRESENCE_WINDOW_SECONDS,
+        /* Stały identyfikator przeglądarki — kilka otwartych kart tej samej osoby
+           liczy się jako jedna obecność na całej stronie i w projektach. */
+        p_visitor_id: getVisitorId()
       }),
       keepalive: true,
       cache: "no-store"
@@ -486,6 +529,42 @@
               bc.postMessage({ onlineMap: data.active_counts });
             } catch (e) { /* ignorujemy */ }
           }
+        }
+        if (data && typeof data.total_online === "number") {
+          applyTotalOnline(data.total_online, true);
+          if (bc) {
+            try {
+              bc.postMessage({ totalOnline: data.total_online });
+            } catch (e) { /* ignorujemy */ }
+          }
+        }
+        return data;
+      })
+      .catch(function () {
+        return null;
+      });
+  }
+
+  /* Lekkie odpytanie łącznej liczby unikalnych osób online (deduplikacja po przeglądarce) */
+  function fetchTotalOnline() {
+    if (!window.fetch) return Promise.resolve(null);
+    return fetch(SUPABASE_URL + "/rest/v1/rpc/count_total_online", {
+      method: "POST",
+      headers: supaHeaders(),
+      body: JSON.stringify({ p_window_seconds: PRESENCE_WINDOW_SECONDS }),
+      keepalive: true,
+      cache: "no-store"
+    })
+      .then(function (res) {
+        if (!res.ok) throw new Error("TotalOnline " + res.status);
+        return res.json();
+      })
+      .then(function (data) {
+        if (data && typeof data.total_online === "number") {
+          applyTotalOnline(data.total_online, true);
+        }
+        if (data && data.active_counts) {
+          applyOnlineMap(data.active_counts);
         }
         return data;
       })
@@ -958,7 +1037,8 @@
     refreshAllDOMCounters();
     registerGlobalServiceWorker();
 
-    /* 1. Pobieramy aktualny stan wszystkich liczników oraz obecności na żywo z Supabase */
+    /* 1. Pobieramy aktualny stan wszystkich liczników, obecności na żywo
+       oraz łącznej liczby unikalnych osób online z Supabase */
     fetchAllCounts().then(function () {
       refreshAllDOMCounters();
       if (!isInsideCardThumbnail()) {
@@ -970,12 +1050,15 @@
         }
       }
     });
+    if (!isInsideCardThumbnail()) {
+      fetchTotalOnline();
+    }
 
     /* 2. Podpinamy zliczanie kliknięć w projekty oraz dymki wyjaśniające liczników */
     bindCardClickTracking();
     bindMetricTooltips();
 
-    /* 3. Uruchamiamy połączenie na żywo (Supabase Realtime WebSocket + heartbeat obecności) */
+    /* 3. Uruchamiamy połączenie na żywo (Supabase Realtime WebSocket + szybki heartbeat obecności) */
     if (!isInsideCardThumbnail()) {
       connectRealtime();
 
@@ -983,6 +1066,7 @@
         if (document.visibilityState === "visible") {
           fetchAllCounts();
           sendPresenceHeartbeat(currentActiveSlug, "ping");
+          fetchTotalOnline();
           if (!ws) connectRealtime();
         }
       });
@@ -991,18 +1075,26 @@
         sendPresenceHeartbeat(currentActiveSlug, "leave");
       });
 
+      /* Heartbeat obecności co 6 sekund — liczniki LIVE odświeżają się niemal natychmiast */
+      setInterval(function () {
+        if (document.visibilityState === "visible") {
+          sendPresenceHeartbeat(currentActiveSlug, "ping");
+        }
+      }, 6000);
+
+      /* Stan liczników wejść co 12 sekund (zmiany przychodzą też od razu przez Realtime) */
       setInterval(function () {
         if (document.visibilityState === "visible") {
           fetchAllCounts();
-          sendPresenceHeartbeat(currentActiveSlug, "ping");
         }
-      }, 20000);
+      }, 12000);
     }
   }
 
   window.RejsonViews = {
     getCount: getCount,
     getOnlineCount: getOnlineCount,
+    getTotalOnlineCount: getTotalOnlineCount,
     registerView: registerView,
     fetchAllCounts: fetchAllCounts,
     refreshDOM: refreshAllDOMCounters,

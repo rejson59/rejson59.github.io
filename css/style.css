@@ -154,6 +154,39 @@ a:hover { text-decoration-color: currentColor; }
   box-shadow: 0 0 14px color-mix(in srgb, var(--live) 18%, transparent);
 }
 
+/* Łączny licznik wszystkich osób online (cała strona + projekty) — akcent niebieski */
+.metric-badge.is-total-online {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+  background: color-mix(in srgb, var(--accent) 9%, var(--bg-elev));
+  color: var(--accent);
+}
+.metric-badge.is-total-online:hover {
+  border-color: color-mix(in srgb, var(--accent) 60%, var(--border));
+  box-shadow: 0 0 16px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.metric-badge.is-total-online .online-aura-dot {
+  background: var(--accent);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--accent) 24%, transparent),
+    0 0 10px color-mix(in srgb, var(--accent) 75%, transparent);
+}
+.metric-badge.is-total-online .online-aura-dot::after {
+  border-color: var(--accent);
+}
+.metric-badge.is-total-online .online-count {
+  color: var(--accent);
+}
+.metric-badge-caption {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--accent) 80%, var(--text));
+}
+@media (max-width: 560px) {
+  .metric-badge-caption { display: none; }
+}
+
 /* Zielona kropka z poświatą / aurą dla licznika LIVE */
 .online-aura-dot {
   position: relative;
