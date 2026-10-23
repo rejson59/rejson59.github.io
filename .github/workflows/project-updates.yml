@@ -1,0 +1,41 @@
+name: Aktualizacja pigułek wersji
+
+# Raz na dobę (po północy czasu polskiego) odświeża js/project-updates.js
+# na podstawie pola pushed_at z GitHub API. Dopiski (note) dodawane ręcznie
+# w pliku są zachowywane. Uruchomienie ręczne: zakładka Actions
+# -> „Aktualizacja pigułek wersji" -> „Run workflow".
+
+on:
+  schedule:
+    - cron: "23 22 * * *" # 22:23 UTC ~= 00:23 / 01:23 w Polsce
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-pills:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Regeneruj pigułki wersji
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python3 scripts/update-project-updates.py
+
+      - name: Zapisz zmiany (jeśli są)
+        run: |
+          if git diff --quiet -- js/project-updates.js; then
+            echo "Brak zmian — nic do zapisania."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add js/project-updates.js
+          git commit -m "chore: automatyczna aktualizacja pigułek wersji (pushed_at z GitHub API)"
+          git push

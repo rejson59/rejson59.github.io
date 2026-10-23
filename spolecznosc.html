@@ -59,7 +59,7 @@
       <h1 class="comm-title">Społeczność</h1>
       <p class="comm-lead">Portal wpisów i dyskusji o projektach Rejson59. <strong>Przeglądanie stron i korzystanie
       z projektów nie wymaga żadnego konta</strong> — konto (tylko nazwa + 4-cyfrowy PIN) potrzebne jest wyłącznie
-      do publikowania wpisów i komentowania. Piszący pojawiają się przy swoich wpisach
+      do publikowania wpisów ze zdjęciami i filmami oraz komentowania. Piszący pojawiają się przy swoich wpisach
       pod własną nazwą.</p>
     </section>
 
@@ -98,7 +98,13 @@
       </div>
       <textarea class="comm-textarea" id="post-content" rows="3" maxlength="2000"
                 placeholder="Napisz coś do społeczności: opinia o projekcie, propozycja, pytanie…"></textarea>
+      <input type="file" id="post-media-input" accept="image/png,image/jpeg,image/webp,image/gif,video/mp4,video/webm" multiple hidden>
+      <div class="comm-media-preview" id="post-media-preview" hidden></div>
       <div class="comm-composer-foot">
+        <button class="comm-pill-btn comm-attach-btn" id="post-attach" type="button"
+                title="Dodaj zdjęcie (JPG / PNG / WebP / GIF do 6 MB) albo film (MP4 / WebM do 12 MB) — maks. 4 załączniki">
+          📎 Zdjęcie / film
+        </button>
         <span class="comm-counter mono" id="post-counter">0 / 2000</span>
         <button class="btn btn-primary btn-sm" id="post-submit" type="button" disabled>Opublikuj wpis</button>
       </div>

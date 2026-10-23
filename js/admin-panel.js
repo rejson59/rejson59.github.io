@@ -42,6 +42,17 @@
       : "";
   }
 
+  /* Odznaka oficjalnego agenta AI Społeczności */
+  var AGENT_NAME = "agent_ai_rejsona";
+  function isAgentName(name) {
+    return String(name || "").toLowerCase() === AGENT_NAME;
+  }
+  function botBadge(isBot) {
+    return isBot
+      ? '<span class="adm-bot-badge" title="Oficjalny agent AI — wpisy publikowane automatycznie o aktualizacjach">🤖 Agent AI</span>'
+      : "";
+  }
+
   /* Czytelna etykieta osoby: nazwa albo stały identyfikator — nigdy "Anonim" */
   function whoLabel(username, fp, isOwner) {
     if (username) {
@@ -288,7 +299,7 @@
         '<div class="adm-online-user">' +
           '<span class="adm-dot" aria-hidden="true"></span>' +
           '<span class="commp-avatar" aria-hidden="true">' + esc(name.charAt(0).toUpperCase()) + "</span>" +
-          '<span class="commp-name">' + esc(name) + (isOwner ? ownerBadge(true) : "") + "</span>" +
+          '<span class="commp-name">' + esc(name) + (isOwner ? ownerBadge(true) : "") + botBadge(isAgentName(name)) + "</span>" +
           (projHtml || '<span class="adm-proj-chip">—</span>') +
         "</div>"
       );
@@ -537,7 +548,7 @@
                 '<span class="commp-user-main">' +
                   (u.online ? '<span class="commp-dot" title="online teraz" aria-hidden="true"></span>' : "") +
                   '<span class="commp-avatar" aria-hidden="true">' + esc((String(u.username).charAt(0) || "?").toUpperCase()) + "</span>" +
-                  '<span class="commp-name">' + esc(u.username) + ownerBadge(u.is_owner) + "</span>" +
+                  '<span class="commp-name">' + esc(u.username) + ownerBadge(u.is_owner) + botBadge(u.is_bot === true || isAgentName(u.username)) + "</span>" +
                 "</span>" +
                 '<span class="commp-user-stats">' +
                   '<span class="pa-time-chip">📝 ' + fmt(u.posts_count) + "</span>" +
@@ -559,7 +570,10 @@
               '<div class="commp-post">' +
                 '<div class="commp-post-head">' +
                   '<span class="commp-avatar" aria-hidden="true">' + esc((String(p.author_name).charAt(0) || "?").toUpperCase()) + "</span>" +
-                  '<span class="commp-name">' + esc(p.author_name) + ownerBadge(p.is_owner) + "</span>" +
+                  '<span class="commp-name">' + esc(p.author_name) + ownerBadge(p.is_owner) + botBadge(p.is_bot === true || isAgentName(p.author_name)) + "</span>" +
+                  (Number(p.media_count) > 0
+                    ? '<span class="pa-time-chip" title="Wpisy z załącznikami">📎 ' + fmt(p.media_count) + "</span>"
+                    : "") +
                   '<span class="pa-time-chip">❤ ' + fmt(p.likes_count) + "</span>" +
                   '<span class="pa-time-chip">💬 ' + fmt(p.comments_count) + "</span>" +
                   '<span class="pa-event-time">' + esc(relTime(p.created_at)) + "</span>" +
@@ -602,6 +616,96 @@
     });
   }
 
+  /* ---------- Wykres wejść (14 dni) + top projekty tygodnia ---------- */
+  var WEEKDAY_SHORT = ["nd", "pn", "wt", "śr", "czw", "pt", "so"];
+
+  function dayLabel(dayIso) {
+    var d = new Date(dayIso + "T12:00:00");
+    if (isNaN(d)) return dayIso;
+    var wd = WEEKDAY_SHORT[d.getDay()];
+    var dd = ("0" + d.getDate()).slice(-2);
+    var mm = ("0" + (d.getMonth() + 1)).slice(-2);
+    return wd + " " + dd + "." + mm;
+  }
+
+  function renderDailyData(data) {
+    var chart = $("act-daily-chart");
+    var topWrap = $("act-top-week");
+    if (!chart && !topWrap) return;
+    if (!data || !Array.isArray(data.days)) return;
+
+    var days = data.days;
+    var maxTotal = 0;
+    days.forEach(function (d) { maxTotal = Math.max(maxTotal, Number(d.total) || 0); });
+
+    if (chart) {
+      var allZero = maxTotal === 0;
+      chart.innerHTML = days.map(function (d) {
+        var total = Number(d.total) || 0;
+        var pct = maxTotal > 0 ? Math.max(3, Math.round((total / maxTotal) * 100)) : 3;
+        var projects = d.projects || {};
+        var slugs = Object.keys(projects).sort(function (a, b) {
+          return (Number(projects[b]) || 0) - (Number(projects[a]) || 0);
+        });
+        var tipLines = slugs.slice(0, 8).map(function (slug) {
+          return "   " + slug + ": " + fmt(projects[slug]);
+        });
+        var isToday = d.day === days[days.length - 1].day;
+        return (
+          '<div class="adm-chart-col' + (isToday ? " is-today" : "") + '" title="' + esc(
+            dayLabel(d.day) + " — " + total + (total === 1 ? " wejście" : " wejść") + (tipLines.length ? "\n" + tipLines.join("\n") : "")
+          ) + '">' +
+            '<span class="adm-chart-val mono">' + (total > 0 ? fmt(total) : "") + "</span>" +
+            '<span class="adm-chart-barwrap"><span class="adm-chart-bar" style="height:' + pct + '%"></span></span>' +
+            '<span class="adm-chart-day mono">' + esc(dayLabel(d.day)) + "</span>" +
+          "</div>"
+        );
+      }).join("");
+      if (allZero) {
+        chart.innerHTML += '<span class="adm-chart-hint">Dzienne statystyki zbierane są od 23.10.2026 — słupki urosną z każdym dniem.</span>';
+      }
+    }
+
+    if (topWrap) {
+      var top = Array.isArray(data.top_week) ? data.top_week : [];
+      if (!top.length) {
+        topWrap.innerHTML = '<div class="pa-empty">Jeszcze za mało danych — ranking zapełni się po pierwszych dniach z licznikiem dziennym.</div>';
+      } else {
+        var maxWeek = Number(top[0].views) || 1;
+        var medals = ["🥇", "🥈", "🥉", "4.", "5.", "6."];
+        topWrap.innerHTML = top.map(function (t, i) {
+          var views = Number(t.views) || 0;
+          var pct = Math.max(3, Math.round((views / maxWeek) * 100));
+          var isSite = String(t.slug).toLowerCase() === SITE_SLUG;
+          return (
+            '<div class="adm-tw-row">' +
+              '<span class="adm-tw-rank" aria-hidden="true">' + (medals[i] || (i + 1) + ".") + "</span>" +
+              '<span class="adm-tw-body">' +
+                '<span class="adm-tw-name">' +
+                  '<span class="adm-proj-chip' + (isSite ? " is-page" : "") + '">' + esc(t.slug) + "</span>" +
+                "</span>" +
+                '<span class="adm-tw-track"><span class="adm-tw-bar" style="width:' + pct + '%"></span></span>' +
+              "</span>" +
+              '<span class="adm-tw-num mono">' + fmt(views) + "</span>" +
+            "</div>"
+          );
+        }).join("");
+      }
+    }
+  }
+
+  function fetchDailyStats() {
+    if (!panelActive || !window.RejsonCloud || !window.RejsonCloud.rpc) {
+      return Promise.resolve(null);
+    }
+    return window.RejsonCloud.rpc("get_admin_daily_views", { p_days: 14 }, true)
+      .then(function (data) {
+        renderDailyData(data);
+        return data;
+      })
+      .catch(function () { return null; });
+  }
+
   /* ---------- Pobieranie: admin-only RPC ---------- */
   function fetchAdminActivity() {
     if (!panelActive || !window.RejsonCloud || !window.RejsonCloud.rpc) {
@@ -628,10 +732,12 @@
     stopRefresh();
     fetchAdminActivity();
     fetchCommunity();
+    fetchDailyStats();
     refreshTimer = setInterval(function () {
       if (document.visibilityState === "visible") {
         fetchAdminActivity();
         fetchCommunity();
+        fetchDailyStats();
       }
     }, REFRESH_MS);
   }
