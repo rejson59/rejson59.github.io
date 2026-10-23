@@ -160,7 +160,8 @@
   var TAB_IDS = {
     activity: "tab-activity",
     submissions: "tab-submissions",
-    community: "tab-community"
+    community: "tab-community",
+    visitors: "tab-visitors"
   };
 
   function bindTabs() {
@@ -179,6 +180,7 @@
             if (el) el.hidden = key !== tab;
           });
           if (tab === "community") fetchCommunity();
+          if (tab === "visitors") fetchVisitorList();
         });
       })(btns[i]);
     }
@@ -907,6 +909,8 @@
       if (refreshTick % SLOW_CYCLE_DIV === 1) {
         fetchCommunity();
         fetchDailyStats();
+        var vt = $("tab-visitors");
+        if (vt && !vt.hidden) fetchVisitorList();
       }
     }, REFRESH_MS);
   }
@@ -918,6 +922,245 @@
     }
   }
 
+  /* =====================================================================
+     IDENTYFIKATORY — lista rozpoznanych osób + profil z pełną aktywnością
+     ===================================================================== */
+  var visitorListData = [];
+  var visitorFilter = "";
+  var visitorOpenId = null;
+
+  function viaBadge(via) {
+    if (via === "fp") {
+      return '<span class="pa-time-chip" title="Pełny odcisk przeglądarki — najpewniejsza identyfikacja">🧬 odcisk</span>';
+    }
+    if (via === "browser") {
+      return '<span class="pa-time-chip" title="Przybliżony identyfikator z IP + przeglądarki — dla starszych liczników bez odcisku">🌐 przeglądarka</span>';
+    }
+    return '<span class="pa-time-chip" title="Tylko klucz sesji — przeglądarka nie podała żadnych identyfikatorów">⏳ sesja</span>';
+  }
+
+  function renderVisitorList() {
+    var wrap = $("vif-list");
+    var countEl = $("vif-count");
+    if (!wrap) return;
+    var q = visitorFilter.trim().toLowerCase();
+    var rows = visitorListData.filter(function (p) {
+      if (!q) return true;
+      return (
+        String(p.label || "").toLowerCase().indexOf(q) !== -1 ||
+        String(p.username || "").toLowerCase().indexOf(q) !== -1 ||
+        String(p.id || "").toLowerCase().indexOf(q) !== -1
+      );
+    });
+    if (countEl) {
+      countEl.textContent = rows.length + (rows.length === 1 ? " osoba" : " osób");
+    }
+    if (!rows.length) {
+      wrap.innerHTML = '<div class="pa-empty">Brak pasujących identyfikatorów — osoby pojawią się tutaj, gdy ktoś wejdzie na stronę (lista obejmuje ostatnie dni).</div>';
+      return;
+    }
+    wrap.innerHTML = rows.map(function (p) {
+      var open = visitorOpenId === p.id;
+      return (
+        '<button type="button" class="vif-row' + (open ? " is-open" : "") + '" data-vpid="' + esc(p.id) + '" title="Otwórz profil tej osoby">' +
+          '<span class="vif-row-id mono' + (p.via !== "fp" ? " is-derived" : "") + '">#' + esc(p.label) + "</span>" +
+          '<span class="vif-row-name">' +
+            (p.online ? '<span class="commp-dot" aria-hidden="true" title="online teraz"></span>' : "") +
+            (p.username ? "<strong>" + esc(p.username) + "</strong>" + ownerBadge(p.is_owner) : '<span class="vif-guest">Gość</span>') +
+            viaBadge(p.via) +
+          "</span>" +
+          '<span class="vif-row-stats">' +
+            '<span class="pa-time-chip" title="Przejścia między stronami (ścieżki)">🛤 ' + fmt(p.visits) + "</span>" +
+            '<span class="pa-time-chip" title="Odwiedzone podstrony">📄 ' + fmt(p.pages) + "</span>" +
+            '<span class="pa-time-chip" title="Kliknięcia i akcje">🖱 ' + fmt(p.actions) + "</span>" +
+            (Number(p.submissions) > 0 ? '<span class="pa-time-chip" title="Zgłoszenia na tablicę">📨 ' + fmt(p.submissions) + "</span>" : "") +
+            (Number(p.votes) > 0 ? '<span class="pa-time-chip" title="Głosy na pomysły">👍 ' + fmt(p.votes) + "</span>" : "") +
+          "</span>" +
+          '<span class="vif-row-seen mono" title="Ostatnio widziana">' + esc(relTime(p.last_seen_at)) + "</span>" +
+          '<span class="vif-row-arrow" aria-hidden="true">›</span>' +
+        "</button>"
+      );
+    }).join("");
+  }
+
+  function fetchVisitorList() {
+    if (!panelActive || !window.RejsonCloud || !window.RejsonCloud.rpc) return Promise.resolve(null);
+    var daysEl = $("vif-days");
+    var days = daysEl ? Number(daysEl.value) || 7 : 7;
+    return window.RejsonCloud.rpc("admin_visitor_list", { p_days: days }, true)
+      .then(function (data) {
+        visitorListData = (data && Array.isArray(data.people)) ? data.people : [];
+        renderVisitorList();
+        return data;
+      })
+      .catch(function () { return null; });
+  }
+
+  function renderVisitorProfile(p) {
+    var card = $("vif-profile-card");
+    var host = $("vif-profile");
+    var title = $("vif-profile-title");
+    var sub = $("vif-profile-sub");
+    if (!card || !host) return;
+    card.hidden = false;
+    if (card.scrollIntoView) card.scrollIntoView({ behavior: "smooth", block: "start" });
+
+    if (!p || typeof p !== "object") {
+      host.innerHTML = '<div class="pa-empty">Nie udało się wczytać profilu tej osoby.</div>';
+      return;
+    }
+    if (title) {
+      title.innerHTML = "#" + esc(p.label || "----") + (p.username ? " → <strong>" + esc(p.username) + "</strong>" : " → Gość");
+    }
+    if (sub) {
+      sub.innerHTML =
+        (p.via === "fp" ? "identyfikacja pełnym odciskiem przeglądarki" :
+         p.via === "browser" ? "identyfikacja przybliżona (IP + przeglądarka)" :
+         "identyfikacja wyłącznie po sesji") +
+        " · pierwszy kontakt: " + esc(relTime(p.first_seen_at)) +
+        " · ostatnio: " + esc(relTime(p.last_seen_at));
+    }
+
+    var trail = Array.isArray(p.trail) ? p.trail.slice() : [];
+    var actions = Array.isArray(p.actions) ? p.actions.slice() : [];
+    var subs = Array.isArray(p.submissions) ? p.submissions : [];
+    var posts = Array.isArray(p.posts) ? p.posts : [];
+    var comments = Array.isArray(p.comments) ? p.comments : [];
+    trail.reverse(); /* oś czasu rosnąco */
+
+    var kpiHtml =
+      '<div class="vif-kpis">' +
+        '<span class="pa-time-chip">🛤 ' + fmt(p.visits) + " przechodów</span>" +
+        '<span class="pa-time-chip">📄 ' + fmt(p.pages) + " podstron</span>" +
+        '<span class="pa-time-chip">🖱 ' + fmt(p.action_count) + " akcji</span>" +
+        '<span class="pa-time-chip">📨 ' + fmt(subs.length) + " zgłoszeń</span>" +
+        '<span class="pa-time-chip">👍 ' + fmt(p.votes) + " głosów</span>" +
+        '<span class="pa-time-chip">📝 ' + fmt(posts.length) + " wpisów · 💬 " + fmt(comments.length) + " komentarzy</span>" +
+      "</div>";
+
+    var trailHtml = trail.length
+      ? '<div class="vif-section"><h3 class="vif-h">Ścieżka podstron</h3><div class="vif-timeline">' +
+        trail.map(function (step, i) {
+          var last = i === trail.length - 1;
+          return (
+            '<span class="pa-trail-step' + (last ? " is-latest" : "") + '">' +
+              '<span class="pa-trail-slug">' + esc(step.slug) + "</span>" +
+              '<span class="pa-trail-time">' + esc(clockTime(step.at).slice(0, 5)) + "</span>" +
+            "</span>" + (last ? "" : '<span class="pa-trail-arrow">→</span>')
+          );
+        }).join("") + "</div></div>"
+      : "";
+
+    var actionsHtml = actions.length
+      ? '<div class="vif-section"><h3 class="vif-h">Kliknięcia i akcje</h3><div class="pa-actions-list vif-actions">' +
+        actions.slice(0, 30).map(function (a) {
+          return (
+            '<div class="pa-action">' +
+              '<span class="pa-action-icon" aria-hidden="true">' + actionIcon(a.kind) + "</span>" +
+              '<span class="pa-action-text">' + esc(a.target || "") + "</span>" +
+              (a.project ? '<span class="pa-event-proj">' + esc(a.project) + "</span>" : "") +
+              '<span class="pa-action-time mono">' + esc(clockTime(a.at)) + " · " + esc(relTime(a.at)) + "</span>" +
+            "</div>"
+          );
+        }).join("") + "</div></div>"
+      : "";
+
+    var subsHtml = subs.length
+      ? '<div class="vif-section"><h3 class="vif-h">Zgłoszenia na tablicę</h3><div class="vif-subs">' +
+        subs.map(function (it) {
+          return (
+            '<div class="vif-sub">' +
+              '<span class="vif-sub-type">' + (it.type === "idea" ? "💡" : "🐞") + "</span>" +
+              '<span class="vif-sub-title">' + esc(it.title || "") + "</span>" +
+              '<span class="pa-time-chip">' + esc(it.status || "") + "</span>" +
+              '<span class="pa-time-chip">👍 ' + fmt(it.votes) + "</span>" +
+              '<span class="pa-event-proj">' + esc(it.project || "") + "</span>" +
+              '<span class="pa-event-time">' + esc(relTime(it.at)) + "</span>" +
+            "</div>"
+          );
+        }).join("") + "</div></div>"
+      : "";
+
+    var commHtml = (posts.length || comments.length)
+      ? '<div class="vif-section"><h3 class="vif-h">Aktywność w społeczności</h3><div class="vif-comm">' +
+        posts.map(function (p2) {
+          return (
+            '<div class="vif-comm-item"><span class="pa-action-icon">📝</span>' +
+              '<span class="vif-comm-text">' + esc(p2.content || "") + "</span>" +
+              '<span class="pa-time-chip">❤ ' + fmt(p2.likes) + "</span>" +
+              '<span class="pa-event-time">' + esc(relTime(p2.at)) + "</span>" +
+            "</div>"
+          );
+        }).join("") +
+        comments.map(function (c) {
+          return (
+            '<div class="vif-comm-item"><span class="pa-action-icon">💬</span>' +
+              '<span class="vif-comm-text">' + esc(c.content || "") + "</span>" +
+              '<span class="pa-event-time">' + esc(relTime(c.at)) + "</span>" +
+            "</div>"
+          );
+        }).join("") + "</div></div>"
+      : "";
+
+    var emptyHtml = (!trail.length && !actions.length && !subs.length && !posts.length && !comments.length)
+      ? '<div class="pa-empty">Ta osoba nie zostawiła jeszcze żadnego śladu w wybranym okresie.</div>'
+      : "";
+
+    host.innerHTML = kpiHtml + trailHtml + actionsHtml + subsHtml + commHtml + emptyHtml;
+  }
+
+  function fetchVisitorProfile(id) {
+    if (!panelActive || !window.RejsonCloud || !window.RejsonCloud.rpc) return;
+    var host = $("vif-profile");
+    var card = $("vif-profile-card");
+    if (card) card.hidden = false;
+    if (host) host.innerHTML = '<div class="pa-empty">Ładowanie profilu…</div>';
+    var daysEl = $("vif-days");
+    var days = daysEl ? Number(daysEl.value) || 7 : 7;
+    window.RejsonCloud.rpc("admin_visitor_profile", { p_id: id, p_days: days }, true)
+      .then(function (data) { renderVisitorProfile(data); })
+      .catch(function () {
+        if (host) host.innerHTML = '<div class="pa-empty">Nie udało się wczytać profilu.</div>';
+      });
+  }
+
+  function bindVisitorsTab() {
+    var list = $("vif-list");
+    var search = $("vif-search");
+    var days = $("vif-days");
+    var back = $("vif-back");
+
+    if (list) {
+      list.addEventListener("click", function (e) {
+        var row = e.target && e.target.closest ? e.target.closest("[data-vpid]") : null;
+        if (!row) return;
+        visitorOpenId = row.getAttribute("data-vpid");
+        renderVisitorList();
+        fetchVisitorProfile(visitorOpenId);
+      });
+    }
+    if (search) {
+      search.addEventListener("input", function () {
+        visitorFilter = search.value || "";
+        renderVisitorList();
+      });
+    }
+    if (days) {
+      days.addEventListener("change", function () {
+        fetchVisitorList();
+        if (visitorOpenId) fetchVisitorProfile(visitorOpenId);
+      });
+    }
+    if (back) {
+      back.addEventListener("click", function () {
+        visitorOpenId = null;
+        var card = $("vif-profile-card");
+        if (card) card.hidden = true;
+        renderVisitorList();
+      });
+    }
+  }
+
   /* ---------- Start ---------- */
   function boot() {
     bindTabs();
@@ -925,6 +1168,7 @@
     bindLogout();
     bindCommunityModeration();
     bindAccountManagement();
+    bindVisitorsTab();
 
     document.addEventListener("visibilitychange", function () {
       if (document.visibilityState === "visible" && panelActive) {
