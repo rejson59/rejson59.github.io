@@ -930,6 +930,9 @@
   var visitorOpenId = null;
 
   function viaBadge(via) {
+    if (via === "account") {
+      return '<span class="pa-time-chip" title="Rozpoznana po nazwie konta — to samo konto łączy wszystkie urządzenia">👤 konto</span>';
+    }
     if (via === "fp") {
       return '<span class="pa-time-chip" title="Pełny odcisk przeglądarki — najpewniejsza identyfikacja">🧬 odcisk</span>';
     }
@@ -993,7 +996,13 @@
         renderVisitorList();
         return data;
       })
-      .catch(function () { return null; });
+      .catch(function (err) {
+        var wrap = $("vif-list");
+        if (wrap) {
+          wrap.innerHTML = '<div class="pa-empty">Nie udało się wczytać identyfikatorów: ' + esc(err && err.message ? err.message : "błąd połączenia") + "</div>";
+        }
+        return null;
+      });
   }
 
   function renderVisitorProfile(p) {
@@ -1010,11 +1019,14 @@
       return;
     }
     if (title) {
-      title.innerHTML = "#" + esc(p.label || "----") + (p.username ? " → <strong>" + esc(p.username) + "</strong>" : " → Gość");
+      var sameLabel = p.username && String(p.label) === String(p.username);
+      title.innerHTML = "#" + esc(p.label || "----") +
+        (p.username && !sameLabel ? " → <strong>" + esc(p.username) + "</strong>" : (p.username ? "" : " → Gość"));
     }
     if (sub) {
       sub.innerHTML =
-        (p.via === "fp" ? "identyfikacja pełnym odciskiem przeglądarki" :
+        (p.via === "account" ? "identyfikacja po nazwie konta — łączy wszystkie urządzenia" :
+         p.via === "fp" ? "identyfikacja pełnym odciskiem przeglądarki" :
          p.via === "browser" ? "identyfikacja przybliżona (IP + przeglądarka)" :
          "identyfikacja wyłącznie po sesji") +
         " · pierwszy kontakt: " + esc(relTime(p.first_seen_at)) +

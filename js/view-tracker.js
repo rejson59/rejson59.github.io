@@ -1284,12 +1284,114 @@
     } catch (e) { /* ignorujemy */ }
   }
 
+  /* ---------- Delikatna zachęta do dołączenia do społeczności ----------
+     Pokazuje się tylko osobom bez konta, po chwili użytkowania strony,
+     i nigdy się nie nalega: „X" zamyka na zawsze, „Może później" na 3 dni. */
+  var JOIN_NUDGE_LS = "rejson_join_nudge_v1";
+  var JOIN_NUDGE_SESSIONS = "rejson_join_nudge_sessions";
+
+  function nudgeBlockedPath() {
+    var p = (location.pathname || "/").toLowerCase();
+    return /admin|spolecznosc|tablica-pomyslow/.test(p);
+  }
+
+  function hasCommunityAccount() {
+    try {
+      var raw = localStorage.getItem("rejson_community_session_v1");
+      if (!raw) return false;
+      var parsed = JSON.parse(raw);
+      return !!(parsed && typeof parsed.token === "string" && parsed.token.length >= 16);
+    } catch (e) { return false; }
+  }
+
+  function setupJoinNudge() {
+    if (window.self !== window.top) return;
+    if (typeof isInsideCardThumbnail === "function" && isInsideCardThumbnail()) return;
+    if (nudgeBlockedPath() || hasCommunityAccount()) return;
+
+    var state = null;
+    try { state = JSON.parse(localStorage.getItem(JOIN_NUDGE_LS) || "null"); } catch (e) { state = null; }
+    if (state && state.done) return;                                     /* zamknięte na zawsze */
+    if (state && state.until && Date.now() < state.until) return;        /* „może później" wciąż ważne */
+
+    /* licznik sesji przeglądarki — zachęta dopiero od 2. powtórki */
+    var sessions = 0;
+    try {
+      sessions = (parseInt(localStorage.getItem(JOIN_NUDGE_SESSIONS) || "0", 10) || 0) + 1;
+      localStorage.setItem(JOIN_NUDGE_SESSIONS, String(sessions));
+    } catch (e) { sessions = 2; }
+    if (sessions < 2) return;
+
+    var delay = 25000;
+    setTimeout(function () {
+      if (document.visibilityState !== "visible") return;
+      if (hasCommunityAccount()) return;
+      if (document.getElementById("join-nudge")) return;
+
+      var style = document.createElement("style");
+      style.id = "join-nudge-style";
+      style.textContent =
+        "#join-nudge{position:fixed;right:18px;bottom:18px;z-index:99990;max-width:330px;" +
+        "padding:16px 18px;border-radius:18px;color:#e7ecf3;" +
+        "background:rgba(16,22,35,0.82);border:1px solid rgba(148,163,184,0.25);" +
+        "backdrop-filter:blur(16px) saturate(1.5);-webkit-backdrop-filter:blur(16px) saturate(1.5);" +
+        "box-shadow:0 18px 46px rgba(0,0,0,0.45);font:500 13.5px/1.5 'Inter',sans-serif;" +
+        "animation:jnIn .45s cubic-bezier(.22,.9,.32,1.15)}" +
+        "@keyframes jnIn{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:none}}" +
+        "#join-nudge.jn-out{transition:opacity .3s,transform .3s;opacity:0;transform:translateY(10px)}" +
+        "#join-nudge h4{margin:0 24px 6px 0;font:700 14.5px/1.35 'Space Grotesk','Inter',sans-serif}" +
+        "#join-nudge p{margin:0 0 12px;color:#aeb8c8}" +
+        "#join-nudge .jn-x{position:absolute;top:8px;right:10px;border:0;background:none;" +
+        "color:#8b98ac;font-size:16px;cursor:pointer;padding:4px 6px;line-height:1}" +
+        "#join-nudge .jn-x:hover{color:#fff}" +
+        "#join-nudge .jn-actions{display:flex;gap:8px;flex-wrap:wrap}" +
+        "#join-nudge a.jn-go{display:inline-block;padding:8px 14px;border-radius:999px;" +
+        "background:linear-gradient(120deg,#2f6df6,#8b5cf6);color:#fff;text-decoration:none;font-weight:700}" +
+        "#join-nudge a.jn-go:hover{filter:brightness(1.1)}" +
+        "#join-nudge button.jn-later{padding:8px 12px;border-radius:999px;border:1px solid rgba(148,163,184,0.3);" +
+        "background:transparent;color:#aeb8c8;cursor:pointer;font:600 12.5px 'Inter',sans-serif}" +
+        "#join-nudge button.jn-later:hover{color:#fff;border-color:rgba(148,163,184,0.6)}" +
+        "@media(max-width:480px){#join-nudge{right:10px;left:10px;max-width:none}}";
+      document.head.appendChild(style);
+
+      var card = document.createElement("aside");
+      card.id = "join-nudge";
+      card.setAttribute("role", "dialog");
+      card.setAttribute("aria-label", "Zachęta do dołączenia do społeczności");
+      card.innerHTML =
+        '<button class="jn-x" aria-label="Zamknij na zawsze">✕</button>' +
+        "<h4>👋 Poznajmy się!</h4>" +
+        '<p>Widzę Cię tu po raz kolejny — załóż konto (tylko nazwa + 4-cyfrowy PIN), a pojawisz się ze swoją nazwą, a do tego możesz pisać wpisy, komentować i lajkować ❤</p>' +
+        '<div class="jn-actions">' +
+          '<a class="jn-go" href="https://rejson59.github.io/spolecznosc">Dołącz do społeczności</a>' +
+          '<button class="jn-later" type="button">Może później</button>' +
+        "</div>";
+      document.body.appendChild(card);
+
+      function hide(permanent) {
+        try {
+          if (permanent) {
+            localStorage.setItem(JOIN_NUDGE_LS, JSON.stringify({ done: true }));
+          } else {
+            localStorage.setItem(JOIN_NUDGE_LS, JSON.stringify({ until: Date.now() + 3 * 24 * 3600 * 1000 }));
+          }
+        } catch (e) { /* ignorujemy */ }
+        card.classList.add("jn-out");
+        setTimeout(function () { card.remove(); }, 350);
+      }
+      card.querySelector(".jn-x").addEventListener("click", function () { hide(true); });
+      card.querySelector(".jn-later").addEventListener("click", function () { hide(false); });
+      card.querySelector(".jn-go").addEventListener("click", function () { hide(true); });
+    }, delay);
+  }
+
   /* ---------- Inicjalizacja ---------- */
   function init() {
     currentActiveSlug = detectCurrentSlug();
     loadCachedCounts();
     refreshAllDOMCounters();
     registerGlobalServiceWorker();
+    setupJoinNudge();
 
     /* 1. Natychmiast meldujemy obecność na tej podstronie (szybka synchronizacja
        przejść widać w panelu), a w tle pobieramy stan liczników z Supabase */
