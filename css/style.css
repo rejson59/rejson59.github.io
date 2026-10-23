@@ -220,13 +220,19 @@ a:hover { text-decoration-color: currentColor; }
   color: var(--live);
   font-variant-numeric: tabular-nums;
 }
-.metric-badge .icon-click {
+.metric-badge .icon-click,
+.metric-badge .icon-eye {
   width: 15px;
   height: 15px;
   color: var(--accent);
   flex: none;
 }
-.views-count {
+.metric-badge .icon-eye {
+  color: var(--text);
+  opacity: 0.85;
+}
+.views-count,
+.unique-count {
   display: inline-block;
   font-size: 12.5px;
   letter-spacing: -0.01em;
@@ -234,9 +240,22 @@ a:hover { text-decoration-color: currentColor; }
 }
 .card-online-num,
 .card-views-num,
+.card-unique-num,
 .stat dd {
   display: inline-block;
   font-variant-numeric: tabular-nums;
+}
+
+/* Ikonka oka — unikalni odwiedzający projekt (raz na użytkownika) */
+.card-metric .icon-eye {
+  width: 15px;
+  height: 15px;
+  color: var(--text);
+  opacity: 0.8;
+  flex: none;
+}
+.card-metric.is-unique {
+  color: var(--text);
 }
 
 @keyframes counterRollIn {

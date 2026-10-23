@@ -44,50 +44,7 @@
   var PREFS_KEY_PREFIX = "rejson_widget_prefs_v3:";
   var MIRROR_KEY = "rejson_widgets_mirror_v1";
 
-  var DEFAULT_BOARD_FALLBACK = [
-    {
-      id: "demo-1001-mconline-coop",
-      project_slug: "mconline",
-      project_name: "mconline — Minecraft 3D",
-      type: "idea",
-      title: "Tryb kooperacji LAN / WebRTC ze znajomym przez kod pokoju",
-      description: "Wspólne budowanie we dwójkę w przeglądarce przez 4-literowy kod świata.",
-      status: "in_progress",
-      is_pinned: true,
-      upvotes_count: 18,
-      author_name: "Kuba_Craft",
-      admin_reply: "Testuję już synchronizację chunków po WebRTC!",
-      created_at: new Date(Date.now() - 48 * 3600 * 1000).toISOString()
-    },
-    {
-      id: "demo-1002-joypad-skins",
-      project_slug: "JoyPad",
-      project_name: "JoyPad OS",
-      type: "idea",
-      title: "Własne skórki pada na telefonie (PS / Xbox / Retro)",
-      description: "Wybór układu przycisków pod mini-gry arcade.",
-      status: "planned",
-      is_pinned: false,
-      upvotes_count: 12,
-      author_name: "MatiTV",
-      admin_reply: "Wchodzi na listę wraz z profilami wibracji.",
-      created_at: new Date(Date.now() - 72 * 3600 * 1000).toISOString()
-    },
-    {
-      id: "demo-1005-home-random",
-      project_slug: "rejson59.github.io",
-      project_name: "Strona główna Rejson59",
-      type: "idea",
-      title: "Przycisk „Wylosuj projekt” na górze strony głównej",
-      description: "Losowe odpalanie jednej z gier lub aplikacji jednym kliknięciem.",
-      status: "under_review",
-      is_pinned: false,
-      upvotes_count: 9,
-      author_name: "Bartek99",
-      admin_reply: null,
-      created_at: new Date(Date.now() - 14 * 3600 * 1000).toISOString()
-    }
-  ];
+  var DEFAULT_BOARD_FALLBACK = [];
 
   /* ========================================================================
      2. CICHUTKIE PRZECHWYTYWANIE BŁĘDÓW KONSOLI I DANYCH TECHNICZNYCH
@@ -1021,6 +978,10 @@
                 (it.has_voted ? "is-voted" : "") +
                 '" data-up="' +
                 esc(it.id) +
+                '" title="' +
+                (it.has_voted ? "Cofnij polubienie" : "Polub — pokaż, że pomysł Ci się podoba") +
+                '" aria-label="' +
+                (it.has_voted ? "Cofnij polubienie" : "Polub pomysł") +
                 '">▲<span>' +
                 Number(it.upvotes_count || 0) +
                 "</span></button>" +
