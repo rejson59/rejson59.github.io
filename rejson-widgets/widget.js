@@ -330,6 +330,16 @@
     "  --rj-sheen: rgba(255, 255, 255, 0.13);",
     "  --mx: 50%;",
     "  --my: 15%;",
+    "  /* Warstwa „papla” (widżet) — parametry transformacji + strefa bezpieczeństwa,",
+    "     ustawiane/zerowane z poziomu JS (patrz resetPaplaVars). */",
+    "  --papla-rot: 0deg;",
+    "  --papla-tx: 0px;",
+    "  --papla-ty: 0px;",
+    "  --papla-safe: env(safe-area-inset-bottom, 0px);",
+    "  --papla-gap: 7px;",
+    "  /* Warstwa nigdy nie blokuje kliknięć strony — interaktywna jest tylko pigułka. */",
+    "  pointer-events: none;",
+    "  transform: rotate(var(--papla-rot, 0deg)) translate3d(var(--papla-tx, 0px), var(--papla-ty, 0px), 0);",
     "}",
     ":host([data-theme='light']) {",
     "  color-scheme: light;",
@@ -353,11 +363,14 @@
     "}",
     "*, *::before, *::after { box-sizing: border-box; }",
     ".rj-defs { position: fixed; width: 0; height: 0; opacity: 0; pointer-events: none; }",
+    /* Ikony SVG wyśrodkowane względem swojej pigułki (fix wyrównania warstwy „papla”) */
+    ".rj-closed svg, .rj-ghost-icon svg { position: relative; flex: none; }",
 
     /* JEDYNA POWIERZCHNIA SZKŁA — to sam przycisk, który rośnie w formularz! */
     ".rj-vessel {",
     "  position: fixed;",
     "  z-index: 2147483001;",
+    "  pointer-events: auto;",
     "  background: var(--rj-glass);",
     "  color: var(--rj-ink);",
     "  backdrop-filter: blur(26px) saturate(185%);",
@@ -418,7 +431,7 @@
     "  display: flex;",
     "  align-items: center;",
     "  justify-content: center;",
-    "  gap: 7px;",
+    "  gap: var(--papla-gap, 7px);",
     "  padding: 0 15px;",
     "  cursor: pointer;",
     "  user-select: none;",
@@ -855,10 +868,12 @@
     var isBottom = state.corner.indexOf("bottom") !== -1;
     var edgeOffset = !state.open && state.mode === "edge" ? 4 : 18;
 
-    vesselEl.style.right = isRight ? edgeOffset + "px" : "auto";
-    vesselEl.style.left = isRight ? "auto" : edgeOffset + "px";
-    vesselEl.style.bottom = isBottom ? "18px" : "auto";
-    vesselEl.style.top = isBottom ? "auto" : "18px";
+    var safeX = isRight ? "env(safe-area-inset-right, 0px)" : "env(safe-area-inset-left, 0px)";
+    var safeY = isBottom ? "env(safe-area-inset-bottom, 0px)" : "env(safe-area-inset-top, 0px)";
+    vesselEl.style.right = isRight ? "calc(" + edgeOffset + "px + " + safeX + ")" : "auto";
+    vesselEl.style.left = isRight ? "auto" : "calc(" + edgeOffset + "px + " + safeX + ")";
+    vesselEl.style.bottom = isBottom ? "calc(18px + " + safeY + ")" : "auto";
+    vesselEl.style.top = isBottom ? "auto" : "calc(18px + " + safeY + ")";
   }
 
   function flushMorphFrame() {
@@ -1504,27 +1519,39 @@
     applyAnchorPosition();
   }
 
-  window.addEventListener("keydown", function (e) {
+  function onShortcutKey(e) {
     if (config.shortcut && e.altKey && (e.key === "r" || e.key === "R" || e.code === "KeyR")) {
       e.preventDefault();
       toggleMorph();
     }
-  });
-
-  document.addEventListener("pointerlockchange", function () {
+  }
+  function onPointerLockChange() {
     if (!config.gameSafe) return;
     state.pointerLocked = Boolean(document.pointerLockElement);
     vesselEl.classList.toggle("is-pointer-locked", state.pointerLocked);
     if (state.pointerLocked && state.open) closeMorph();
-  });
-
-  window.addEventListener("resize", function () {
+  }
+  function onWindowResize() {
     if (state.open) kickMorphSpring();
-  });
+  }
+  window.addEventListener("keydown", onShortcutKey);
+  document.addEventListener("pointerlockchange", onPointerLockChange);
+  window.addEventListener("resize", onWindowResize);
+
+  /* Po załadowaniu panelu papli: usuń ewentualny niechciany obrót/przesunięcie warstwy
+     (transform „none" + wyzerowane zmienne --papla-*). */
+  function resetPaplaVars(el) {
+    if (!el || !el.style) return;
+    el.style.setProperty("--papla-rot", "0deg");
+    el.style.setProperty("--papla-tx", "0px");
+    el.style.setProperty("--papla-ty", "0px");
+    el.style.transform = "none";
+  }
 
   function mount() {
     if (!document.body) return;
     document.body.appendChild(hostEl);
+    resetPaplaVars(hostEl);
     syncVisualAppearance();
     var m = closedMetrics();
     morph.w = morph.tw = m.w;
@@ -1577,6 +1604,20 @@
       else kickMorphSpring();
     },
     captureError: pushCapturedError,
+    destroy: function () {
+      try { resetPaplaVars(hostEl); } catch (e) {}
+      try {
+        hostEl.style.removeProperty("--papla-rot");
+        hostEl.style.removeProperty("--papla-tx");
+        hostEl.style.removeProperty("--papla-ty");
+        hostEl.style.transform = "none";
+      } catch (e) {}
+      window.removeEventListener("keydown", onShortcutKey);
+      document.removeEventListener("pointerlockchange", onPointerLockChange);
+      window.removeEventListener("resize", onWindowResize);
+      if (morph.raf) { cancelAnimationFrame(morph.raf); morph.raf = 0; }
+      if (hostEl.parentNode) hostEl.parentNode.removeChild(hostEl);
+    },
     getState: function () {
       return Object.assign({}, state, { config: Object.assign({}, config) });
     },

@@ -68,6 +68,17 @@ Skrót klawiszowy na każdej stronie: **`Alt + R`**.
 
 ---
 
+## Warstwa „papla” — stabilność i strefa bezpieczeństwa
+
+Zewnętrzna warstwa widżetu (`#rejson-liquid-widget-root`) działa jak „papla”, która **nigdy nie blokuje kliknięć strony**:
+
+- `pointer-events: none` na całej warstwie — interakcję odzyskuje wyłącznie szklana pigułka (`.rj-vessel`),
+- transformację warstwy sterują zmienne **`--papla-rot` / `--papla-tx` / `--papla-ty`** (domyślnie `0`), a po zamontowaniu panelu widżet **zeruje je i czyści `transform`**, usuwając ewentualny niespodziewany obrót/przesunięcie,
+- pozycjonowanie uwzględnia **strefę bezpieczeństwa** urządzeń z wycięciem ekranu (`env(safe-area-inset-*)`), także w trybie `Edge Dock`,
+- do czyszczenia po sobie służy **`RejsonWidget.destroy()`** — zeruje zmienne `papla`, odpina globalne nasłuchy (`keydown`, `pointerlockchange`, `resize`) i usuwa węzeł z DOM.
+
+---
+
 ## Automatyczna instalacja na wszystkich repozytoriach Rejson59
 
 W katalogu `scripts/inject-widget.py` znajduje się gotowy skrypt sprawdzający i wstrzykujący widżet do wszystkich projektów na `rejson59`:

@@ -123,15 +123,22 @@
     return '<span class="comm-owner-badge" title="Twórca strony rejson59.github.io">👑 Właściciel</span>';
   }
 
-  /* Odznaka oficjalnego agenta AI (konto bota publikującego nowości) */
-  function botBadgeHTML(flagFromDb) {
-    if (flagFromDb !== true) return "";
-    return '<span class="comm-bot-badge" title="Oficjalny agent AI Rejsona — publikuje zapowiedzi aktualizacji i nowości ze strony">🤖 Agent AI</span>';
-  }
+        /* Odznaka oficjalnego agenta AI (konto bota publikującego nowości) */
+        var AGENT_NAME = "agent_ai_rejsona";
+        function isAgentName(name) {
+          return String(name || "").toLowerCase() === AGENT_NAME;
+        }
+        function botBadgeHTML(flagFromDb) {
+          if (flagFromDb !== true) return "";
+          return '<span class="comm-bot-badge" title="Oficjalny agent AI Rejsona — publikuje zapowiedzi aktualizacji i nowości ze strony">🤖 Agent AI</span>';
+        }
+        function agentAvatarMark() {
+          return isAgent ? ' with-agent-avatar' : "";
+        }
 
-  function authorBadges(name, p) {
-    return ownerBadgeHTML(name, p && p.is_owner) + botBadgeHTML(p && p.is_bot);
-  }
+      function authorBadges(name, p) {
+        return ownerBadgeHTML(name, p && p.is_owner) + botBadgeHTML(p && p.is_bot);
+      }
 
   /* ================= MEDIA W WPISACH (zdjęcia, GIF-y, filmy) ================= */
   var mediaCache = {}; /* id -> {mime, src} — nie pobieramy drugi raz przy auto-odświeżaniu feedu */
@@ -1003,8 +1010,10 @@
           return (
             '<span class="comm-online-user">' +
               '<span class="comm-online-dot" aria-hidden="true"></span>' +
-              '<span class="comm-avatar comm-avatar-sm" aria-hidden="true">' + esc((name.charAt(0) || "?").toUpperCase()) + "</span>" +
-              esc(name) + ownerBadgeHTML(name) +
+              '<span class="comm-avatar comm-avatar-sm' + (isAgent ? " comm-avatar-bot" : "") + '" aria-hidden="true">' + esc((name.charAt(0) || "?").toUpperCase()) +
+                (isAgent ? '<img src="' + AGENT_AVATAR_SRC + '" alt="" loading="lazy" onerror="this.remove()">' : "") +
+              "</span>" +
+              esc(name) + ownerBadgeHTML(name) + botBadgeHTML(isAgentName(name)) +
               (projects > 1 ? '<span class="comm-online-count mono" title="Ile stron/projektów ma teraz otwarte">' + projects + " strony</span>" : "") +
             "</span>"
           );
