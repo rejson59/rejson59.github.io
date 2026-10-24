@@ -13,7 +13,9 @@
   var SESSION_STORAGE_KEY = "rejson_widgets_admin_session_v1";
   var LOCAL_MIRROR_KEY = "rejson_widgets_mirror_v1";
   var VOTER_STORAGE_KEY = "rejson_widgets_voter_id_v1";
-  var REQUEST_TIMEOUT_MS = 4200;
+  /* 12 s — mobilne sieci komórkowe potrafią być powolne; krótszy timeout
+     powodował chwilowe „Nie udało się wczytać…" mimo że serwer odpowiadał */
+  var REQUEST_TIMEOUT_MS = 12000;
 
   /* Początkowe dane zapasowe (gdy przeglądarka jest offline lub w izolowanym środowisku) */
   var FALLBACK_SUBMISSIONS = [];

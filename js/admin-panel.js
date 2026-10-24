@@ -986,7 +986,7 @@
     }).join("");
   }
 
-  function fetchVisitorList() {
+  function fetchVisitorList(retried) {
     if (!panelActive || !window.RejsonCloud || !window.RejsonCloud.rpc) return Promise.resolve(null);
     var daysEl = $("vif-days");
     var days = daysEl ? Number(daysEl.value) || 7 : 7;
@@ -997,6 +997,13 @@
         return data;
       })
       .catch(function (err) {
+        /* retry raz, po chwili — pojedyncze przycięcia sieci nie psują widoku */
+        if (!retried) {
+          setTimeout(function () { fetchVisitorList(true); }, 1600);
+          return null;
+        }
+        /* gdy lista już jest wyświetlona, chwilowy błąd zostawia stare dane */
+        if (visitorListData.length) return null;
         var wrap = $("vif-list");
         if (wrap) {
           wrap.innerHTML = '<div class="pa-empty">Nie udało się wczytać identyfikatorów: ' + esc(err && err.message ? err.message : "błąd połączenia") + "</div>";
@@ -1119,20 +1126,35 @@
       : "";
 
     host.innerHTML = kpiHtml + trailHtml + actionsHtml + subsHtml + commHtml + emptyHtml;
+    visitorProfileShownId = p.id || null;
   }
 
-  function fetchVisitorProfile(id) {
+  var visitorProfileShownId = null;
+
+  function fetchVisitorProfile(id, opts) {
+    opts = opts || {};
     if (!panelActive || !window.RejsonCloud || !window.RejsonCloud.rpc) return;
     var host = $("vif-profile");
     var card = $("vif-profile-card");
     if (card) card.hidden = false;
-    if (host) host.innerHTML = '<div class="pa-empty">Ładowanie profilu…</div>';
+    /* przy cichym odświeżaniu / ponownej próbie nie mrygamy loaderem */
+    if (host && !opts.quiet) host.innerHTML = '<div class="pa-empty">Ładowanie profilu…</div>';
     var daysEl = $("vif-days");
     var days = daysEl ? Number(daysEl.value) || 7 : 7;
     window.RejsonCloud.rpc("admin_visitor_profile", { p_id: id, p_days: days }, true)
       .then(function (data) { renderVisitorProfile(data); })
-      .catch(function () {
-        if (host) host.innerHTML = '<div class="pa-empty">Nie udało się wczytać profilu.</div>';
+      .catch(function (err) {
+        /* jeden automatyczny retry po chwili — mobilna sieć potrafi przyciąć pojedynczy request */
+        if (!opts.retried) {
+          setTimeout(function () { fetchVisitorProfile(id, { quiet: true, retried: true }); }, 1600);
+          return;
+        }
+        /* jeśli profil był już wyświetlony — zostawiamy stare dane zamiast komunikatu */
+        if (visitorProfileShownId === id && host && host.innerHTML.trim() !== "") return;
+        if (host) {
+          host.innerHTML = '<div class="pa-empty">Nie udało się wczytać profilu: ' +
+            esc(err && err.message ? err.message : "błąd połączenia") + "</div>";
+        }
       });
   }
 
@@ -1166,6 +1188,7 @@
     if (back) {
       back.addEventListener("click", function () {
         visitorOpenId = null;
+        visitorProfileShownId = null;
         var card = $("vif-profile-card");
         if (card) card.hidden = true;
         renderVisitorList();
