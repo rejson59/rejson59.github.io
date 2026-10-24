@@ -1229,7 +1229,8 @@
   .admin-main.container { padding-inline: 14px; }
 
   /* nagłówek strony */
-  .site-header .header-nav { gap: 6px; }
+  .site-header .header-inner { height: auto; flex-wrap: wrap; padding-block: 9px; gap: 8px; }
+  .site-header .header-nav { gap: 6px; flex-wrap: wrap; justify-content: flex-end; row-gap: 6px; }
   .site-header .btn { padding: 7px 11px; font-size: 12px; }
 
   /* karty */
@@ -1271,6 +1272,7 @@
 @media (max-width: 480px) {
   .brand-suffix { display: none; }
   .site-header .header-inner { padding-inline: 12px; }
+  .site-header .btn { padding: 6px 9px; font-size: 11px; }
   .auth-shell { padding-inline: 12px; }
   .glass-card.auth-card { padding: 22px 16px; }
   .adm-tabs { margin-top: 10px; }

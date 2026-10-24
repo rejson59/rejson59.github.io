@@ -462,6 +462,31 @@
     "}",
     ".rj-closed.is-icon-only { padding: 0; }",
     ".rj-closed.is-icon-only .rj-label-txt { display: none; }",
+    /* Mini przycisk zwijania pigułki do uchwytu przy krawędzi ekranu */
+    ".rj-collapse {",
+    "  position: fixed;",
+    "  z-index: 2147483002;",
+    "  width: 22px;",
+    "  height: 22px;",
+    "  border-radius: 999px;",
+    "  border: 1px solid var(--rj-line);",
+    "  background: var(--rj-glass);",
+    "  backdrop-filter: blur(16px) saturate(160%);",
+    "  -webkit-backdrop-filter: blur(16px) saturate(160%);",
+    "  color: var(--rj-ink);",
+    "  font: 700 12px/1 'Inter', system-ui, sans-serif;",
+    "  display: grid;",
+    "  place-items: center;",
+    "  padding: 0;",
+    "  cursor: pointer;",
+    "  opacity: 0.7;",
+    "  pointer-events: auto;",
+    "  box-shadow: 0 6px 18px -6px rgba(0, 0, 0, 0.5);",
+    "  transition: opacity 0.16s ease, transform 0.16s ease;",
+    "  touch-action: manipulation;",
+    "}",
+    ".rj-collapse:hover { opacity: 1; transform: scale(1.14); }",
+    ".rj-collapse.is-hidden { opacity: 0; pointer-events: none !important; }",
 
     ".rj-dot {",
     "  width: 8px;",
@@ -807,7 +832,8 @@
     "    </div>" +
     '    <div class="rj-slot"></div>' +
     "  </div>" +
-    "</div>";
+    "</div>" +
+    '<button class="rj-collapse is-hidden" type="button" aria-label="Schowaj pigułkę do uchwytu przy krawędzi ekranu" title="Schowaj pigułkę do uchwytu przy krawędzi ekranu">–</button>';
 
   var vesselEl = shadow.querySelector(".rj-vessel");
   var closedBtn = shadow.querySelector(".rj-closed");
@@ -819,6 +845,30 @@
   var boardBtn = shadow.querySelector(".rj-btn-board");
   var closeBtn = shadow.querySelector(".rj-btn-close");
   var slotEl = shadow.querySelector(".rj-slot");
+  var collapseBtn = shadow.querySelector(".rj-collapse");
+
+  /* Ustawia/zmienia mały przycisk zwijania pigułki (poza zasięgiem clipów
+     glassa — jest rodzeństwem powierzchni, pozycjonowanym na sztywno). */
+  function positionCollapseBtn() {
+    if (!collapseBtn) return;
+    var hidden = state.open || state.dragging || state.pointerLocked;
+    collapseBtn.classList.toggle("is-hidden", hidden);
+    if (hidden) return;
+    var rect = vesselEl.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    var isEdge = state.mode === "edge";
+    var cx = rect.left + rect.width / 2;
+    if (!isEdge) cx = rect.right - 14; /* pigułka: przy górnym prawym rogu */
+    collapseBtn.style.left = Math.round(cx - 11) + "px";
+    var above = rect.top >= 46;
+    collapseBtn.style.top = Math.round(above ? rect.top - 30 : rect.bottom + 8) + "px";
+    collapseBtn.textContent = isEdge ? "+" : "–";
+    var tt = isEdge
+      ? "Przywróć pigułkę na ekran"
+      : "Schowaj pigułkę do uchwytu przy krawędzi ekranu";
+    collapseBtn.setAttribute("title", tt);
+    collapseBtn.setAttribute("aria-label", tt);
+  }
 
   function updateErrorDot() {
     if (dotEl) dotEl.classList.toggle("has-err", capturedErrors.length > 0);
@@ -884,6 +934,7 @@
       Math.abs(morph.dx) > 0.1 || Math.abs(morph.dy) > 0.1
         ? "translate3d(" + morph.dx.toFixed(1) + "px," + morph.dy.toFixed(1) + "px,0)"
         : "translate3d(0,0,0)";
+    positionCollapseBtn();
   }
 
   function kickMorphSpring() {
@@ -1445,6 +1496,18 @@
     openMorph();
   });
 
+  collapseBtn.addEventListener("click", function (ev) {
+    if (ev && ev.stopPropagation) ev.stopPropagation();
+    if (state.dragging) return;
+    /* przełącznik: pigułka ⇄ cienki uchwyt przy krawędzi ekranu */
+    state.mode =
+      state.mode === "edge" ? (config.mode === "orb" ? "orb" : "pill") : "edge";
+    savePrefs({ mode: state.mode });
+    syncVisualAppearance();
+    kickMorphSpring();
+    positionCollapseBtn();
+  });
+
   closeBtn.addEventListener("click", closeMorph);
 
   boardBtn.addEventListener("click", function () {
@@ -1517,6 +1580,7 @@
     labelEl.textContent = config.label || "Feedback";
     closedBtn.classList.toggle("is-icon-only", state.mode === "orb" || state.mode === "edge" || !config.label);
     applyAnchorPosition();
+    positionCollapseBtn();
   }
 
   function onShortcutKey(e) {
