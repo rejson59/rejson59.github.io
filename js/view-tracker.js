@@ -97,20 +97,25 @@
   }
 
   /* ---------- Trwały 4-cyfrowy identyfikator przeglądarki (odcisk) ----------
-     Liczony wyłącznie z trwałych cech sprzętu i przeglądarki (bez danych
-     przechowywanych), więc przeżywa całkowite wyczyszczenie danych strony.
+     Stabilny zestaw cech — BEZ wymiarów ekranu (rotacja, dynamiczny pasek
+     adresu i tryb „wersja na komputer" na telefonie zmieniały je i tworzyły
+     klony tej samej osoby). Raz policzony zapisujemy w localStorage, więc
+     przeglądarkowe losowanie fingerprintingu (np. Brave) też go nie zmienia.
      Służy wyłącznie do statystyk popularności w prywatnym panelu admina. */
+  var FP_STORE_KEY = "rejson_fp_v2";
   function getFingerprintId() {
     try {
-      var scr = window.screen || {};
+      var saved = localStorage.getItem(FP_STORE_KEY);
+      if (saved && /^[0-9]{4}$/.test(saved)) return saved;
+    } catch (e0) { /* brak localStorage — liczymy z cech */ }
+    try {
+      /* UA bez numerów wersji — aktualizacja przeglądarki nie zmienia odcisku */
+      var ua = (navigator.userAgent || "").replace(/\d+(\.\d+)*/g, "#");
       var parts = [
-        navigator.userAgent || "",
+        ua,
         navigator.language || "",
         (navigator.languages || []).join(","),
         navigator.platform || "",
-        scr.width || 0, scr.height || 0,
-        scr.availWidth || 0, scr.availHeight || 0,
-        scr.colorDepth || 0, scr.pixelDepth || 0,
         window.devicePixelRatio || 1,
         new Date().getTimezoneOffset(),
         navigator.hardwareConcurrency || 0,
@@ -126,7 +131,9 @@
         h ^= str.charCodeAt(i);
         h = (h + ((h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24))) >>> 0;
       }
-      return String(1000 + (h % 9000));
+      var id = String(1000 + (h % 9000));
+      try { localStorage.setItem(FP_STORE_KEY, id); } catch (e2) { /* trudno */ }
+      return id;
     } catch (e) {
       return "";
     }
