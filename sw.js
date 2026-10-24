@@ -93,7 +93,7 @@ self.addEventListener("fetch", function (event) {
                 inject += '\n<script src="/js/view-tracker.js" defer></script>';
               }
               if (html.indexOf("rejson-widgets/widget.js") === -1) {
-                inject += '\n<script src="/rejson-widgets/widget.js?v=2" data-project="' + safeSlug + '" defer></script>';
+                inject += '\n<script src="/rejson-widgets/widget.js?v=4" data-project="' + safeSlug + '" defer></script>';
               }
               if (!inject) {
                 return new Response(html, {
