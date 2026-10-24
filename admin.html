@@ -373,12 +373,10 @@
         <div class="vif-toolbar">
           <input type="search" id="vif-search" class="vif-search" placeholder="Szukaj: ID, nazwa lub strona…" aria-label="Szukaj identyfikatora">
           <label class="filter-field">
-            <span class="filter-label">Zakres</span>
+            <span class="filter-label">Zakres <span class="vif-retention-note" title="Starsza aktywność jest automatycznie usuwana">retencja 3 dni</span></span>
             <select id="vif-days" class="ctrl-select">
               <option value="1">24 godziny</option>
-              <option value="7" selected>7 dni</option>
-              <option value="14">14 dni</option>
-              <option value="30">30 dni</option>
+              <option value="3" selected>3 dni</option>
             </select>
           </label>
           <span class="mono vif-count" id="vif-count"></span>

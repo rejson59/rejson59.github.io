@@ -1002,6 +1002,31 @@
     return '<span class="pa-time-chip" title="Tylko klucz sesji — przeglądarka nie podała żadnych identyfikatorów">⏳ sesja</span>';
   }
 
+  function visitorRowHtml(p) {
+    var open = visitorOpenId === p.id;
+    return (
+      '<button type="button" class="vif-row' + (open ? " is-open" : "") + '" data-vpid="' + esc(p.id) + '" title="Otwórz profil tej osoby">' +
+        '<span class="vif-row-id mono' + (p.via !== "fp" ? " is-derived" : "") + '">#' + esc(p.label) + "</span>" +
+        '<span class="vif-row-name">' +
+          (p.online ? '<span class="commp-dot" aria-hidden="true" title="online teraz"></span>' : "") +
+          (p.username ? "<strong>" + esc(p.username) + "</strong>" + ownerBadge(p.is_owner) : '<span class="vif-guest">Gość</span>') +
+          viaBadge(p.via) +
+          (p.is_bot ? '<span class="vif-badge vif-badge-bot" title="Ruch automatyczny (crawler / monitor)">🤖 bot</span>' : "") +
+          (p.frozen && !p.is_bot ? '<span class="vif-badge vif-badge-frozen" title="Wszedł, ale nic nie kliknął i nie przeszedł na inną stronę">❄ zamrożony</span>' : "") +
+        "</span>" +
+        '<span class="vif-row-stats">' +
+          '<span class="pa-time-chip" title="Przejścia między stronami (ścieżki)">🛤 ' + fmt(p.visits) + "</span>" +
+          '<span class="pa-time-chip" title="Odwiedzone podstrony">📄 ' + fmt(p.pages) + "</span>" +
+          '<span class="pa-time-chip" title="Kliknięcia i akcje">🖱 ' + fmt(p.actions) + "</span>" +
+          (Number(p.submissions) > 0 ? '<span class="pa-time-chip" title="Zgłoszenia na tablicę">📨 ' + fmt(p.submissions) + "</span>" : "") +
+          (Number(p.votes) > 0 ? '<span class="pa-time-chip" title="Głosy na pomysły">👍 ' + fmt(p.votes) + "</span>" : "") +
+        "</span>" +
+        '<span class="vif-row-seen mono" title="Ostatnio widziana">' + esc(relTime(p.last_seen_at)) + "</span>" +
+        '<span class="vif-row-arrow" aria-hidden="true">›</span>' +
+      "</button>"
+    );
+  }
+
   function renderVisitorList() {
     var wrap = $("vif-list");
     var countEl = $("vif-count");
@@ -1015,41 +1040,58 @@
         String(p.id || "").toLowerCase().indexOf(q) !== -1
       );
     });
+
+    /* Trzy grupy: aktywni na górze, zamrożeni (brak akcji i 1 strona) oraz boty
+       zwinięte pod spodem — nie zasłaniają właściwej listy. */
+    var active = [];
+    var frozen = [];
+    var bots = [];
+    rows.forEach(function (p) {
+      if (p.is_bot) bots.push(p);
+      else if (p.frozen) frozen.push(p);
+      else active.push(p);
+    });
+
     if (countEl) {
-      countEl.textContent = rows.length + (rows.length === 1 ? " osoba" : " osób");
+      var parts = [rows.length + (rows.length === 1 ? " osoba" : " osób")];
+      if (frozen.length) parts.push(frozen.length + " ❄");
+      if (bots.length) parts.push(bots.length + " 🤖");
+      countEl.textContent = parts.join(" · ");
     }
     if (!rows.length) {
       wrap.innerHTML = '<div class="pa-empty">Brak pasujących identyfikatorów — osoby pojawią się tutaj, gdy ktoś wejdzie na stronę (lista obejmuje ostatnie dni).</div>';
       return;
     }
-    wrap.innerHTML = rows.map(function (p) {
-      var open = visitorOpenId === p.id;
-      return (
-        '<button type="button" class="vif-row' + (open ? " is-open" : "") + '" data-vpid="' + esc(p.id) + '" title="Otwórz profil tej osoby">' +
-          '<span class="vif-row-id mono' + (p.via !== "fp" ? " is-derived" : "") + '">#' + esc(p.label) + "</span>" +
-          '<span class="vif-row-name">' +
-            (p.online ? '<span class="commp-dot" aria-hidden="true" title="online teraz"></span>' : "") +
-            (p.username ? "<strong>" + esc(p.username) + "</strong>" + ownerBadge(p.is_owner) : '<span class="vif-guest">Gość</span>') +
-            viaBadge(p.via) +
-          "</span>" +
-          '<span class="vif-row-stats">' +
-            '<span class="pa-time-chip" title="Przejścia między stronami (ścieżki)">🛤 ' + fmt(p.visits) + "</span>" +
-            '<span class="pa-time-chip" title="Odwiedzone podstrony">📄 ' + fmt(p.pages) + "</span>" +
-            '<span class="pa-time-chip" title="Kliknięcia i akcje">🖱 ' + fmt(p.actions) + "</span>" +
-            (Number(p.submissions) > 0 ? '<span class="pa-time-chip" title="Zgłoszenia na tablicę">📨 ' + fmt(p.submissions) + "</span>" : "") +
-            (Number(p.votes) > 0 ? '<span class="pa-time-chip" title="Głosy na pomysły">👍 ' + fmt(p.votes) + "</span>" : "") +
-          "</span>" +
-          '<span class="vif-row-seen mono" title="Ostatnio widziana">' + esc(relTime(p.last_seen_at)) + "</span>" +
-          '<span class="vif-row-arrow" aria-hidden="true">›</span>' +
-        "</button>"
-      );
-    }).join("");
+
+    var html = "";
+    if (active.length) {
+      html +=
+        '<div class="vif-group">' +
+          '<div class="vif-group-head">Aktywne <span class="vif-group-n mono">' + active.length + "</span></div>" +
+          active.map(visitorRowHtml).join("") +
+        "</div>";
+    }
+    if (frozen.length) {
+      html +=
+        '<details class="vif-group vif-cold">' +
+          '<summary class="vif-group-head">Zamrożone ❄ — weszli, ale nic nie kliknęli <span class="vif-group-n mono">' + frozen.length + "</span></summary>" +
+          frozen.map(visitorRowHtml).join("") +
+        "</details>";
+    }
+    if (bots.length) {
+      html +=
+        '<details class="vif-group vif-cold">' +
+          '<summary class="vif-group-head">Boty 🤖 — ruch automatyczny <span class="vif-group-n mono">' + bots.length + "</span></summary>" +
+          bots.map(visitorRowHtml).join("") +
+        "</details>";
+    }
+    wrap.innerHTML = html;
   }
 
   function fetchVisitorList(retried) {
     if (!panelActive || !window.RejsonCloud || !window.RejsonCloud.rpc) return Promise.resolve(null);
     var daysEl = $("vif-days");
-    var days = daysEl ? Number(daysEl.value) || 7 : 7;
+    var days = daysEl ? Number(daysEl.value) || 3 : 3;
     return window.RejsonCloud.rpc("admin_visitor_list", { p_days: days }, true)
       .then(function (data) {
         visitorListData = (data && Array.isArray(data.people)) ? data.people : [];
@@ -1088,7 +1130,9 @@
     if (title) {
       var sameLabel = p.username && String(p.label) === String(p.username);
       title.innerHTML = "#" + esc(p.label || "----") +
-        (p.username && !sameLabel ? " → <strong>" + esc(p.username) + "</strong>" : (p.username ? "" : " → Gość"));
+        (p.username && !sameLabel ? " → <strong>" + esc(p.username) + "</strong>" : (p.username ? "" : " → Gość")) +
+        (p.is_bot ? ' <span class="vif-badge vif-badge-bot">🤖 bot</span>' : "") +
+        (p.frozen && !p.is_bot ? ' <span class="vif-badge vif-badge-frozen">❄ zamrożony</span>' : "");
     }
     if (sub) {
       sub.innerHTML =
@@ -1193,7 +1237,7 @@
     /* przy cichym odświeżaniu / ponownej próbie nie mrygamy loaderem */
     if (host && !opts.quiet) host.innerHTML = '<div class="pa-empty">Ładowanie profilu…</div>';
     var daysEl = $("vif-days");
-    var days = daysEl ? Number(daysEl.value) || 7 : 7;
+    var days = daysEl ? Number(daysEl.value) || 3 : 3;
     window.RejsonCloud.rpc("admin_visitor_profile", { p_id: id, p_days: days }, true)
       .then(function (data) { renderVisitorProfile(data); })
       .catch(function (err) {

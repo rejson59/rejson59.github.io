@@ -1006,6 +1006,49 @@
 .vif-row-seen { font-size: 11.5px; color: var(--muted); margin-left: auto; }
 .vif-row-arrow { font-size: 18px; color: var(--accent); flex: none; }
 
+/* Grupy listy identyfikatorów: aktywni / zamrożeni ❄ / boty 🤖 */
+.vif-group { margin-bottom: 10px; }
+.vif-group-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 4px 7px;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  color: var(--muted);
+  user-select: none;
+}
+.vif-group-n { font-size: 10.5px; font-weight: 600; padding: 1px 8px; border-radius: 999px; background: var(--card); border: 1px solid var(--border); color: var(--text); }
+.vif-cold { border: 1px dashed var(--border); border-radius: 14px; padding: 4px 8px 8px; opacity: 0.85; }
+.vif-cold .vif-group-head { cursor: pointer; }
+.vif-cold summary::-webkit-details-marker { display: none; }
+.vif-cold summary::before { content: "▸"; color: var(--accent); font-size: 13px; }
+.vif-cold[open] summary::before { content: "▾"; }
+.vif-cold[open] { opacity: 1; border-style: solid; }
+.vif-badge {
+  font-style: normal;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  white-space: nowrap;
+}
+.vif-badge-bot { color: #8b9bb4; border-color: rgba(139,155,180,0.5); background: rgba(139,155,180,0.08); }
+.vif-badge-frozen { color: #6fc3ff; border-color: rgba(111,195,255,0.5); background: rgba(111,195,255,0.08); }
+.vif-retention-note {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  border: 1px dashed var(--border-strong);
+  padding: 1px 6px;
+  border-radius: 999px;
+  margin-left: 5px;
+  vertical-align: 1px;
+}
+
 .vif-kpis { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
 .vif-section { margin-top: 18px; }
 .vif-h {

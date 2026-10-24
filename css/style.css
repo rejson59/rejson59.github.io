@@ -444,6 +444,125 @@ a:hover { text-decoration-color: currentColor; }
   color: var(--muted);
 }
 
+/* Popover „Kto tu jest?" — kliknięcie w zielony licznik osób online na karcie */
+.metric-online-popover {
+  position: fixed;
+  z-index: 125;
+  width: max-content;
+  max-width: min(320px, calc(100vw - 20px));
+  padding: 13px 15px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--live) 42%, var(--border-strong));
+  background: color-mix(in srgb, var(--card) 96%, var(--bg));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: var(--shadow-hover), 0 0 0 1px color-mix(in srgb, var(--live) 14%, transparent);
+  color: var(--text);
+}
+.mop-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 7px;
+}
+.mop-title {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.mop-live {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  color: var(--live);
+  border: 1px solid color-mix(in srgb, var(--live) 45%, var(--border));
+  background: color-mix(in srgb, var(--live) 10%, transparent);
+  padding: 2px 6px 1px;
+  border-radius: 999px;
+  animation: viewBump 2.4s ease-in-out infinite;
+}
+.mop-desc {
+  margin: 0 0 9px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+.mop-desc a,
+.mop-foot a { color: var(--accent); }
+.mop-cta { width: 100%; margin-top: 2px; }
+.mop-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+.mop-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 9px;
+  border-radius: 10px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+}
+.mop-dot {
+  flex: 0 0 auto;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--live);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--live) 18%, transparent);
+}
+.mop-name {
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.mop-badge {
+  font-style: normal;
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  color: var(--muted);
+  white-space: nowrap;
+}
+.mop-owner {
+  color: #f2b13d;
+  border-color: color-mix(in srgb, #f2b13d 50%, var(--border));
+  background: color-mix(in srgb, #f2b13d 10%, transparent);
+}
+.mop-agent {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+.mop-meta {
+  margin-left: auto;
+  font-size: 10.5px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.mop-foot {
+  margin: 9px 0 0;
+  font-size: 11.5px;
+  color: var(--muted);
+  text-align: center;
+}
+
 /* ---------- Przyciski ---------- */
 .btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:10px 18px; border-radius:11px; border:1px solid transparent; font:inherit; font-size:14.5px; font-weight:600; text-decoration:none; cursor:pointer; transition: all .18s ease; white-space:nowrap; }
 .btn-primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); box-shadow: 0 6px 16px color-mix(in srgb, var(--accent) 22%, transparent); }
