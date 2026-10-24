@@ -664,11 +664,20 @@
 }
 
 @media (max-width: 460px) {
-  .adm-kpis, .adm-kpis--four { grid-template-columns: 1fr; }
+  .adm-kpis, .adm-kpis--four { grid-template-columns: repeat(2, 1fr); gap: 8px; }
   .adm-tab { padding: 8px 12px; font-size: 12.5px; }
   .adm-tab-note { display: none; }
   .pa-event-time { display: none; }
   .pa-trail-label { min-width: 0; }
+  /* kompaktowe KPI na małych telefonach — bez wielkiego przewijania */
+  .adm-kpi { padding: 11px 12px; gap: 8px; border-radius: 13px; }
+  .adm-kpi-num { font-size: 20px; }
+  .adm-kpi-ico { width: 32px; height: 32px; font-size: 15px; border-radius: 10px; }
+  .adm-kpi-label { font-size: 11.5px; }
+  .adm-kpi-sub { font-size: 10px; }
+}
+@media (max-width: 340px) {
+  .adm-kpis, .adm-kpis--four { grid-template-columns: 1fr; }
 }
 
 /* ---------- Wykres wejść (14 dni) ---------- */
@@ -1225,6 +1234,12 @@
 
   /* karty */
   .adm-card { border-radius: 16px; }
+
+  /* nagłówek karty: chip „odświeżanie…" spada pod tytuł zamiast go ściskać */
+  .adm-card-head { flex-wrap: wrap; gap: 8px 10px; }
+  .adm-card-head .adm-card-titles { flex: 1 1 calc(100% - 48px); }
+  .adm-card-head .adm-live-chip { order: 3; flex-basis: 100%; justify-content: center; }
+  .adm-card-head .adm-live-chip + .adm-refresh { margin-left: 0; order: 4; }
 
   /* wykres 14 dni — scroll poziomy zamiast zawijania */
   .adm-chart { flex-wrap: nowrap; overflow-x: auto; row-gap: 0; padding-bottom: 8px; }
