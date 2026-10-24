@@ -1032,9 +1032,105 @@
 }
 .vif-sub-title, .vif-comm-text { flex: 1; min-width: 200px; }
 
+/* ---------- Ręczne odświeżanie sekcji (kółko przy nagłówku) ---------- */
+.adm-refresh {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(148, 163, 184, 0.07);
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.adm-refresh:hover { color: var(--text); border-color: var(--accent); }
+.adm-refresh:disabled { opacity: 0.75; cursor: default; }
+.adm-refresh-ico { display: inline-block; font-size: 15px; line-height: 1; }
+.adm-refresh.is-spinning .adm-refresh-ico { animation: admRefreshSpin 0.8s linear infinite; color: var(--accent); }
+@keyframes admRefreshSpin { to { transform: rotate(360deg); } }
+.adm-card-head .adm-refresh { margin-left: auto; align-self: center; }
+.adm-card-head .adm-live-chip + .adm-refresh { margin-left: 8px; }
+
+/* ---------- Karta osoby na żywo → pełny profil ---------- */
+.pa-visitor.is-clickable { cursor: pointer; transition: border-color 0.15s ease, box-shadow 0.15s ease; }
+.pa-visitor.is-clickable:hover { border-color: var(--accent); box-shadow: 0 6px 22px -12px color-mix(in srgb, var(--accent) 55%, transparent); }
+.pa-open-prof {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--border));
+  background: color-mix(in srgb, var(--accent) 10%, var(--bg-elev));
+  color: var(--accent);
+  font-size: 10.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* ---------- Ścieżka profilu: pionowa oś czasu ---------- */
+.vif-tl {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  max-height: 420px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+.vif-tl-step {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  flex-wrap: wrap;
+  padding: 7px 0 7px 24px;
+}
+.vif-tl-step::before {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 20px;
+  bottom: -16px;
+  width: 2px;
+  background: color-mix(in srgb, var(--border) 80%, transparent);
+}
+.vif-tl-step:last-child::before { display: none; }
+.vif-tl-dot {
+  position: absolute;
+  left: 3px;
+  top: 11px;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 55%, var(--bg-elev));
+  border: 2px solid var(--bg-elev);
+}
+.vif-tl-step.is-now .vif-tl-dot {
+  background: var(--accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+.vif-tl-name { font-size: 13.5px; font-weight: 600; color: var(--text); }
+.vif-tl-step.is-now .vif-tl-name { color: var(--accent-strong); }
+.vif-tl-badge {
+  font-size: 10.5px;
+  padding: 1px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--bg-elev);
+  color: var(--muted);
+}
+.vif-tl-time { margin-left: auto; font-size: 11px; color: var(--muted); }
+
 @media (max-width: 720px) {
   .vif-row-seen { margin-left: 0; }
   .vif-row-arrow { display: none; }
+  .adm-refresh { width: 38px; height: 38px; }
+  .vif-tl-time { margin-left: 0; flex-basis: 100%; }
 }
 
 /* ==========================================================================
