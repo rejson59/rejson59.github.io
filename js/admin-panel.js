@@ -156,6 +156,21 @@
     return h + " godz. " + (m % 60) + " min";
   }
 
+  /* Przyjazne nazwy znanych podstron (w ścieżkach profili) */
+  function prettySlug(slug) {
+    var s = String(slug || "").toLowerCase();
+    var map = {
+      "": "Strona główna",
+      "/": "Strona główna",
+      "index": "Strona główna",
+      "admin": "Panel admina",
+      "spolecznosc": "Społeczność",
+      "tablica-pomyslow": "Tablica pomysłów",
+      "rejson-widgets": "Podgląd zgłoszeń"
+    };
+    return map[s] !== undefined ? map[s] : String(slug || "");
+  }
+
   /* ---------- Zakładki ---------- */
   var TAB_IDS = {
     activity: "tab-activity",
@@ -394,7 +409,8 @@
         : '<div class="pa-actions"><span class="pa-trail-label">Ostatnie akcje</span><span class="pa-actions-empty">brak zarejestrowanych kliknięć (nowy licznik działa od teraz)</span></div>';
 
       return (
-        '<div class="pa-visitor">' +
+        '<div class="pa-visitor' + (v.person_id ? " is-clickable" : "") + '"' +
+          (v.person_id ? ' data-person="' + esc(v.person_id) + '" title="Kliknij, aby otworzyć pełny profil tej osoby"' : "") + '>' +
           '<div class="pa-visitor-head">' +
             '<span class="pa-fp mono' + (v.via === "browser" ? " is-derived" : "") + '"' +
               (v.via === "browser"
@@ -409,6 +425,9 @@
               '<span class="pa-time-chip">⏱ na stronach: ' + esc(fmtDuration(secs)) + "</span>" +
               (Number(v.tabs) > 1
                 ? '<span class="pa-time-chip" title="Ta sama osoba ma otwarte kilka kart — liczymy ją raz">🗔 ' + fmt(v.tabs) + " karty</span>"
+                : "") +
+              (v.person_id
+                ? '<span class="pa-open-prof" aria-hidden="true">👉 profil</span>'
                 : "") +
             "</span>" +
           "</div>" +
@@ -1057,17 +1076,40 @@
         '<span class="pa-time-chip">📝 ' + fmt(posts.length) + " wpisów · 💬 " + fmt(comments.length) + " komentarzy</span>" +
       "</div>";
 
-    var trailHtml = trail.length
-      ? '<div class="vif-section"><h3 class="vif-h">Ścieżka podstron</h3><div class="vif-timeline">' +
-        trail.map(function (step, i) {
-          var last = i === trail.length - 1;
+    /* Ścieżka jako pionowa oś czasu: sąsiednie wejścia na tę samą stronę
+       zlepiają się w jeden krok („×N · był Y min"), najnowsze na górze */
+    var trailGroups = [];
+    trail.forEach(function (step) {
+      var g = trailGroups[trailGroups.length - 1];
+      if (g && g.slug === step.slug) {
+        g.to = step.at;
+        g.n += 1;
+      } else {
+        trailGroups.push({ slug: step.slug, from: step.at, to: step.at, n: 1 });
+      }
+    });
+    trailGroups.reverse();
+
+    var trailHtml = trailGroups.length
+      ? '<div class="vif-section"><h3 class="vif-h">Ścieżka podstron (od najnowszego)</h3><ol class="vif-tl">' +
+        trailGroups.map(function (g, i) {
+          var isNow = i === 0;
+          var spanS = Math.max(0, (Date.parse(g.to) - Date.parse(g.from)) / 1000);
+          var badges = [];
+          if (g.n > 1) badges.push("×" + fmt(g.n));
+          if (spanS >= 45) badges.push("przez " + fmtDuration(spanS));
+          var when = clockTime(g.from).slice(0, 5) +
+            (g.n > 1 ? "–" + clockTime(g.to).slice(0, 5) : "") +
+            (isNow ? " · " + relTime(g.to) : "");
           return (
-            '<span class="pa-trail-step' + (last ? " is-latest" : "") + '">' +
-              '<span class="pa-trail-slug">' + esc(step.slug) + "</span>" +
-              '<span class="pa-trail-time">' + esc(clockTime(step.at).slice(0, 5)) + "</span>" +
-            "</span>" + (last ? "" : '<span class="pa-trail-arrow">→</span>')
+            '<li class="vif-tl-step' + (isNow ? " is-now" : "") + '">' +
+              '<span class="vif-tl-dot" aria-hidden="true"></span>' +
+              '<span class="vif-tl-name">' + esc(prettySlug(g.slug)) + "</span>" +
+              (badges.length ? '<span class="vif-tl-badge mono">' + esc(badges.join(" · ")) + "</span>" : "") +
+              '<span class="vif-tl-time mono">' + esc(when) + "</span>" +
+            "</li>"
           );
-        }).join("") + "</div></div>"
+        }).join("") + "</ol></div>"
       : "";
 
     var actionsHtml = actions.length
@@ -1196,6 +1238,58 @@
     }
   }
 
+  /* ---------- Karta osoby na żywo → pełny profil w zakładce Identyfikatory
+     (ta sama tożsamość po person_id, więc obie widoki są zsynchronizowane) ---------- */
+  function openPersonProfile(id) {
+    if (!id) return;
+    var tabBtn = $("tab-btn-visitors");
+    if (tabBtn && !tabBtn.classList.contains("is-active")) tabBtn.click();
+    visitorOpenId = id;
+    renderVisitorList();
+    if (!visitorListData.length) fetchVisitorList();
+    fetchVisitorProfile(id);
+  }
+
+  function bindLiveProfileOpen() {
+    var wrap = $("pa-visitors");
+    if (!wrap) return;
+    wrap.addEventListener("click", function (e) {
+      var card = e.target && e.target.closest ? e.target.closest("[data-person]") : null;
+      if (!card) return;
+      openPersonProfile(card.getAttribute("data-person"));
+    });
+  }
+
+  /* ---------- Ręczne odświeżanie sekcji — kółko ⟳ przy nagłówkach ---------- */
+  var REFRESH_ACTIONS = {
+    activity: function () { return fetchAdminActivity(); },
+    stats: function () { return fetchDailyStats(); },
+    community: function () { return fetchCommunity(); },
+    visitors: function () {
+      return Promise.resolve(fetchVisitorList()).then(function () {
+        if (visitorOpenId) fetchVisitorProfile(visitorOpenId, { quiet: true });
+        return null;
+      });
+    }
+  };
+
+  function bindRefreshButtons() {
+    document.addEventListener("click", function (e) {
+      var btn = e.target && e.target.closest ? e.target.closest(".adm-refresh") : null;
+      if (!btn || btn.disabled) return;
+      var fn = REFRESH_ACTIONS[btn.getAttribute("data-refresh") || ""];
+      if (!fn) return;
+      btn.disabled = true;
+      btn.classList.add("is-spinning");
+      Promise.resolve(fn())
+        .catch(function () { /* komunikat błędu wyświetla sekcja */ })
+        .finally(function () {
+          btn.classList.remove("is-spinning");
+          btn.disabled = false;
+        });
+    });
+  }
+
   /* ---------- Start ---------- */
   function boot() {
     bindTabs();
@@ -1204,6 +1298,8 @@
     bindCommunityModeration();
     bindAccountManagement();
     bindVisitorsTab();
+    bindLiveProfileOpen();
+    bindRefreshButtons();
 
     document.addEventListener("visibilitychange", function () {
       if (document.visibilityState === "visible" && panelActive) {
