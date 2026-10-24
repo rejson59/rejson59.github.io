@@ -746,8 +746,40 @@
     return null;
   }
 
+  /* ---------- Obecność tylko po realnej interakcji ----------
+     Strona NIE melduje obecności od razu po załadowaniu — dopiero gdy osoba
+     faktycznie coś zrobi (ruch wskaźnikiem, dotyk, scroll, klawisz, klik).
+     Dzięki temu żadne automaty, podglądy ani stare skrypty nie tworzą
+     „pustych" identyfikatorów i nie zawyżają licznika online. */
+  var userInteracted = false;
+
+  function bindPresenceInteractionGate() {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", bindPresenceInteractionGate);
+      return;
+    }
+    ["pointermove", "pointerdown", "touchstart", "wheel", "keydown", "scroll"].forEach(
+      function (evt) {
+        var target = evt === "scroll" || evt === "wheel" ? window : document;
+        target.addEventListener(
+          evt,
+          function () {
+            if (userInteracted) return;
+            userInteracted = true;
+            /* pierwszy ping od razu po pierwszym ruchu */
+            sendPresenceHeartbeat(currentActiveSlug, "ping");
+          },
+          { once: true, passive: true, capture: true }
+        );
+      }
+    );
+  }
+
   function sendPresenceHeartbeat(slug, action) {
     if (!window.fetch || window.self !== window.top) return Promise.resolve(null);
+    /* Bez interakcji nie zgłaszamy obecności (wyjątek: „leave" po prostu
+       przemija, jeśli nigdy nie byliśmy aktywni). */
+    if (!userInteracted) return Promise.resolve(null);
     var targetSlug = String(slug || currentActiveSlug || SITE_SLUG).trim();
     if (!targetSlug) return Promise.resolve(null);
     var key = targetSlug.toLowerCase();
@@ -761,7 +793,10 @@
          liczy się jako jedna obecność na całej stronie i w projektach. */
       p_visitor_id: getVisitorId(),
       /* Trwały 4-cyfrowy identyfikator przeglądarki (odcisk) — do statystyk admina */
-      p_fp: getFingerprintId()
+      p_fp: getFingerprintId(),
+      /* Oznaczenie „aktywnej" wersji trackera — serwer zapisuje obecność
+         wyłącznie od wywołań z tą flagą (po realnej interakcji użytkownika). */
+      p_active: "1"
     };
     /* Zalogowany w portalu społeczności? Dołącz token, aby panel admina pokazał nazwę */
     var commToken = getCommunityToken();
@@ -1581,6 +1616,7 @@
     refreshAllDOMCounters();
     registerGlobalServiceWorker();
     setupJoinNudge();
+    bindPresenceInteractionGate();
 
     /* 1. Natychmiast meldujemy obecność na tej podstronie (szybka synchronizacja
        przejść widać w panelu), a w tle pobieramy stan liczników z Supabase */
