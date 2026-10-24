@@ -11,12 +11,12 @@
  * scripts/update-project-updates.py). Ręcznie edytuj TYLKO dopiski note.
  */
 window.PROJECT_UPDATES = {
-  "JoyPad": { version: "v2026.10.23" },
   "rejson59.github.io": { version: "v2026.10.23", note: "Społeczność 2.0: zdjęcia i filmy w postach, wątki odpowiedzi, agent AI" },
+  "mconline": { version: "v2026.10.23" },
+  "JoyPad": { version: "v2026.10.23" },
   "Jakuplayer": { version: "v2026.10.23" },
   "roblox-online": { version: "v2026.10.23" },
   "kompi": { version: "v2026.10.23" },
-  "mconline": { version: "v2026.10.22" },
   "zaplecze-resellera": { version: "v2026.10.21" },
   "zayra-voice": { version: "v2026.10.18" },
   "FocusIt": { version: "v2026.10.13" },
