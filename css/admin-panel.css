@@ -1125,6 +1125,23 @@
   color: var(--muted);
 }
 .vif-tl-time { margin-left: auto; font-size: 11px; color: var(--muted); }
+.vif-tl-more {
+  padding: 4px 0 0 24px;
+  font-size: 11.5px;
+  color: var(--faint);
+  list-style: none;
+}
+/* kompaktowa oś na kartach „na żywo" */
+.vif-tl-compact { max-height: none; overflow: visible; padding: 2px 0; }
+.vif-tl-compact .vif-tl-step { padding: 4px 0 4px 20px; font-size: 12.5px; }
+.vif-tl-compact .vif-tl-step::before { left: 6px; top: 17px; bottom: -12px; }
+.vif-tl-compact .vif-tl-dot { top: 9px; width: 8px; height: 8px; left: 2px; }
+.vif-tl-compact .vif-tl-time { font-size: 10.5px; }
+
+/* skok do profilu po wpisanym ID / nazwie */
+.vif-goto { display: flex; gap: 8px; flex: 1 1 300px; min-width: 0; }
+.vif-goto-input { flex: 1; min-width: 0; }
+.vif-goto .btn { flex: none; }
 
 @media (max-width: 720px) {
   .vif-row-seen { margin-left: 0; }
