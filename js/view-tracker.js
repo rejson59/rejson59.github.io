@@ -1367,8 +1367,8 @@
       card.setAttribute("aria-label", "Zachęta do dołączenia do społeczności");
       card.innerHTML =
         '<button class="jn-x" aria-label="Zamknij na zawsze">✕</button>' +
-        "<h4>👋 Poznajmy się!</h4>" +
-        '<p>Widzę Cię tu po raz kolejny — załóż konto (tylko nazwa + 4-cyfrowy PIN), a pojawisz się ze swoją nazwą, a do tego możesz pisać wpisy, komentować i lajkować ❤</p>' +
+        "<h4>👋 Dołącz do społeczności</h4>" +
+        '<p>Załóż konto (tylko nazwa + 4-cyfrowy PIN), aby pisać wpisy, komentować, lajkować ❤ i widzieć, kto jest teraz online.</p>' +
         '<div class="jn-actions">' +
           '<a class="jn-go" href="https://rejson59.github.io/spolecznosc">Dołącz do społeczności</a>' +
           '<button class="jn-later" type="button">Może później</button>' +

@@ -171,6 +171,56 @@
     return map[s] !== undefined ? map[s] : String(slug || "");
   }
 
+  /* Zbuduj grupy kroków ścieżki: sąsiednie powtórki tej samej strony = jeden krok */
+  function buildTrailGroups(trail) {
+    var asc = (Array.isArray(trail) ? trail.slice() : []).sort(function (a, b) {
+      return Date.parse(a.at) - Date.parse(b.at);
+    });
+    var groups = [];
+    asc.forEach(function (step) {
+      var g = groups[groups.length - 1];
+      if (g && g.slug === step.slug) {
+        g.to = step.at;
+        g.n += 1;
+      } else {
+        groups.push({ slug: step.slug, from: step.at, to: step.at, n: 1 });
+      }
+    });
+    groups.reverse(); /* najnowsze na górze */
+    return groups;
+  }
+
+  /* Pionowa oś czasu ścieżki — pełna w profilu, kompaktowa na karcie na żywo */
+  function trailTimelineHtml(trail, opts) {
+    opts = opts || {};
+    var groups = buildTrailGroups(trail);
+    if (!groups.length) return "";
+    var limit = opts.limit || 99;
+    var shown = groups.slice(0, limit);
+    var hiddenCount = groups.length - shown.length;
+    var items = shown.map(function (g, i) {
+      var isNow = i === 0;
+      var spanS = Math.max(0, (Date.parse(g.to) - Date.parse(g.from)) / 1000);
+      var badges = [];
+      if (g.n > 1) badges.push("×" + fmt(g.n));
+      if (spanS >= 45) badges.push("przez " + fmtDuration(spanS));
+      var when = clockTime(g.from).slice(0, 5) +
+        (g.n > 1 ? "–" + clockTime(g.to).slice(0, 5) : "") +
+        (isNow ? " · " + relTime(g.to) : "");
+      return (
+        '<li class="vif-tl-step' + (isNow ? " is-now" : "") + '">' +
+          '<span class="vif-tl-dot" aria-hidden="true"></span>' +
+          '<span class="vif-tl-name">' + esc(prettySlug(g.slug)) + "</span>" +
+          (badges.length ? '<span class="vif-tl-badge mono">' + esc(badges.join(" · ")) + "</span>" : "") +
+          '<span class="vif-tl-time mono">' + esc(when) + "</span>" +
+        "</li>"
+      );
+    }).join("");
+    return '<ol class="vif-tl' + (opts.compact ? " vif-tl-compact" : "") + '">' + items +
+      (hiddenCount > 0 ? '<li class="vif-tl-more">… i ' + fmt(hiddenCount) + " wcześniejszych kroków</li>" : "") +
+      "</ol>";
+  }
+
   /* ---------- Zakładki ---------- */
   var TAB_IDS = {
     activity: "tab-activity",
@@ -380,16 +430,7 @@
 
       var trailHtml = trail.length
         ? '<div class="pa-trail"><span class="pa-trail-label">Ścieżka</span>' +
-          trail.map(function (step, idx) {
-            var isLatest = idx === trail.length - 1;
-            return (
-              '<span class="pa-trail-step' + (isLatest ? " is-latest" : "") + '">' +
-                '<span class="pa-trail-slug">' + esc(step.slug) + "</span>" +
-                '<span class="pa-trail-time">' + esc(clockTime(step.at).slice(0, 5)) + "</span>" +
-              "</span>" +
-              (isLatest ? "" : '<span class="pa-trail-arrow">→</span>')
-            );
-          }).join("") +
+          trailTimelineHtml(trail, { limit: 6, compact: true }) +
           "</div>"
         : "";
 
@@ -1076,40 +1117,10 @@
         '<span class="pa-time-chip">📝 ' + fmt(posts.length) + " wpisów · 💬 " + fmt(comments.length) + " komentarzy</span>" +
       "</div>";
 
-    /* Ścieżka jako pionowa oś czasu: sąsiednie wejścia na tę samą stronę
-       zlepiają się w jeden krok („×N · był Y min"), najnowsze na górze */
-    var trailGroups = [];
-    trail.forEach(function (step) {
-      var g = trailGroups[trailGroups.length - 1];
-      if (g && g.slug === step.slug) {
-        g.to = step.at;
-        g.n += 1;
-      } else {
-        trailGroups.push({ slug: step.slug, from: step.at, to: step.at, n: 1 });
-      }
-    });
-    trailGroups.reverse();
-
-    var trailHtml = trailGroups.length
-      ? '<div class="vif-section"><h3 class="vif-h">Ścieżka podstron (od najnowszego)</h3><ol class="vif-tl">' +
-        trailGroups.map(function (g, i) {
-          var isNow = i === 0;
-          var spanS = Math.max(0, (Date.parse(g.to) - Date.parse(g.from)) / 1000);
-          var badges = [];
-          if (g.n > 1) badges.push("×" + fmt(g.n));
-          if (spanS >= 45) badges.push("przez " + fmtDuration(spanS));
-          var when = clockTime(g.from).slice(0, 5) +
-            (g.n > 1 ? "–" + clockTime(g.to).slice(0, 5) : "") +
-            (isNow ? " · " + relTime(g.to) : "");
-          return (
-            '<li class="vif-tl-step' + (isNow ? " is-now" : "") + '">' +
-              '<span class="vif-tl-dot" aria-hidden="true"></span>' +
-              '<span class="vif-tl-name">' + esc(prettySlug(g.slug)) + "</span>" +
-              (badges.length ? '<span class="vif-tl-badge mono">' + esc(badges.join(" · ")) + "</span>" : "") +
-              '<span class="vif-tl-time mono">' + esc(when) + "</span>" +
-            "</li>"
-          );
-        }).join("") + "</ol></div>"
+    /* Ścieżka jako pionowa oś czasu (ten sam komponent co na kartach na żywo) */
+    var trailHtml = trail.length
+      ? '<div class="vif-section"><h3 class="vif-h">Ścieżka podstron (od najnowszego)</h3>' +
+        trailTimelineHtml(trail, {}) + "</div>"
       : "";
 
     var actionsHtml = actions.length
@@ -1236,6 +1247,36 @@
         renderVisitorList();
       });
     }
+
+    /* skok do profilu po wpisanym identyfikatorze lub nazwie konta */
+    var gotoIn = $("vif-goto-id");
+    var gotoBtn = $("vif-goto-btn");
+    function openTypedProfile() {
+      var raw = gotoIn ? String(gotoIn.value || "").trim() : "";
+      var id = normalizePersonIdInput(raw);
+      if (!id) { if (gotoIn) gotoIn.focus(); return; }
+      visitorOpenId = id;
+      renderVisitorList();
+      if (!visitorListData.length) fetchVisitorList();
+      fetchVisitorProfile(id);
+    }
+    if (gotoBtn) gotoBtn.addEventListener("click", openTypedProfile);
+    if (gotoIn) {
+      gotoIn.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") { e.preventDefault(); openTypedProfile(); }
+      });
+    }
+  }
+
+  /* Normalizacja ręcznie wpisanego ID: #1234 → fp:, nazwa → u:, prefiksy bez zmian */
+  function normalizePersonIdInput(raw) {
+    var s = String(raw || "").replace(/^#/, "").trim();
+    if (!s) return null;
+    var m = s.match(/^(u|fp|ch|sk):(.+)$/i);
+    if (m) return m[1].toLowerCase() + ":" + m[2].trim();
+    if (/^\d{4}$/.test(s)) return "fp:" + s;
+    if (/^[0-9a-f]{8,64}$/i.test(s)) return "ch:" + s.toLowerCase();
+    return "u:" + s;
   }
 
   /* ---------- Karta osoby na żywo → pełny profil w zakładce Identyfikatory
