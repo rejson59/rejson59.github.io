@@ -1189,6 +1189,162 @@
     detachTooltipViewportListeners();
   }
 
+  /* ---------- Popover „Kto tu jest?" — podgląd na żywo dla zalogowanych ---------- */
+  var onlinePopEl = null;
+  var onlinePopAnchor = null;
+  var onlinePopViewportAttached = false;
+
+  function escHtml(s) {
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function ensureOnlinePopEl() {
+    if (onlinePopEl) return onlinePopEl;
+    onlinePopEl = document.createElement("div");
+    onlinePopEl.id = "metric-online-popover";
+    onlinePopEl.className = "metric-online-popover";
+    onlinePopEl.setAttribute("role", "dialog");
+    onlinePopEl.setAttribute("aria-label", "Kto jest teraz na tej stronie");
+    onlinePopEl.hidden = true;
+    document.body.appendChild(onlinePopEl);
+    return onlinePopEl;
+  }
+
+  function positionOnlinePop() {
+    if (!onlinePopEl || !onlinePopAnchor || onlinePopEl.hidden) return;
+    var rect = onlinePopAnchor.getBoundingClientRect();
+    var popRect = onlinePopEl.getBoundingClientRect();
+    var vw = document.documentElement.clientWidth || window.innerWidth;
+    var vh = document.documentElement.clientHeight || window.innerHeight;
+    var pad = 10;
+
+    var top = rect.bottom + 8;
+    if (top + popRect.height + pad > vh && rect.top - popRect.height - 8 > pad) {
+      top = rect.top - popRect.height - 8;
+    }
+
+    var left = rect.left + rect.width / 2 - popRect.width / 2;
+    if (left < pad) left = pad;
+    if (left + popRect.width + pad > vw) left = Math.max(pad, vw - popRect.width - pad);
+
+    onlinePopEl.style.top = Math.round(top) + "px";
+    onlinePopEl.style.left = Math.round(left) + "px";
+  }
+
+  function onOnlinePopViewportChange() { positionOnlinePop(); }
+
+  function attachOnlinePopViewportListeners() {
+    if (onlinePopViewportAttached) return;
+    onlinePopViewportAttached = true;
+    window.addEventListener("scroll", onOnlinePopViewportChange, { passive: true });
+    window.addEventListener("resize", onOnlinePopViewportChange);
+  }
+
+  function detachOnlinePopViewportListeners() {
+    if (!onlinePopViewportAttached) return;
+    onlinePopViewportAttached = false;
+    window.removeEventListener("scroll", onOnlinePopViewportChange);
+    window.removeEventListener("resize", onOnlinePopViewportChange);
+  }
+
+  function closeOnlinePopover() {
+    if (!onlinePopEl) return;
+    onlinePopEl.hidden = true;
+    onlinePopAnchor = null;
+    detachOnlinePopViewportListeners();
+  }
+
+  function fetchOnlineNow(slug) {
+    if (!window.fetch) return Promise.reject(new Error("brak fetch"));
+    return fetch(SUPABASE_URL + "/rest/v1/rpc/community_online_now", {
+      method: "POST",
+      headers: supaHeaders(),
+      body: JSON.stringify({ p_slug: slug || null }),
+      cache: "no-store"
+    }).then(function (res) {
+      if (!res.ok) throw new Error("Online " + res.status);
+      return res.json();
+    });
+  }
+
+  function renderOnlinePopLoading() {
+    return '<p class="mop-desc">Sprawdzam, kto jest tu teraz…</p>';
+  }
+
+  function renderOnlinePopUsers(data) {
+    var users = data && Array.isArray(data.users) ? data.users : [];
+    if (!users.length) {
+      return '<p class="mop-desc">Poza Tobą nikt z zalogowanych nie przegląda teraz tej strony. Wróć tu później albo napisz coś na <a href="spolecznosc.html">Społeczności</a> ✨</p>';
+    }
+    var items = users.map(function (u) {
+      var badges = "";
+      if (u.is_owner) badges += ' <em class="mop-badge mop-owner" title="Właściciel strony">👑 właściciel</em>';
+      if (u.is_agent) badges += ' <em class="mop-badge mop-agent" title="Agent społeczności">🤖 agent</em>';
+      var metaBits = [];
+      if (u.projects > 1) metaBits.push(u.projects + " strony");
+      if (u.tabs > 1) metaBits.push(u.tabs + " karty");
+      return (
+        '<li class="mop-row">' +
+          '<span class="mop-dot" aria-hidden="true"></span>' +
+          '<span class="mop-name">' + escHtml(u.username) + badges + "</span>" +
+          (metaBits.length ? '<span class="mop-meta mono">' + escHtml(metaBits.join(" · ")) + "</span>" : "") +
+        "</li>"
+      );
+    }).join("");
+    return (
+      '<p class="mop-desc">Zalogowani, którzy są teraz na tej stronie:</p>' +
+      '<ul class="mop-list">' + items + "</ul>" +
+      '<p class="mop-foot">Dołącz do rozmowy na <a href="spolecznosc.html">Społeczności</a></p>'
+    );
+  }
+
+  function openOnlinePopover(anchor, slug) {
+    if (!anchor) return;
+    var pop = ensureOnlinePopEl();
+    hideTooltip();
+
+    var head =
+      '<div class="mop-head">' +
+        '<strong class="mop-title">Kto tu jest? <span class="mop-live">LIVE</span></strong>' +
+      "</div>";
+
+    var token = getCommunityToken();
+    if (!token) {
+      pop.innerHTML =
+        head +
+        '<p class="mop-desc"><strong>Zobacz, kto aktualnie przegląda tę stronę.</strong> ' +
+        'To funkcja premium dla zalogowanych — mając konto, widzisz, kto tu jest razem z Tobą, a inni widzą Ciebie ✨</p>' +
+        '<a class="btn btn-primary btn-sm mop-cta" href="spolecznosc.html">Zaloguj lub załóż konto</a>';
+      pop.hidden = false;
+      onlinePopAnchor = anchor;
+      attachOnlinePopViewportListeners();
+      positionOnlinePop();
+      return;
+    }
+
+    pop.innerHTML = head + renderOnlinePopLoading();
+    pop.hidden = false;
+    onlinePopAnchor = anchor;
+    attachOnlinePopViewportListeners();
+    positionOnlinePop();
+
+    fetchOnlineNow(slug)
+      .then(function (data) {
+        if (onlinePopAnchor !== anchor || pop.hidden) return;
+        pop.innerHTML = head + renderOnlinePopUsers(data);
+        positionOnlinePop();
+      })
+      .catch(function () {
+        if (onlinePopAnchor !== anchor || pop.hidden) return;
+        pop.innerHTML = head + '<p class="mop-desc">Nie udało się pobrać listy — spróbuj ponownie za chwilę.</p>';
+        positionOnlinePop();
+      });
+  }
+
   function bindMetricTooltips() {
     document.addEventListener("pointerover", function (ev) {
       if (ev.pointerType && ev.pointerType !== "mouse") return;
@@ -1209,6 +1365,26 @@
     });
 
     document.addEventListener("click", function (ev) {
+      var onlineChip = ev.target && ev.target.closest
+        ? ev.target.closest(".is-online[data-project-online]")
+        : null;
+      if (onlineChip) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        if (onlinePopAnchor === onlineChip && onlinePopEl && !onlinePopEl.hidden) {
+          closeOnlinePopover();
+        } else {
+          openOnlinePopover(onlineChip, onlineChip.getAttribute("data-project-online"));
+        }
+        return;
+      }
+      if (
+        onlinePopEl && !onlinePopEl.hidden &&
+        !(ev.target && onlinePopEl.contains(ev.target))
+      ) {
+        closeOnlinePopover();
+      }
+
       var target = ev.target && ev.target.closest ? ev.target.closest("[data-tooltip]") : null;
       if (target) {
         ev.preventDefault();
@@ -1222,6 +1398,12 @@
       }
       if (tooltipEl && !tooltipEl.hidden) {
         hideTooltip();
+      }
+    });
+
+    document.addEventListener("keydown", function (ev) {
+      if (ev.key === "Escape" && onlinePopEl && !onlinePopEl.hidden) {
+        closeOnlinePopover();
       }
     });
   }
