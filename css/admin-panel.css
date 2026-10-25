@@ -681,12 +681,12 @@
 }
 
 /* ---------- Wykres wejść (14 dni) ---------- */
-.adm-chart {
+.adm-chart { position: relative; padding-bottom: 2px; }
+.adm-chart-track {
   display: flex;
   align-items: stretch;
   gap: 6px;
   padding-top: 4px;
-  overflow-x: auto;
   flex-wrap: wrap;
   row-gap: 14px;
 }
@@ -734,6 +734,7 @@
 }
 .adm-chart-col.is-today .adm-chart-day { color: #34d399; font-weight: 700; }
 .adm-chart-hint {
+  display: block;
   width: 100%;
   text-align: center;
   color: var(--faint);
@@ -756,7 +757,7 @@
 }
 .adm-tw-rank { font-size: 15px; text-align: center; font-weight: 700; color: var(--muted); }
 .adm-tw-body { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
-.adm-tw-name { overflow: hidden; text-overflow: ellipsis; }
+.adm-tw-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .adm-tw-track {
   height: 7px;
   border-radius: 999px;
@@ -1243,9 +1244,18 @@
   .adm-card-head .adm-live-chip { order: 3; flex-basis: 100%; justify-content: center; }
   .adm-card-head .adm-live-chip + .adm-refresh { margin-left: 0; order: 4; }
 
-  /* wykres 14 dni — scroll poziomy zamiast zawijania */
-  .adm-chart { flex-wrap: nowrap; overflow-x: auto; row-gap: 0; padding-bottom: 8px; }
+  /* wykres 14 dni — płynny scroll poziomy W ŚRODKU karty (słupki nigdy
+     nie wystają za ekran); podpowiedź pod osią, poza obszarem scrollu */
+  .adm-chart-track {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    row-gap: 0;
+    padding-bottom: 8px;
+    scrollbar-width: none;
+  }
+  .adm-chart-track::-webkit-scrollbar { display: none; }
   .adm-chart-col { flex: 0 0 auto; }
+  .adm-chart-hint { text-align: left; }
 
   /* odwiedzający (zakładka Aktywność) */
   .pa-visitor { padding: 12px 13px; }
@@ -1324,10 +1334,13 @@ body { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   .adm-hour-col { flex: 0 0 24px; min-width: 24px; }
   .adm-hour-legend { white-space: nowrap; }
 
-  /* tabela i wykresy: przyjemny scroll dotykowy */
-  .adm-table-wrap, .adm-chart, .adm-hour-track, .adm-tabs {
+  /* tabela i wykresy: przyjemny scroll dotykowy, zawsze W ŚRODKU kart */
+  .adm-table-wrap, .adm-chart-track, .adm-hour-track, .adm-tabs {
     -webkit-overflow-scrolling: touch;
   }
+
+  /* żaden grid/flex nie może rozepchnąć karty poza ekran */
+  .adm-grid2 > *, .adm-card, .adm-chart, .adm-topweek { min-width: 0; }
 
   /* mapa podstron: kafelki na całą szerokość telefonu */
   .adm-map { grid-template-columns: 1fr; }
