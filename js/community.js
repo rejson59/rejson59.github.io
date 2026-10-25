@@ -29,6 +29,18 @@
       .replace(/"/g, "&quot;");
   }
 
+  /* Linki w treści wpisów/komentarzy/czatu stają się automatycznie klikalne.
+     Najpierw esc() (bezpieczeństwo), potem owijamy same adresy URL. */
+  function linkify(s) {
+    return esc(s).replace(/(?:https?:\/\/|www\.)[^\s<>"']+/g, function (raw) {
+      var m = raw, trail = "";
+      /* końcowa interpunkcja nie należy do linku (… https://x.pl! ) */
+      while (/[.,!?;:)\]]+$/.test(m)) { trail = m.slice(-1) + trail; m = m.slice(0, -1); }
+      var href = /^https?:\/\//i.test(m) ? m : "https://" + m;
+      return '<a class="comm-link" href="' + href + '" target="_blank" rel="noopener noreferrer nofollow">' + m + "</a>" + trail;
+    });
+  }
+
   function loadSession() {
     try {
       var raw = localStorage.getItem(SESSION_KEY);
@@ -384,6 +396,7 @@
       loginCard.hidden = false;
       composer.hidden = true;
     }
+    refreshChatAuth();
   }
 
   /* ================= WPISY ================= */
@@ -421,7 +434,7 @@
               ? '<button class="post-delete" type="button" data-delete-post="' + esc(p.id) + '" title="Usuń swój wpis" aria-label="Usuń swój wpis">✕</button>'
               : "") +
           "</div>" +
-          '<p class="post-content">' + esc(p.content) + "</p>" +
+          '<p class="post-content">' + linkify(p.content) + "</p>" +
           postMediaHTML(p.media) +
           (Array.isArray(p.tags) && p.tags.length
             ? '<div class="post-tags">' +
@@ -621,6 +634,33 @@
     }).join("");
   }
 
+  /* ================= TAGI NAD FEEDEM — zwijane (domyślnie schowane) ================= */
+  var TAGS_OPEN_KEY = "comm_feed_tags_open";
+
+  function feedTagsOpen() {
+    try { return localStorage.getItem(TAGS_OPEN_KEY) === "1"; } catch (e) { return false; }
+  }
+
+  function applyFeedTagsOpen(open) {
+    var body = document.getElementById("feed-tags-body");
+    var toggle = document.getElementById("feed-tags-toggle");
+    if (!body || !toggle) return;
+    body.hidden = !open;
+    toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    toggle.classList.toggle("is-open", open);
+  }
+
+  function setupFeedTagsToggle() {
+    var toggle = document.getElementById("feed-tags-toggle");
+    if (!toggle) return;
+    applyFeedTagsOpen(feedTagsOpen());
+    toggle.addEventListener("click", function () {
+      var open = !feedTagsOpen();
+      try { localStorage.setItem(TAGS_OPEN_KEY, open ? "1" : "0"); } catch (e) { /* ignorujemy */ }
+      applyFeedTagsOpen(open);
+    });
+  }
+
   function renderFeedTags() {
     var wrap = document.getElementById("feed-tags");
     var chips = document.getElementById("feed-tags-chips");
@@ -630,6 +670,8 @@
     if (activeTag && tags.indexOf(activeTag) === -1) tags.unshift(activeTag);
     if (!tags.length && !activeTag) { wrap.hidden = true; return; }
     wrap.hidden = false;
+    var title = document.getElementById("feed-tags-title");
+    if (title) title.textContent = "Filtry projektów (" + tags.length + ")" + (activeTag ? " — #" + tagLabel(activeTag) : "");
     var head =
       '<button type="button" class="comm-tag-chip' + (!activeTag ? " is-active" : "") + '" data-feed-tag="">Wszystkie</button>';
     chips.innerHTML = head + tags.map(function (slug) {
@@ -654,7 +696,7 @@
               ? '<button class="comment-delete" type="button" data-delete-comment="' + esc(c.id) + '" data-post="' + esc(postId) + '" title="Usuń komentarz" aria-label="Usuń komentarz">✕</button>'
               : "") +
           "</div>" +
-          '<p class="comment-content">' + esc(c.content) + "</p>" +
+          '<p class="comment-content">' + linkify(c.content) + "</p>" +
           '<button class="comment-reply-btn" type="button" data-reply-comment="' + esc(c.id) + '" data-post="' + esc(postId) + '">↩ Odpowiedz</button>' +
           (openReplyForms[c.id]
             ? '<form class="comment-reply-form" data-reply-form="' + esc(c.id) + '" data-post="' + esc(postId) + '">' +
@@ -1230,6 +1272,182 @@
     } catch (e) { /* ignorujemy */ }
   }
 
+  /* ================= CZAT SPOŁECZNOŚCI NA ŻYWO ================= */
+  var CHAT_REFRESH_MS = 5000;
+  var CHAT_MAX_SHOWN = 80;
+  var chatLastId = null;      /* id ostatniej wiadomości — dociągamy tylko nowe */
+  var chatBusy = false;
+  var chatTickCount = 0;
+
+  function chatMsgHTML(m) {
+    var mine = session && session.username === m.author_name;
+    var canDel = mine || (session && isOwnerName(session.username));
+    return (
+      '<div class="chat-msg' + (mine ? " is-mine" : "") + '" data-chat-id="' + esc(m.id) + '">' +
+        avatarFor(m.author_name, m.is_bot) +
+        '<div class="chat-bubble">' +
+          '<div class="chat-meta">' +
+            '<span class="chat-author">' + esc(m.author_name) + authorBadges(m.author_name, m) + "</span>" +
+            '<span class="chat-time mono">' + relTime(m.created_at) + "</span>" +
+            (canDel
+              ? '<button class="chat-delete" type="button" data-chat-delete="' + esc(m.id) + '" title="Usuń wiadomość" aria-label="Usuń wiadomość">✕</button>'
+              : "") +
+          "</div>" +
+          '<p class="chat-text">' + linkify(m.content) + "</p>" +
+        "</div>" +
+      "</div>"
+    );
+  }
+
+  function chatList() { return document.getElementById("chat-list"); }
+
+  function chatNearBottom() {
+    var list = chatList();
+    if (!list) return true;
+    return list.scrollHeight - list.scrollTop - list.clientHeight < 48;
+  }
+
+  function chatScrollBottom() {
+    var list = chatList();
+    if (list) list.scrollTop = list.scrollHeight;
+  }
+
+  function renderChatAll(rows) {
+    var box = chatList();
+    if (!box) return;
+    if (!rows.length) {
+      box.innerHTML = '<p class="comm-chat-empty">Pusto tu… bądź pierwszą osobą na czacie! 👋</p>';
+      return;
+    }
+    box.innerHTML = rows.map(chatMsgHTML).join("");
+  }
+
+  function appendChat(rows) {
+    var box = chatList();
+    if (!box || !rows.length) return;
+    var empty = box.querySelector(".comm-chat-empty");
+    if (empty) box.innerHTML = "";
+    box.insertAdjacentHTML("beforeend", rows.map(chatMsgHTML).join(""));
+    while (box.children.length > CHAT_MAX_SHOWN) box.removeChild(box.firstChild);
+  }
+
+  function refreshChatSend() {
+    var btn = document.getElementById("chat-send");
+    var input = document.getElementById("chat-input");
+    if (!btn || !input) return;
+    btn.disabled = !session || chatBusy || !(input.value || "").trim();
+  }
+
+  function refreshChatAuth() {
+    var form = document.getElementById("chat-form");
+    var note = document.getElementById("chat-note");
+    var input = document.getElementById("chat-input");
+    if (!form || !note) return;
+    form.hidden = !session;
+    note.hidden = !!session;
+    if (input && session) input.placeholder = "Napisz coś jako " + session.username + "…";
+    refreshChatSend();
+  }
+
+  /* pełne przeładowanie (co ~30 s łapie też wiadomości usunięte przez innych) */
+  function loadChatFull() {
+    var box = chatList();
+    var stick = chatNearBottom();
+    var prevTop = box ? box.scrollTop : 0;
+    return rpc("community_chat_list", { p_after_id: null, p_limit: 50 })
+      .then(function (rows) {
+        if (!Array.isArray(rows)) return;
+        renderChatAll(rows);
+        chatLastId = rows.length ? rows[rows.length - 1].id : null;
+        if (stick) chatScrollBottom(); else if (box) box.scrollTop = prevTop;
+      })
+      .catch(function () {
+        var b2 = chatList();
+        if (b2 && !chatLastId) b2.innerHTML = '<p class="comm-chat-empty">Nie udało się pobrać czatu — sprawdź połączenie.</p>';
+      });
+  }
+
+  function loadChatIncremental() {
+    return rpc("community_chat_list", { p_after_id: chatLastId, p_limit: 50 })
+      .then(function (rows) {
+        if (!Array.isArray(rows) || !rows.length) return;
+        var stick = chatNearBottom();
+        appendChat(rows);
+        chatLastId = rows[rows.length - 1].id;
+        if (stick) chatScrollBottom();
+      })
+      .catch(function () { /* chwilowy brak sieci — pomijamy tick */ });
+  }
+
+  function chatPoll() {
+    chatTickCount++;
+    if (chatTickCount % 6 === 1 || !chatLastId) return loadChatFull();
+    return loadChatIncremental();
+  }
+
+  function handleChatSubmit(ev) {
+    ev.preventDefault();
+    if (!session || chatBusy) return;
+    var input = document.getElementById("chat-input");
+    if (!input) return;
+    var content = (input.value || "").trim();
+    if (!content) return;
+    chatBusy = true;
+    refreshChatSend();
+    rpc("community_chat_send", { p_token: session.token, p_content: content })
+      .then(function (row) {
+        input.value = "";
+        if (row && row.id) {
+          appendChat([{
+            id: row.id,
+            author_name: row.author_name,
+            content: row.content,
+            created_at: row.created_at,
+            is_owner: isOwnerName(row.author_name),
+            is_bot: isAgentName(row.author_name)
+          }]);
+          chatLastId = row.id;
+          chatScrollBottom();
+        } else {
+          loadChatIncremental();
+        }
+      })
+      .catch(function (err) {
+        input.value = "";
+        input.placeholder = (err && err.message) ? err.message : "Nie udało się wysłać wiadomości.";
+        setTimeout(refreshChatAuth, 1800);
+      })
+      .then(function () { chatBusy = false; refreshChatSend(); });
+  }
+
+  function setupChat() {
+    if (!chatList()) return;
+    refreshChatAuth();
+    loadChatFull();
+
+    var form = document.getElementById("chat-form");
+    if (form) form.addEventListener("submit", handleChatSubmit);
+
+    var input = document.getElementById("chat-input");
+    if (input) input.addEventListener("input", refreshChatSend);
+
+    var list = chatList();
+    list.addEventListener("click", function (ev) {
+      var btn = ev.target && ev.target.closest ? ev.target.closest("[data-chat-delete]") : null;
+      if (!btn || !session) return;
+      var id = btn.getAttribute("data-chat-delete");
+      var row = btn.closest(".chat-msg");
+      rpc("community_chat_delete", { p_token: session.token, p_id: id })
+        .then(function () { if (row) row.remove(); })
+        .catch(function () { /* brak uprawnień/sieć — zostaje */ });
+    });
+
+    setInterval(function () {
+      if (document.visibilityState !== "visible") return;
+      chatPoll();
+    }, CHAT_REFRESH_MS);
+  }
+
   /* ================= MOTYW ================= */
   function setupTheme() {
     var btn = document.getElementById("theme-toggle");
@@ -1248,6 +1466,8 @@
     bindComposer();
     bindActions();
     loadPosts(false);
+    setupFeedTagsToggle();
+    setupChat();
 
     var usernameInput = document.getElementById("auth-username");
     if (usernameInput) usernameInput.addEventListener("input", scheduleNameCheck);
