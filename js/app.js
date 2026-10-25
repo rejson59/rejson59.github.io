@@ -16,7 +16,7 @@
   var EXCLUDED = { "rejson59": true, "rejson59.github.io": true };
 
   /* Projekty wyróżnione w górnej sekcji — nie duplikujemy ich w dolnej siatce projektów. */
-  var FEATURED = { "Jakuplayer": true, "JoyPad": true, "mconline": true, "VibeAnimations": true };
+  var FEATURED = { "RejStream": true, "Jakuplayer": true, "JoyPad": true, "mconline": true, "VibeAnimations": true };
 
   /* Opisy dla projektów, które nie mają opisu na GitHubie (na podstawie ich README).
      Gdy dodasz opis w ustawieniach repozytorium na GitHubie, zastąpi on tekst stąd. */
