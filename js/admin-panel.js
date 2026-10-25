@@ -867,7 +867,7 @@
 
     if (chart && changed("dailyc", days)) {
       var allZero = maxTotal === 0;
-      chart.innerHTML = days.map(function (d) {
+      chart.innerHTML = '<div class="adm-chart-track">' + days.map(function (d) {
         var total = Number(d.total) || 0;
         var pct = maxTotal > 0 ? Math.max(3, Math.round((total / maxTotal) * 100)) : 3;
         var projects = d.projects || {};
@@ -887,7 +887,7 @@
             '<span class="adm-chart-day mono">' + esc(dayLabel(d.day)) + "</span>" +
           "</div>"
         );
-      }).join("");
+      }).join("") + "</div>";
       if (allZero) {
         chart.innerHTML += '<span class="adm-chart-hint">Dzienne statystyki zbierane są od 23.10.2026 — słupki urosną z każdym dniem.</span>';
       }
