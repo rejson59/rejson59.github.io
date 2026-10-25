@@ -546,7 +546,7 @@
       maxC = Math.max(maxC, Number(h.clicks) || 0);
     });
     var nowHour = new Date().getHours();
-    wrap.innerHTML = hours.map(function (h) {
+    wrap.innerHTML = '<div class="adm-hour-track">' + hours.map(function (h) {
       var v = Number(h.visits) || 0;
       var c = Number(h.clicks) || 0;
       var isNow = Number(h.hour) === nowHour;
@@ -564,7 +564,7 @@
             : '<span class="adm-hour-lbl mono"></span>') +
         "</div>"
       );
-    }).join("") +
+    }).join("") + "</div>" +
     '<div class="adm-hour-legend"><span class="adm-hour-key adm-hour-key-visits"></span> wejścia <span class="adm-hour-key adm-hour-key-clicks"></span> kliknięcia</div>';
   }
 

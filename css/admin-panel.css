@@ -880,13 +880,14 @@
 
 /* ---------- Wykres godzinowy (dziś) ---------- */
 .adm-hourly {
+  position: relative;
+}
+.adm-hour-track {
   display: flex;
   align-items: flex-end;
   gap: 3px;
-  height: 130px;
+  height: 118px;
   padding: 6px 2px 0;
-  position: relative;
-  flex-wrap: wrap;
 }
 .adm-hour-col {
   flex: 1 1 0;
@@ -1289,4 +1290,50 @@
   .adm-tab { padding: 11px 16px; }
   .vif-row { padding: 12px 14px; }
   .pa-visitor-head .pa-time-chip { padding-block: 5px; }
+}
+
+/* ==========================================================================
+   Mobile v2 — domknięcie detali po audycie na telefonie
+   ========================================================================== */
+
+/* iOS/Android: spójna wielkość tekstu, bez automatycznego „pompowania" */
+body { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+
+@media (max-width: 860px) {
+  /* NIC nie wypycha strony na boki — brak poziomego dryfu/oddalenia */
+  html, body { overflow-x: hidden; overflow-x: clip; }
+
+  /* zakładki nie przyklejają się pod nagłówkiem — zero nakładania przy scrollu */
+  .adm-tabs { position: static; }
+
+  /* długie identyfikatory, URLe i klucze sesji zawijają się w kartach
+     zamiast rozpychać układ na boki */
+  .pa-visitors, .pa-clicks, .pa-events, .vif-list, #vif-profile, .vif-tl,
+  .adm-map, .commp-users, .commp-posts, .feed-list, .inspector-card,
+  .adm-table-wrap, .pa-online-now, .adm-online-users {
+    overflow-wrap: anywhere;
+  }
+  .pa-visitors .mono, .vif-list .mono, #vif-profile .mono, .vif-toolbar .mono,
+  .inspector-card .mono, .feed-list .mono, .pa-clicks .mono, .pa-events .mono {
+    word-break: break-all;
+  }
+
+  /* wykres godzinowy: jedna zwarta oś z płynnym przesuwaniem
+     zamiast słupków łamanych na dwie linie */
+  .adm-hour-track { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 6px; }
+  .adm-hour-col { flex: 0 0 24px; min-width: 24px; }
+  .adm-hour-legend { white-space: nowrap; }
+
+  /* tabela i wykresy: przyjemny scroll dotykowy */
+  .adm-table-wrap, .adm-chart, .adm-hour-track, .adm-tabs {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* mapa podstron: kafelki na całą szerokość telefonu */
+  .adm-map { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+  /* zakładki na całą szerokość ekranu, bez marginesów karty */
+  .adm-tabs { margin-inline: -14px; border-radius: 12px; scroll-padding-inline: 12px; }
 }
