@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="pl" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Widżety — Rejson59</title>
+  <meta name="description" content="Małe, sprytne widżety Rejson59 — pigułka zgłoszeń, tablica pomysłów, liczniki na żywo i czat. Poznaj ich funkcje i zobacz, co może się pojawić.">
+  <link rel="canonical" href="https://rejson59.github.io/widzety.html">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#0b0e13">
+
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem("theme");
+        if (saved === "light" || saved === "dark") {
+          document.documentElement.dataset.theme = saved;
+        }
+      } catch (e) { /* bez zmian */ }
+    })();
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=2026-10-25">
+  <style>
+    .wid-main { padding: 34px 0 60px; }
+    .wid-hero { text-align: center; margin-bottom: 30px; }
+    .wid-hero h1 {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: clamp(26px, 4.6vw, 38px);
+      letter-spacing: -0.02em;
+      margin: 0 0 10px;
+    }
+    .wid-hero p { color: var(--muted); margin: 0 auto; max-width: 62ch; font-size: 15px; line-height: 1.65; }
+    .wid-hero strong { color: var(--text); }
+
+    .wid-section-title {
+      font-family: "Space Grotesk", sans-serif;
+      font-size: 19px;
+      margin: 34px 0 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .wid-section-title small { color: var(--faint); font-size: 12px; font-weight: 500; }
+
+    .wid-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .wid-card {
+      border: 1px solid var(--border);
+      background: var(--rj-glass-bg);
+      backdrop-filter: var(--rj-glass-blur);
+      -webkit-backdrop-filter: var(--rj-glass-blur);
+      border-radius: 18px;
+      padding: 20px 20px 16px;
+      box-shadow: var(--rj-glass-shadow);
+      position: relative;
+      overflow: hidden;
+    }
+    .wid-card::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto;
+      height: 1px;
+      background: var(--rj-glass-sheen);
+    }
+    .wid-card h3 { margin: 0 0 4px; font-family: "Space Grotesk", sans-serif; font-size: 16.5px; display: flex; gap: 9px; align-items: center; }
+    .wid-card .wid-sub { margin: 0 0 12px; font-size: 12px; color: var(--faint); }
+    .wid-card ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 7px; }
+    .wid-card li {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.55;
+      padding-left: 20px;
+      position: relative;
+    }
+    .wid-card li::before { content: "✓"; position: absolute; left: 0; color: var(--live); font-weight: 700; font-size: 12px; }
+    .wid-card li strong { color: var(--text); font-weight: 600; }
+
+    .wid-idea { display: flex; flex-direction: column; gap: 6px; }
+    .wid-idea .wid-idea-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .wid-idea h3 { margin: 0; }
+    .wid-idea p { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.55; }
+    .wid-idea .wid-vote {
+      align-self: flex-start;
+      margin-top: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent-strong);
+      text-decoration: none;
+      border-bottom: 1px dashed color-mix(in srgb, var(--accent) 55%, transparent);
+      padding-bottom: 1px;
+    }
+    .wid-idea .wid-vote:hover { filter: brightness(1.15); }
+    .wid-badge-new {
+      flex: none;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--accent-strong);
+      border: 1px solid color-mix(in srgb, var(--accent) 45%, var(--border));
+      border-radius: 999px;
+      padding: 3px 9px;
+    }
+
+    .wid-cta {
+      margin-top: 36px;
+      text-align: center;
+      padding: 26px 20px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: radial-gradient(120% 160% at 50% -20%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 60%), var(--card);
+    }
+    .wid-cta h2 { margin: 0 0 8px; font-family: "Space Grotesk", sans-serif; font-size: 20px; }
+    .wid-cta p { margin: 0 auto 16px; color: var(--muted); font-size: 13.5px; max-width: 52ch; }
+    .wid-cta .hero-actions { justify-content: center; }
+
+    @media (max-width: 720px) {
+      .wid-grid { grid-template-columns: 1fr; }
+      .wid-main { padding-top: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="backdrop" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="./" aria-label="rejson59.github.io — strona główna">
+        <img class="brand-mark" src="favicon.svg" alt="" width="30" height="30">
+        <span class="brand-text">rejson59<span class="brand-suffix">.github.io / widżety</span></span>
+      </a>
+      <div class="header-right">
+        <nav class="site-nav" aria-label="Nawigacja">
+          <a href="./">← Strona główna</a>
+          <a href="spolecznosc">Społeczność</a>
+          <a href="tablica-pomyslow">Tablica pomysłów</a>
+          <button class="theme-toggle" type="button" aria-label="Przełącz motyw jasny/ciemny" onclick="document.documentElement.dataset.theme=document.documentElement.dataset.theme==='light'?'dark':'light';try{localStorage.setItem('theme',document.documentElement.dataset.theme)}catch(e){}">
+            <svg class="icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4.4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4 6 18M18 6l1.4-1.4"/></svg>
+            <svg class="icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+            <span class="theme-toggle-label">Zmień motyw</span>
+          </button>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main class="container wid-main">
+
+    <section class="wid-hero">
+      <h1>Widżety strony 🧩</h1>
+      <p>Niewielkie, sprytne dodatki, które działają <strong>na każdej stronie i w każdym projekcie</strong> —
+        w rogu ekranu, bez przeszkadzania. To dzięki nim możesz zgłosić błąd jednym kliknięciem,
+        pogadać na czacie czy zobaczyć, kto jest teraz online. Poznaj je wszystkie — a niżej zobaczysz,
+        <strong>co może się pojawić</strong> wkrótce.</p>
+    </section>
+
+    <h2 class="wid-section-title">✅ Aktualnie działające <small>kliknij i przetestuj na żywo</small></h2>
+    <div class="wid-grid">
+
+      <article class="wid-card">
+        <h3>💬 Pigułka „Zgłoś błąd / pomysł"</h3>
+        <p class="wid-sub">dyskretnie w rogu każdej strony i projektu</p>
+        <ul>
+          <li><strong>Jedno kliknięcie</strong> — formularz zgłoszenia błędu albo propozycji ulepszenia.</li>
+          <li>Automatycznie wie, <strong>w którym projekcie</strong> jesteś — nie musisz nic wybierać.</li>
+          <li>Do błędów doczepia <strong>diagnostykę i logi konsoli</strong> — naprawa idzie szybciej.</li>
+          <li><strong>Przeciągasz palcem/myszą</strong>, a ona doskakuje do krawędzi ze sprężyną.</li>
+          <li>Minusik <strong>zwija ją do cienkiego rąbka</strong> ekranu — przestaje przeszkadzać, a plusik ją przywraca.</li>
+          <li>Dopasowuje się do <strong>motywu jasnego/ciemnego</strong>.</li>
+        </ul>
+      </article>
+
+      <article class="wid-card">
+        <h3>🗳️ Publiczna tablica pomysłów</h3>
+        <p class="wid-sub">wszystkie zgłoszenia w jednym miejscu — <a class="comm-inline" href="tablica-pomyslow" style="color:var(--accent-strong)">otwórz tablicę</a></p>
+        <ul>
+          <li>Widzisz, co inni zgłosili i <strong>głosujesz serduszkiem ❤</strong>.</li>
+          <li><strong>Statusy na żywo</strong>: nowe → rozważane → planowane → w trakcie → <strong>wdrożone</strong>.</li>
+          <li>Filtry projektów i sortowanie <strong>po najnowszych / najpopularniejszych</strong>.</li>
+          <li>Właściciel i agent <strong>odpowiadają oficjalnie</strong> pod zgłoszeniami.</li>
+        </ul>
+      </article>
+
+      <article class="wid-card">
+        <h3>🟢 Liczniki na żywo</h3>
+        <p class="wid-sub">pigułki online przy stronie i projektach</p>
+        <ul>
+          <li><strong>„Wszyscy"</strong> na górze strony — ile osób jest teraz na stronie i w projektach.</li>
+          <li>Każdy projekt ma <strong>swój licznik online</strong> na karcie — widać, gdzie dzieje się akcja.</li>
+          <li>Kilka otwartych zakładek = <strong>nadal jedna osoba</strong> — liczniki nie zawyżają.</li>
+          <li>Samoodświeżanie co kilka sekund + <strong>podpowiedzi z objaśnieniami</strong> po najechaniu.</li>
+          <li><strong>Pigułki wersji projektów</strong> aktualizują się automatycznie po każdej zmianie.</li>
+        </ul>
+      </article>
+
+      <article class="wid-card">
+        <h3>🧩 Samodoklejanie w projektach</h3>
+        <p class="wid-sub">widżety po cichu wędrują do każdego nowego projektu</p>
+        <ul>
+          <li>Nowy projekt dostaje pigułkę i liczniki <strong>automatycznie</strong> — bez ręcznej instalacji.</li>
+          <li>Szybkie i lekkie: <strong>zero wpływu na działanie</strong> projektów.</li>
+          <li><strong>Czat społeczności na żywo</strong> — nowość! Zobaczysz go w zakładce
+            <a href="spolecznosc" style="color:var(--accent-strong)">Społeczność</a>, pisanie po zalogowaniu nazwą + PIN-em.</li>
+          <li>To samo konto działa w pigułce, tablicy, społeczności i czacie.</li>
+        </ul>
+      </article>
+
+    </div>
+
+    <h2 class="wid-section-title">💡 Co może się pojawić — propozycje <small>głosuj / dopisz na tablicy pomysłów</small></h2>
+    <div class="wid-grid">
+
+      <article class="wid-card wid-idea">
+        <div class="wid-idea-head"><h3>⚡ Reakcje emoji pod projektami</h3><span class="wid-badge-new">pomysł</span></div>
+        <p>Jedno kliknięcie: ❤️ 🔥 👍 💡 pod każdym projektem. Najszybsza forma „podoba mi się", bez pisania zgłoszenia.</p>
+        <a class="wid-vote" href="tablica-pomyslow">Zaproponuj / zagłosuj →</a>
+      </article>
+
+      <article class="wid-card wid-idea">
+        <div class="wid-idea-head"><h3>📊 Mini-ankieta tygodnia</h3><span class="wid-badge-new">pomysł</span></div>
+        <p>„Który projekt zaktualizować najpierw?" — głosujesz jednym tapnięciem, a <strong>wyniki pokazują się na żywo</strong>.</p>
+        <a class="wid-vote" href="tablica-pomyslow">Zaproponuj / zagłosuj →</a>
+      </article>
+
+      <article class="wid-card wid-idea">
+        <div class="wid-idea-head"><h3>🔔 Nowości i zmiany</h3><span class="wid-badge-new">pomysł</span></div>
+        <p>Lista „co nowego": ostatnie aktualizacje projektów i świeże wpisy społeczności w jednym rozwijanym panelu — nic Cię nie ominie.</p>
+        <a class="wid-vote" href="tablica-pomyslow">Zaproponuj / zagłosuj →</a>
+      </article>
+
+      <article class="wid-card wid-idea">
+        <div class="wid-idea-head"><h3>🏅 Odznaki społeczności</h3><span class="wid-badge-new">pomysł</span></div>
+        <p>Małe plakietki przy nicku za aktywność: pierwszy wpis, pomocny komentarz, łykocz pomysłów… Fajna motywacja, by pisać częściej.</p>
+        <a class="wid-vote" href="tablica-pomyslow">Zaproponuj / zagłosuj →</a>
+      </article>
+
+      <article class="wid-card wid-idea">
+        <div class="wid-idea-head"><h3>❓ Zapytaj właściciela (AMA)</h3><span class="wid-badge-new">pomysł</span></div>
+        <p>Publiczne pytania z oficjalnymi odpowiedziami — jak luźne FAQ budowane przez samą społeczność.</p>
+        <a class="wid-vote" href="tablica-pomyslow">Zaproponuj / zagłosuj →</a>
+      </article>
+
+      <article class="wid-card wid-idea">
+        <div class="wid-idea-head"><h3>🎯 Status serwerów projektów</h3><span class="wid-badge-new">pomysł</span></div>
+        <p>Zielony pomarańczowy czerwony — od razu widać, czy projekt śmiga, czy akurat jest po nim praca. Poręczne przy nowościach.</p>
+        <a class="wid-vote" href="tablica-pomyslow">Zaproponuj / zagłosuj →</a>
+      </article>
+
+    </div>
+
+    <section class="wid-cta">
+      <h2>Masz własny pomysł na widżet?</h2>
+      <p>Napisz go na tablicy pomysłów albo pogadaj z nami na czacie społeczności — najlepsze propozycje trafiają do wdrożenia.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="tablica-pomyslow">🗳️ Otwórz tablicę pomysłów</a>
+        <a class="btn btn-ghost" href="spolecznosc">💬 Społeczność i czat</a>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <p class="footer-links">
+        <a href="./">Strona główna</a>
+        <a href="spolecznosc">Społeczność</a>
+        <a href="tablica-pomyslow">Tablica pomysłów i błędów</a>
+      </p>
+      <p class="footer-note">Widżety działają od razu na każdej stronie — bez konta, bez instalacji.</p>
+    </div>
+  </footer>
+
+  <script defer src="js/view-tracker.js?v=3"></script>
+</body>
+</html>

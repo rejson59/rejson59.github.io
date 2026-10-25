@@ -805,3 +805,127 @@ video.post-media-item {
 [data-theme="light"] .comments-list > *:hover {
   background: rgba(255, 255, 255, 0.45);
 }
+
+/* ==========================================================================
+   Czat społeczności na żywo
+   ========================================================================== */
+.comm-chat { padding: 16px 18px; margin-bottom: 22px; }
+
+.comm-chat-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.comm-chat-head h2 {
+  margin: 0;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.comm-chat-sub { font-size: 10.5px; color: var(--faint); font-weight: 500; }
+
+.comm-chat-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.18);
+  animation: commOnlinePulse 2s ease-in-out infinite;
+}
+
+.comm-chat-hint { font-size: 11px; color: var(--faint); }
+
+.comm-chat-list {
+  max-height: 320px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 6px 4px;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--muted) 35%, transparent) transparent;
+}
+
+.chat-msg { display: flex; gap: 8px; align-items: flex-start; }
+.chat-msg .comm-avatar { width: 26px; height: 26px; font-size: 11px; flex: none; margin-top: 2px; }
+
+.chat-bubble {
+  min-width: 0;
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 13px;
+  border: 1px solid var(--border);
+  background: rgba(148, 163, 184, 0.06);
+}
+
+.chat-msg.is-mine .chat-bubble {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+}
+
+.chat-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 2px; }
+.chat-author { font-size: 12px; font-weight: 600; }
+.chat-time { font-size: 10px; color: var(--faint); }
+
+.chat-delete {
+  margin-left: auto;
+  background: none;
+  border: 0;
+  color: var(--faint);
+  cursor: pointer;
+  font-size: 11px;
+  padding: 2px 5px;
+  border-radius: 6px;
+  font-family: inherit;
+}
+.chat-delete:hover { color: #fb7185; }
+
+.chat-text { margin: 0; font-size: 13px; line-height: 1.5; word-break: break-word; }
+
+.comm-chat-form { display: flex; gap: 8px; margin-top: 10px; }
+.comm-chat-form .comm-input { flex: 1; min-width: 0; }
+
+.comm-chat-note { margin: 10px 0 0; font-size: 11.5px; color: var(--muted); }
+.comm-chat-empty { color: var(--muted); font-size: 12.5px; padding: 10px 4px; margin: 0; }
+
+/* ==========================================================================
+   Zwijane filtry tagów nad feedem (domyślnie schowane)
+   ========================================================================== */
+.comm-tags-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(148, 163, 184, 0.07);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+.comm-tags-toggle:hover { color: var(--text); border-color: var(--border-strong); }
+
+.comm-tags-caret { transition: transform 0.2s ease; font-size: 11px; }
+.comm-tags-toggle.is-open .comm-tags-caret { transform: rotate(180deg); }
+
+.comm-tags-body { margin-top: 8px; }
+
+/* ==========================================================================
+   Klikalne linki w treści wpisów, komentarzy i czatu
+   ========================================================================== */
+.comm-link {
+  color: var(--accent-strong);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  word-break: break-all;
+}
+.comm-link:hover { filter: brightness(1.15); }
