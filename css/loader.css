@@ -57,15 +57,18 @@
 .dough-slot:nth-child(3) .shadow { animation-delay: 0.26s; }
 
 /* Soczysta ciastolina: plac przy lądowaniu, elastyczny skok, rozsiadka */
+/* Soczysta ciastolina: plac przy lądowaniu, elastyczny skok, rozsiadka.
+   Procenty translateY liczą się od wysokości samej kulki — działa w każdym
+   rozmiarze i bez var()/calc(), które część silników kasuje w @keyframes. */
 @keyframes rj-dough-bounce {
-  0%   { transform: translateY(calc(var(--ball) * 0.12))  scale(1.34, 0.60); animation-timing-function: cubic-bezier(0.2, 0.8, 0.4, 1); }
-  20%  { transform: translateY(calc(var(--ball) * -0.25)) scale(0.94, 1.10); }
-  40%  { transform: translateY(calc(var(--ball) * -1.45)) scale(0.88, 1.16); animation-timing-function: ease-in; }
-  58%  { transform: translateY(0)                          scale(1, 1); }
-  67%  { transform: translateY(calc(var(--ball) * 0.18))  scale(1.38, 0.55); }  /* SOCZYSTE zgniecenie */
-  77%  { transform: translateY(calc(var(--ball) * -0.12)) scale(0.95, 1.06); }
-  87%  { transform: translateY(calc(var(--ball) * 0.06))  scale(1.10, 0.88); }  /* rozsiadka */
-  100% { transform: translateY(calc(var(--ball) * 0.12))  scale(1.34, 0.60); }
+  0%   { transform: translateY(12%)   scale(1.34, 0.60); animation-timing-function: cubic-bezier(0.2, 0.8, 0.4, 1); }
+  20%  { transform: translateY(-25%)  scale(0.94, 1.10); }
+  40%  { transform: translateY(-145%) scale(0.88, 1.16); animation-timing-function: ease-in; }
+  58%  { transform: translateY(0%)    scale(1, 1); }
+  67%  { transform: translateY(18%)   scale(1.38, 0.55); }  /* SOCZYSTE zgniecenie */
+  77%  { transform: translateY(-12%)  scale(0.95, 1.06); }
+  87%  { transform: translateY(6%)    scale(1.10, 0.88); }  /* rozsiadka */
+  100% { transform: translateY(12%)   scale(1.34, 0.60); }
 }
 @keyframes rj-dough-shadow {
   0%   { transform: scaleX(1.3);  opacity: 0.55; }
