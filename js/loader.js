@@ -19,6 +19,54 @@
              '<span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span>' +
              '<span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span>';
 
+  /* ---------- Animacja kulek przez Web Animations API ----------
+     Niezależna od CSS @keyframes (część silników kasuje calc(var) w klatkach,
+     inne potrafią wyciszyć CSS animations). Keyframes liczone w px od
+     rzeczywistej wysokości kulki. CSS w loader.css zostaje jako fallback. */
+  var DOUGH_MS = 1150;
+
+  function doughBallFrames(h) {
+    return [
+      { transform: "translateY(" + (h * 0.12).toFixed(1) + "px) scale(1.34, 0.6)",  offset: 0,    easing: "cubic-bezier(0.2, 0.8, 0.4, 1)" },
+      { transform: "translateY(" + (h * -0.25).toFixed(1) + "px) scale(0.94, 1.1)", offset: 0.20 },
+      { transform: "translateY(" + (h * -1.45).toFixed(1) + "px) scale(0.88, 1.16)", offset: 0.40, easing: "ease-in" },
+      { transform: "translateY(0px) scale(1, 1)",                                  offset: 0.58 },
+      { transform: "translateY(" + (h * 0.18).toFixed(1) + "px) scale(1.38, 0.55)", offset: 0.67 },
+      { transform: "translateY(" + (h * -0.12).toFixed(1) + "px) scale(0.95, 1.06)", offset: 0.77 },
+      { transform: "translateY(" + (h * 0.06).toFixed(1) + "px) scale(1.1, 0.88)",  offset: 0.87 },
+      { transform: "translateY(" + (h * 0.12).toFixed(1) + "px) scale(1.34, 0.6)",  offset: 1 }
+    ];
+  }
+
+  var DOUGH_SHADOW_FRAMES = [
+    { transform: "scaleX(1.3)",  opacity: 0.55, offset: 0 },
+    { transform: "scaleX(0.5)",  opacity: 0.18, offset: 0.40 },
+    { transform: "scaleX(0.95)", opacity: 0.42, offset: 0.58 },
+    { transform: "scaleX(1.35)", opacity: 0.6,  offset: 0.67 },
+    { transform: "scaleX(1.3)",  opacity: 0.55, offset: 1 }
+  ];
+
+  function animateDough(root) {
+    if (!(Element.prototype && Element.prototype.animate)) return;
+    var groups = (root || document).querySelectorAll(".rj-dough");
+    groups.forEach(function (group) {
+      if (group._rjWaapi) return;
+      group._rjWaapi = true;
+      var small = group.classList.contains("rj-dough--sm");
+      var h = small ? 10 : 16;
+      var slots = group.querySelectorAll(".dough-slot");
+      slots.forEach(function (slot, i) {
+        var delay = i * 130;
+        var ballEl = slot.querySelector(".ball");
+        var shadowEl = slot.querySelector(".shadow");
+        try {
+          if (ballEl) ballEl.animate(doughBallFrames(h), { duration: DOUGH_MS, iterations: Infinity, delay: delay, fill: "backwards" });
+          if (shadowEl) shadowEl.animate(DOUGH_SHADOW_FRAMES, { duration: DOUGH_MS, iterations: Infinity, delay: delay, fill: "backwards" });
+        } catch (e) { /* zostaje fallback CSS */ }
+      });
+    });
+  }
+
   function getOverlay() {
     return overlay || (overlay = document.getElementById("rj-page-loader"));
   }
@@ -98,6 +146,7 @@
     el.setAttribute("aria-hidden", "true");
     el.innerHTML = '<div class="rj-dough rj-dough--sm">' + ball + "</div>";
     preview.appendChild(el);
+    animateDough(el);
   }
 
   var previewObserver = null;
@@ -144,6 +193,7 @@
       p._rjObserved = true;
       previewObserver.observe(p);
     });
+    animateDough(document);
   }
 
   /* karty renderowane przez app.js dopiero po pobraniu danych */
@@ -160,6 +210,9 @@
   }
 
   window.RJLoader = { scan: scan, mountPreview: mountPreview };
+
+  /* nakładka strony: kulki napędzone natychmiast (defer ⇒ DOM już sparsowany) */
+  animateDough(document);
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", function () { scan(document); });
