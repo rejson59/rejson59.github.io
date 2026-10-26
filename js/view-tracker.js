@@ -601,9 +601,6 @@
         return "kartę projektu „" + String(name).trim().slice(0, 40) + "”";
       }
 
-      var pill = el.closest(".card-update-pill");
-      if (pill) return "pigułkę wersji";
-
       if (el.closest("input, textarea, select, [contenteditable]")) return null;
 
       var link = el.closest("a[href]");
