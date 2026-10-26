@@ -783,7 +783,31 @@ a:hover { text-decoration-color: currentColor; }
   transition: border-color .18s, transform .18s, box-shadow .18s;
 }
 .card-preview:hover { border-color: color-mix(in srgb, var(--live) 45%, var(--border)); transform: translateY(-2px); box-shadow: 0 8px 22px rgba(0,0,0,.18); }
-.card-preview-frame { position:absolute; inset:0; pointer-events:none; overflow:hidden; background: var(--bg); contain: strict; }
+.card-preview-frame {
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  overflow:hidden;
+  /* Nigdy gołe czarne tło: firmowy gradient widoczny zanim iframe się pomaluje */
+  background:
+    radial-gradient(130% 105% at 8% 0%, color-mix(in srgb, var(--accent) 26%, transparent), transparent 58%),
+    radial-gradient(115% 115% at 100% 100%, color-mix(in srgb, var(--live) 20%, transparent), transparent 62%),
+    linear-gradient(165deg, var(--card), var(--bg-elev));
+  contain: strict;
+}
+.card-preview.is-loading .card-preview-frame::after {
+  content:"";
+  position:absolute;
+  inset:22px 0 0 0;
+  z-index:0;
+  background: linear-gradient(100deg, transparent 22%, color-mix(in srgb, var(--text) 7%, transparent) 46%, transparent 70%);
+  transform: translateX(-100%);
+  animation: rj-preview-shimmer 1.6s ease-in-out infinite;
+}
+@keyframes rj-preview-shimmer { to { transform: translateX(100%); } }
+@media (prefers-reduced-motion: reduce) {
+  .card-preview.is-loading .card-preview-frame::after { animation: none; transform: none; opacity: .06; }
+}
 .card-preview-frame iframe {
   position:absolute;
   top:22px;
@@ -793,7 +817,35 @@ a:hover { text-decoration-color: currentColor; }
   transform-origin: top left;
   width: calc(100% / var(--iframe-scale));
   height: calc((100% - 22px) / var(--iframe-scale));
+  background: transparent;
+  opacity: 1;
+  transition: opacity .4s ease;
+  color-scheme: dark;
 }
+.card-preview:not(.is-loaded) .card-preview-frame iframe { opacity: 0; }
+/* Gdy podglądu nie da się wczytać — kulturalna plakietka zamiast czarnej dziury */
+.card-preview-fallback {
+  position:absolute;
+  inset:22px 0 0 0;
+  z-index:3;
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:5px;
+  padding:10px 14px;
+  text-align:center;
+  background: color-mix(in srgb, var(--bg-elev) 76%, transparent);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  font-size:11px;
+  color: var(--muted);
+}
+.card-preview.is-failed .card-preview-fallback { display:flex; }
+.card-preview.is-failed .card-preview-loader { opacity: 0; visibility: hidden; }
+.card-preview.is-failed .card-preview-frame::after { display:none; }
+.card-preview-fallback strong { font-family:"Space Grotesk",sans-serif; font-size:13.5px; font-weight:600; color: var(--text); letter-spacing:-.01em; }
+.rj-fallback-hint { color: var(--live); font-weight:700; font-size:11px; }
 .card-preview-snapshot {
   position: absolute;
   top: 22px;

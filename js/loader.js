@@ -147,6 +147,31 @@
     el.innerHTML = '<div class="rj-dough rj-dough--sm">' + ball + "</div>";
     preview.appendChild(el);
     animateDough(el);
+
+    /* awaryjna plakietka, gdy podgląd nie da się wczytać (żadnych czarnych dziur) */
+    if (!preview.querySelector(".card-preview-fallback")) {
+      var iframe = preview.querySelector("iframe");
+      var raw = iframe ? (iframe.getAttribute("data-src") || iframe.getAttribute("src") || "") : "";
+      var label = "live";
+      try {
+        var u = new URL(raw, location.href);
+        label = (u.pathname.replace(/^\/+|\/+$/g, "") || u.hostname);
+      } catch (e) { /* zostaje "live" */ }
+      var fb = document.createElement("div");
+      fb.className = "card-preview-fallback";
+      fb.setAttribute("aria-hidden", "true");
+      var strong = document.createElement("strong");
+      strong.textContent = label;
+      var span = document.createElement("span");
+      span.textContent = "Podgląd chwilowo niedostępny";
+      var hint = document.createElement("span");
+      hint.className = "rj-fallback-hint";
+      hint.textContent = "otwórz live ↗";
+      fb.appendChild(strong);
+      fb.appendChild(span);
+      fb.appendChild(hint);
+      preview.appendChild(fb);
+    }
   }
 
   var previewObserver = null;
@@ -160,6 +185,34 @@
     }, { rootMargin: "900px 0px 900px 0px", threshold: 0.01 });
   }
 
+  var PREVIEW_TIMEOUT_MS = 7000;
+  var PREVIEW_RETRY_MS = 9000;
+
+  function previewIframeState(iframe) {
+    /* "painted" | "blank" — blank = about:blank / puste body / nic nie namalowane */
+    try {
+      var w = iframe.contentWindow;
+      var href = w && w.location ? w.location.href : "";
+      if (!href || href === "about:blank") return "blank";
+      var d = iframe.contentDocument;
+      if (!d || !d.body) return "blank";
+      var hasContent = d.body.children.length > 0 || (d.body.textContent || "").trim().length > 0;
+      return hasContent ? "painted" : "blank";
+    } catch (e) {
+      return "painted"; /* obcy origin — nie sprawdzimy, ufamy przeglądarce */
+    }
+  }
+
+  function settlePreview(preview, ok) {
+    if (preview._rjSettled) return;
+    preview._rjSettled = true;
+    clearTimeout(preview._rjTimer);
+    clearTimeout(preview._rjRecheck);
+    preview.classList.remove("is-loading");
+    preview.classList.toggle("is-loaded", !!ok);
+    preview.classList.toggle("is-failed", !ok);
+  }
+
   function mountPreview(preview) {
     if (preview._rjMounted) return;
     var iframe = preview.querySelector("iframe[data-src]");
@@ -168,12 +221,50 @@
     var frame = preview.querySelector(".card-preview-frame");
     if (frame && frame.classList.contains("is-frozen")) return;
     preview._rjMounted = true;
+    preview.classList.remove("is-failed", "is-loaded");
     preview.classList.add("is-loading");
+
+    var attempts = 0;
+    var desired = iframe.getAttribute("data-src");
+
+    function reload() {
+      try { iframe.src = desired; } catch (e) { /* trudno */ }
+      armWatchdog(PREVIEW_RETRY_MS);
+    }
+
+    function armWatchdog(delay) {
+      clearTimeout(preview._rjTimer);
+      preview._rjTimer = setTimeout(function () {
+        if (preview._rjSettled) return;
+        if (attempts === 0) { attempts = 1; reload(); return; }
+        settlePreview(preview, false); /* pokazujemy plakietkę zamiast czarnej dziury */
+      }, delay || PREVIEW_TIMEOUT_MS);
+    }
+
     iframe.addEventListener("load", function () {
-      preview.classList.remove("is-loading");
-      preview.classList.add("is-loaded");
-    }, { once: true });
-    iframe.src = iframe.getAttribute("data-src");
+      if (preview._rjSettled) return;
+      if (previewIframeState(iframe) === "painted") {
+        settlePreview(preview, true);
+        return;
+      }
+      /* ramka wciąż pusta (np. about:blank) — daj jej sekundę, potem druga próba */
+      clearTimeout(preview._rjRecheck);
+      preview._rjRecheck = setTimeout(function () {
+        if (preview._rjSettled) return;
+        if (previewIframeState(iframe) === "painted") { settlePreview(preview, true); return; }
+        if (attempts === 0) { attempts = 1; reload(); }
+        else settlePreview(preview, false);
+      }, 1100);
+    });
+
+    iframe.addEventListener("error", function () {
+      if (preview._rjSettled) return;
+      if (attempts === 0) { attempts = 1; reload(); }
+      else settlePreview(preview, false);
+    });
+
+    try { iframe.src = desired; } catch (e) { settlePreview(preview, false); }
+    armWatchdog();
     if (previewObserver) previewObserver.unobserve(preview);
   }
 
@@ -192,6 +283,11 @@
       }
       p._rjObserved = true;
       previewObserver.observe(p);
+
+      /* siatka bezpieczeństwa: kursor lub fokus montuje podgląd natychmiast,
+         nawet gdyby observer się spóźnił (np. po skoku do kotwicy) */
+      p.addEventListener("pointerenter", function () { mountPreview(p); }, { passive: true });
+      p.addEventListener("focus", function () { mountPreview(p); });
     });
     animateDough(document);
   }

@@ -591,6 +591,25 @@
     if (iframe) releaseIframeRuntime(iframe);
   }
 
+  /* Canvas, który jeszcze nic nie namalował (czarne tło), nie nadaje się na zrzut —
+     inaczej "zamrożony" podgląd zostawał czarną plamą na zawsze. */
+  function isCanvasNearlyBlack(canvas) {
+    try {
+      var probe = document.createElement("canvas");
+      probe.width = 8;
+      probe.height = 8;
+      var ctx = probe.getContext("2d", { willReadFrequently: true });
+      if (!ctx) return false;
+      ctx.drawImage(canvas, 0, 0, 8, 8);
+      var px = ctx.getImageData(0, 0, 8, 8).data;
+      var sum = 0;
+      for (var i = 0; i < px.length; i += 4) sum += (px[i] + px[i + 1] + px[i + 2]) / 3;
+      return sum / (px.length / 4) < 8;
+    } catch (e) {
+      return false;
+    }
+  }
+
   function freezeIframeAsStaticScreen(frame, iframe, cacheKey) {
     if (!frame || !iframe || frame._frozenDone) return;
     frame._frozenDone = true;
@@ -624,6 +643,7 @@
         canvases.forEach(function (canvas) {
           try {
             if (!canvas.width || !canvas.height) return;
+            if (isCanvasNearlyBlack(canvas)) return; /* czysty czarny kadr = jeszcze nie namalowany */
             var dataUrl = canvas.toDataURL("image/jpeg", 0.82);
             if (!dataUrl || dataUrl.length < 256) return;
 
