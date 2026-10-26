@@ -35,6 +35,7 @@
   <link rel="preconnect" href="https://api.github.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css?v=2026-10-25">
+  <link rel="stylesheet" href="css/loader.css">
   <style>
     /* Pigułka widżetu zgłoszeń („papla”) — warstwa zawsze nad modalem i nagłówkiem.
        Reszta jej wyglądu i zachowania żyje w rejson-widgets/widget.js. */
@@ -45,6 +46,11 @@
   </style>
 </head>
 <body>
+  <div id="rj-page-loader" aria-hidden="true">
+    <div class="rj-dough"><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span></div>
+  </div>
+  <noscript><style>#rj-page-loader{display:none!important}</style></noscript>
+
 
   <div class="backdrop" aria-hidden="true"></div>
 
@@ -260,7 +266,7 @@
                 </span>
               </div>
               <a class="card-preview" href="https://rejson59.github.io/RejStream/" target="_blank" rel="noopener noreferrer" aria-label="Podgląd RejStream — otwórz live">
-                <div class="card-preview-frame" aria-hidden="true"><iframe src="https://rejson59.github.io/RejStream/" name="rejson-card-preview" data-card-preview="1" loading="lazy" tabindex="-1" aria-hidden="true"></iframe><div class="card-preview-topbar"><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-url">rejson59.github.io/RejStream/</span></div></div><span class="card-preview-hint">otwórz ↗</span>
+                <div class="card-preview-frame" aria-hidden="true"><iframe data-src="https://rejson59.github.io/RejStream/" name="rejson-card-preview" data-card-preview="1" tabindex="-1" aria-hidden="true"></iframe><div class="card-preview-topbar"><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-url">rejson59.github.io/RejStream/</span></div></div><div class="card-preview-loader" aria-hidden="true"><div class="rj-dough rj-dough--sm"><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span></div></div><span class="card-preview-hint">otwórz ↗</span>
               </a>
               <h3 class="card-title"><a href="https://rejson59.github.io/RejStream/" target="_blank" rel="noopener noreferrer">RejStream</a></h3>
               <p class="card-desc">Oglądaj seriale i animacje online — katalog w stylu streamingu, który włączasz jednym kliknięciem w przeglądarce, bez konta i instalacji.</p>
@@ -330,7 +336,7 @@
                 </span>
               </div>
               <a class="card-preview" href="https://rejson59.github.io/Jakuplayer/" target="_blank" rel="noopener noreferrer" aria-label="Podgląd Jakuplayer — otwórz live">
-                <div class="card-preview-frame" aria-hidden="true"><iframe src="https://rejson59.github.io/Jakuplayer/" name="rejson-card-preview" data-card-preview="1" loading="lazy" tabindex="-1" aria-hidden="true"></iframe><div class="card-preview-topbar"><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-url">rejson59.github.io/Jakuplayer/</span></div></div><span class="card-preview-hint">otwórz ↗</span>
+                <div class="card-preview-frame" aria-hidden="true"><iframe data-src="https://rejson59.github.io/Jakuplayer/" name="rejson-card-preview" data-card-preview="1" tabindex="-1" aria-hidden="true"></iframe><div class="card-preview-topbar"><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-url">rejson59.github.io/Jakuplayer/</span></div></div><div class="card-preview-loader" aria-hidden="true"><div class="rj-dough rj-dough--sm"><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span></div></div><span class="card-preview-hint">otwórz ↗</span>
               </a>
               <h3 class="card-title"><a href="https://rejson59.github.io/Jakuplayer/" target="_blank" rel="noopener noreferrer">Jakuplayer</a></h3>
               <p class="card-desc">Słuchaj muzyki za darmo i bez ograniczeń — pierwsza w pełni działająca strona, jaką opublikowałem na GitHubie.</p>
@@ -400,7 +406,7 @@
                 </span>
               </div>
               <a class="card-preview" href="https://rejson59.github.io/JoyPad/" target="_blank" rel="noopener noreferrer" aria-label="Podgląd JoyPad — otwórz live">
-                <div class="card-preview-frame" aria-hidden="true"><iframe src="https://rejson59.github.io/JoyPad/" name="rejson-card-preview" data-card-preview="1" loading="lazy" tabindex="-1" aria-hidden="true"></iframe><div class="card-preview-topbar"><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-url">rejson59.github.io/JoyPad/</span></div></div><span class="card-preview-hint">otwórz ↗</span>
+                <div class="card-preview-frame" aria-hidden="true"><iframe data-src="https://rejson59.github.io/JoyPad/" name="rejson-card-preview" data-card-preview="1" tabindex="-1" aria-hidden="true"></iframe><div class="card-preview-topbar"><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-url">rejson59.github.io/JoyPad/</span></div></div><div class="card-preview-loader" aria-hidden="true"><div class="rj-dough rj-dough--sm"><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span></div></div><span class="card-preview-hint">otwórz ↗</span>
               </a>
               <h3 class="card-title"><a href="https://rejson59.github.io/JoyPad/" target="_blank" rel="noopener noreferrer">JoyPad</a></h3>
               <p class="card-desc">Zamień swój komputer i telefon na bezprzewodową konsolę! Wspólny ekran, osobiste pady na telefonach, gry 3D i arcade, haptyka oraz Moments.</p>
@@ -470,7 +476,7 @@
                 </span>
               </div>
               <a class="card-preview" href="https://rejson59.github.io/mconline/" target="_blank" rel="noopener noreferrer" aria-label="Podgląd mconline — otwórz live">
-                <div class="card-preview-frame" aria-hidden="true"><iframe src="https://rejson59.github.io/mconline/" name="rejson-card-preview" data-card-preview="1" loading="lazy" tabindex="-1" aria-hidden="true"></iframe><div class="card-preview-topbar"><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-url">rejson59.github.io/mconline/</span></div></div><span class="card-preview-hint">otwórz ↗</span>
+                <div class="card-preview-frame" aria-hidden="true"><iframe data-src="https://rejson59.github.io/mconline/" name="rejson-card-preview" data-card-preview="1" tabindex="-1" aria-hidden="true"></iframe><div class="card-preview-topbar"><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-url">rejson59.github.io/mconline/</span></div></div><div class="card-preview-loader" aria-hidden="true"><div class="rj-dough rj-dough--sm"><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span></div></div><span class="card-preview-hint">otwórz ↗</span>
               </a>
               <h3 class="card-title"><a href="https://rejson59.github.io/mconline/" target="_blank" rel="noopener noreferrer">mconline</a></h3>
               <p class="card-desc">Zagraj w moją własną przerobioną wersję Minecrafta w przeglądarce — budowanie, crafting z wyszukiwarką receptur, ekwipunek i obsługa dotyku na telefonie.</p>
@@ -540,7 +546,7 @@
                 </span>
               </div>
               <a class="card-preview" href="https://rejson59.github.io/VibeAnimations/" target="_blank" rel="noopener noreferrer" aria-label="Podgląd VibeAnimations — otwórz live">
-                <div class="card-preview-frame" aria-hidden="true"><iframe src="https://rejson59.github.io/VibeAnimations/" name="rejson-card-preview" data-card-preview="1" loading="lazy" tabindex="-1" aria-hidden="true"></iframe><div class="card-preview-topbar"><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-url">rejson59.github.io/VibeAnimations/</span></div></div><span class="card-preview-hint">otwórz ↗</span>
+                <div class="card-preview-frame" aria-hidden="true"><iframe data-src="https://rejson59.github.io/VibeAnimations/" name="rejson-card-preview" data-card-preview="1" tabindex="-1" aria-hidden="true"></iframe><div class="card-preview-topbar"><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-url">rejson59.github.io/VibeAnimations/</span></div></div><div class="card-preview-loader" aria-hidden="true"><div class="rj-dough rj-dough--sm"><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span></div></div><span class="card-preview-hint">otwórz ↗</span>
               </a>
               <h3 class="card-title"><a href="https://rejson59.github.io/VibeAnimations/" target="_blank" rel="noopener noreferrer">VibeAnimations</a></h3>
               <p class="card-desc">Galeria nieziemskich i genialnych pomysłów na wygląd przyszłych stron oraz aplikacji. Znajdź prompty, które pozwolą wygenerować projekt dokładnie tak, jak go sobie wyobrażasz!</p>
@@ -645,6 +651,7 @@
 
   <script defer src="js/projects-data.js"></script>
   <script defer src="js/view-tracker.js?v=3"></script>
+  <script defer src="js/loader.js"></script>
   <script defer src="js/app.js"></script>
   <script defer src="rejson-widgets/widget.js?v=4"></script>
 </body>

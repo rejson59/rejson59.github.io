@@ -190,7 +190,7 @@
     var cleanHost = p.liveUrl ? p.liveUrl.replace(/^https?:\/\//, "") : "";
     var preview = p.liveUrl
       ? '<a class="card-preview" href="' + esc(p.liveUrl) + '" target="_blank" rel="noopener noreferrer" aria-label="Podgląd ' + esc(p.name) + ' — otwórz live">' +
-          '<div class="card-preview-frame" aria-hidden="true"><iframe src="' + esc(p.liveUrl) + '" name="rejson-card-preview" data-card-preview="1" loading="lazy" tabindex="-1" aria-hidden="true"></iframe><div class="card-preview-topbar"><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-url">' + esc(cleanHost) + '</span></div></div><span class="card-preview-hint">otwórz ↗</span></a>'
+          '<div class="card-preview-frame" aria-hidden="true"><iframe data-src="' + esc(p.liveUrl) + '" name="rejson-card-preview" data-card-preview="1" tabindex="-1" aria-hidden="true"></iframe><div class="card-preview-topbar"><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-url">' + esc(cleanHost) + '</span></div></div><span class="card-preview-hint">otwórz ↗</span></a>'
       : "";
 
     return (
@@ -732,7 +732,7 @@
       if (!iframe) return;
 
       var card = frame.closest(".project-card");
-      var repoName = card ? (card.getAttribute("data-repo") || "") : (iframe.getAttribute("src") || "");
+      var repoName = card ? (card.getAttribute("data-repo") || "") : (iframe.getAttribute("data-src") || iframe.getAttribute("src") || "");
       var key = snapshotCacheKey(repoName);
 
       /* Na słabszych urządzeniach pobieramy ramki od razu przy wejściu (bez czekania na scroll),
