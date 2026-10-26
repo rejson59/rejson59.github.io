@@ -223,6 +223,9 @@
     scope: "all", // "project" | "all"
     submitting: false,
     boardItems: [],
+    attachments: [],   /* zrzuty / migawki / nagrania dołączone do zgłoszenia */
+    mediaStatus: null, /* { text, error } — komunikat pod przyciskami */
+
     mode: saved.mode || config.mode || "pill",
     corner: saved.corner || config.position || "bottom-right",
     themePref: saved.themePref || config.theme || "auto",
@@ -690,6 +693,58 @@
     ".rj-send:active { transform: scale(0.97); }",
     ".rj-send:disabled { opacity: 0.45; cursor: default; transform: none; }",
 
+    /* ---------- Załączniki: zrzut ekranu / migawka / ostatnie 15 s ---------- */
+    ".rj-attach { margin-top: 8px; }",
+    ".rj-attach-row { display: flex; flex-wrap: wrap; gap: 5px; }",
+    ".rj-attach-btn {",
+    "  display: inline-flex; align-items: center; gap: 4px;",
+    "  height: 27px; padding: 0 9px; border-radius: 999px;",
+    "  border: 1px solid var(--rj-line-soft); background: var(--rj-fill);",
+    "  color: var(--rj-muted); font: 500 11px/1 'Inter', system-ui, sans-serif;",
+    "  cursor: pointer; white-space: nowrap;",
+    "  transition: border-color .16s ease, background-color .16s ease, transform .16s ease, color .16s ease;",
+    "}",
+    ".rj-attach-btn:hover { border-color: var(--rj-line); background: var(--rj-fill-hover); color: var(--rj-ink); transform: translateY(-1px); }",
+    ".rj-attach-btn:active { transform: scale(.96); }",
+    ".rj-attach-btn.is-busy { opacity: .55; pointer-events: none; }",
+    ".rj-attach-btn.is-live { border-color: #ff5f57; color: #ff8a82; }",
+    ".rj-attach-btn.is-live::before {",
+    "  content: ''; width: 6px; height: 6px; border-radius: 50%; background: #ff5f57;",
+    "  box-shadow: 0 0 0 3px rgba(255,95,87,.18); animation: rj-rec 1.4s ease-in-out infinite;",
+    "}",
+    "@keyframes rj-rec { 0%,100% { opacity: 1 } 50% { opacity: .35 } }",
+    ".rj-attach-hint { margin: 6px 0 0; font: 400 10.5px/1.4 'Inter', system-ui, sans-serif; color: var(--rj-faint); }",
+    ".rj-attach-status { margin: 6px 0 0; font: 500 10.5px/1.4 'Inter', system-ui, sans-serif; color: var(--rj-accent); }",
+    ".rj-attach-status.is-error { color: #ff8a82; }",
+    ".rj-privacy-note { margin: 7px 0 0; font: 400 10px/1.4 'Inter', system-ui, sans-serif; color: var(--rj-faint); opacity: .85; }",
+    ".rj-attach-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }",
+    ".rj-chip {",
+    "  position: relative; display: flex; align-items: center; gap: 6px;",
+    "  padding: 4px 6px 4px 4px; border-radius: 10px;",
+    "  border: 1px solid var(--rj-line-soft); background: var(--rj-fill);",
+    "  max-width: 100%;",
+    "}",
+    ".rj-chip-thumb {",
+    "  width: 34px; height: 24px; border-radius: 6px; object-fit: cover;",
+    "  background: rgba(127,127,127,.18); display: grid; place-items: center;",
+    "  font-size: 13px; flex: none; overflow: hidden;",
+    "}",
+    ".rj-chip-meta { display: flex; flex-direction: column; min-width: 0; }",
+    ".rj-chip-name { font: 600 10.5px/1.2 'Inter', system-ui, sans-serif; color: var(--rj-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }",
+    ".rj-chip-size { font: 400 9.5px/1.2 'Inter', system-ui, sans-serif; color: var(--rj-faint); }",
+    ".rj-chip-x {",
+    "  width: 17px; height: 17px; border-radius: 50%; border: none; cursor: pointer;",
+    "  background: rgba(127,127,127,.16); color: var(--rj-muted);",
+    "  font: 600 11px/1 'Inter', system-ui, sans-serif; display: grid; place-items: center;",
+    "  flex: none; padding: 0;",
+    "}",
+    ".rj-chip-x:hover { background: rgba(255,95,87,.25); color: #ff8a82; }",
+    ".rj-drop-hint {",
+    "  margin-top: 6px; padding: 10px; border-radius: 10px; text-align: center;",
+    "  border: 1px dashed var(--rj-line); color: var(--rj-accent);",
+    "  font: 600 11px/1.3 'Inter', system-ui, sans-serif;",
+    "}",
+
     /* Minimalistyczne potwierdzenie wysłania wewnątrz tej samej kropli szkła */
     ".rj-sent {",
     "  padding: 18px 8px 14px;",
@@ -1099,6 +1154,7 @@
       '">' +
       esc(draft.message) +
       "</textarea>" +
+      attachBlockHtml() +
       '  <div class="rj-bottom">' +
       '    <input class="rj-nick" id="rj-nick-in" maxlength="50" placeholder="Nick (opcjonalnie)" value="' +
       esc(draft.author) +
@@ -1263,6 +1319,192 @@
     if (state.open && state.view === "board") renderSlot();
   }
 
+  /* ========================================================================
+     ZAŁĄCZNIKI DO ZGŁOSZEŃ — zrzut ekranu, migawka strony, ostatnie 15 s
+     ======================================================================== */
+
+  function mediaApi() {
+    return window.RJMedia || null;
+  }
+
+  function fmtBytes(n) {
+    n = Number(n) || 0;
+    if (n < 1024) return n + " B";
+    if (n < 1048576) return (n / 1024).toFixed(0) + " KB";
+    return (n / 1048576).toFixed(1) + " MB";
+  }
+
+  function attachChipsHtml() {
+    if (!state.attachments.length) return "";
+    return (
+      '<div class="rj-attach-list">' +
+      state.attachments
+        .map(function (a) {
+          var thumb = /^image\//.test(a.mime)
+            ? '<img class="rj-chip-thumb" src="' + a.url + '" alt="">'
+            : '<span class="rj-chip-thumb">🎬</span>';
+          return (
+            '<div class="rj-chip">' +
+            thumb +
+            '<span class="rj-chip-meta">' +
+            '<span class="rj-chip-name">' + esc(a.label || "Załącznik") + "</span>" +
+            '<span class="rj-chip-size">' + fmtBytes(a.bytes) + "</span>" +
+            "</span>" +
+            '<button type="button" class="rj-chip-x" data-rj-remove="' + a.id + '" aria-label="Usuń załącznik">×</button>' +
+            "</div>"
+          );
+        })
+        .join("") +
+      "</div>"
+    );
+  }
+
+  function attachBlockHtml() {
+    var api = mediaApi();
+    var replaying = !!(api && api.isReplaying && api.isReplaying());
+    var status = state.mediaStatus
+      ? '<p class="rj-attach-status' + (state.mediaStatus.error ? " is-error" : "") + '">' +
+        esc(state.mediaStatus.text) + "</p>"
+      : "";
+
+    return (
+      '<div class="rj-attach">' +
+      '<div class="rj-attach-row">' +
+      '<button type="button" class="rj-attach-btn" data-rj-shot title="Prawdziwy zrzut ekranu — przeglądarka poprosi o zgodę">📸 Zrzut ekranu</button>' +
+      '<button type="button" class="rj-attach-btn" data-rj-dom title="Cicha migawka strony, bez pytań (podglądy projektów będą puste)">🧩 Migawka strony</button>' +
+      '<button type="button" class="rj-attach-btn' + (replaying ? " is-live" : "") + '" data-rj-replay>' +
+      (replaying ? "⏹ Zapisz ostatnie 15 s" : "⏪ Ostatnie 15 s") +
+      "</button>" +
+      '<label class="rj-attach-btn">📎 Plik<input type="file" id="rj-file-in" accept="image/*,video/*" hidden></label>' +
+      "</div>" +
+      '<p class="rj-attach-hint">Możesz też wkleić zrzut (Ctrl+V) albo przeciągnąć plik tutaj.</p>' +
+      status +
+      attachChipsHtml() +
+      '<p class="rj-privacy-note">Automatyczne raporty techniczne pomagają szybciej naprawiać błędy.</p>' +
+      "</div>"
+    );
+  }
+
+  var MAX_ATTACHMENTS = 5;
+
+  function addAttachment(att) {
+    if (!att) return;
+    if (state.attachments.length >= MAX_ATTACHMENTS) {
+      try { URL.revokeObjectURL(att.url); } catch (e) { /* ignorujemy */ }
+      state.mediaStatus = { text: "Maksymalnie " + MAX_ATTACHMENTS + " załączników do jednego zgłoszenia.", error: true };
+      renderSlot();
+      return;
+    }
+    state.attachments.push(att);
+    state.mediaStatus = null;
+    renderSlot();
+  }
+
+  function removeAttachment(id) {
+    for (var i = 0; i < state.attachments.length; i++) {
+      if (state.attachments[i].id === id) {
+        try { URL.revokeObjectURL(state.attachments[i].url); } catch (e) { /* ignorujemy */ }
+        state.attachments.splice(i, 1);
+        break;
+      }
+    }
+    renderSlot();
+  }
+
+  function setMediaStatus(text, isError) {
+    state.mediaStatus = text ? { text: text, error: !!isError } : null;
+    renderSlot();
+  }
+
+  async function handleScreenShot() {
+    var api = mediaApi();
+    if (!api) {
+      setMediaStatus("Załączniki jeszcze się wczytują — spróbuj za chwilę.", true);
+      return;
+    }
+    if (!api.supported.screen) {
+      setMediaStatus("Ta przeglądarka nie pozwala zrobić zrzutu ekranu.", true);
+      return;
+    }
+    setMediaStatus("Czekam na zgodę na udostępnienie ekranu…", false);
+    try {
+      addAttachment(await api.pickScreenFrame());
+    } catch (err) {
+      setMediaStatus(api.friendlyError(err), true);
+    }
+  }
+
+  async function handleDomShot() {
+    var api = mediaApi();
+    if (!api) {
+      setMediaStatus("Załączniki jeszcze się wczytują — spróbuj za chwilę.", true);
+      return;
+    }
+    setMediaStatus("Robię migawkę strony…", false);
+    try {
+      addAttachment(await api.captureDom());
+    } catch (err) {
+      setMediaStatus(api.friendlyError(err), true);
+    }
+  }
+
+  async function handleReplayToggle() {
+    var api = mediaApi();
+    if (!api) {
+      setMediaStatus("Załączniki jeszcze się wczytują — spróbuj za chwilę.", true);
+      return;
+    }
+    if (!api.supported.record || !api.supported.screen) {
+      setMediaStatus("Ta przeglądarka nie obsługuje nagrywania ekranu.", true);
+      return;
+    }
+
+    if (api.isReplaying()) {
+      try {
+        var att = await api.takeReplay();
+        addAttachment(att);
+      } catch (err) {
+        setMediaStatus(api.friendlyError(err), true);
+      }
+      return;
+    }
+
+    setMediaStatus("Czekam na zgodę na udostępnienie ekranu…", false);
+    try {
+      await api.startReplay();
+      setMediaStatus("Nagrywam — bufor trzyma ostatnie 15 s. Kliknij ponownie, by dołączyć nagranie.", false);
+    } catch (err) {
+      setMediaStatus(api.friendlyError(err), true);
+    }
+  }
+
+  /* Wysyłka załączników po utworzeniu zgłoszenia (cicho, bez blokowania UX) */
+  async function uploadAttachments(submissionId) {
+    var api = mediaApi();
+    if (!api || !submissionId || !state.attachments.length) return;
+    var total = state.attachments.length;
+
+    for (var i = 0; i < total; i++) {
+      var att = state.attachments[i];
+      state.mediaStatus = { text: "Wysyłam załączniki (" + (i + 1) + "/" + total + ")…", error: false };
+      renderSlot();
+      try {
+        var path = await api.upload(att);
+        await callRPC("attach_feedback_media", {
+          p_submission_id: submissionId,
+          p_fingerprint_id: fpId(),
+          p_kind: att.kind,
+          p_storage_path: path,
+          p_mime: att.mime,
+          p_bytes: att.bytes,
+          p_duration_ms: att.durationMs || null
+        });
+      } catch (err) {
+        /* pojedynczy plik może zawieść — zgłoszenie i tak jest przyjęte */
+      }
+    }
+  }
+
   async function handleSubmit() {
     var text = draft.message.trim();
     if (text.length < 3 || state.submitting) return;
@@ -1295,6 +1537,10 @@
       if (created) {
         state.boardItems.unshift(created);
         trackAction("submit", (state.type === "bug" ? "zgłoszenie błędu" : "nowy pomysł") + ": „" + shortTitle.slice(0, 80) + "”");
+        /* załączniki (zrzuty, nagrania) dołączamy już do istniejącego zgłoszenia */
+        if (state.attachments.length) {
+          await uploadAttachments(created.id);
+        }
       }
     } catch (err) {
       var m = getMirror();
@@ -1322,6 +1568,16 @@
     }
 
     draft.message = "";
+    /* jeśli nagrywanie wciąż chodzi, a nikt nie dołączył nagrania — zatrzymujemy je */
+    try {
+      var mApi = mediaApi();
+      if (mApi && mApi.isReplaying && mApi.isReplaying()) mApi.stopReplay();
+    } catch (e) { /* ignorujemy */ }
+    state.attachments.forEach(function (a) {
+      try { URL.revokeObjectURL(a.url); } catch (e) { /* ignorujemy */ }
+    });
+    state.attachments = [];
+    state.mediaStatus = null;
     state.submitting = false;
     state.view = "sent";
     renderSlot();
@@ -1550,7 +1806,92 @@
 
   slotEl.addEventListener("click", function (e) {
     var up = e.target.closest("[data-up]");
-    if (up) toggleVote(up.dataset.up);
+    if (up) {
+      toggleVote(up.dataset.up);
+      return;
+    }
+
+    /* --- załączniki --- */
+    if (e.target.closest("[data-rj-shot]")) {
+      handleScreenShot();
+      return;
+    }
+    if (e.target.closest("[data-rj-dom]")) {
+      handleDomShot();
+      return;
+    }
+    if (e.target.closest("[data-rj-replay]")) {
+      handleReplayToggle();
+      return;
+    }
+    var rm = e.target.closest("[data-rj-remove]");
+    if (rm) {
+      removeAttachment(rm.getAttribute("data-rj-remove"));
+      return;
+    }
+  });
+
+  /* plik wybrany z dysku */
+  slotEl.addEventListener("change", function (e) {
+    if (e.target.id !== "rj-file-in") return;
+    var file = e.target.files && e.target.files[0];
+    if (!file) return;
+    var api = mediaApi();
+    if (!api) {
+      setMediaStatus("Załączniki jeszcze się wczytują — spróbuj za chwilę.", true);
+      return;
+    }
+    api.fromFile(file)
+      .then(addAttachment)
+      .catch(function (err) { setMediaStatus(api.friendlyError(err), true); });
+    e.target.value = "";
+  });
+
+  /* wklejenie zrzutu ze schowka (PrintScreen → Ctrl+V) */
+  slotEl.addEventListener("paste", function (e) {
+    if (state.view !== "form") return;
+    var api = mediaApi();
+    if (!api || !e.clipboardData) return;
+    var hasFile = false;
+    for (var i = 0; i < e.clipboardData.items.length; i++) {
+      if (e.clipboardData.items[i].kind === "file") {
+        hasFile = true;
+        break;
+      }
+    }
+    if (!hasFile) return; /* zwykły tekst wklejamy normalnie */
+
+    e.preventDefault();
+    api.fromClipboard(e)
+      .then(addAttachment)
+      .catch(function (err) { setMediaStatus(api.friendlyError(err), true); });
+  });
+
+  /* przeciągnij i upuść */
+  slotEl.addEventListener("dragover", function (e) {
+    if (state.view !== "form") return;
+    e.preventDefault();
+    slotEl.classList.add("is-dropping");
+  });
+  slotEl.addEventListener("dragleave", function () {
+    slotEl.classList.remove("is-dropping");
+  });
+  slotEl.addEventListener("drop", function (e) {
+    if (state.view !== "form") return;
+    e.preventDefault();
+    slotEl.classList.remove("is-dropping");
+    var file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+    if (!file) return;
+    var api = mediaApi();
+    if (!api) return;
+    api.fromFile(file)
+      .then(addAttachment)
+      .catch(function (err) { setMediaStatus(api.friendlyError(err), true); });
+  });
+
+  /* stan nagrywania może się zmienić także z paska systemowego */
+  document.addEventListener("rj:replay-state", function () {
+    if (state.open && state.view === "form") renderSlot();
   });
 
   function detectTheme() {

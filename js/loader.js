@@ -211,6 +211,19 @@
     preview.classList.remove("is-loading");
     preview.classList.toggle("is-loaded", !!ok);
     preview.classList.toggle("is-failed", !ok);
+
+    /* Sygnał dla cichego łapacza błędów (js/error-reporter.js):
+       nieudany podgląd to dokładnie ten rodzaj usterki, o której użytkownik milczy */
+    if (!ok) {
+      try {
+        var broken = preview.querySelector("iframe");
+        document.dispatchEvent(new CustomEvent("rj:preview-failed", {
+          detail: {
+            src: broken ? (broken.getAttribute("data-src") || broken.getAttribute("src") || "") : ""
+          }
+        }));
+      } catch (e) { /* bardzo stare przeglądarki — trudno */ }
+    }
   }
 
   function mountPreview(preview) {

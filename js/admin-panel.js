@@ -226,7 +226,8 @@
     activity: "tab-activity",
     submissions: "tab-submissions",
     community: "tab-community",
-    visitors: "tab-visitors"
+    visitors: "tab-visitors",
+    errors: "tab-errors"
   };
 
   function bindTabs() {
@@ -246,6 +247,7 @@
           });
           if (tab === "community") fetchCommunity();
           if (tab === "visitors") fetchVisitorList();
+          if (tab === "errors" && window.RJAdminErrors) window.RJAdminErrors.load();
         });
       })(btns[i]);
     }

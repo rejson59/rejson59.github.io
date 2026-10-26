@@ -23,7 +23,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="rejson-widgets/css/studio.css?v=3">
-  <link rel="stylesheet" href="rejson-widgets/css/admin.css?v=3">
+  <link rel="stylesheet" href="rejson-widgets/css/admin.css?v=2026-10-26">
   <link rel="stylesheet" href="css/admin-panel.css?v=2026-10-25c">
 </head>
 <body>
@@ -87,6 +87,7 @@
       <button type="button" class="adm-tab" id="tab-btn-submissions" data-tab="submissions" role="tab" aria-selected="false">🗂 Zgłoszenia</button>
       <button type="button" class="adm-tab" id="tab-btn-community" data-tab="community" role="tab" aria-selected="false">👥 Społeczność</button>
       <button type="button" class="adm-tab" id="tab-btn-visitors" data-tab="visitors" role="tab" aria-selected="false">👤 Identyfikatory <span class="adm-tab-note">profile</span></button>
+      <button type="button" class="adm-tab" id="tab-btn-errors" data-tab="errors" role="tab" aria-selected="false">🐞 Błędy <span class="adm-tab-note" id="errors-tab-note">auto</span></button>
     </nav>
 
     <!-- ============ ZAKŁADKA: AKTYWNOŚĆ SZCZEGÓŁOWA ============ -->
@@ -507,6 +508,43 @@
       </div>
     </section>
 
+
+    <!-- ============ ZAKŁADKA: BŁĘDY WYKRYTE AUTOMATYCZNIE ============ -->
+    <section id="tab-errors" role="tabpanel" aria-label="Błędy wykryte automatycznie" hidden>
+
+      <div class="adm-section-head errors-head">
+        <div>
+          <h2 class="adm-section-title">🐞 Błędy wykryte automatycznie</h2>
+          <p class="adm-section-sub">
+            Zbierane po cichu od użytkowników: błędy JS, zerwane obietnice, błędy sieci,
+            nieudane podglądy i bardzo wolne wczytania. Bez tekstu pól i bez parametrów URL.
+          </p>
+        </div>
+        <div class="errors-toolbar">
+          <select class="ctrl-input ctrl-input--sm" id="errors-status-filter" aria-label="Filtr statusu">
+            <option value="">Wszystkie</option>
+            <option value="new" selected>Nowe</option>
+            <option value="triaged">W trakcie</option>
+            <option value="fixed">Naprawione</option>
+            <option value="ignored">Ignorowane</option>
+          </select>
+          <button class="btn btn-glass btn-sm" type="button" id="errors-refresh">Odśwież</button>
+        </div>
+      </div>
+
+      <div class="errors-kpis" id="errors-kpis"></div>
+      <div class="errors-list" id="errors-list">
+        <div class="adm-empty">Wczytuję raporty…</div>
+      </div>
+
+      <h3 class="adm-section-title errors-media-title">📎 Załączniki ze zgłoszeń użytkowników</h3>
+      <p class="adm-section-sub">Zrzuty ekranu, migawki strony i nagrania „ostatnie 15 s" dołączone do zgłoszeń błędów.</p>
+      <div class="errors-media" id="errors-media">
+        <div class="adm-empty">Wczytuję załączniki…</div>
+      </div>
+
+    </section>
+
   </main>
 
   <div class="toast-banner" id="admin-toast" hidden></div>
@@ -514,6 +552,8 @@
   <script src="rejson-widgets/js/supabase-config.js"></script>
   <script src="rejson-widgets/js/admin.js"></script>
   <script src="js/view-tracker.js?v=3" defer></script>
-  <script src="js/admin-panel.js?v=2026-10-25c"></script>
+  <script src="js/error-reporter.js?v=1" defer></script>
+  <script src="js/admin-errors.js?v=1"></script>
+  <script src="js/admin-panel.js?v=2026-10-26"></script>
 </body>
 </html>
