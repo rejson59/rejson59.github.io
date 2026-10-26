@@ -13,20 +13,20 @@
 }
 .rj-dough--sm { --ball: 10px; }
 
-.rj-dough-slot {
+.dough-slot {
   position: relative;
   width: var(--ball);
   height: calc(var(--ball) * 2.6);
   display: inline-block;
 }
-.rj-dough-slot .ball,
-.rj-dough-slot .shadow {
+.dough-slot .ball,
+.dough-slot .shadow {
   position: absolute;
   left: 0;
   display: block;
 }
 
-.rj-dough-slot .ball {
+.dough-slot .ball {
   bottom: calc(var(--ball) * 0.4);
   width: var(--ball);
   height: var(--ball);
@@ -38,7 +38,7 @@
   animation: rj-dough-bounce 1.15s cubic-bezier(0.3, 0.75, 0.4, 1) infinite;
   will-change: transform;
 }
-.rj-dough-slot .shadow {
+.dough-slot .shadow {
   bottom: 0;
   left: calc(var(--ball) * -0.1);
   width: calc(var(--ball) * 1.2);
@@ -51,10 +51,10 @@
 }
 
 /* fale — każda kulka zaczyna skok chwilę po poprzedniej */
-.rj-dough-slot:nth-child(2) .ball   { animation-delay: 0.13s; }
-.rj-dough-slot:nth-child(2) .shadow { animation-delay: 0.13s; }
-.rj-dough-slot:nth-child(3) .ball   { animation-delay: 0.26s; }
-.rj-dough-slot:nth-child(3) .shadow { animation-delay: 0.26s; }
+.dough-slot:nth-child(2) .ball   { animation-delay: 0.13s; }
+.dough-slot:nth-child(2) .shadow { animation-delay: 0.13s; }
+.dough-slot:nth-child(3) .ball   { animation-delay: 0.26s; }
+.dough-slot:nth-child(3) .shadow { animation-delay: 0.26s; }
 
 /* Soczysta ciastolina: plac przy lądowaniu, elastyczny skok, rozsiadka */
 @keyframes rj-dough-bounce {
@@ -145,10 +145,11 @@
 
 /* ---------- Dostępność: bez skakania przy ograniczeniu ruchu ---------- */
 @media (prefers-reduced-motion: reduce) {
-  .rj-dough-slot .ball,
-  .rj-dough-slot .shadow { animation: none; }
-  .rj-dough-slot .ball { transform: none; opacity: 0.9; }
-  .rj-dough-slot:nth-child(2) .ball { opacity: 0.65; }
-  .rj-dough-slot:nth-child(3) .ball { opacity: 0.4; }
+  .dough-slot .ball,
+  .dough-slot .shadow { animation: none; }
+  .dough-slot .ball { transform: none; opacity: 0.9; }
+  .dough-slot:nth-child(2) .ball { opacity: 0.65; }
+  .dough-slot:nth-child(3) .ball { opacity: 0.4; }
+  .rj-loader-caption { animation: none; opacity: 0.7; }
   #rj-page-loader, .card-preview-loader { transition: opacity 0.15s ease, visibility 0s linear 0.18s; }
 }
