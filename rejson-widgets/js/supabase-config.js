@@ -364,6 +364,32 @@
     setStoredSession: setStoredSession,
     rpc: rpc,
     restTable: restTable,
+    getAccessToken: getValidAccessToken,
+    /* Podpisany URL do pliku w prywatnym buckecie (tylko administrator) */
+    signedUrl: function (bucket, path, expiresInSeconds) {
+      return getValidAccessToken().then(function (token) {
+        if (!token) return null;
+        return fetchWithTimeout(
+          SUPABASE_URL + "/storage/v1/object/sign/" + bucket + "/" + path,
+          {
+            method: "POST",
+            headers: {
+              apikey: SUPABASE_ANON_KEY,
+              Authorization: "Bearer " + token,
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ expiresIn: expiresInSeconds || 3600 })
+          },
+          REQUEST_TIMEOUT_MS
+        ).then(function (res) {
+          if (!res.ok) return null;
+          return res.json().then(function (data) {
+            if (!data || !data.signedURL) return null;
+            return SUPABASE_URL + "/storage/v1" + data.signedURL;
+          });
+        });
+      }).catch(function () { return null; });
+    },
     signUpOwner: signUpOwner,
     signInOwner: signInOwner,
     loadMirror: loadMirror,
