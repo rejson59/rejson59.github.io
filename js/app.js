@@ -64,6 +64,12 @@
       .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
 
+  var dateFmt = new Intl.DateTimeFormat("pl-PL", { day: "numeric", month: "short", year: "numeric" });
+  function fmtDate(iso) {
+    var d = new Date(iso);
+    return isNaN(d) ? "" : dateFmt.format(d);
+  }
+
   function liveUrlFor(repo) {
     var home = (repo.homepage || "").trim();
     if (home) return home;
@@ -104,6 +110,8 @@
 
   /* ---------- Ikony SVG ---------- */
   var ICON_ARROW = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg>';
+  var ICON_STAR = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.7 5.6 6.1.8-4.5 4.3 1.1 6-5.4-2.9L6.6 19.7l1.1-6L3.2 9.4l6.1-.8z"/></svg>';
+  var ICON_FORK = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="5" r="2.5"/><circle cx="18" cy="5" r="2.5"/><circle cx="12" cy="19" r="2.5"/><path d="M6 7.5v3a2.5 2.5 0 0 0 2.5 2.5H12M18 7.5v3A2.5 2.5 0 0 1 15.5 13H12M12 13v3.5"/></svg>';
   var ICON_CLICK = '<svg class="icon icon-click" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 2v2"/><path d="M5.6 4.4l1.4 1.4"/><path d="M16.4 4.4l-1.4 1.4"/><path d="M9 13V8a2 2 0 0 1 4 0v3h2a4 4 0 0 1 4 4v1a6 6 0 0 1-6 6h-1.5a5.5 5.5 0 0 1-4.6-2.5L4.3 15.6a1.7 1.7 0 0 1 2.5-2.2L9 15V13z"/></svg>';
   var ICON_EYE = '<svg class="icon icon-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12s3.5-6.5 9.5-6.5S21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></svg>';
   var numFmt = new Intl.NumberFormat("pl-PL");
@@ -149,6 +157,19 @@
     return onlineBadge + viewsBadge + uniqueBadge + lang + liveBadge;
   }
 
+  function metaHTML(p) {
+    var meta = "";
+    if (p.created) {
+      meta += '<span class="meta-item mono">Utworzono: ' + esc(fmtDate(p.created)) + "</span>";
+    }
+    if (p.updated) {
+      meta += '<span class="meta-item mono">Aktualizacja: ' + esc(fmtDate(p.updated)) + "</span>";
+    }
+    if (p.stars > 0) meta += '<span class="meta-item">' + ICON_STAR + esc(p.stars) + "</span>";
+    if (p.forks > 0) meta += '<span class="meta-item">' + ICON_FORK + esc(p.forks) + "</span>";
+    return meta;
+  }
+
   function actionsHTML(p) {
     var liveBtn = p.liveUrl
       ? '<a class="btn btn-live btn-sm" href="' + esc(p.liveUrl) + '" target="_blank" rel="noopener noreferrer">Wersja live ' + ICON_ARROW + "</a>"
@@ -184,6 +205,7 @@
           '<h3 class="card-title"><a href="' + esc(p.liveUrl || p.url) + '" target="_blank" rel="noopener noreferrer">' + esc(p.name) + "</a></h3>" +
           '<p class="card-desc">' + esc(p.description) + "</p>" +
           topics +
+          '<p class="card-meta">' + metaHTML(p) + "</p>" +
           '<div class="card-actions">' + actionsHTML(p) + "</div>" +
         "</div>" +
       "</article>"
@@ -240,6 +262,8 @@
           topicsEl.innerHTML = "";
         }
       }
+      var metaEl = cardEl.querySelector(".card-meta");
+      if (metaEl) metaEl.innerHTML = metaHTML(p);
       var actionsEl = cardEl.querySelector(".card-actions");
       if (actionsEl) actionsEl.innerHTML = actionsHTML(p);
       entry.sig = sig;
@@ -394,9 +418,20 @@
     state.lang = langSelect.value;
   }
 
+  function updateFeaturedMeta() {
+    allProjects.forEach(function (p) {
+      if (!FEATURED[p.name]) return;
+      var el = document.querySelector('[data-featured-meta="' + p.name + '"]');
+      if (el) {
+        el.innerHTML = metaHTML(p);
+      }
+    });
+  }
+
   function setProjects(repos, isLive) {
     allProjects = prepare(repos);
     gridProjects = allProjects.filter(function (p) { return !FEATURED[p.name]; });
+    updateFeaturedMeta();
     updateStats();
     updateLangFilter();
     render();
