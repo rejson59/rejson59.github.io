@@ -1014,3 +1014,38 @@
     if (document.visibilityState === "visible") syncWithGitHub(false);
   }, 45000);
 })();
+
+/* ---------- Soczyste przyciski live: żelkowe trzęsienie po kliknięciu ---------- */
+(function () {
+  var reduce = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
+
+  function jelly(btn) {
+    if (!btn || (reduce && reduce.matches)) return;
+    btn.classList.remove("is-jelly");
+    void btn.offsetWidth; /* wymusza restart animacji przy szybkim ponownym kliknięciu */
+    btn.classList.add("is-jelly");
+  }
+
+  function liveButtonFrom(ev) {
+    var t = ev.target;
+    return t && t.closest ? t.closest(".btn-live") : null;
+  }
+
+  document.addEventListener("pointerdown", function (ev) {
+    var btn = liveButtonFrom(ev);
+    if (btn) jelly(btn);
+  }, { passive: true });
+
+  /* Enter na linku nie generuje pointerdown — animujemy też klawiaturę */
+  document.addEventListener("click", function (ev) {
+    if (ev.detail !== 0) return;
+    var btn = liveButtonFrom(ev);
+    if (btn) jelly(btn);
+  });
+
+  document.addEventListener("animationend", function (ev) {
+    if (ev.animationName === "rj-jelly" && ev.target && ev.target.classList) {
+      ev.target.classList.remove("is-jelly");
+    }
+  });
+})();
