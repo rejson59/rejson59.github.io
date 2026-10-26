@@ -35,7 +35,7 @@
   <link rel="preconnect" href="https://api.github.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css?v=2026-10-25">
-  <link rel="stylesheet" href="css/loader.css">
+  <link rel="stylesheet" href="css/loader.css?v=1">
   <style>
     /* Pigułka widżetu zgłoszeń („papla”) — warstwa zawsze nad modalem i nagłówkiem.
        Reszta jej wyglądu i zachowania żyje w rejson-widgets/widget.js. */
@@ -47,7 +47,10 @@
 </head>
 <body>
   <div id="rj-page-loader" aria-hidden="true">
-    <div class="rj-dough"><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span></div>
+    <div class="rj-loader-box">
+      <div class="rj-dough"><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span></div>
+      <p class="rj-loader-caption">rejson59</p>
+    </div>
   </div>
   <noscript><style>#rj-page-loader{display:none!important}</style></noscript>
 
@@ -651,7 +654,7 @@
 
   <script defer src="js/projects-data.js"></script>
   <script defer src="js/view-tracker.js?v=3"></script>
-  <script defer src="js/loader.js"></script>
+  <script defer src="js/loader.js?v=1"></script>
   <script defer src="js/app.js"></script>
   <script defer src="rejson-widgets/widget.js?v=4"></script>
 </body>
