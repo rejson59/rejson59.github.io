@@ -25,7 +25,7 @@
 
   /* ---------- 1. Wygaszenie nakładki po starcie strony ---------- */
   var started = performance.now();
-  var MIN_SHOW_MS = 520;   /* kulki mają chwilę pobujania — nie mignięcie */
+  var MIN_SHOW_MS = 1000;  /* kulki mają legalną chwilę występu — czytelne, ale nie męczące */
 
   function hideOverlay(inst) {
     var el = getOverlay();
@@ -34,6 +34,7 @@
     var elapsed = performance.now() - started;
     var wait = inst ? 0 : Math.max(0, MIN_SHOW_MS - elapsed);
     setTimeout(function () {
+      el.classList.remove("is-shown");
       el.classList.add("is-hidden");
     }, wait);
   }
@@ -77,11 +78,12 @@
     if (!el) return;
     ev.preventDefault();
     el._done = false;
+    el.classList.add("is-shown");   /* pokazanie NATYCHMIAST (bez delayu visibility) */
     el.classList.remove("is-hidden");
     var url = new URL(a.getAttribute("href"), location.href).href;
     setTimeout(function () {
       location.href = url;
-    }, 210);
+    }, 400);
   });
 
   /* ---------- 3. Odroczone podglądy projektów ---------- */
