@@ -1,0 +1,125 @@
+/* ==========================================================================
+   Loader „ciastolina" — 3 kulki skaczące jedna po drugiej z soczystym
+   zgnieceniem przy lądowaniu. Współdzielony przez:
+   - nakładkę strony (#rj-page-loader) — start strony + płynne przejścia
+   - podglądy projektów (.card-preview-loader) — dopóki iframe się ładuje
+   ========================================================================== */
+
+.rj-dough {
+  --ball: 16px;
+  display: inline-flex;
+  gap: calc(var(--ball) * 0.7);
+  align-items: flex-end;
+}
+.rj-dough--sm { --ball: 10px; }
+
+.rj-dough-slot {
+  position: relative;
+  width: var(--ball);
+  height: calc(var(--ball) * 2.6);
+  display: inline-block;
+}
+.rj-dough-slot .ball,
+.rj-dough-slot .shadow {
+  position: absolute;
+  left: 0;
+  display: block;
+}
+
+.rj-dough-slot .ball {
+  bottom: calc(var(--ball) * 0.4);
+  width: var(--ball);
+  height: var(--ball);
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, #b9d3ff, var(--accent, #6aa6ff) 55%, #3f6fbe);
+  box-shadow:
+    inset calc(var(--ball) * -0.14) calc(var(--ball) * -0.2) calc(var(--ball) * 0.4) rgba(8, 12, 26, 0.35),
+    inset calc(var(--ball) * 0.12) calc(var(--ball) * 0.16) calc(var(--ball) * 0.3) rgba(255, 255, 255, 0.45);
+  animation: rj-dough-bounce 1.15s cubic-bezier(0.3, 0.75, 0.4, 1) infinite;
+  will-change: transform;
+}
+.rj-dough-slot .shadow {
+  bottom: 0;
+  left: calc(var(--ball) * -0.1);
+  width: calc(var(--ball) * 1.2);
+  height: calc(var(--ball) * 0.32);
+  border-radius: 50%;
+  background: rgba(4, 8, 18, 0.55);
+  filter: blur(calc(var(--ball) * 0.12));
+  animation: rj-dough-shadow 1.15s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+
+/* fale — każda kulka zaczyna skok chwilę po poprzedniej */
+.rj-dough-slot:nth-child(2) .ball   { animation-delay: 0.13s; }
+.rj-dough-slot:nth-child(2) .shadow { animation-delay: 0.13s; }
+.rj-dough-slot:nth-child(3) .ball   { animation-delay: 0.26s; }
+.rj-dough-slot:nth-child(3) .shadow { animation-delay: 0.26s; }
+
+/* Soczysta ciastolina: plac przy lądowaniu, elastyczny skok, rozsiadka */
+@keyframes rj-dough-bounce {
+  0%   { transform: translateY(calc(var(--ball) * 0.12))  scale(1.34, 0.60); animation-timing-function: cubic-bezier(0.2, 0.8, 0.4, 1); }
+  20%  { transform: translateY(calc(var(--ball) * -0.25)) scale(0.94, 1.10); }
+  40%  { transform: translateY(calc(var(--ball) * -1.45)) scale(0.88, 1.16); animation-timing-function: ease-in; }
+  58%  { transform: translateY(0)                          scale(1, 1); }
+  67%  { transform: translateY(calc(var(--ball) * 0.18))  scale(1.38, 0.55); }  /* SOCZYSTE zgniecenie */
+  77%  { transform: translateY(calc(var(--ball) * -0.12)) scale(0.95, 1.06); }
+  87%  { transform: translateY(calc(var(--ball) * 0.06))  scale(1.10, 0.88); }  /* rozsiadka */
+  100% { transform: translateY(calc(var(--ball) * 0.12))  scale(1.34, 0.60); }
+}
+@keyframes rj-dough-shadow {
+  0%   { transform: scaleX(1.3);  opacity: 0.55; }
+  40%  { transform: scaleX(0.5);  opacity: 0.18; }
+  58%  { transform: scaleX(0.95); opacity: 0.42; }
+  67%  { transform: scaleX(1.35); opacity: 0.6; }
+  100% { transform: scaleX(1.3);  opacity: 0.55; }
+}
+
+/* ---------- Nakładka całej strony (start + przejścia między podstronami) ---------- */
+#rj-page-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--bg, #0b0e13) 88%, transparent);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.32s ease 0.03s, visibility 0s linear 0.38s;
+}
+#rj-page-loader.is-hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* ---------- Loader w podglądzie projektu (iframe jeszcze się ładuje) ---------- */
+.card-preview-loader {
+  position: absolute;
+  inset: 22px 0 0 0; /* pod paskiem „przeglądarki" podglądu */
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--bg, #0b0e13) 62%, transparent);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.35s ease, visibility 0s linear 0.38s;
+  pointer-events: none;
+}
+.card-preview.is-loading .card-preview-loader {
+  opacity: 1;
+  visibility: visible;
+  transition-delay: 0s;
+}
+
+/* ---------- Dostępność: bez skakania przy ograniczeniu ruchu ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .rj-dough-slot .ball,
+  .rj-dough-slot .shadow { animation: none; }
+  .rj-dough-slot .ball { transform: none; opacity: 0.9; }
+  .rj-dough-slot:nth-child(2) .ball { opacity: 0.65; }
+  .rj-dough-slot:nth-child(3) .ball { opacity: 0.4; }
+  #rj-page-loader, .card-preview-loader { transition: opacity 0.15s ease, visibility 0s linear 0.18s; }
+}
