@@ -216,26 +216,28 @@ const angles = (transform) => {
       !/transform/.test(sheen.style.cssText), sheen.style.cssText);
   }
 
-  console.log("\n=== E. KARTA Z WCZYTYWANYM PODGLĄDEM NIE JEST OBRACANA ===");
+  console.log("\n=== E. EFEKT JEST OD PIERWSZEJ KLATKI (TAKŻE PRZY WCZYTYWANIU) ===");
   {
+    /* Regresja: blokowanie obrotu na czas wczytywania podglądu sprawiało, że przy
+       pierwszym najechaniu na kartę w sekcji wyróżnionych efektu w ogóle nie było. */
     const t = mk();
-    const { w, card, inner, preview } = t;
+    const { w, card, inner, preview, writes } = t;
     await wait(0);
+    writes.inner = 0;
 
     preview.classList.add("is-loading");
     move(w, card, 150, 100, "pointerenter");
     move(w, card, 290, 190);
     t.runFrames(1000);
     await wait(0);
-    check("podczas wczytywania podglądu brak obrotu",
-      !/rotate/.test(inner.style.transform || ""), JSON.stringify(inner.style.transform));
+    check("karta obraca się mimo wczytywania podglądu",
+      /rotate/.test(inner.style.transform || ""), JSON.stringify(inner.style.transform));
+    check("nadal jeden zapis stylu na klatkę", writes.inner <= 2,
+      "zapisów: " + writes.inner);
 
     preview.classList.remove("is-loading");
-    move(w, card, 290, 190);
-    t.runFrames(1016);
-    await wait(0);
-    check("po wczytaniu podglądu obrót wraca", /rotate/.test(inner.style.transform || ""),
-      inner.style.transform);
+    preview.classList.add("is-loaded");
+    check("po wczytaniu podglądu efekt działa dalej", card.classList.contains("is-tilting"));
   }
 
   console.log("\n=== F. POWRÓT DO NEUTRALNEGO I SPRZĄTANIE ===");
@@ -266,26 +268,54 @@ const angles = (transform) => {
       JSON.stringify(sheen.style.getPropertyValue("--mx")));
   }
 
-  console.log("\n=== G. BEZPIECZNIK: GUBIONE KLATKI WYŁĄCZAJĄ EFEKT ===");
+  console.log("\n=== G. BEZPIECZNIK: NAJPIERW ŁAGODNIEJ, DOPIERO POTEM OFF ===");
   {
     const t = mk();
     const { w, card, inner, doc } = t;
     await wait(0);
 
+    /* 1) Zwykłe, lekkie drgnięcia (60 ms) NIE MOGĄ niczego wyłączać. */
     move(w, card, 150, 100, "pointerenter");
     let ts = 1000;
-    for (let f = 0; f < 8; f++) {
-      move(w, card, 80 + f * 10, 60 + f);
+    for (let f = 0; f < 10; f++) {
+      move(w, card, 290 - f, 12 + f);   /* prawy górny róg = pełny kąt */
       t.runFrames(ts);
-      ts += 120;                 /* ~8 klatek na sekundę: przeglądarka nie wyrabia */
+      ts += 60;
+      await wait(0);
+    }
+    move(w, card, 295, 8);              /* dokładnie w narożnik — pełny kąt */
+    t.runFrames(ts);
+    ts += 60;
+    await wait(0);
+    check("lekkie spadki klatek nie wyłączają efektu", t.isOff() === false);
+    const pelny = Math.abs(angles(inner.style.transform).y);
+    check("lekkie spadki nie zmniejszają kąta", pelny > 4.5, "kąt=" + pelny);
+
+    /* 2) Poważna seria (120 ms) — efekt ma zostać, tylko łagodniejszy. */
+    for (let f = 0; f < 8; f++) {
+      move(w, card, 290 - f, 12 + f);   /* ten sam róg, żeby porównać kąty */
+      t.runFrames(ts);
+      ts += 120;
+      await wait(0);
+    }
+    check("po serii złych klatek efekt nadal działa", t.isOff() === false);
+    const lagodny = Math.abs(angles(inner.style.transform).y);
+    check("ale kąt jest zmniejszony (≈ połowa pełnego)",
+      lagodny > 0 && lagodny <= pelny * 0.55,
+      "pełny=" + pelny + " → teraz=" + lagodny + " | " + inner.style.transform);
+
+    /* 3) Dopiero długa seria (14+ klatek) wyłącza efekt całkowicie. */
+    for (let f = 0; f < 20; f++) {
+      move(w, card, 40 + f * 12, 30 + f * 3);
+      t.runFrames(ts);
+      ts += 120;
       await wait(0);
       if (t.isOff()) break;
     }
-    check("efekt wyłączył się po serii długich klatek", t.isOff() === true);
+    check("długa seria złych klatek wyłącza efekt", t.isOff() === true);
     check("strona dostaje klasę rj-tilt-off",
       doc.documentElement.classList.contains("rj-tilt-off"),
       doc.documentElement.className);
-
     check("po wyłączeniu karta nie zostaje przekrzywiona",
       inner.style.transform === "" && !card.classList.contains("is-tilting"),
       JSON.stringify(inner.style.transform) + " | " + card.className);
@@ -327,7 +357,7 @@ const angles = (transform) => {
       /attachTilt\(card, inner, 5\)/.test(APP));
     check("karta profilu też ma efekt", /attachTilt\(profile, profile, 4\)/.test(APP));
     check("wersje podbite w index.html",
-      /js\/app\.js\?v=2026-10-27-1/.test(INDEX) && /css\/style\.css\?v=2026-10-27-1/.test(INDEX));
+      /js\/app\.js\?v=2026-10-27-2/.test(INDEX) && /css\/style\.css\?v=2026-10-27-1/.test(INDEX));
     const bezKomentarzy = TILT.replace(/\/\*[\s\S]*?\*\//g, "");
     check("jedno miejsce mierzenia layoutu w bloku tiltu",
       (bezKomentarzy.match(/getBoundingClientRect/g) || []).length === 1,
