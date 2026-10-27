@@ -104,18 +104,76 @@
     }, 150);
   }
 
+  function progressApi() {
+    return window.RJProgress || null;
+  }
+
+  var PROGRESS_LEAD_MS = 300; /* tyle zajmuje paskowi dojście do 100% (transition 0.3 s) */
+
   function hideOverlay(inst) {
     var el = getOverlay();
     if (!el || el._done) return;
     el._done = true;
-    var elapsed = performance.now() - started;
-    var wait = inst ? 0 : Math.max(0, MIN_SHOW_MS - elapsed);
-    setTimeout(function () {
+
+    function doHide() {
       el.classList.remove("is-shown");
       el.classList.add("is-hidden");
+      pauseLoaderAnimations(true);
       markPageReady();
-    }, wait);
+      /* po zniknięciu zerujemy pasek — kolejne pokazanie startuje od zera */
+      setTimeout(function () {
+        var p = progressApi();
+        if (p && p.reset) p.reset();
+      }, 420);
+    }
+
+    /* powrót z bfcache: nie ma czego animować, chowamy natychmiast */
+    if (inst) {
+      var pi = progressApi();
+      if (pi && pi.complete) pi.complete(true);
+      doHide();
+      return;
+    }
+
+    var elapsed = performance.now() - started;
+    var wait = Math.max(0, MIN_SHOW_MS - elapsed);
+
+    /* Pasek dobija do 100% DOKŁADNIE wtedy, gdy nakładka zaczyna znikać —
+       dzięki temu widać pełny, rozświetlony pasek, a nie mignięcie. */
+    setTimeout(function () {
+      var p = progressApi();
+      if (p && p.complete) p.complete();
+    }, Math.max(0, wait - PROGRESS_LEAD_MS));
+
+    /* minimalny czas na zobaczenie pełnego paska (gdy strona wczytała się późno) */
+    setTimeout(doHide, Math.max(wait, PROGRESS_LEAD_MS));
   }
+
+  /* ---------- Realne etapy postępu (bez fejkowego timera) ---------- */
+  /* Gdy nakładka znika, jej animacje nie mają po co tykać — a tykałyby przez
+     całą wizytę (nieskończone pętle kulek, połysku i pulsu podpisu).
+     getAnimations() obejmuje też animacje CSS, więc jedna pauza wystarcza. */
+  function pauseLoaderAnimations(paused) {
+    try {
+      var el = getOverlay();
+      if (!el || !el.getAnimations) return;
+      el.getAnimations({ subtree: true }).forEach(function (a) {
+        if (paused) { a.pause(); } else { a.play(); }
+      });
+    } catch (e) { /* starsze przeglądarki — po prostu nie pauzujemy */ }
+  }
+
+  function markProgress(v) {
+    var p = progressApi();
+    if (p && p.set) p.set(v);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", function () { markProgress(0.5); });
+  } else {
+    markProgress(0.5);
+  }
+  window.addEventListener("load", function () { markProgress(0.85); });
 
   /* ---------- Detektor gubionych klatek → tryb oszczędny ----------
      Jeśli urządzenie nie wyrabia ~38 fps, wyłączamy cienie, puls podpisu i pop
@@ -125,10 +183,11 @@
     var el = getOverlay();
     if (!el) return;
 
-    /* bardzo słaby sprzęt: od razu oszczędnie, bez zgadywania */
+    /* Jedyny wyjątek bez pomiaru: użytkownik sam włączył oszczędzanie danych.
+       Liczby rdzeni nie używamy — Chrome zaniża je do 2 przy blokadach
+       prywatności, więc „≤2 rdzenie” wyłączyłoby ładne cienie wielu osobom. */
     try {
-      if ((navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2) ||
-          (navigator.deviceMemory && navigator.deviceMemory <= 2)) {
+      if (navigator.connection && navigator.connection.saveData) {
         el.classList.add("rj-loader--lite");
       }
     } catch (e) { /* ignorujemy */ }
@@ -203,6 +262,10 @@
     el._done = false;
     el.classList.add("is-shown");   /* pokazanie NATYCHMIAST (bez delayu visibility) */
     el.classList.remove("is-hidden");
+    pauseLoaderAnimations(false);
+    /* pasek startuje od zera i od razu sunie do końca — widać, że coś się dzieje */
+    var pr = progressApi();
+    if (pr && pr.reset) { pr.reset(); if (pr.complete) pr.complete(); }
     var url = new URL(a.getAttribute("href"), location.href).href;
     setTimeout(function () {
       location.href = url;
