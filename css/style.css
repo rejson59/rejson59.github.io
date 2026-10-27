@@ -611,9 +611,13 @@ a:hover { text-decoration-color: currentColor; }
 
 /* ---------- Karta profilu ---------- */
 .profile-card { position:relative; border-radius: var(--radius-xl); border:1px solid var(--border); background: linear-gradient(165deg, var(--card), var(--card-2)); box-shadow: var(--shadow); padding:22px; contain: layout paint style; }
+/* Perspektywę daje RODZIC obracanego elementu — to wystarcza i jest znacznie
+   stabilniejsze niż transform-style: preserve-3d. preserve-3d kazało przeglądarce
+   rozbijać kartę (razem z żywą ramką podglądu i pulsującymi plakietkami) na
+   osobne warstwy 3D, a przy obrocie warstwy potrafiły znikać i wracać. */
 @media (hover: hover) and (pointer: fine) {
   .profile-card, .project-card { perspective: 1000px; }
-  .profile-card { transform-style: preserve-3d; }
+  .profile-card.is-tilting { will-change: transform; }
 }
 .profile-top { display:flex; align-items:center; gap:16px; }
 .avatar-ring { display:grid; place-items:center; padding:3px; border-radius:50%; border:1px solid var(--border-strong); background: conic-gradient(from 180deg, transparent 0 42%, rgba(106,166,255,0.45) 56%, transparent 70% 100%); flex:none; }
@@ -703,10 +707,17 @@ a:hover { text-decoration-color: currentColor; }
 .project-card:hover .card-inner, .project-card:focus-within .card-inner { border-color: color-mix(in srgb, var(--accent) 18%, var(--border)); box-shadow: var(--shadow-hover); transform: translateY(-2px); }
 .card-sheen { display:none; }
 @media (hover: hover) and (pointer: fine) {
-  .card-inner { transform-style: preserve-3d; }
+  /* Warstwa obrotu powstaje tylko na czas hoveru (klasa z js/app.js). */
+  .project-card.is-tilting .card-inner,
+  .project-card.is-tilting .card-preview-frame { will-change: transform; }
   .card-sheen { display:block; position:absolute; inset:0; border-radius:inherit; pointer-events:none; opacity:0; transition: opacity .25s; background: radial-gradient(480px circle at var(--mx,50%) var(--my,50%), var(--sheen), transparent 46%); }
   .project-card:hover .card-sheen, .profile-card:hover .card-sheen { opacity:1; }
 }
+/* Bezpiecznik z js/app.js: urządzenie gubi klatki przy obrocie → efekt znika
+   na całą sesję, a wraz z nim połysk (żadnych podpowiedzi tworzenia warstw). */
+html.rj-tilt-off .card-sheen { display:none; }
+html.rj-tilt-off .project-card.is-tilting .card-inner,
+html.rj-tilt-off .project-card.is-tilting .card-preview-frame { will-change:auto; }
 .card-top { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:6px 10px; margin-bottom:12px; }
 .card-index { font-size:11.5px; color: var(--faint); letter-spacing:.07em; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .card-badges { display:flex; align-items:center; gap:6px; flex-shrink:0; flex-wrap:wrap; justify-content:flex-end; }
@@ -782,7 +793,10 @@ a:hover { text-decoration-color: currentColor; }
   contain: layout paint style;
   transition: border-color .18s, transform .18s, box-shadow .18s;
 }
-.card-preview:hover { border-color: color-mix(in srgb, var(--live) 45%, var(--border)); transform: translateY(-2px); box-shadow: 0 8px 22px rgba(0,0,0,.18); }
+/* Bez własnego transformu na hover: podgląd jest DZIECKIEM obracanej karty,
+   a transform rodzica + transform dziecka w jednej klatce to najkrótsza droga
+   do migotania ramki. Podniesienie zapewnia już cała karta. */
+.card-preview:hover { border-color: color-mix(in srgb, var(--live) 45%, var(--border)); box-shadow: 0 8px 22px rgba(0,0,0,.18); }
 .card-preview-frame {
   position:absolute;
   inset:0;

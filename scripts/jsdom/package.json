@@ -1,9 +1,9 @@
 {
   "name": "rejson59-loader-tests",
   "private": true,
-  "description": "Testy przeglądarkowe loadera (jsdom). Uruchomienie: npm install && node loader.test.js",
+  "description": "Testy przeglądarkowe loadera i efektu 3D kart (jsdom). Uruchomienie: npm install && npm test",
   "scripts": {
-    "test": "node loader.test.js"
+    "test": "node loader.test.js && node tilt.test.js"
   },
   "devDependencies": {
     "jsdom": "^24.1.3"
