@@ -61,6 +61,10 @@ function mk() {
 
   const mq = (q) => ({ matches: /hover/.test(q), media: q, addListener() {}, removeListener() {} });
   w.matchMedia = mq;
+  /* jsdom udaje maszynę z 2 rdzeniami — a my testujemy zachowanie na zwykłym
+     desktopie (pełny efekt, z połyskiem) */
+  Object.defineProperty(w.navigator, "hardwareConcurrency", { value: 8, configurable: true });
+  Object.defineProperty(w.navigator, "deviceMemory", { value: 8, configurable: true });
 
   let queue = [];
   w.requestAnimationFrame = (fn) => { queue.push(fn); return queue.length; };
@@ -268,63 +272,78 @@ const angles = (transform) => {
       JSON.stringify(sheen.style.getPropertyValue("--mx")));
   }
 
-  console.log("\n=== G. BEZPIECZNIK: NAJPIERW ŁAGODNIEJ, DOPIERO POTEM OFF ===");
+  console.log("\n=== G. EFEKT NIE WYŁĄCZA SIĘ SAM (NAWET PRZY PAUZACH KURSORA) ===");
+  {
+    /* Regresja z życia: „przez chwilę działało i znowu się wyłączyło”.
+       Poprzedni bezpiecznik mierzył odstępy między wywołaniami rAF, a te lecą
+       TYLKO przy ruchu myszy — więc każda pauza kursora (>90 ms) liczyła się jako
+       zgubiona klatka. Kilka pauz → kąt się połowił, potem efekt gasł na sesję.
+       Ten test robi dokładnie to: najechanie z pauzami i ruchami w seriach. */
+    const t = mk();
+    const { w, card, inner, doc } = t;
+    await wait(0);
+
+    move(w, card, 150, 100, "pointerenter");
+    let ts = 1000;
+    const katy = [];
+    for (let s2 = 0; s2 < 12; s2++) {
+      for (let f = 0; f < 4; f++) {          /* krótka seria ruchów */
+        move(w, card, 295 - (f % 2), 8 + f);
+        t.runFrames(ts);
+        ts += 16;
+        await wait(0);
+      }
+      katy.push(Math.abs(angles(inner.style.transform).y));
+      ts += 400;                             /* i dłuższa pauza kursora */
+      await wait(30);
+    }
+
+    check("po 12 seriach z pauzami efekt nadal działa", t.isOff() === false);
+    check("karta nie dostała klasy wyłączenia",
+      !doc.documentElement.classList.contains("rj-tilt-off"),
+      doc.documentElement.className || "brak klasy");
+    check("kąt się nie zmniejszył (nie ma „połowienia” w trakcie)",
+      Math.min.apply(null, katy) > 4.5,
+      "najmniejszy kąt: " + Math.min.apply(null, katy).toFixed(1) + " | pełny: " + Math.max.apply(null, katy).toFixed(1));
+    check("efekt trzyma się karty po pauzie",
+      /rotate/.test(inner.style.transform || ""), JSON.stringify(inner.style.transform));
+  }
+
+  console.log("\n=== G2. WYŁĄCZENIE TYLKO RĘCZNE (RJTilt.disable) ===");
   {
     const t = mk();
     const { w, card, inner, doc } = t;
     await wait(0);
 
-    /* 1) Zwykłe, lekkie drgnięcia (60 ms) NIE MOGĄ niczego wyłączać. */
     move(w, card, 150, 100, "pointerenter");
-    let ts = 1000;
-    for (let f = 0; f < 10; f++) {
-      move(w, card, 290 - f, 12 + f);   /* prawy górny róg = pełny kąt */
-      t.runFrames(ts);
-      ts += 60;
-      await wait(0);
-    }
-    move(w, card, 295, 8);              /* dokładnie w narożnik — pełny kąt */
-    t.runFrames(ts);
-    ts += 60;
+    move(w, card, 290, 12);
+    t.runFrames(1000);
     await wait(0);
-    check("lekkie spadki klatek nie wyłączają efektu", t.isOff() === false);
-    const pelny = Math.abs(angles(inner.style.transform).y);
-    check("lekkie spadki nie zmniejszają kąta", pelny > 4.5, "kąt=" + pelny);
+    check("przed wyłączeniem karta jest obrócona", /rotate/.test(inner.style.transform));
 
-    /* 2) Poważna seria (120 ms) — efekt ma zostać, tylko łagodniejszy. */
-    for (let f = 0; f < 8; f++) {
-      move(w, card, 290 - f, 12 + f);   /* ten sam róg, żeby porównać kąty */
-      t.runFrames(ts);
-      ts += 120;
-      await wait(0);
-    }
-    check("po serii złych klatek efekt nadal działa", t.isOff() === false);
-    const lagodny = Math.abs(angles(inner.style.transform).y);
-    check("ale kąt jest zmniejszony (≈ połowa pełnego)",
-      lagodny > 0 && lagodny <= pelny * 0.55,
-      "pełny=" + pelny + " → teraz=" + lagodny + " | " + inner.style.transform);
-
-    /* 3) Dopiero długa seria (14+ klatek) wyłącza efekt całkowicie. */
-    for (let f = 0; f < 20; f++) {
-      move(w, card, 40 + f * 12, 30 + f * 3);
-      t.runFrames(ts);
-      ts += 120;
-      await wait(0);
-      if (t.isOff()) break;
-    }
-    check("długa seria złych klatek wyłącza efekt", t.isOff() === true);
-    check("strona dostaje klasę rj-tilt-off",
-      doc.documentElement.classList.contains("rj-tilt-off"),
-      doc.documentElement.className);
-    check("po wyłączeniu karta nie zostaje przekrzywiona",
-      inner.style.transform === "" && !card.classList.contains("is-tilting"),
-      JSON.stringify(inner.style.transform) + " | " + card.className);
+    w.RJTilt.disable("test");
+    await wait(0);
+    check("disable() wyłącza efekt", t.isOff() === true);
+    check("disable() oznacza stronę klasą", doc.documentElement.classList.contains("rj-tilt-off"));
+    check("disable() prostuje kartę", inner.style.transform === "",
+      JSON.stringify(inner.style.transform));
 
     move(w, card, 10, 10);
-    t.runFrames(ts + 16);
+    t.runFrames(1016);
     await wait(0);
-    check("po wyłączeniu ruch myszy już nic nie robi", inner.style.transform === "",
-      JSON.stringify(inner.style.transform));
+    check("po disable() ruch myszy nic nie robi", inner.style.transform === "");
+  }
+
+  console.log("\n=== G3. DECYZJA STAŁA, BRAK POMIARU CZASU W KODZIE ===");
+  {
+    const bezKomentarzy = TILT.replace(/\/\*[\s\S]*?\*\//g, "");
+    check("nie ma licznika „zgubionych klatek”",
+      !/strikes|longFrame|probeFrames|performance\.now/.test(bezKomentarzy),
+      (bezKomentarzy.match(/strikes|longFrame|probeFrames|performance\.now/g) || []).join(", ") || "brak");
+    check("decyzja o efekcie opiera się na cechach urządzenia",
+      /hardwareConcurrency/.test(bezKomentarzy) && /saveData/.test(bezKomentarzy));
+    check("diagnostyka dostępna w konsoli (RJTilt.reason)",
+      /reason:/.test(bezKomentarzy) && /sheen:/.test(bezKomentarzy));
   }
 
   console.log("\n=== H. CSS: BEZ ROZWIJANIA KARTY NA WARSTWY 3D ===");
@@ -357,7 +376,7 @@ const angles = (transform) => {
       /attachTilt\(card, inner, 5\)/.test(APP));
     check("karta profilu też ma efekt", /attachTilt\(profile, profile, 4\)/.test(APP));
     check("wersje podbite w index.html",
-      /js\/app\.js\?v=2026-10-27-2/.test(INDEX) && /css\/style\.css\?v=2026-10-27-1/.test(INDEX));
+      /js\/app\.js\?v=2026-10-27-3/.test(INDEX) && /css\/style\.css\?v=2026-10-27-1/.test(INDEX));
     const bezKomentarzy = TILT.replace(/\/\*[\s\S]*?\*\//g, "");
     check("jedno miejsce mierzenia layoutu w bloku tiltu",
       (bezKomentarzy.match(/getBoundingClientRect/g) || []).length === 1,
