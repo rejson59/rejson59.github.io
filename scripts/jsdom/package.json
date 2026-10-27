@@ -1,0 +1,11 @@
+{
+  "name": "rejson59-loader-tests",
+  "private": true,
+  "description": "Testy przeglądarkowe loadera (jsdom). Uruchomienie: npm install && node loader.test.js",
+  "scripts": {
+    "test": "node loader.test.js"
+  },
+  "devDependencies": {
+    "jsdom": "^24.1.3"
+  }
+}

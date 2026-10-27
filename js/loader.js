@@ -149,12 +149,12 @@
     function doHide() {
       el.classList.remove("is-shown");
       el.classList.add("is-hidden");
-      pauseLoaderAnimations(true);
       markPageReady();
-      /* po zniknięciu zerujemy pasek — kolejne pokazanie startuje od zera */
-      later(430, function () {
-        var p = progressApi();
-        if (p && p.reset) p.reset();
+      /* Po zaniknięciu wyjmujemy nakładkę z układu. To twardsze niż pauzowanie
+         animacji (i nie ma jak zablokować zanikania): display:none zatrzymuje
+         wszystkie animacje w środku, a strona na pewno nie zostaje zakryta. */
+      later(600, function () {
+        el.style.display = "none";
       });
     }
 
@@ -181,19 +181,6 @@
   }
 
   /* ---------- Realne etapy postępu (bez fejkowego timera) ---------- */
-  /* Gdy nakładka znika, jej animacje nie mają po co tykać — a tykałyby przez
-     całą wizytę (nieskończone pętle kulek, połysku i pulsu podpisu).
-     getAnimations() obejmuje też animacje CSS, więc jedna pauza wystarcza. */
-  function pauseLoaderAnimations(paused) {
-    try {
-      var el = getOverlay();
-      if (!el || !el.getAnimations) return;
-      el.getAnimations({ subtree: true }).forEach(function (a) {
-        if (paused) { a.pause(); } else { a.play(); }
-      });
-    } catch (e) { /* starsze przeglądarki — po prostu nie pauzujemy */ }
-  }
-
   function markProgress(v) {
     var p = progressApi();
     if (p && p.set) p.set(v);
@@ -292,12 +279,13 @@
     ev.preventDefault();
     clearHideTimers();              /* spóźnione chowanie z poprzedniego cyklu — out */
     el._done = false;
+    el.style.display = "";          /* nakładka wraca do układu */
     el.classList.add("is-shown");   /* pokazanie NATYCHMIAST (bez delayu visibility) */
     el.classList.remove("is-hidden");
-    pauseLoaderAnimations(false);
-    /* pasek startuje od zera i od razu sunie do końca — widać, że coś się dzieje */
+    /* Pasek NIE startuje od zera — cofnięcie do 0 wyglądało jak błąd.
+       Zostaje pełny, bo przejście na inną stronę to koniec tej strony. */
     var pr = progressApi();
-    if (pr && pr.reset) { pr.reset(); if (pr.complete) pr.complete(); }
+    if (pr && pr.complete) pr.complete();
     var url = new URL(a.getAttribute("href"), location.href).href;
     setTimeout(function () {
       location.href = url;

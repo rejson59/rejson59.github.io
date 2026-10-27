@@ -45,6 +45,15 @@
     #rj-page-loader.is-shown { transition-delay: 0s, 0s; }
     #rj-page-loader.is-hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 
+    /* Bezpiecznik, który nie potrzebuje JS: gdyby skrypt loadera nie wystartował
+       (błąd, zerwane łącze), nakładka i tak zniknie po 8 s. Zwykłe chowanie
+       wygrywa — is-shown zdejmuje ten bezpiecznik przy przejściu na podstronę. */
+    #rj-page-loader { animation: rj-loader-failsafe .01s linear 8s forwards; }
+    #rj-page-loader.is-shown { animation: none; }
+    @keyframes rj-loader-failsafe {
+      to { opacity: 0; visibility: hidden; pointer-events: none; }
+    }
+
     .rj-loader-box {
       display: flex; flex-direction: column; align-items: center; gap: 18px;
       animation: rj-loader-pop .5s cubic-bezier(.2,.8,.3,1.15) both;
@@ -219,9 +228,9 @@
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap"></noscript>
   <link rel="stylesheet" href="css/style.css?v=2026-10-26-3">
-  <link rel="stylesheet" href="css/loader.css?v=8" media="print" onload="this.media='all'">
-  <script defer src="js/loader.js?v=10"></script>
-  <noscript><link rel="stylesheet" href="css/loader.css?v=8"></noscript>
+  <link rel="stylesheet" href="css/loader.css?v=9" media="print" onload="this.media='all'">
+  <script defer src="js/loader.js?v=11"></script>
+  <noscript><link rel="stylesheet" href="css/loader.css?v=9"></noscript>
   <style>
     /* Pigułka widżetu zgłoszeń („papla”) — warstwa zawsze nad modalem i nagłówkiem.
        Reszta jej wyglądu i zachowania żyje w rejson-widgets/widget.js. */
