@@ -167,8 +167,14 @@
       var hint = document.createElement("span");
       hint.className = "rj-fallback-hint";
       hint.textContent = "otwórz live ↗";
+      var retryBtn = document.createElement("button");
+      retryBtn.type = "button";
+      retryBtn.className = "rj-fallback-retry";
+      retryBtn.setAttribute("data-rj-retry", "1");
+      retryBtn.textContent = "↻ Spróbuj ponownie";
       fb.appendChild(strong);
       fb.appendChild(span);
+      fb.appendChild(retryBtn);
       fb.appendChild(hint);
       preview.appendChild(fb);
     }
@@ -185,8 +191,8 @@
     }, { rootMargin: "900px 0px 900px 0px", threshold: 0.01 });
   }
 
-  var PREVIEW_TIMEOUT_MS = 7000;
-  var PREVIEW_RETRY_MS = 9000;
+  var PREVIEW_TIMEOUT_MS = 8000;
+  var PREVIEW_RETRY_MS = 11000;
 
   function previewIframeState(iframe) {
     /* "painted" | "blank" — blank = about:blank / puste body / nic nie namalowane */
@@ -203,9 +209,43 @@
     }
   }
 
+  /* Stan statycznego zrzutu (zamrożenie robi js/app.js na słabszych urządzeniach) */
+  function snapshotState(preview) {
+    var frame = preview.querySelector(".card-preview-frame");
+    if (!frame) return "none";
+    var img = frame.querySelector(".card-preview-snapshot");
+    if (!img) return "none";
+    if (!img.getAttribute("src")) return "broken";
+    if (img.complete) return img.naturalWidth > 0 ? "ok" : "broken";
+    return "pending";
+  }
+
+  /* Cofnięcie zepsutego zamrożenia — podgląd wraca do żywej ramki */
+  function unfreezePreview(preview) {
+    var frame = preview.querySelector(".card-preview-frame");
+    var iframe = preview.querySelector("iframe");
+    if (frame) {
+      frame.classList.remove("is-frozen");
+      frame._frozenDone = false;
+      frame._freezeScheduled = false;
+      var img = frame.querySelector(".card-preview-snapshot");
+      if (img && img.parentNode) img.parentNode.removeChild(img);
+    }
+    if (iframe) {
+      iframe.style.display = "";
+      var desired = iframe.getAttribute("data-src");
+      var current = "";
+      try { current = iframe.contentWindow.location.href; } catch (e) { current = ""; }
+      if (desired && (!current || current === "about:blank")) {
+        try { iframe.src = desired; } catch (e) { /* ignorujemy */ }
+      }
+    }
+  }
+
   function settlePreview(preview, ok) {
     if (preview._rjSettled) return;
     preview._rjSettled = true;
+    preview._rjMounting = false;
     clearTimeout(preview._rjTimer);
     clearTimeout(preview._rjRecheck);
     preview.classList.remove("is-loading");
@@ -226,59 +266,163 @@
     }
   }
 
+  /* Jedno wejście do montowania: wybiera żywą ramkę albo zostawia statyczny zrzut.
+     Gwarancja: podgląd NIGDY nie kończy jako samo tło — zawsze jest kulka,
+     wczytana strona, statyczny zrzut albo plakietka z ponowieniem. */
   function mountPreview(preview) {
-    if (preview._rjMounted) return;
     var iframe = preview.querySelector("iframe[data-src]");
     if (!iframe) return;
-    /* zamrożone screenshoty (słabsze urządzenia) nie potrzebują ramki */
+    if (preview._rjMounting) return; /* próba już trwa */
+    if (preview._rjSettled && preview.classList.contains("is-loaded")) return;
+    /* po jawnym niepowodzeniu ponawiamy tylko przez przycisk „Spróbuj ponownie" */
+    if (preview._rjSettled && preview.classList.contains("is-failed")) return;
+
     var frame = preview.querySelector(".card-preview-frame");
-    if (frame && frame.classList.contains("is-frozen")) return;
+    if (frame) {
+      var snap = snapshotState(preview);
+      if (snap === "ok") return; /* widoczny statyczny zrzut — nie ruszamy */
+
+      if (snap === "pending") {
+        /* zrzut jeszcze się dekoduje — dajmy mu chwilę, ale nie w nieskończoność */
+        var pendingImg = frame.querySelector(".card-preview-snapshot");
+        if (pendingImg && !pendingImg._rjWatch) {
+          pendingImg._rjWatch = true;
+          pendingImg.addEventListener("error", function () {
+            unfreezePreview(preview);
+            preview._rjMounting = false;
+            preview._rjSettled = false;
+            mountPreview(preview);
+          });
+          setTimeout(function () {
+            /* zrzut, który nie zdekodował się w 3 s, traktujemy jak zepsuty —
+               inaczej podgląd zostałby wiecznym tłem */
+            if (snapshotState(preview) === "ok") return;
+            unfreezePreview(preview);
+            preview._rjMounting = false;
+            preview._rjSettled = false;
+            mountPreview(preview);
+          }, 3000);
+        }
+        return;
+      }
+
+      /* is-frozen bez działającego obrazu (albo zepsuty zrzut) = ślepy zaułek */
+      if (frame.classList.contains("is-frozen") || snap === "broken") unfreezePreview(preview);
+    }
+
+    preview._rjMounting = true;
     preview._rjMounted = true;
+    preview._rjSettled = false;
     preview.classList.remove("is-failed", "is-loaded");
     preview.classList.add("is-loading");
 
-    var attempts = 0;
-    var desired = iframe.getAttribute("data-src");
+    var attempt = preview._rjAttempts || 0;
+    preview._rjAttempts = attempt + 1;
 
-    function reload() {
-      try { iframe.src = desired; } catch (e) { /* trudno */ }
-      armWatchdog(PREVIEW_RETRY_MS);
+    var base = iframe.getAttribute("data-src") || "";
+    /* druga próba idzie ze świeżym adresem — omija cache przeglądarki */
+    var url = attempt > 0 ? base + (base.indexOf("?") === -1 ? "?" : "&") + "rjretry=" + Date.now() : base;
+
+    function finish(ok) {
+      if (preview._rjSettled) return;
+      settlePreview(preview, ok);
+    }
+
+    var retried = false; /* licznik prób w ramach TEGO montowania */
+
+    function retryOrFail() {
+      if (preview._rjSettled) return;
+      if (!retried) {
+        retried = true;
+        try {
+          iframe.src = url;
+        } catch (e) {
+          finish(false);
+          return;
+        }
+        armWatchdog(PREVIEW_RETRY_MS);
+        return;
+      }
+      finish(false);
     }
 
     function armWatchdog(delay) {
       clearTimeout(preview._rjTimer);
       preview._rjTimer = setTimeout(function () {
         if (preview._rjSettled) return;
-        if (attempts === 0) { attempts = 1; reload(); return; }
-        settlePreview(preview, false); /* pokazujemy plakietkę zamiast czarnej dziury */
+        retryOrFail();
       }, delay || PREVIEW_TIMEOUT_MS);
     }
 
-    iframe.addEventListener("load", function () {
+    function onLoad() {
       if (preview._rjSettled) return;
       if (previewIframeState(iframe) === "painted") {
-        settlePreview(preview, true);
+        finish(true);
         return;
       }
-      /* ramka wciąż pusta (np. about:blank) — daj jej sekundę, potem druga próba */
+      /* ramka wciąż pusta (np. about:blank) — chwila i ponawiamy */
       clearTimeout(preview._rjRecheck);
       preview._rjRecheck = setTimeout(function () {
         if (preview._rjSettled) return;
-        if (previewIframeState(iframe) === "painted") { settlePreview(preview, true); return; }
-        if (attempts === 0) { attempts = 1; reload(); }
-        else settlePreview(preview, false);
-      }, 1100);
-    });
+        if (previewIframeState(iframe) === "painted") finish(true);
+        else retryOrFail();
+      }, 1200);
+    }
 
-    iframe.addEventListener("error", function () {
+    function onError() {
       if (preview._rjSettled) return;
-      if (attempts === 0) { attempts = 1; reload(); }
-      else settlePreview(preview, false);
-    });
+      retryOrFail();
+    }
 
-    try { iframe.src = desired; } catch (e) { settlePreview(preview, false); }
+    preview._rjOnLoad = onLoad;
+    preview._rjOnError = onError;
+
+    if (!iframe._rjWired) {
+      iframe._rjWired = true;
+      iframe.addEventListener("load", function () {
+        if (typeof preview._rjOnLoad === "function") preview._rjOnLoad();
+      });
+      iframe.addEventListener("error", function () {
+        if (typeof preview._rjOnError === "function") preview._rjOnError();
+      });
+    }
+
+    try {
+      iframe.src = url;
+    } catch (e) {
+      finish(false);
+      return;
+    }
     armWatchdog();
     if (previewObserver) previewObserver.unobserve(preview);
+  }
+
+  /* Ręczne ponowienie z plakietki „Spróbuj ponownie" */
+  function retryPreview(preview) {
+    if (!preview) return;
+    clearTimeout(preview._rjTimer);
+    clearTimeout(preview._rjRecheck);
+    preview._rjSettled = false;
+    preview._rjMounting = false;
+    preview._rjMounted = false;
+    preview._rjAttempts = 0;
+    preview.classList.remove("is-failed", "is-loaded", "is-loading");
+    unfreezePreview(preview);
+    mountPreview(preview);
+  }
+
+  /* Bezpiecznik: gdyby IntersectionObserver nie wystrzelił (bfcache, nietypowy
+     layout, skok do kotwicy), montujemy podglądy blisko widoku ręcznie. */
+  function sweepPreviews() {
+    var previews = document.querySelectorAll(".card-preview");
+    var vh = window.innerHeight || 0;
+    previews.forEach(function (p) {
+      if (p._rjSettled || p._rjMounting) return;
+      if (snapshotState(p) === "ok") return;
+      var r = p.getBoundingClientRect();
+      if (!r.width && !r.height) return; /* ukryta sekcja */
+      if (r.bottom > -900 && r.top < vh + 900) mountPreview(p);
+    });
   }
 
   function scan(root) {
@@ -318,7 +462,54 @@
     mo.observe(document.documentElement, { childList: true, subtree: true });
   }
 
-  window.RJLoader = { scan: scan, mountPreview: mountPreview };
+  /* --- ręczne ponowienie: przycisk w plakietce (przechwytuje klik przed linkiem karty) --- */
+  document.addEventListener("click", function (ev) {
+    var btn = ev.target && ev.target.closest ? ev.target.closest("[data-rj-retry]") : null;
+    if (!btn) return;
+    ev.preventDefault();
+    ev.stopPropagation();
+    retryPreview(btn.closest(".card-preview"));
+  }, true);
+
+  /* --- sweep: montowanie bez polegania wyłącznie na IntersectionObserver --- */
+  var sweepScheduled = false;
+  function scheduleSweep() {
+    if (sweepScheduled) return;
+    sweepScheduled = true;
+    var run = function () {
+      sweepScheduled = false;
+      sweepPreviews();
+    };
+    if (window.requestAnimationFrame) window.requestAnimationFrame(run);
+    else setTimeout(run, 120);
+  }
+
+  window.addEventListener("scroll", scheduleSweep, { passive: true });
+  window.addEventListener("resize", scheduleSweep, { passive: true });
+  window.addEventListener("pageshow", function () {
+    /* powrót z bfcache: ramki bywają puste, a klasy mówią „wczytane" */
+    document.querySelectorAll(".card-preview.is-loaded").forEach(function (p) {
+      var iframe = p.querySelector("iframe");
+      if (iframe && previewIframeState(iframe) === "blank") {
+        p._rjSettled = false;
+        p._rjMounting = false;
+        p._rjMounted = false;
+        p.classList.remove("is-loaded");
+        mountPreview(p);
+      }
+    });
+    sweepPreviews();
+  });
+  [700, 1800, 4000, 8000].forEach(function (delay) {
+    setTimeout(sweepPreviews, delay);
+  });
+
+  window.RJLoader = {
+    scan: scan,
+    mountPreview: mountPreview,
+    retry: retryPreview,
+    sweep: sweepPreviews
+  };
 
   /* nakładka strony: kulki napędzone natychmiast (defer ⇒ DOM już sparsowany) */
   animateDough(document);

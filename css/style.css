@@ -835,12 +835,30 @@ a:hover { text-decoration-color: currentColor; }
   gap:5px;
   padding:10px 14px;
   text-align:center;
-  background: color-mix(in srgb, var(--bg-elev) 76%, transparent);
+  background: color-mix(in srgb, var(--bg-elev) 78%, transparent);
   backdrop-filter: blur(3px);
   -webkit-backdrop-filter: blur(3px);
   font-size:11px;
   color: var(--muted);
+  /* klik poza przyciskiem ma otwierać live (karta jest linkiem) */
+  pointer-events: none;
 }
+.rj-fallback-retry {
+  pointer-events: auto;
+  margin-top:3px;
+  padding:5px 11px;
+  border-radius:999px;
+  border:1px solid color-mix(in srgb, var(--live) 45%, var(--border));
+  background: color-mix(in srgb, var(--live) 16%, transparent);
+  color: var(--live);
+  font: inherit;
+  font-size:10.5px;
+  font-weight:700;
+  cursor:pointer;
+  transition: transform .16s ease, background .16s ease;
+}
+.rj-fallback-retry:hover { transform: translateY(-1px); background: color-mix(in srgb, var(--live) 26%, transparent); }
+.rj-fallback-retry:active { transform: scale(.96); }
 .card-preview.is-failed .card-preview-fallback { display:flex; }
 .card-preview.is-failed .card-preview-loader { opacity: 0; visibility: hidden; }
 .card-preview.is-failed .card-preview-frame::after { display:none; }

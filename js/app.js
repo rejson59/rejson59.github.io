@@ -576,19 +576,77 @@
     iframe.style.display = "none";
   }
 
-  function applySnapshotImgToFrame(frame, iframe, dataUrl) {
-    if (!frame || !dataUrl) return;
-    var existing = frame.querySelector(".card-preview-snapshot");
-    if (!existing) {
-      existing = document.createElement("img");
-      existing.className = "card-preview-snapshot";
-      existing.alt = "";
-      existing.decoding = "async";
-      frame.insertBefore(existing, frame.firstChild);
-    }
-    existing.src = dataUrl;
-    frame.classList.add("is-frozen");
-    if (iframe) releaseIframeRuntime(iframe);
+  /* Zamrażanie jest bezpieczne WYŁĄCZNIE wtedy, gdy mamy naprawdę działający
+     obraz. Zepsuty zrzut (albo brak dostępu do dokumentu) nie może zostawić
+     podglądu jako samego tła — dlatego każdy zrzut najpierw dekodujemy,
+     a klasę is-frozen nadajemy dopiero po sukcesie. */
+  function deleteCachedSnapshot(key) {
+    if (!key) return;
+    openSnapshotDb().then(function (db) {
+      if (!db) return;
+      try {
+        db.transaction(SNAPSHOT_STORE, "readwrite").objectStore(SNAPSHOT_STORE)["delete"](key);
+      } catch (e) { /* ignorujemy */ }
+    });
+  }
+
+  function restoreIframeRuntime(iframe) {
+    if (!iframe) return;
+    try { iframe.style.display = ""; } catch (e) { /* ignorujemy */ }
+  }
+
+  function removeSnapshotFromFrame(frame) {
+    if (!frame) return;
+    var img = frame.querySelector(".card-preview-snapshot");
+    if (img && img.parentNode) img.parentNode.removeChild(img);
+  }
+
+  function applySnapshotImgToFrame(frame, iframe, dataUrl, cacheKey) {
+    if (!frame || !dataUrl) return Promise.resolve(false);
+
+    return new Promise(function (resolve) {
+      var img = frame.querySelector(".card-preview-snapshot");
+      if (!img) {
+        img = document.createElement("img");
+        img.className = "card-preview-snapshot";
+        img.alt = "";
+        img.decoding = "async";
+        frame.insertBefore(img, frame.firstChild);
+      }
+
+      var settled = false;
+
+      function fail() {
+        if (settled) return;
+        settled = true;
+        removeSnapshotFromFrame(frame);
+        frame.classList.remove("is-frozen");
+        restoreIframeRuntime(iframe);
+        if (cacheKey) deleteCachedSnapshot(cacheKey); /* zepsuty zrzut nie może wracać */
+        resolve(false);
+      }
+
+      function done() {
+        if (settled) return;
+        settled = true;
+        frame.classList.add("is-frozen");
+        if (iframe) releaseIframeRuntime(iframe);
+        resolve(true);
+      }
+
+      img.onload = function () {
+        if (!img.naturalWidth || !img.naturalHeight) { fail(); return; }
+        done();
+      };
+      img.onerror = fail;
+      img.src = dataUrl;
+
+      setTimeout(function () {
+        if (settled) return;
+        if (img.complete && img.naturalWidth > 0) done();
+        else fail();
+      }, 2500);
+    });
   }
 
   /* Canvas, który jeszcze nic nie namalował (czarne tło), nie nadaje się na zrzut —
@@ -612,8 +670,8 @@
 
   function freezeIframeAsStaticScreen(frame, iframe, cacheKey) {
     if (!frame || !iframe || frame._frozenDone) return;
+    if (frame.classList.contains("is-frozen")) return; /* już pokazuje statyczny obraz */
     frame._frozenDone = true;
-    frame.classList.add("is-frozen");
 
     var win = null;
     var doc = null;
@@ -625,8 +683,37 @@
       doc = null;
     }
 
+    /* Brak dostępu do dokumentu — NIE zamrażamy. Wcześniej zostawał po tym
+       sam gradient, bo is-frozen blokował wczytanie żywej ramki. */
     if (!win || !doc) {
+      frame._frozenDone = false;
+      frame._freezeScheduled = false;
       return;
+    }
+
+    /* Pusty dokument (about:blank, jeszcze nic nie wczytane) też nie nadaje się
+       do zamrożenia — inaczej utrwalilibyśmy pustkę. */
+    var docReady = false;
+    try {
+      var docHref = (doc.location && doc.location.href) || "";
+      var bodyKids = doc.body ? doc.body.children.length : 0;
+      var bodyText = doc.body ? (doc.body.textContent || "").trim().length : 0;
+      docReady = !!docHref && docHref !== "about:blank" && (bodyKids > 0 || bodyText > 0);
+    } catch (e) {
+      docReady = true; /* cross-origin — nie sprawdzimy, ufamy przeglądarce */
+    }
+
+    if (!docReady) {
+      frame._frozenDone = false;
+      frame._freezeScheduled = false;
+      return;
+    }
+
+    var committed = false;
+    function commitFrozen() {
+      if (committed) return;
+      committed = true;
+      frame.classList.add("is-frozen");
     }
 
     var executed = false;
@@ -682,8 +769,10 @@
            zapisujemy zrzut w IndexedDB i zwalniamy cały iframe */
         var bodyChildren = doc.body ? doc.body.children.length : 0;
         if (fullScreenSnapshot && bodyChildren <= 2) {
-          saveCachedSnapshot(cacheKey, fullScreenSnapshot);
-          applySnapshotImgToFrame(frame, iframe, fullScreenSnapshot);
+          applySnapshotImgToFrame(frame, iframe, fullScreenSnapshot, cacheKey).then(function (ok) {
+            if (ok) saveCachedSnapshot(cacheKey, fullScreenSnapshot);
+            else if (frame) frame._freezeScheduled = false;
+          });
           return;
         }
 
@@ -725,6 +814,9 @@
         win.webkitRequestAnimationFrame = noop;
         win.setInterval = noop;
         win.setTimeout = noop;
+
+        /* dopiero teraz wolno oznaczyć ramkę jako zamrożoną */
+        commitFrozen();
       } catch (e) { /* ignorujemy */ }
     }
 
@@ -759,12 +851,8 @@
          żeby od razu zamrozić je w gotowe ekrany/screenshoty */
       iframe.removeAttribute("loading");
 
-      getCachedSnapshot(key).then(function (cachedDataUrl) {
-        if (cachedDataUrl) {
-          applySnapshotImgToFrame(frame, iframe, cachedDataUrl);
-          return;
-        }
-
+      /* Żywa ramka: zamrożenie dopiero po pełnym wczytaniu, z bezpiecznikiem */
+      function armLiveLoad() {
         function scheduleFreeze() {
           if (frame._freezeScheduled) return;
           frame._freezeScheduled = true;
@@ -779,6 +867,20 @@
             scheduleFreeze();
           }
         } catch (e) { /* cross-origin */ }
+      }
+
+      getCachedSnapshot(key).then(function (cachedDataUrl) {
+        if (!cachedDataUrl) {
+          armLiveLoad();
+          return;
+        }
+        /* Zrzut z cache musi się poprawnie zdekodować — inaczej czyścimy go
+           i pozwalamy ramce wczytać się normalnie (zamiast wiecznego tła). */
+        applySnapshotImgToFrame(frame, iframe, cachedDataUrl, key).then(function (ok) {
+          if (ok) return;
+          restoreIframeRuntime(iframe);
+          armLiveLoad();
+        });
       });
     });
   }
