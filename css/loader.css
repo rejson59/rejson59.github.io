@@ -108,6 +108,13 @@
   pointer-events: none;
 }
 
+/* Bezpiecznik bez JS: nakładka nie może zakryć strony na zawsze. */
+#rj-page-loader { animation: rj-loader-failsafe 0.01s linear 8s forwards; }
+#rj-page-loader.is-shown { animation: none; }
+@keyframes rj-loader-failsafe {
+  to { opacity: 0; visibility: hidden; pointer-events: none; }
+}
+
 /* Pudełko środkowe: kulki + podpis, z pop-em na wejściu */
 .rj-loader-box {
   display: flex;

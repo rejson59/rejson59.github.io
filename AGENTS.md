@@ -78,3 +78,28 @@ Potem nowa wartość trafia do tego pliku (sekcja wyżej).
 Pracujesz na gałęzi sesji `arena/...` → commit → push → Pull Request do `main` → merge.
 GitHub Pages buduje `main` automatycznie (~1 min). Po merge zweryfikuj stronę na żywo
 (fetch pod `https://rejson59.github.io/...`), a potem rozważ wpis agenta wg zasad z sekcji 2.
+
+## 4. Testy loadera
+
+Dwa zestawy, oba trzeba przepuścić po każdej zmianie w `js/loader.js`, `css/loader.css`
+albo w bloku loadera na stronach:
+
+```bash
+# 1. Strażniczy (bez zależności) — inwarianty HTML/CSS/JS na 4 stronach
+python3 scripts/test_loader_first.py
+
+# 2. Zachowanie w jsdom — pasek, kolejność chowania, podglądy, słabe urządzenie
+cd scripts/jsdom && npm install && node loader.test.js
+```
+
+Test jsdom wymaga serwera na `:8000` dla sekcji e2e (`python3 -m http.server 8000`);
+bez niego sekcja H jest pomijana, reszta działa.
+
+**Czego pilnują (błędy, które już się zdarzyły):**
+- pasek **nigdy nie cofa się** (`paint()` przyjmuje tylko większe wartości),
+- pasek **nie stoi pusty**, gdy wątek jest zablokowany (pierwszy ruch robi CSS),
+- **nikt nie pauzuje animacji samej nakładki** — `pause()` łapało jej zanikanie
+  i nakładka zamarzała w połowie znikania, zakrywając stronę na zawsze,
+- nakładka **znika z układu** (`display:none`) po zaniknięciu,
+- przejście na podstronę **nie zeruje paska**,
+- podglądy startują **pojedynczo**, nie pięć iframe-ów w jednej klatce.

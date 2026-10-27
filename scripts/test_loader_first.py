@@ -53,7 +53,7 @@ def main():
 
         # 4. loader.css nie blokuje
         check(name, "loader.css jest non-blocking (media print + onload)",
-              'css/loader.css?v=8" media="print"' in html)
+              'css/loader.css?v=9" media="print"' in html)
 
         # 5. Bootstrap WAAPI zaraz po znaczniku nakładki
         idx_overlay_end = html.find('<noscript><style>#rj-page-loader')
@@ -131,7 +131,6 @@ def main():
         check(name, "loader.js podaje realne etapy (0.5 / 0.85)", "markProgress(0.5)" in JS and "markProgress(0.85)" in JS)
         check(name, "loader.js domyka pasek przed zdjęciem nakładki",
               "PROGRESS_LEAD_MS" in JS and "p.complete" in JS)
-        check(name, "loader.js zeruje pasek po zniknięciu", "if (p && p.reset) p.reset();" in JS)
         # 10c. Odporność na słaby sprzęt (zgłoszenie: „zacina, pasek cofa się, stoi pusty”)
         check(name, "pierwszy ruch paska robi CSS (kompozytor), nie JS",
               "@keyframes rj-progress-creep" in crit and "animation: rj-progress-creep" in crit)
@@ -154,8 +153,14 @@ def main():
               "(function next(i)" in JS and "var gap = lite ? 320 : 150;" in JS)
         check(name, "na słabym sprzęcie ramki startują w wolnych chwilach",
               "requestIdleCallback(function () { next(i + 1); }" in JS)
-        check(name, "animacje loadera pauzują się po schowaniu", "pauseLoaderAnimations(true)" in JS)
-        check(name, "animacje wznawiane przy ponownym pokazaniu", "pauseLoaderAnimations(false)" in JS)
+        check(name, "loader.js nie pauzuje animacji nakładki (to ją zamrażało)",
+              "pauseLoaderAnimations" not in JS and "getAnimations" not in JS)
+        check(name, "nakładka znika z układu po zaniknięciu", 'el.style.display = "none";' in JS)
+        check(name, "nakładka wraca do układu przy pokazaniu", 'el.style.display = "";' in JS)
+        check(name, "pasek nie jest zerowany po ukryciu (koniec wizyty)",
+              "if (p && p.reset) p.reset();" not in JS)
+        check(name, "przejście na podstronę nie cofa paska", "pr.complete();" in JS and "pr.reset();" not in JS)
+        check(name, "bezpiecznik CSS: nakładka zniknie nawet bez JS", "rj-loader-failsafe" in crit)
 
         # 11. Podglądy nie konkurują z loaderem
         check(name, "loader.js bramkuje montowanie podglądów (pageReady)",
