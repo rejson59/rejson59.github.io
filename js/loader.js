@@ -82,7 +82,9 @@
 
   /* ---------- 1. Wygaszenie nakładki po starcie strony ---------- */
   var started = performance.now();
-  var MIN_SHOW_MS = 1000;  /* kulki mają legalną chwilę występu — czytelne, ale nie męczące */
+  /* Tyle minimum widać loader. MUSI być równe CURVE_S w bootstrapie stron:
+     pasek dochodzi do ~94% dokładnie w tym momencie, więc na końcu nie ma skoku. */
+  var MIN_SHOW_MS = 1800;
 
   /* Podglądy (5 iframe-ów, w tym ciężki projekt z wideo) nie mogą startować,
      gdy loader jeszcze gra — zabierały główny wątek i GPU, przez co kulki
@@ -125,7 +127,7 @@
     return window.RJProgress || null;
   }
 
-  var PROGRESS_LEAD_MS = 300; /* tyle zajmuje paskowi dojście do 100% (transition 0.3 s) */
+  var HOLD_MS = 320; /* chwila na zobaczenie pełnego paska przed zniknięciem */
 
   /* Timery chowania nakładki i zerowania paska. Bez tego zdarzała się szarża:
      użytkownik klikał podstronę, nakładka wracała, a spóźniony timer z
@@ -167,31 +169,43 @@
     }
 
     var elapsed = performance.now() - started;
-    var wait = Math.max(0, MIN_SHOW_MS - elapsed);
+    var remaining = Math.max(0, MIN_SHOW_MS - elapsed);
 
-    /* Pasek dobija do 100% DOKŁADNIE wtedy, gdy nakładka zaczyna znikać —
-       dzięki temu widać pełny, rozświetlony pasek, a nie mignięcie. */
-    later(Math.max(0, wait - PROGRESS_LEAD_MS), function () {
+    /* Przed dobiciem mówimy wprost, że to już koniec. */
+    later(Math.max(0, remaining - 450), function () {
+      markProgress(0.97, "prawie gotowe");
+    });
+
+    /* Pasek dobija do 100% DOKŁADNIE na końcu minimalnego czasu — wtedy jest
+       już przy ~94%, więc ostatnie 6% to muśnięcie, nie skok z połowy. */
+    later(remaining, function () {
       var p = progressApi();
       if (p && p.complete) p.complete();
     });
 
-    /* minimalny czas na zobaczenie pełnego paska (gdy strona wczytała się późno) */
-    later(Math.max(wait, PROGRESS_LEAD_MS), doHide);
+    /* przez chwilę widać pełny, rozświetlony pasek — i dopiero wtedy znika */
+    later(remaining + HOLD_MS, doHide);
   }
 
   /* ---------- Realne etapy postępu (bez fejkowego timera) ---------- */
-  function markProgress(v) {
+  /* Brama postępu + podpis etapu. Wartość to maksimum, do którego pasek może
+     dojść — bez zdarzenia `load` nie udajemy, że jesteśmy dalej niż 55%. */
+  function markProgress(v, label) {
     var p = progressApi();
     if (p && p.set) p.set(v);
+    if (label && p && p.stage) p.stage(label);
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", function () { markProgress(0.5); });
+    document.addEventListener("DOMContentLoaded", function () {
+      markProgress(0.55, "składanie widoku");
+    });
   } else {
-    markProgress(0.5);
+    markProgress(0.55, "składanie widoku");
   }
-  window.addEventListener("load", function () { markProgress(0.85); });
+  window.addEventListener("load", function () {
+    markProgress(0.97, "ładowanie projektów");
+  });
 
   /* ---------- Detektor gubionych klatek → tryb oszczędny ----------
      Jeśli urządzenie nie wyrabia ~38 fps, wyłączamy cienie, puls podpisu i pop

@@ -200,6 +200,22 @@
                   0 0 4px rgba(255, 255, 255, .7);
     }
 
+    /* etap ładowania + marka — dwie linie, żeby etap dało się przeczytać */
+    .rj-loader-labels {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      margin-top: -6px;
+    }
+    .rj-loader-stage {
+      margin: 0;
+      min-height: 15px;         /* rezerwacja miejsca — tekst nie przesuwa układu */
+      font-size: 12px;
+      letter-spacing: .01em;
+      color: var(--rj-loader-muted);
+      opacity: .95;
+    }
     .rj-loader-caption {
       margin: 0;
       font-family: "JetBrains Mono", ui-monospace, monospace;
@@ -228,9 +244,9 @@
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap"></noscript>
   <link rel="stylesheet" href="css/style.css?v=2026-10-26-3">
-  <link rel="stylesheet" href="css/loader.css?v=9" media="print" onload="this.media='all'">
-  <script defer src="js/loader.js?v=11"></script>
-  <noscript><link rel="stylesheet" href="css/loader.css?v=9"></noscript>
+  <link rel="stylesheet" href="css/loader.css?v=10" media="print" onload="this.media='all'">
+  <script defer src="js/loader.js?v=12"></script>
+  <noscript><link rel="stylesheet" href="css/loader.css?v=10"></noscript>
   <style>
     /* Pigułka widżetu zgłoszeń („papla”) — warstwa zawsze nad modalem i nagłówkiem.
        Reszta jej wyglądu i zachowania żyje w rejson-widgets/widget.js. */
@@ -248,31 +264,47 @@
         <span class="rj-progress-fill"></span>
         <span class="rj-progress-shine"></span>
       </div>
-      <p class="rj-loader-caption">rejson59</p>
+      <div class="rj-loader-labels">
+        <p class="rj-loader-stage">uruchamianie</p>
+        <p class="rj-loader-caption">rejson59</p>
+      </div>
     </div>
   </div>
     <!-- Loader startuje NATYCHMIAST: pasek postępu + animacja kulek, bez czekania na js/loader.js -->
   <script>
     (function () {
-      /* ================= Pasek postępu =================
+            /* ================= Pasek postępu + etapy =================
+         Tempo jest zaprojektowane pod moment znikania nakładki, nie pod
+         „jak najszybciej": wolny start, równe przyspieszanie i 94% dokładnie
+         wtedy, gdy nakładka ma się schować (MIN_SHOW_MS w js/loader.js).
+         Dzięki temu na końcu nie ma skoku z 50% na 100%.
+
          Dwa poziomy odporności:
          1. pierwszy ruch robi animacja CSS na kompozytorze — pasek płynie
             nawet wtedy, gdy główny wątek jest zablokowany (słaby telefon),
-         2. potem JS podnosi poprzeczkę co 380 ms, a nie 60 razy na sekundę —
-            przejście między krokami też robi CSS, więc koszt jest znikomy.
-         Wartość nigdy nie maleje: paint() przyjmuje tylko większe liczby. */
+         2. potem JS dosuwa wartość co 380 ms; przejście między krokami
+            interpoluje CSS, więc koszt dla wątku jest znikomy.
+         Wartość nigdy nie maleje (pilnuje tego paint()), a poza prawdziwym
+         końcem pasek nie przekracza CEILING. */
+      var CURVE_S = 1.8;    /* == MIN_SHOW_MS / 1000 w js/loader.js */
+      var CEILING = 0.97;   /* 100% wyłącznie na realny koniec */
+
       var bar = document.querySelector("#rj-page-loader .rj-progress");
       var fill = bar ? bar.querySelector(".rj-progress-fill") : null;
 
       if (fill && !window.RJProgress) {
-        var STEP_MS = 380;    /* tyle trwa jedno przejście CSS */
-        var CEILING = 0.9;    /* 100% zarezerwowane na prawdziwy koniec */
-        var shown = 0;        /* najwyższa pokazana wartość w tym cyklu */
-        var target = 0.06;
+        var STEP_MS = 380;      /* jedno przejście CSS trwa tyle samo */
+        var STAGE_MIN_MS = 520; /* krótszy etap tylko by mignął — nie warto */
+        var shown = 0;          /* najwyższa pokazana wartość w tym cyklu */
+        var target = 0.55;      /* brama: bez zdarzenia `load` nie idziemy wyżej */
         var done = false;
         var managed = false;
         var stepTimer = 0;
         var cycleStart = 0;
+
+        var box = bar.parentNode;
+        var stageEl = box ? box.querySelector(".rj-loader-stage") : null;
+        var stageAt = 0, stageNext = "", stageTimer = 0;
 
         function now() {
           return (window.performance && performance.now) ? performance.now() : Date.now();
@@ -311,15 +343,27 @@
           return !!(ov && ov.classList.contains("is-hidden"));
         }
 
+        /* Tempo paska. Do CURVE_S rośnie jak t^1.6 (spokojny start, równe
+           przyspieszanie), potem pełznie już tylko minimalnie. */
+        function curveAt(t) {
+          if (t >= CURVE_S) {
+            return Math.min(CEILING, 0.94 + 0.03 * (1 - Math.exp(-(t - CURVE_S) / 5)));
+          }
+          var u = Math.max(0, t) / CURVE_S;
+          return 0.05 + 0.89 * Math.pow(u, 1.6);
+        }
+
         function step() {
           stepTimer = 0;
           if (done) return;
           if (overlayHidden()) return;   /* nic nie widać — zero pracy w tle */
           takeOver();                    /* od tej chwili pasek słucha JS, nie CSS */
           var t = (now() - cycleStart) / 1000;
-          /* asymptota: szybko na starcie, potem coraz wolniej, nigdy > 90% */
-          var goal = Math.min(CEILING, Math.max(target, CEILING - 0.84 * Math.exp(-t / 2.6)));
-          paint(goal);
+          /* Strona naprawdę długo się ładuje? Brama nie może zamrozić paska
+             na 55% — po 3 s pozwalamy jej wolno rosnąć (nigdy ponad 90%,
+             pełne 100% wyłącznie na realny koniec). */
+          if (t > 3 && target < 0.9) target = Math.min(0.9, target + 0.02);
+          paint(Math.min(target, curveAt(t)));
           stepTimer = setTimeout(step, STEP_MS);
         }
 
@@ -331,13 +375,35 @@
           stepTimer = setTimeout(step, STEP_MS);
         }
 
+        /* Etapy: każdy ma wisieć tyle, żeby dało się go przeczytać. */
+        function applyStage(label) {
+          if (!stageEl || !label || stageEl.textContent === label) return;
+          stageEl.textContent = label;
+          stageAt = now();
+        }
+
+        function setStage(label) {
+          if (!stageEl || !label) return;
+          var since = now() - stageAt;
+          if (since >= STAGE_MIN_MS) { stageNext = ""; applyStage(label); return; }
+          stageNext = label;                       /* najnowszy wygrywa */
+          if (stageTimer) return;
+          stageTimer = setTimeout(function () {
+            stageTimer = 0;
+            if (stageNext) { var l = stageNext; stageNext = ""; applyStage(l); }
+          }, STAGE_MIN_MS - since);
+        }
+
         window.RJProgress = {
-          /** Podniesienie poprzeczki (0.5 po DOMContentLoaded, 0.85 po load). */
+          durationMs: CURVE_S * 1000,
+          /** Brama: podniesienie maksimum, do którego pasek może dojść. */
           set: function (v) {
             if (done) return;
             v = Number(v) || 0;
             if (v > target) target = Math.min(CEILING, v);
           },
+          /** Podpis pod paskiem („ładowanie projektów” itd.). */
+          stage: setStage,
           /** Dobicie do 100%. instant = bez animacji (powrót z bfcache). */
           complete: function (instant) {
             if (done) return;
@@ -348,18 +414,24 @@
             bar.classList.add(instant ? "is-instant" : "is-done");
             shown = 1;
             fill.style.transform = "scaleX(1)";
+            if (stageTimer) { clearTimeout(stageTimer); stageTimer = 0; stageNext = ""; }
+            applyStage("gotowe");
           },
           /** Przygotowanie kolejnego pokazania: z powrotem od zera. */
           reset: function () {
             if (stepTimer) { clearTimeout(stepTimer); stepTimer = 0; }
+            if (stageTimer) { clearTimeout(stageTimer); stageTimer = 0; }
             done = false;
             shown = 0;
-            target = 0.06;
+            target = 0.55;
             managed = false;
+            stageNext = "";
             bar.classList.remove("is-done");
             bar.classList.remove("is-instant");
             bar.classList.remove("is-managed");  /* wraca startowa animacja CSS */
             fill.style.transform = "scaleX(0)";
+            applyStage("uruchamianie");
+            stageAt = now();
             cycleStart = now();
             schedule();   /* jeśli nakładka jest ukryta, schedule() nic nie zrobi */
           },
