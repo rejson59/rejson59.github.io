@@ -900,30 +900,50 @@
           sekundę — karta drgała i „przeskakiwała”,
        4. połysk dostaje zmienne na SOBIE (`.card-sheen`), a nie na karcie —
           zmiana koloru na karcie unieważnia style całego poddrzewa razem z ramką,
-       5. karta, której podgląd właśnie się wczytuje, NIE jest obracana: malowanie
-          iframe i obrót w tej samej chwili to najgorszy możliwy układ,
+       5. karta obraca się od pierwszej klatki, także gdy podgląd się wczytuje
+          (ramka ma wtedy opacity: 0, więc nie ma czego rozjechać),
        6. `will-change` żyje tylko w klasie `.is-tilting` (czas hoveru), a nie na
           stałe na kilkudziesięciu kartach — inaczej przeglądarka trzyma dziesiątki
           warstw i gubi klatki,
-       7. bezpiecznik: jeśli w pierwszych ~1,2 s obrotu przeglądarka gubi klatki,
-          efekt wyłącza się sam na całą sesję (klasa `rj-tilt-off`). Lepiej bez
-          efektu niż z zacinkami. */
+       7. efekt jest WŁĄCZONY przez całą sesję. Nie ma żadnego automatycznego
+          wyłączania ani zmniejszania kąta „w trakcie” — jedyne wyjście to ręczne
+          `RJTilt.disable()`. Wcześniej stał tu bezpiecznik mierzący tempo klatek
+          i to on kasował efekt po kilku sekundach (patrz komentarz niżej). */
   var TILT_EASE_OUT = "cubic-bezier(0.22, 0.8, 0.3, 1)";
-  var TILT_LONG_FRAME_MS = 90;   /* dopiero taka klatka to naprawdę zapchane urządzenie */
-  var TILT_PROBE_FRAMES = 90;    /* przez pierwsze ~90 klatek obrotu mierzymy tempo */
-  /* Dwa stopnie: najpierw łagodzimy efekt (nadal jest widoczny), a wyłączamy go
-     dopiero przy naprawdę długiej serii złych klatek. Wcześniej 3 klatki >48 ms
-     wystarczały, by zniknął na całą sesję — wystarczyło jedno najechanie na kartę,
-     której podgląd dopiero się tworzył. */
-  var TILT_SOFTEN_STRIKES = 6;
-  var TILT_OFF_STRIKES = 14;
+
+  /* Decyzja o efekcie jest STAŁA dla całej sesji i opiera się na faktach o
+     urządzeniu, nie na mierzeniu klatek w trakcie pracy. Wcześniej stał tu
+     „bezpiecznik”, który liczył przerwy między ruchami myszy jako gubione klatki
+     (mój rAF odpala się tylko przy ruchu!) — po kilku pauzach kursora efekt
+     połowił kąt, a potem wyłączał się do końca wizyty. Stąd „trochę działało
+     i zniknęło”. Nie wracać do mierzenia czasu w tym miejscu. */
+  var tiltWeakDevice = (function () {
+    try {
+      /* Jedyny twardy sygnał „oszczędzaj” to saveData. Liczby rdzeni nie ruszamy:
+         część przeglądarek podaje wartości zaniżone (albo zaokrąglone), a efekt
+         ma być, skoro jest wydajny — obrót to jeden zapis stylu na klatkę. */
+      if (navigator.connection && navigator.connection.saveData) return true;
+    } catch (e) { /* ignorujemy */ }
+    return false;
+  })();
+
+  /* Połysk (duży gradient za kursorem) jest najdroższą częścią efektu — na
+     słabszym sprzęcie go nie ma, ale obrót zostaje, bo on jest tani. */
+  var tiltSheenOk = (function () {
+    try {
+      if (navigator.connection && navigator.connection.saveData) return false;
+      if (navigator.deviceMemory && navigator.deviceMemory <= 4) return false;
+      if (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) return false;
+    } catch (e) { /* ignorujemy */ }
+    return true;
+  })();
 
   var canTilt =
+    !tiltWeakDevice &&
     window.matchMedia("(hover: hover) and (pointer: fine)").matches &&
     !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   var tiltDisabled = false;
-  var tiltAngleScale = 1;   /* 1 = pełny efekt, 0.5 = łagodniejszy po serii gubionych klatek */
   var tiltTeardowns = [];
 
   function disableTilt(reason) {
@@ -949,7 +969,9 @@
   function attachTilt(wrapper, target, maxDeg) {
     if (!canTilt || tiltDisabled || !wrapper || !target) return null;
 
-    var sheen = target.querySelector(".card-sheen") || wrapper.querySelector(".card-sheen");
+    var sheen = tiltSheenOk
+      ? (target.querySelector(".card-sheen") || wrapper.querySelector(".card-sheen"))
+      : null;
     /* Karta obraca się od pierwszej klatki — także wtedy, gdy jej podgląd dopiero
        się wczytuje. Ramka w tym stanie ma `opacity: 0` (CSS), więc nie ma czego
        rozjechać, a czekanie z efektem wyglądało jak jego brak.
@@ -967,9 +989,6 @@
     var msx = "";
     var msy = "";
     var settleTimer = 0;
-    var strikes = 0;
-    var lastFrameTs = 0;
-    var probeFrames = 0;
 
     function measure() {
       var r = wrapper.getBoundingClientRect();
@@ -1003,36 +1022,17 @@
       }
     }
 
-    function frame(ts) {
+    function frame() {
       raf = 0;
-      if (!active || tiltDisabled) return;
-
-      /* Tempo klatek mierzymy tylko przez pierwsze klatki obrotu — później
-         wliczyłyby się np. powrót z innej karty albo przeładowanie strony. */
-      if (ts && probeFrames < TILT_PROBE_FRAMES) {
-        probeFrames += 1;
-        if (lastFrameTs && ts - lastFrameTs > TILT_LONG_FRAME_MS) strike();
-        lastFrameTs = ts;
-      }
-
-      /* bezpiecznik mógł właśnie wyłączyć efekt i wyczyścić style — nie piszemy
-         po nim, bo karta zostałaby przekrzywiona na zawsze */
-      if (tiltDisabled) { clearTransform(); return; }
+      /* efekt mógł zostać wyłączony ręcznie (RJTilt.disable) — wtedy nie piszemy
+         po wyczyszczonych stylach, bo karta zostałaby przekrzywiona */
+      if (!active || tiltDisabled) { if (tiltDisabled) clearTransform(); return; }
 
       if (!rect && !measure()) return;
 
-      var deg = maxDeg * tiltAngleScale;
       var px = cursorPercentX();
       var py = cursorPercentY();
-      write(round1((0.5 - py) * 2 * deg), round1((px - 0.5) * 2 * deg));
-    }
-
-    function strike() {
-      strikes += 1;
-      if (strikes >= TILT_OFF_STRIKES) { disableTilt("gubione klatki podczas obrotu"); return; }
-      if (strikes >= TILT_SOFTEN_STRIKES && tiltAngleScale > 0.5) {
-        tiltAngleScale = 0.5;   /* nadal widać obrót, tylko spokojniejszy */
-      }
+      write(round1((0.5 - py) * 2 * maxDeg), round1((px - 0.5) * 2 * maxDeg));
     }
 
     function onEnter() {
@@ -1040,9 +1040,6 @@
       if (settleTimer) { clearTimeout(settleTimer); settleTimer = 0; }
       if (active) return;
       active = true;
-      strikes = 0;
-      lastFrameTs = 0;
-      probeFrames = 0;
       measure();
       wrapper.classList.add("is-tilting");
       /* jeden zapis przejścia na cały hover — w ruchu transform idzie 1:1 z
@@ -1122,9 +1119,13 @@
   /* Dla testów i diagnostyki */
   window.RJTilt = {
     attach: attachTilt,
-    disable: disableTilt,
+    disable: disableTilt,         /* jedyny sposób wyłączenia — ręczny, do diagnostyki */
     isOff: function () { return tiltDisabled; },
-    enabled: canTilt
+    enabled: canTilt,
+    sheen: tiltSheenOk,
+    reason: !canTilt
+      ? (tiltWeakDevice ? "słabe urządzenie (saveData / ≤2 rdzenie)" : "hover/reduced-motion")
+      : (tiltSheenOk ? "pełny" : "obrót bez połysku (słabszy sprzęt)")
   };
 
   /* ---------- Filtry i wyszukiwarka ---------- */

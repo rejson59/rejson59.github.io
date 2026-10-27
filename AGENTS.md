@@ -111,11 +111,18 @@ tani, inaczej strona „glitchuje": karta znika i wraca, a reszta strony się pr
   ma wtedy `opacity: 0`, więc nie ma czego rozjechać). Blokowanie efektu na czas
   wczytywania wyglądało dokładnie jak usunięcie animacji — nie wracać do tego.
 - `will-change` żyje wyłącznie w klasie `.is-tilting` (czas hoveru).
-- Bezpiecznik jest **dwustopniowy i bardzo ostrożny**: klatka > 90 ms liczy się jako
-  gubiona, a mierzymy tylko pierwsze 90 klatek obrotu. Po 6 takich klatkach efekt
-  połowi kąt (nadal jest widoczny!), a dopiero po 14 wyłącza się na sesję
-  (`html.rj-tilt-off`). Próg 3 × 48 ms był zbyt czuły: wystarczyło jedno najechanie
-  na kartę, której podgląd się właśnie tworzył, żeby efekt zniknął na zawsze.
+- **NIE MA żadnego automatycznego wyłączania ani zmniejszania kąta w trakcie.**
+  Efekt jest włączony przez całą sesję; jedyne wyjście to ręczne `RJTilt.disable()`.
+  Dwa razy próbowałem tu „bezpiecznika” mierzącego tempo klatek i dwa razy psuł
+  efekt: `rAF` odpala się **tylko przy ruchu myszy**, więc każda pauza kursora
+  (>48 ms, potem >90 ms) liczyła się jako zgubiona klatka. Po kilku pauzach kąt się
+  połowił, po kilkunastu efekt gasł do końca wizyty — użytkownik widzi: „trochę
+  działało i zniknęło”. Nie wracać do mierzenia czasu w tym miejscu.
+- Decyzja jest **stała i oparta na faktach o urządzeniu**: efekt wyłącza tylko
+  `saveData` + `hover:hover/pointer:fine` + brak `prefers-reduced-motion`.
+  Połysk (najdroższy element) znika dodatkowo przy `deviceMemory <= 4` lub
+  `hardwareConcurrency <= 4`, ale obrót zostaje.
+- Diagnostyka w konsoli: `RJTilt.enabled`, `RJTilt.sheen`, `RJTilt.reason`.
 
 ## 4. Testy loadera
 
@@ -142,7 +149,9 @@ cd scripts/jsdom && node tilt.test.js
 ```
 
 Test liczy realne koszty: odczyty layoutu, zapisy stylu na klatkę, zmiany `transition`,
-miejsce zmiennych połysku i działanie bezpiecznika. Da się go puścić na starszej wersji
+miejsce zmiennych połysku. Sekcja G odtwarza scenariusz z życia: 12 serii ruchów
+myszy przeplatanych dłuższymi pauzami — kąt musi zostać pełny przez cały czas.
+Fixture udaje desktop (8 rdzeni / 8 GB), bo jsdom sam z siebie raportuje 2. Da się go puścić na starszej wersji
 kodu — `RJ_APP=… RJ_CSS=… node tilt.test.js` — i pokazać, co było zepsute (na wersji
 z 26.10.2026 wypada 19 z 37 asercji).
 
