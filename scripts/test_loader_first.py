@@ -53,7 +53,7 @@ def main():
 
         # 4. loader.css nie blokuje
         check(name, "loader.css jest non-blocking (media print + onload)",
-              'css/loader.css?v=7" media="print"' in html)
+              'css/loader.css?v=8" media="print"' in html)
 
         # 5. Bootstrap WAAPI zaraz po znaczniku nakładki
         idx_overlay_end = html.find('<noscript><style>#rj-page-loader')
@@ -88,6 +88,9 @@ def main():
         crit_start = html.find('id="rj-loader-critical"')
         crit_end = html.find("</style>", crit_start)
         crit = html[crit_start:crit_end]
+        boot_start = html.find("Loader startuje NATYCHMIAST")
+        boot_end = html.find("</script>", boot_start)
+        BOOT = html[boot_start:boot_end]
         for kf in ["rj-dough-bounce", "rj-dough-shadow", "rj-loader-pop", "rj-caption-pulse"]:
             check(name, f"inline CSS zawiera @keyframes {kf}", f"@keyframes {kf}" in crit)
 
@@ -129,6 +132,28 @@ def main():
         check(name, "loader.js domyka pasek przed zdjęciem nakładki",
               "PROGRESS_LEAD_MS" in JS and "p.complete" in JS)
         check(name, "loader.js zeruje pasek po zniknięciu", "if (p && p.reset) p.reset();" in JS)
+        # 10c. Odporność na słaby sprzęt (zgłoszenie: „zacina, pasek cofa się, stoi pusty”)
+        check(name, "pierwszy ruch paska robi CSS (kompozytor), nie JS",
+              "@keyframes rj-progress-creep" in crit and "animation: rj-progress-creep" in crit)
+        check(name, "JS przejmuje pasek dopiero po pierwszej klatce (.is-managed)",
+              "classList.add(\"is-managed\")" in BOOT and ".rj-progress.is-managed .rj-progress-fill { animation: none; }" in crit)
+        check(name, "kroki co 380 ms zamiast pętli rAF", "STEP_MS = 380" in BOOT)
+        check(name, "brak pętli requestAnimationFrame w pasku",
+              "requestAnimationFrame" not in BOOT[BOOT.find("Pasek postępu"):BOOT.find("Kulki (Web Animations API)")])
+        check(name, "paint() przyjmuje tylko większe wartości (brak cofania)",
+              "if (!(v > shown)) return;" in BOOT)
+        check(name, "wartość mierzona z CSS przed przejęciem (brak skoku do tyłu)",
+              "function measured()" in BOOT and "getComputedStyle(fill).transform" in BOOT)
+        check(name, "pasek nie tyka, gdy nakładka jest ukryta", "function overlayHidden()" in BOOT)
+        check(name, "krok przejmuje kontrolę przed malowaniem (inaczej CSS nadpisze JS)",
+              "takeOver();" in BOOT[BOOT.find("function step()"):BOOT.find("function schedule()")])
+        check(name, "dobicie bez animacji ma własną klasę (.is-instant)", "is-instant" in BOOT and ".rj-progress.is-instant" in crit)
+        check(name, "loader.js sprząta spóźnione timery przed pokazaniem",
+              "clearHideTimers()" in JS and JS.count("later(") >= 3)
+        check(name, "podglądy startują pojedynczo (bez zrywu 5 iframe)",
+              "(function next(i)" in JS and "var gap = lite ? 320 : 150;" in JS)
+        check(name, "na słabym sprzęcie ramki startują w wolnych chwilach",
+              "requestIdleCallback(function () { next(i + 1); }" in JS)
         check(name, "animacje loadera pauzują się po schowaniu", "pauseLoaderAnimations(true)" in JS)
         check(name, "animacje wznawiane przy ponownym pokazaniu", "pauseLoaderAnimations(false)" in JS)
 

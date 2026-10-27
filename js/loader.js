@@ -94,13 +94,30 @@
     pageReady = true;
 
     /* Podglądy, które już zgłosiły chęć (były w zasięgu ekranu), montujemy
-       od razu — zaczynamy dopiero, gdy nakładka zdąży zniknąć. */
+       POJEDYNCZO. Wcześniej pięć iframe-ów (w tym projekt z wideo) startowało
+       w jednej klatce — na słabszym sprzęcie oznaczało to kilkusekundowe
+       zamrożenie strony zaraz po zniknięciu loadera. */
     setTimeout(function () {
+      var queue = [];
       var previews = document.querySelectorAll(".card-preview");
       previews.forEach(function (p) {
-        if (p._rjWantMount) mountPreview(p);
+        if (p._rjWantMount) queue.push(p);
       });
-      scheduleSweep();
+
+      var el = getOverlay();
+      var lite = !!(el && el.classList.contains("rj-loader--lite"));
+      var gap = lite ? 320 : 150;
+
+      (function next(i) {
+        if (i >= queue.length) { scheduleSweep(); return; }
+        mountPreview(queue[i]);
+        /* słaby sprzęt: kolejna ramka czeka na wolną chwilę, nie na zegarek */
+        if (lite && window.requestIdleCallback) {
+          window.requestIdleCallback(function () { next(i + 1); }, { timeout: 800 });
+        } else {
+          setTimeout(function () { next(i + 1); }, gap);
+        }
+      })(0);
     }, 150);
   }
 
@@ -109,6 +126,20 @@
   }
 
   var PROGRESS_LEAD_MS = 300; /* tyle zajmuje paskowi dojście do 100% (transition 0.3 s) */
+
+  /* Timery chowania nakładki i zerowania paska. Bez tego zdarzała się szarża:
+     użytkownik klikał podstronę, nakładka wracała, a spóźniony timer z
+     poprzedniego cyklu chował ją albo zerował pasek — widocznie „do tyłu”. */
+  var hideTimers = [];
+  function later(ms, fn) {
+    var id = setTimeout(fn, ms);
+    hideTimers.push(id);
+    return id;
+  }
+  function clearHideTimers() {
+    for (var i = 0; i < hideTimers.length; i++) clearTimeout(hideTimers[i]);
+    hideTimers.length = 0;
+  }
 
   function hideOverlay(inst) {
     var el = getOverlay();
@@ -121,10 +152,10 @@
       pauseLoaderAnimations(true);
       markPageReady();
       /* po zniknięciu zerujemy pasek — kolejne pokazanie startuje od zera */
-      setTimeout(function () {
+      later(430, function () {
         var p = progressApi();
         if (p && p.reset) p.reset();
-      }, 420);
+      });
     }
 
     /* powrót z bfcache: nie ma czego animować, chowamy natychmiast */
@@ -140,13 +171,13 @@
 
     /* Pasek dobija do 100% DOKŁADNIE wtedy, gdy nakładka zaczyna znikać —
        dzięki temu widać pełny, rozświetlony pasek, a nie mignięcie. */
-    setTimeout(function () {
+    later(Math.max(0, wait - PROGRESS_LEAD_MS), function () {
       var p = progressApi();
       if (p && p.complete) p.complete();
-    }, Math.max(0, wait - PROGRESS_LEAD_MS));
+    });
 
     /* minimalny czas na zobaczenie pełnego paska (gdy strona wczytała się późno) */
-    setTimeout(doHide, Math.max(wait, PROGRESS_LEAD_MS));
+    later(Math.max(wait, PROGRESS_LEAD_MS), doHide);
   }
 
   /* ---------- Realne etapy postępu (bez fejkowego timera) ---------- */
@@ -225,7 +256,7 @@
     hideOverlay();
   } else {
     window.addEventListener("load", function () { hideOverlay(); });
-    setTimeout(function () { hideOverlay(); }, 4000); /* twardy limit bezpieczeństwa */
+    later(4000, function () { hideOverlay(); }); /* twardy limit bezpieczeństwa */
   }
 
   /* Powrót z historii (bfcache): nakładka nie może zostać na ekranie */
@@ -259,6 +290,7 @@
     var el = getOverlay();
     if (!el) return;
     ev.preventDefault();
+    clearHideTimers();              /* spóźnione chowanie z poprzedniego cyklu — out */
     el._done = false;
     el.classList.add("is-shown");   /* pokazanie NATYCHMIAST (bez delayu visibility) */
     el.classList.remove("is-hidden");

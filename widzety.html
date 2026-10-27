@@ -119,10 +119,20 @@
       box-shadow: 0 0 10px rgba(106, 166, 255, .55);
       transform: scaleX(0);
       transform-origin: left center;
-      transition: transform .3s cubic-bezier(.22, .8, .3, 1);
+      /* Pierwszy ruch robi kompozytor (animacja CSS), więc pasek nie stoi pusty,
+         gdy główny wątek jest zajęty. JS tylko co 380 ms podnosi poprzeczkę. */
+      transition: transform .38s linear;
+      animation: rj-progress-creep 3.4s cubic-bezier(.25, .45, .4, 1) both;
     }
-    /* podczas dopełzania animujemy z JS co klatkę — transition tylko przeszkadza */
-    .rj-progress.is-trickling .rj-progress-fill { transition: none; }
+    @keyframes rj-progress-creep {
+      from { transform: scaleX(0); }
+      to   { transform: scaleX(.46); }
+    }
+    /* JS przejął kontrolę — startowa animacja gaśnie, dalej rządzą kroki */
+    .rj-progress.is-managed .rj-progress-fill { animation: none; }
+    /* dobicie do 100%: krótko i sprężyście */
+    .rj-progress.is-done .rj-progress-fill { transition: transform .3s cubic-bezier(.22, .8, .3, 1); }
+    .rj-progress.is-instant .rj-progress-fill { transition: none; }
     .rj-progress.is-done {
       box-shadow: inset 0 1px 2px rgba(0, 0, 0, .35),
                   0 0 14px rgba(72, 224, 164, .6),
@@ -185,7 +195,7 @@
     @media (prefers-reduced-motion: reduce) {
       .rj-progress-shine { display: none; }
       .rj-progress.is-done::after { animation: none; }
-      .rj-progress-fill { transition-duration: .15s; }
+      .rj-progress-fill { transition-duration: .15s; animation-duration: 2.6s; }
       .rj-loader-box { animation: none; }
     }
     /* tryb oszczędny (włączany przez js/loader.js) — bez połysku i pulsu */
@@ -198,9 +208,9 @@
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap"></noscript>
   <link rel="stylesheet" href="css/style.css?v=2026-10-26-3">
-  <link rel="stylesheet" href="css/loader.css?v=7" media="print" onload="this.media='all'">
-  <script defer src="js/loader.js?v=9"></script>
-  <noscript><link rel="stylesheet" href="css/loader.css?v=7"></noscript>
+  <link rel="stylesheet" href="css/loader.css?v=8" media="print" onload="this.media='all'">
+  <script defer src="js/loader.js?v=10"></script>
+  <noscript><link rel="stylesheet" href="css/loader.css?v=8"></noscript>
   <script defer src="js/error-reporter.js?v=1"></script>
     <style>
     .wid-main { padding: 34px 0 60px; }
@@ -327,73 +337,114 @@
     <!-- Loader startuje NATYCHMIAST: pasek postępu + animacja kulek, bez czekania na js/loader.js -->
   <script>
     (function () {
-      /* ================= Pasek postępu ================= */
+      /* ================= Pasek postępu =================
+         Dwa poziomy odporności:
+         1. pierwszy ruch robi animacja CSS na kompozytorze — pasek płynie
+            nawet wtedy, gdy główny wątek jest zablokowany (słaby telefon),
+         2. potem JS podnosi poprzeczkę co 380 ms, a nie 60 razy na sekundę —
+            przejście między krokami też robi CSS, więc koszt jest znikomy.
+         Wartość nigdy nie maleje: paint() przyjmuje tylko większe liczby. */
       var bar = document.querySelector("#rj-page-loader .rj-progress");
       var fill = bar ? bar.querySelector(".rj-progress-fill") : null;
 
       if (fill && !window.RJProgress) {
-        var shown = 0;      /* co widać na pasku (0..1) */
-        var target = 0.06;  /* najniższy gwarantowany etap */
+        var STEP_MS = 380;    /* tyle trwa jedno przejście CSS */
+        var CEILING = 0.9;    /* 100% zarezerwowane na prawdziwy koniec */
+        var shown = 0;        /* najwyższa pokazana wartość w tym cyklu */
+        var target = 0.06;
         var done = false;
-        var rafId = 0;
-        var t0 = 0;
+        var managed = false;
+        var stepTimer = 0;
+        var cycleStart = 0;
 
-        function paint() {
+        function now() {
+          return (window.performance && performance.now) ? performance.now() : Date.now();
+        }
+
+        /* Jedno miejsce, w którym pilnujemy, żeby pasek nie cofał się nigdy. */
+        function paint(v) {
+          if (!(v > shown)) return;
+          shown = v;
           fill.style.transform = "scaleX(" + shown.toFixed(4) + ")";
         }
 
-        /* Dopełzanie: im dłużej trwa ładowanie, tym wyżej wolno wejść,
-           ale nigdy powyżej 90% — 100% zarezerwowane dla realnego końca. */
-        /* Nakładka znika → pętla MUSI stanąć. Inaczej pasek „dopełza" przez całą
-           wizytę na stronie: marnowanie CPU i baterii bez niczego w zamian.
-           Wznawiamy ją dopiero w reset(), gdy nakładka ma się znów pokazać. */
-        function visible() {
-          var ov = (bar.closest && bar.closest("#rj-page-loader")) ||
-                   document.getElementById("rj-page-loader");
-          return !ov || !ov.classList.contains("is-hidden");
+        /* Ile pasek pokazuje w tej chwili (animacja CSS mogła już dojść dalej). */
+        function measured() {
+          try {
+            var tr = getComputedStyle(fill).transform;
+            if (!tr || tr === "none") return 0;
+            var m = /matrix\(([-\d.]+)/.exec(tr);
+            var v = m ? parseFloat(m[1]) : 0;
+            return (isFinite(v) && v > 0) ? v : 0;
+          } catch (e) { return 0; }
         }
 
-        function loop(now) {
-          if (done) { rafId = 0; return; }
-          if (!visible()) { rafId = 0; return; }
-          if (!t0) t0 = now;
-          /* asymptotyczne zwalnianie: szybko na starcie, potem coraz wolniej —
-             nigdy nie „staje", ale też nigdy nie kłamie, że prawie skończone */
-          var trickle = 0.9 - 0.84 * Math.exp(-(now - t0) / 2600);
-          var goal = Math.max(target, trickle);
-          shown += (goal - shown) * 0.14;
-          paint();
-          rafId = requestAnimationFrame(loop);
+        function takeOver() {
+          if (managed) return;
+          var v = Math.max(shown, measured());
+          shown = v;
+          fill.style.transform = "scaleX(" + v.toFixed(4) + ")";
+          bar.classList.add("is-managed");  /* gasi startową animację CSS */
+          managed = true;
+        }
+
+        function overlayHidden() {
+          var ov = (bar.closest && bar.closest("#rj-page-loader")) ||
+                   document.getElementById("rj-page-loader");
+          return !!(ov && ov.classList.contains("is-hidden"));
+        }
+
+        function step() {
+          stepTimer = 0;
+          if (done) return;
+          if (overlayHidden()) return;   /* nic nie widać — zero pracy w tle */
+          takeOver();                    /* od tej chwili pasek słucha JS, nie CSS */
+          var t = (now() - cycleStart) / 1000;
+          /* asymptota: szybko na starcie, potem coraz wolniej, nigdy > 90% */
+          var goal = Math.min(CEILING, Math.max(target, CEILING - 0.84 * Math.exp(-t / 2.6)));
+          paint(goal);
+          stepTimer = setTimeout(step, STEP_MS);
+        }
+
+        /* Cykl uzbrajamy tylko wtedy, gdy pasek jest widoczny. Po schowaniu
+           nakładki nie ma sensu tykać co 380 ms przez całą wizytę. */
+        function schedule() {
+          if (stepTimer) clearTimeout(stepTimer);
+          if (overlayHidden()) { stepTimer = 0; return; }
+          stepTimer = setTimeout(step, STEP_MS);
         }
 
         window.RJProgress = {
-          /** Podniesienie poprzeczki (np. 0.5 po DOMContentLoaded, 0.85 po load). */
+          /** Podniesienie poprzeczki (0.5 po DOMContentLoaded, 0.85 po load). */
           set: function (v) {
             if (done) return;
             v = Number(v) || 0;
-            if (v > target) target = Math.min(1, v);
+            if (v > target) target = Math.min(CEILING, v);
           },
-          /** Dobicie do 100% z animacją. instant=true pomija animację. */
+          /** Dobicie do 100%. instant = bez animacji (powrót z bfcache). */
           complete: function (instant) {
             if (done) return;
             done = true;
-            if (rafId) cancelAnimationFrame(rafId);
-            bar.classList.remove("is-trickling");
-            if (!instant) bar.classList.add("is-done");
+            if (stepTimer) { clearTimeout(stepTimer); stepTimer = 0; }
+            takeOver();
+            bar.classList.remove("is-done");
+            bar.classList.add(instant ? "is-instant" : "is-done");
             shown = 1;
-            paint();
+            fill.style.transform = "scaleX(1)";
           },
-          /** Powrót do zera — przed kolejnym pokazaniem nakładki. */
+          /** Przygotowanie kolejnego pokazania: z powrotem od zera. */
           reset: function () {
-            if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
+            if (stepTimer) { clearTimeout(stepTimer); stepTimer = 0; }
             done = false;
             shown = 0;
             target = 0.06;
-            t0 = 0;
+            managed = false;
             bar.classList.remove("is-done");
-            bar.classList.add("is-trickling");
-            paint();
-            rafId = requestAnimationFrame(loop);
+            bar.classList.remove("is-instant");
+            bar.classList.remove("is-managed");  /* wraca startowa animacja CSS */
+            fill.style.transform = "scaleX(0)";
+            cycleStart = now();
+            schedule();   /* jeśli nakładka jest ukryta, schedule() nic nie zrobi */
           },
           isDone: function () { return done; }
         };
