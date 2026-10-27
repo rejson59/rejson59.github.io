@@ -909,15 +909,21 @@
           efekt wyłącza się sam na całą sesję (klasa `rj-tilt-off`). Lepiej bez
           efektu niż z zacinkami. */
   var TILT_EASE_OUT = "cubic-bezier(0.22, 0.8, 0.3, 1)";
-  var TILT_LONG_FRAME_MS = 48;   /* klatka dłuższa niż ~3 klatki 60 Hz = gubienie */
-  var TILT_STRIKES = 3;          /* tyle gubionych klatek wystarczy, by wyłączyć */
-  var TILT_PROBE_FRAMES = 60;    /* przez pierwsze ~60 klatek obrotu mierzymy tempo */
+  var TILT_LONG_FRAME_MS = 90;   /* dopiero taka klatka to naprawdę zapchane urządzenie */
+  var TILT_PROBE_FRAMES = 90;    /* przez pierwsze ~90 klatek obrotu mierzymy tempo */
+  /* Dwa stopnie: najpierw łagodzimy efekt (nadal jest widoczny), a wyłączamy go
+     dopiero przy naprawdę długiej serii złych klatek. Wcześniej 3 klatki >48 ms
+     wystarczały, by zniknął na całą sesję — wystarczyło jedno najechanie na kartę,
+     której podgląd dopiero się tworzył. */
+  var TILT_SOFTEN_STRIKES = 6;
+  var TILT_OFF_STRIKES = 14;
 
   var canTilt =
     window.matchMedia("(hover: hover) and (pointer: fine)").matches &&
     !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   var tiltDisabled = false;
+  var tiltAngleScale = 1;   /* 1 = pełny efekt, 0.5 = łagodniejszy po serii gubionych klatek */
   var tiltTeardowns = [];
 
   function disableTilt(reason) {
@@ -944,8 +950,11 @@
     if (!canTilt || tiltDisabled || !wrapper || !target) return null;
 
     var sheen = target.querySelector(".card-sheen") || wrapper.querySelector(".card-sheen");
-    /* karta .card-inner jest wynoszona o 2 px przez CSS na hover — wliczamy to
-       w nasz transform, żeby nie było skoku przy pierwszej klatce */
+    /* Karta obraca się od pierwszej klatki — także wtedy, gdy jej podgląd dopiero
+       się wczytuje. Ramka w tym stanie ma `opacity: 0` (CSS), więc nie ma czego
+       rozjechać, a czekanie z efektem wyglądało jak jego brak.
+       Karta .card-inner jest wynoszona o 2 px przez CSS na hover — wliczamy to
+       w nasz transform, żeby nie było skoku przy pierwszej klatce. */
     var lift = target.classList.contains("card-inner") ? -2 : 0;
     var selfPerspective = wrapper === target ? "perspective(900px) " : "";
 
@@ -961,10 +970,6 @@
     var strikes = 0;
     var lastFrameTs = 0;
     var probeFrames = 0;
-
-    function previewBusy() {
-      return !!wrapper.querySelector(".card-preview.is-loading");
-    }
 
     function measure() {
       var r = wrapper.getBoundingClientRect();
@@ -1014,17 +1019,20 @@
          po nim, bo karta zostałaby przekrzywiona na zawsze */
       if (tiltDisabled) { clearTransform(); return; }
 
-      if (previewBusy()) { clearTransform(); return; }
       if (!rect && !measure()) return;
 
+      var deg = maxDeg * tiltAngleScale;
       var px = cursorPercentX();
       var py = cursorPercentY();
-      write(round1((0.5 - py) * 2 * maxDeg), round1((px - 0.5) * 2 * maxDeg));
+      write(round1((0.5 - py) * 2 * deg), round1((px - 0.5) * 2 * deg));
     }
 
     function strike() {
       strikes += 1;
-      if (strikes >= TILT_STRIKES) disableTilt("gubione klatki podczas obrotu");
+      if (strikes >= TILT_OFF_STRIKES) { disableTilt("gubione klatki podczas obrotu"); return; }
+      if (strikes >= TILT_SOFTEN_STRIKES && tiltAngleScale > 0.5) {
+        tiltAngleScale = 0.5;   /* nadal widać obrót, tylko spokojniejszy */
+      }
     }
 
     function onEnter() {
