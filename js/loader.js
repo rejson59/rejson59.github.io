@@ -191,8 +191,11 @@
     }, { rootMargin: "900px 0px 900px 0px", threshold: 0.01 });
   }
 
-  var PREVIEW_TIMEOUT_MS = 8000;
-  var PREVIEW_RETRY_MS = 11000;
+  /* Ciężkie projekty (np. RejStream z osadzonym wideo) potrzebują czasu:
+     zdarzenie load czeka na WSZYSTKIE zasoby ramki, więc krótki limit
+     ogłaszał porażkę strony, która zaraz by się wczytała. */
+  var PREVIEW_TIMEOUT_MS = 15000;
+  var PREVIEW_RETRY_MS = 15000;
 
   function previewIframeState(iframe) {
     /* "painted" | "blank" — blank = about:blank / puste body / nic nie namalowane */
@@ -350,6 +353,11 @@
       clearTimeout(preview._rjTimer);
       preview._rjTimer = setTimeout(function () {
         if (preview._rjSettled) return;
+        /* load mógł nie wystrzelić (wiszące subzasoby), ale treść jest na ekranie */
+        if (previewIframeState(iframe) === "painted") {
+          finish(true);
+          return;
+        }
         retryOrFail();
       }, delay || PREVIEW_TIMEOUT_MS);
     }
