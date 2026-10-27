@@ -93,6 +93,26 @@ Pasek nie jest „na oko" — ma trafić na moment znikania nakładki:
 - Przechwycenie paska przez JS (`is-managed`) musi zachować to, co już pokazała
   animacja CSS, i nigdy nie cofnąć wartości (`paint()`).
 
+## 3a. Efekt 3D kart (tilt) — zasady wydajności
+
+Karty projektów mają w środku żywą ramkę (iframe). Obrót takiej karty musi być
+tani, inaczej strona „glitchuje": karta znika i wraca, a reszta strony się przycina.
+
+- Prostokąt karty mierzymy **raz na hover** (`measure()`), nigdy w `pointermove`.
+- Najwyżej **jedna aktualizacja stylu na klatkę**; zapisujemy tylko wtedy, gdy kąt
+  faktycznie się zmienił (zaokrąglenie do 0,1°).
+- `transition` ustawiamy **dwa razy** (wejście, wyjście). Nadpisywanie go w ruchu
+  restartuje animację kilkadziesiąt razy na sekundę — to był główny powód drgania.
+- `--mx/--my` idą na **`.card-sheen`**, nie na kartę: inaczej każdy ruch myszy
+  unieważnia style całego poddrzewa razem z iframe.
+- **Żadnego `transform-style: preserve-3d`** na kartach — rozbija kartę na warstwy
+  3D i gubi elementy przy obrocie. Perspektywę daje rodzic (`perspective: 1000px`).
+- Karta, której podgląd się wczytuje (`.card-preview.is-loading`), **nie jest
+  obracana**.
+- `will-change` żyje wyłącznie w klasie `.is-tilting` (czas hoveru).
+- Bezpiecznik: kilka długich klatek w pierwszych 60 klatkach obrotu wyłącza efekt
+  na całą sesję (`html.rj-tilt-off`). Lepiej bez efektu niż z zacinkami.
+
 ## 4. Testy loadera
 
 Dwa zestawy, oba trzeba przepuścić po każdej zmianie w `js/loader.js`, `css/loader.css`
@@ -108,6 +128,19 @@ cd scripts/jsdom && npm install && node loader.test.js
 
 Test jsdom wymaga serwera na `:8000` dla sekcji e2e (`python3 -m http.server 8000`);
 bez niego sekcja H jest pomijana, reszta działa.
+
+## 5. Testy efektu 3D kart
+
+Po każdej zmianie w bloku tiltu (`js/app.js`) albo w regułach kart (`css/style.css`):
+
+```bash
+cd scripts/jsdom && node tilt.test.js
+```
+
+Test liczy realne koszty: odczyty layoutu, zapisy stylu na klatkę, zmiany `transition`,
+miejsce zmiennych połysku i działanie bezpiecznika. Da się go puścić na starszej wersji
+kodu — `RJ_APP=… RJ_CSS=… node tilt.test.js` — i pokazać, co było zepsute (na wersji
+z 26.10.2026 wypada 19 z 37 asercji).
 
 **Czego pilnują (błędy, które już się zdarzyły):**
 - pasek **nigdy nie cofa się** (`paint()` przyjmuje tylko większe wartości),

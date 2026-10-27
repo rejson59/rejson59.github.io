@@ -885,34 +885,219 @@
     });
   }
 
-  /* ---------- Efekt 3D (tilt + połysk za kursorem) ---------- */
+  /* ---------- Efekt 3D (tilt + połysk za kursorem) ----------
+     Desktop only. Karty mają w środku ŻYWĄ ramkę (iframe) i kilka pulsujących
+     animacji, więc obrót musi być tani i przewidywalny. Zasady:
+
+       1. prostokąt karty mierzony RAZ przy wejściu kursora — nie w każdym
+          zdarzeniu (getBoundingClientRect w pointermove wymusza przeliczanie
+          układu przy każdym ruchu myszy i to właśnie „glitchowało” stronę),
+       2. najwyżej jedna aktualizacja na klatkę (rAF) i tylko wtedy, gdy kąt
+          naprawdę się zmienił — zapis stylu bez zmiany też kosztuje,
+       3. ZERO zmian `transition` w trakcie ruchu: przejście ustawiamy raz przy
+          wejściu i raz przy wyjściu. Wcześniej string transition był nadpisywany
+          przy każdym zdarzeniu, co restartowało animację kilkadziesiąt razy na
+          sekundę — karta drgała i „przeskakiwała”,
+       4. połysk dostaje zmienne na SOBIE (`.card-sheen`), a nie na karcie —
+          zmiana koloru na karcie unieważnia style całego poddrzewa razem z ramką,
+       5. karta, której podgląd właśnie się wczytuje, NIE jest obracana: malowanie
+          iframe i obrót w tej samej chwili to najgorszy możliwy układ,
+       6. `will-change` żyje tylko w klasie `.is-tilting` (czas hoveru), a nie na
+          stałe na kilkudziesięciu kartach — inaczej przeglądarka trzyma dziesiątki
+          warstw i gubi klatki,
+       7. bezpiecznik: jeśli w pierwszych ~1,2 s obrotu przeglądarka gubi klatki,
+          efekt wyłącza się sam na całą sesję (klasa `rj-tilt-off`). Lepiej bez
+          efektu niż z zacinkami. */
+  var TILT_EASE_OUT = "cubic-bezier(0.22, 0.8, 0.3, 1)";
+  var TILT_LONG_FRAME_MS = 48;   /* klatka dłuższa niż ~3 klatki 60 Hz = gubienie */
+  var TILT_STRIKES = 3;          /* tyle gubionych klatek wystarczy, by wyłączyć */
+  var TILT_PROBE_FRAMES = 60;    /* przez pierwsze ~60 klatek obrotu mierzymy tempo */
+
   var canTilt =
     window.matchMedia("(hover: hover) and (pointer: fine)").matches &&
     !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+  var tiltDisabled = false;
+  var tiltTeardowns = [];
+
+  function disableTilt(reason) {
+    if (tiltDisabled) return;
+    tiltDisabled = true;
+    if (document.documentElement) document.documentElement.classList.add("rj-tilt-off");
+    var list = tiltTeardowns.slice();
+    tiltTeardowns.length = 0;
+    list.forEach(function (fn) { try { fn(); } catch (e) { /* ignorujemy */ } });
+    try {
+      document.dispatchEvent(new CustomEvent("rj:tilt-off", { detail: { reason: reason || "" } }));
+    } catch (e) { /* bardzo stare przeglądarki */ }
+  }
+
+  function clamp01(v) {
+    return v < 0 ? 0 : v > 1 ? 1 : v;
+  }
+
+  function round1(v) {
+    return Math.round(v * 10) / 10;
+  }
+
   function attachTilt(wrapper, target, maxDeg) {
-    var raf = null;
+    if (!canTilt || tiltDisabled || !wrapper || !target) return null;
+
+    var sheen = target.querySelector(".card-sheen") || wrapper.querySelector(".card-sheen");
+    /* karta .card-inner jest wynoszona o 2 px przez CSS na hover — wliczamy to
+       w nasz transform, żeby nie było skoku przy pierwszej klatce */
+    var lift = target.classList.contains("card-inner") ? -2 : 0;
+    var selfPerspective = wrapper === target ? "perspective(900px) " : "";
+
+    var rect = null;
+    var raf = 0;
+    var active = false;
+    var cursorX = 0;
+    var cursorY = 0;
+    var lastTransform = "";
+    var msx = "";
+    var msy = "";
+    var settleTimer = 0;
+    var strikes = 0;
+    var lastFrameTs = 0;
+    var probeFrames = 0;
+
+    function previewBusy() {
+      return !!wrapper.querySelector(".card-preview.is-loading");
+    }
+
+    function measure() {
+      var r = wrapper.getBoundingClientRect();
+      rect = (r.width && r.height) ? r : null;
+      return rect;
+    }
+
+    function write(x, y) {
+      var value = selfPerspective +
+        (lift ? "translateY(" + lift + "px) " : "") +
+        "rotateX(" + x + "deg) rotateY(" + y + "deg)";
+      if (value !== lastTransform) {
+        lastTransform = value;
+        target.style.transform = value;
+      }
+      if (sheen) {
+        var nx = (Math.round(cursorPercentX() * 100) | 0) + "%";
+        var ny = (Math.round(cursorPercentY() * 100) | 0) + "%";
+        if (nx !== msx) { msx = nx; sheen.style.setProperty("--mx", nx); }
+        if (ny !== msy) { msy = ny; sheen.style.setProperty("--my", ny); }
+      }
+    }
+
+    function cursorPercentX() { return clamp01((cursorX - rect.left) / rect.width); }
+    function cursorPercentY() { return clamp01((cursorY - rect.top) / rect.height); }
+
+    function clearTransform() {
+      if (lastTransform) {
+        lastTransform = "";
+        target.style.transform = "";
+      }
+    }
+
+    function frame(ts) {
+      raf = 0;
+      if (!active || tiltDisabled) return;
+
+      /* Tempo klatek mierzymy tylko przez pierwsze klatki obrotu — później
+         wliczyłyby się np. powrót z innej karty albo przeładowanie strony. */
+      if (ts && probeFrames < TILT_PROBE_FRAMES) {
+        probeFrames += 1;
+        if (lastFrameTs && ts - lastFrameTs > TILT_LONG_FRAME_MS) strike();
+        lastFrameTs = ts;
+      }
+
+      /* bezpiecznik mógł właśnie wyłączyć efekt i wyczyścić style — nie piszemy
+         po nim, bo karta zostałaby przekrzywiona na zawsze */
+      if (tiltDisabled) { clearTransform(); return; }
+
+      if (previewBusy()) { clearTransform(); return; }
+      if (!rect && !measure()) return;
+
+      var px = cursorPercentX();
+      var py = cursorPercentY();
+      write(round1((0.5 - py) * 2 * maxDeg), round1((px - 0.5) * 2 * maxDeg));
+    }
+
+    function strike() {
+      strikes += 1;
+      if (strikes >= TILT_STRIKES) disableTilt("gubione klatki podczas obrotu");
+    }
+
+    function onEnter() {
+      if (tiltDisabled) return;
+      if (settleTimer) { clearTimeout(settleTimer); settleTimer = 0; }
+      if (active) return;
+      active = true;
+      strikes = 0;
+      lastFrameTs = 0;
+      probeFrames = 0;
+      measure();
+      wrapper.classList.add("is-tilting");
+      /* jeden zapis przejścia na cały hover — w ruchu transform idzie 1:1 z
+         kursorem, a animujemy tylko powrót */
+      target.style.transition = "border-color .2s, box-shadow .2s";
+    }
+
     function onMove(ev) {
-      var rect = wrapper.getBoundingClientRect();
-      var px = (ev.clientX - rect.left) / rect.width;
-      var py = (ev.clientY - rect.top) / rect.height;
-      if (raf) cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(function () {
-        target.style.transition = "transform 0.08s ease-out";
-        target.style.transform =
-          "rotateY(" + ((px - 0.5) * 2 * maxDeg).toFixed(2) + "deg) " +
-          "rotateX(" + ((0.5 - py) * 2 * maxDeg).toFixed(2) + "deg)";
-        target.style.setProperty("--mx", (px * 100).toFixed(1) + "%");
-        target.style.setProperty("--my", (py * 100).toFixed(1) + "%");
-      });
+      if (ev.pointerType && ev.pointerType !== "mouse") return;
+      if (tiltDisabled) return;
+      if (!active) onEnter();
+      if (!active) return;
+      cursorX = ev.clientX;
+      cursorY = ev.clientY;
+      if (raf) return;                       /* jedna aktualizacja na klatkę */
+      if (window.requestAnimationFrame) raf = requestAnimationFrame(frame);
+      else frame(0);
     }
+
     function onLeave() {
-      if (raf) cancelAnimationFrame(raf);
-      target.style.transition = "transform 0.45s cubic-bezier(0.22, 0.8, 0.3, 1)";
-      target.style.transform = "rotateY(0deg) rotateX(0deg)";
+      if (!active) return;
+      active = false;
+      if (raf) { cancelAnimationFrame(raf); raf = 0; }
+      target.style.transition =
+        "border-color .2s, box-shadow .2s, transform .38s " + TILT_EASE_OUT;
+      clearTransform();
+      if (settleTimer) clearTimeout(settleTimer);
+      settleTimer = setTimeout(function () {
+        settleTimer = 0;
+        wrapper.classList.remove("is-tilting");
+        target.style.transition = "";        /* oddajemy styl arkuszowi */
+        if (sheen) {
+          sheen.style.removeProperty("--mx");
+          sheen.style.removeProperty("--my");
+          msx = msy = "";
+        }
+      }, 420);
     }
-    wrapper.addEventListener("pointermove", onMove);
-    wrapper.addEventListener("pointerleave", onLeave);
+
+    function onHidden() { if (document.hidden) onLeave(); }
+
+    wrapper.addEventListener("pointerenter", onEnter, { passive: true });
+    wrapper.addEventListener("pointermove", onMove, { passive: true });
+    wrapper.addEventListener("pointerleave", onLeave, { passive: true });
+    wrapper.addEventListener("pointercancel", onLeave, { passive: true });
+    window.addEventListener("scroll", onLeave, { passive: true });
+    document.addEventListener("visibilitychange", onHidden);
+
+    var teardown = function () {
+      onLeave();
+      wrapper.classList.remove("is-tilting");
+      wrapper.removeEventListener("pointerenter", onEnter);
+      wrapper.removeEventListener("pointermove", onMove);
+      wrapper.removeEventListener("pointerleave", onLeave);
+      wrapper.removeEventListener("pointercancel", onLeave);
+      window.removeEventListener("scroll", onLeave);
+      document.removeEventListener("visibilitychange", onHidden);
+      target.style.transform = "";
+      target.style.transition = "";
+    };
+    tiltTeardowns.push(teardown);
+
+    return { detach: teardown };
   }
 
   /* Karta profilu w hero oraz statyczne karty wyróżnione (Jakuplayer, JoyPad) */
@@ -925,6 +1110,14 @@
       if (inner) attachTilt(card, inner, 5);
     });
   })();
+
+  /* Dla testów i diagnostyki */
+  window.RJTilt = {
+    attach: attachTilt,
+    disable: disableTilt,
+    isOff: function () { return tiltDisabled; },
+    enabled: canTilt
+  };
 
   /* ---------- Filtry i wyszukiwarka ---------- */
   var searchTimer = null;
