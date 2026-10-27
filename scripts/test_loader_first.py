@@ -53,11 +53,11 @@ def main():
 
         # 4. loader.css nie blokuje
         check(name, "loader.css jest non-blocking (media print + onload)",
-              'css/loader.css?v=6" media="print"' in html)
+              'css/loader.css?v=7" media="print"' in html)
 
         # 5. Bootstrap WAAPI zaraz po znaczniku nakładki
         idx_overlay_end = html.find('<noscript><style>#rj-page-loader')
-        idx_bootstrap = html.find("Animacja kulek startuje NATYCHMIAST")
+        idx_bootstrap = html.find("Loader startuje NATYCHMIAST")
         check(name, "bootstrap animacji jest inline", idx_bootstrap != -1)
         check(name, "bootstrap tuż po nakładce (przed treścią)",
               idx_bootstrap != -1 and idx_overlay_end != -1 and idx_bootstrap < idx_overlay_end)
@@ -82,7 +82,7 @@ def main():
         # 7. Brak duplikatów
         check(name, "tylko jeden tag js/loader.js", html.count('src="js/loader.js') == 1)
         check(name, "tylko jeden inline CSS loadera", html.count('id="rj-loader-critical"') == 1)
-        check(name, "tylko jeden bootstrap", html.count("Animacja kulek startuje NATYCHMIAST") == 1)
+        check(name, "tylko jeden bootstrap", html.count("Loader startuje NATYCHMIAST") == 1)
 
         # 8. Keyframes animacji są w inline CSS (nie zależą od sieci)
         crit_start = html.find('id="rj-loader-critical"')
@@ -105,6 +105,32 @@ def main():
               shadow_code[:80].replace("\n", " "))
         check(name, "istnieje tryb oszczędny .rj-loader--lite", ".rj-loader--lite" in crit)
         check(name, "tryb lite ukrywa cienie", "rj-loader--lite .dough-slot .shadow" in crit)
+        check(name, "tryb lite z saveData, nie z liczby rdzeni",
+              "connection.saveData" in JS and "hardwareConcurrency" not in JS)
+
+        # 10b. Pasek postępu: markup, styl w inline CSS, kontroler
+        check(name, "markup paska postępu (.rj-progress + fill)", 'class="rj-progress"' in body and "rj-progress-fill" in body)
+        check(name, "pasek jest w krytycznym CSS (bez czekania na sieć)", ".rj-progress-fill" in crit)
+        check(name, "pasek animuje transform (GPU), nie width", "transform: scaleX(0)" in crit and "width:" in crit)
+        check(name, "połysk paska ma @keyframes", "@keyframes rj-progress-shine" in crit)
+        check(name, "połysk wyłączony przy prefers-reduced-motion",
+              "prefers-reduced-motion" in crit and ".rj-progress-shine { display: none; }" in crit)
+        check(name, "tryb lite wyłącza połysk paska", "rj-loader--lite .rj-progress-shine" in crit)
+        check(name, "pasek ma wariant dla motywu jasnego",
+              'html[data-theme="light"] .rj-progress' in crit and 'html[data-theme="light"] .rj-progress-fill' in crit)
+        check(name, "błysk po dobiciu do 100% (@keyframes rj-progress-flash)",
+              "@keyframes rj-progress-flash" in crit and ".rj-progress.is-done::after" in crit)
+        check(name, "błysk wyłączony w trybie lite i reduced-motion",
+              crit.count("is-done::after { animation: none; }") >= 2)
+        check(name, "dobicie mieści się w leadzie (transition <= lead)",
+              "transform .3s cubic-bezier" in crit and "PROGRESS_LEAD_MS = 300" in JS)
+        check(name, "kontroler RJProgress w bootstrapie", "window.RJProgress" in html)
+        check(name, "loader.js podaje realne etapy (0.5 / 0.85)", "markProgress(0.5)" in JS and "markProgress(0.85)" in JS)
+        check(name, "loader.js domyka pasek przed zdjęciem nakładki",
+              "PROGRESS_LEAD_MS" in JS and "p.complete" in JS)
+        check(name, "loader.js zeruje pasek po zniknięciu", "if (p && p.reset) p.reset();" in JS)
+        check(name, "animacje loadera pauzują się po schowaniu", "pauseLoaderAnimations(true)" in JS)
+        check(name, "animacje wznawiane przy ponownym pokazaniu", "pauseLoaderAnimations(false)" in JS)
 
         # 11. Podglądy nie konkurują z loaderem
         check(name, "loader.js bramkuje montowanie podglądów (pageReady)",

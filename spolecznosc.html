@@ -101,6 +101,78 @@
       100% { transform: scaleX(1.3);  opacity: .55; }
     }
 
+    /* --- Pasek postępu: realne etapy + łagodne dopełzanie --- */
+    .rj-progress {
+      position: relative;
+      width: 148px;
+      height: 5px;
+      margin-top: -6px;
+      border-radius: 999px;
+      background: rgba(127, 145, 175, .22);
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, .35);
+      overflow: hidden;
+    }
+    .rj-progress-fill {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #6aa6ff 0%, #a98bff 52%, #48e0a4 100%);
+      box-shadow: 0 0 10px rgba(106, 166, 255, .55);
+      transform: scaleX(0);
+      transform-origin: left center;
+      transition: transform .3s cubic-bezier(.22, .8, .3, 1);
+    }
+    /* podczas dopełzania animujemy z JS co klatkę — transition tylko przeszkadza */
+    .rj-progress.is-trickling .rj-progress-fill { transition: none; }
+    .rj-progress.is-done {
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, .35),
+                  0 0 14px rgba(72, 224, 164, .6),
+                  0 0 4px rgba(255, 255, 255, .45);
+    }
+    /* błysk po dobiciu do 100% — „ping", który domyka całość */
+    .rj-progress::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background: #fff;
+      opacity: 0;
+      pointer-events: none;
+    }
+    .rj-progress.is-done::after { animation: rj-progress-flash .55s ease-out 1; }
+    @keyframes rj-progress-flash {
+      0%   { opacity: .55; }
+      100% { opacity: 0; }
+    }
+    .rj-progress-shine {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 40%;
+      background: linear-gradient(100deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.5) 50%, rgba(255,255,255,0) 100%);
+      transform: translateX(-120%);
+      animation: rj-progress-shine 1.6s ease-in-out infinite;
+      pointer-events: none;
+    }
+    @keyframes rj-progress-shine {
+      0%        { transform: translateX(-120%); }
+      55%, 100% { transform: translateX(370%); }
+    }
+    /* motyw jasny: ten sam rytm, ale cienie i gradient dopasowane do #f4f7fc */
+    html[data-theme="light"] .rj-progress {
+      background: rgba(91, 107, 133, .2);
+      box-shadow: inset 0 1px 2px rgba(15, 25, 45, .12);
+    }
+    html[data-theme="light"] .rj-progress-fill {
+      background: linear-gradient(90deg, #3d7fe0 0%, #8464e8 52%, #1ca97a 100%);
+      box-shadow: 0 0 10px rgba(61, 127, 224, .3);
+    }
+    html[data-theme="light"] .rj-progress.is-done {
+      box-shadow: inset 0 1px 2px rgba(15, 25, 45, .12),
+                  0 0 14px rgba(28, 169, 122, .42),
+                  0 0 4px rgba(255, 255, 255, .7);
+    }
+
     .rj-loader-caption {
       margin: 0;
       font-family: "JetBrains Mono", ui-monospace, monospace;
@@ -110,6 +182,17 @@
       animation: rj-caption-pulse 1.6s ease-in-out infinite;
     }
     @keyframes rj-caption-pulse { 0%, 100% { opacity: .4; } 50% { opacity: .95; } }
+
+    @media (prefers-reduced-motion: reduce) {
+      .rj-progress-shine { display: none; }
+      .rj-progress.is-done::after { animation: none; }
+      .rj-progress-fill { transition-duration: .15s; }
+      .rj-loader-box { animation: none; }
+    }
+    /* tryb oszczędny (włączany przez js/loader.js) — bez połysku i pulsu */
+    #rj-page-loader.rj-loader--lite .rj-progress-shine { display: none; }
+    #rj-page-loader.rj-loader--lite .rj-progress.is-done::after { animation: none; }
+    #rj-page-loader.rj-loader--lite .rj-progress-fill { transition-duration: .2s; }
   </style>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -118,21 +201,100 @@
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap"></noscript>
   <link rel="stylesheet" href="css/style.css?v=2026-10-26-3">
   <link rel="stylesheet" href="css/community.css?v=2026-10-25">
-  <link rel="stylesheet" href="css/loader.css?v=6" media="print" onload="this.media='all'">
-  <script defer src="js/loader.js?v=8"></script>
-  <noscript><link rel="stylesheet" href="css/loader.css?v=6"></noscript>
+  <link rel="stylesheet" href="css/loader.css?v=7" media="print" onload="this.media='all'">
+  <script defer src="js/loader.js?v=9"></script>
+  <noscript><link rel="stylesheet" href="css/loader.css?v=7"></noscript>
   <script defer src="js/error-reporter.js?v=1"></script>
   </head>
 <body class="community-page">
   <div id="rj-page-loader" aria-hidden="true">
     <div class="rj-loader-box">
       <div class="rj-dough"><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span></div>
+      <div class="rj-progress" aria-hidden="true">
+        <span class="rj-progress-fill"></span>
+        <span class="rj-progress-shine"></span>
+      </div>
       <p class="rj-loader-caption">rejson59</p>
     </div>
   </div>
-    <!-- Animacja kulek startuje NATYCHMIAST (Web Animations API), bez czekania na js/loader.js -->
+    <!-- Loader startuje NATYCHMIAST: pasek postępu + animacja kulek, bez czekania na js/loader.js -->
   <script>
     (function () {
+      /* ================= Pasek postępu ================= */
+      var bar = document.querySelector("#rj-page-loader .rj-progress");
+      var fill = bar ? bar.querySelector(".rj-progress-fill") : null;
+
+      if (fill && !window.RJProgress) {
+        var shown = 0;      /* co widać na pasku (0..1) */
+        var target = 0.06;  /* najniższy gwarantowany etap */
+        var done = false;
+        var rafId = 0;
+        var t0 = 0;
+
+        function paint() {
+          fill.style.transform = "scaleX(" + shown.toFixed(4) + ")";
+        }
+
+        /* Dopełzanie: im dłużej trwa ładowanie, tym wyżej wolno wejść,
+           ale nigdy powyżej 90% — 100% zarezerwowane dla realnego końca. */
+        /* Nakładka znika → pętla MUSI stanąć. Inaczej pasek „dopełza" przez całą
+           wizytę na stronie: marnowanie CPU i baterii bez niczego w zamian.
+           Wznawiamy ją dopiero w reset(), gdy nakładka ma się znów pokazać. */
+        function visible() {
+          var ov = (bar.closest && bar.closest("#rj-page-loader")) ||
+                   document.getElementById("rj-page-loader");
+          return !ov || !ov.classList.contains("is-hidden");
+        }
+
+        function loop(now) {
+          if (done) { rafId = 0; return; }
+          if (!visible()) { rafId = 0; return; }
+          if (!t0) t0 = now;
+          /* asymptotyczne zwalnianie: szybko na starcie, potem coraz wolniej —
+             nigdy nie „staje", ale też nigdy nie kłamie, że prawie skończone */
+          var trickle = 0.9 - 0.84 * Math.exp(-(now - t0) / 2600);
+          var goal = Math.max(target, trickle);
+          shown += (goal - shown) * 0.14;
+          paint();
+          rafId = requestAnimationFrame(loop);
+        }
+
+        window.RJProgress = {
+          /** Podniesienie poprzeczki (np. 0.5 po DOMContentLoaded, 0.85 po load). */
+          set: function (v) {
+            if (done) return;
+            v = Number(v) || 0;
+            if (v > target) target = Math.min(1, v);
+          },
+          /** Dobicie do 100% z animacją. instant=true pomija animację. */
+          complete: function (instant) {
+            if (done) return;
+            done = true;
+            if (rafId) cancelAnimationFrame(rafId);
+            bar.classList.remove("is-trickling");
+            if (!instant) bar.classList.add("is-done");
+            shown = 1;
+            paint();
+          },
+          /** Powrót do zera — przed kolejnym pokazaniem nakładki. */
+          reset: function () {
+            if (rafId) { cancelAnimationFrame(rafId); rafId = 0; }
+            done = false;
+            shown = 0;
+            target = 0.06;
+            t0 = 0;
+            bar.classList.remove("is-done");
+            bar.classList.add("is-trickling");
+            paint();
+            rafId = requestAnimationFrame(loop);
+          },
+          isDone: function () { return done; }
+        };
+
+        window.RJProgress.reset();
+      }
+
+      /* ================= Kulki (Web Animations API) ================= */
       var group = document.querySelector("#rj-page-loader .rj-dough");
       if (!group || !window.Element || !Element.prototype.animate) return;
       if (group._rjWaapi) return;
