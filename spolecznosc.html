@@ -62,12 +62,26 @@
     .dough-slot .shadow {
       bottom: 0; left: calc(var(--ball) * -.1);
       width: calc(var(--ball) * 1.2); height: calc(var(--ball) * .32); border-radius: 50%;
-      background: rgba(4, 8, 18, .55); filter: blur(calc(var(--ball) * .12));
+      /* Miękka plama z gradientu zamiast filter: blur() — brak przerastrowywania
+         przy każdej klatce animacji (to było źródłem zacinania na słabszych GPU). */
+      background: radial-gradient(ellipse 50% 50% at 50% 50%, rgba(4, 8, 18, .62), rgba(4, 8, 18, .28) 62%, rgba(4, 8, 18, 0) 100%);
       animation: rj-dough-shadow 1.15s ease-in-out infinite;
-      will-change: transform, opacity;
+      will-change: transform;
     }
     .dough-slot:nth-child(2) .ball,   .dough-slot:nth-child(2) .shadow { animation-delay: .13s; }
     .dough-slot:nth-child(3) .ball,   .dough-slot:nth-child(3) .shadow { animation-delay: .26s; }
+
+    /* Jedna animacja: gdy WAAPI przejmuje ruch, CSS-owe @keyframes są wyłączane.
+       Wcześniej oba systemy animowały te same elementy równolegle — dublowana
+       praca co klatkę i wrażenie „przeskakującej” fali. */
+    .rj-dough.is-waapi .ball,
+    .rj-dough.is-waapi .shadow { animation: none; }
+
+    /* Tryb oszczędny: włączany, gdy urządzenie gubi klatki (lub od razu na słabym
+       sprzęcie). Zostaje sam, najtańszy ruch kulek — bez cieni, pulsu i pop-u. */
+    #rj-page-loader.rj-loader--lite .dough-slot .shadow { display: none; }
+    #rj-page-loader.rj-loader--lite .rj-loader-caption { animation: none; opacity: .8; }
+    #rj-page-loader.rj-loader--lite .rj-loader-box { animation: none; }
 
     @keyframes rj-dough-bounce {
       0%   { transform: translateY(12%)   scale(1.34, .60); animation-timing-function: cubic-bezier(.2,.8,.4,1); }
@@ -104,9 +118,9 @@
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap"></noscript>
   <link rel="stylesheet" href="css/style.css?v=2026-10-26-3">
   <link rel="stylesheet" href="css/community.css?v=2026-10-25">
-  <link rel="stylesheet" href="css/loader.css?v=5" media="print" onload="this.media='all'">
-  <script defer src="js/loader.js?v=7"></script>
-  <noscript><link rel="stylesheet" href="css/loader.css?v=5"></noscript>
+  <link rel="stylesheet" href="css/loader.css?v=6" media="print" onload="this.media='all'">
+  <script defer src="js/loader.js?v=8"></script>
+  <noscript><link rel="stylesheet" href="css/loader.css?v=6"></noscript>
   <script defer src="js/error-reporter.js?v=1"></script>
   </head>
 <body class="community-page">
@@ -146,15 +160,18 @@
       ];
 
       var slots = group.querySelectorAll(".dough-slot");
+      var started = 0;
       for (var i = 0; i < slots.length; i++) {
         var ball = slots[i].querySelector(".ball");
         var shadow = slots[i].querySelector(".shadow");
         var delay = i * 130;
         try {
-          if (ball) ball.animate(ballFrames(H), { duration: DUR, iterations: Infinity, delay: delay, fill: "backwards" });
-          if (shadow) shadow.animate(shadowFrames, { duration: DUR, iterations: Infinity, delay: delay, fill: "backwards" });
+          if (ball) { ball.animate(ballFrames(H), { duration: DUR, iterations: Infinity, delay: delay, fill: "backwards" }); started++; }
+          if (shadow) { shadow.animate(shadowFrames, { duration: DUR, iterations: Infinity, delay: delay, fill: "backwards" }); started++; }
         } catch (e) { /* zostaje animacja CSS */ }
       }
+      /* dopiero teraz wolno wyłączyć CSS-owe klatki — inaczej stracilibyśmy ruch */
+      if (started) group.classList.add("is-waapi");
     })();
   </script>
 <noscript><style>#rj-page-loader{display:none!important}</style></noscript>

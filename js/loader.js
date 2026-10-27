@@ -55,15 +55,24 @@
       var small = group.classList.contains("rj-dough--sm");
       var h = small ? 10 : 16;
       var slots = group.querySelectorAll(".dough-slot");
+      var started = 0;
       slots.forEach(function (slot, i) {
         var delay = i * 130;
         var ballEl = slot.querySelector(".ball");
         var shadowEl = slot.querySelector(".shadow");
         try {
-          if (ballEl) ballEl.animate(doughBallFrames(h), { duration: DOUGH_MS, iterations: Infinity, delay: delay, fill: "backwards" });
-          if (shadowEl) shadowEl.animate(DOUGH_SHADOW_FRAMES, { duration: DOUGH_MS, iterations: Infinity, delay: delay, fill: "backwards" });
+          if (ballEl) {
+            ballEl.animate(doughBallFrames(h), { duration: DOUGH_MS, iterations: Infinity, delay: delay, fill: "backwards" });
+            started++;
+          }
+          if (shadowEl) {
+            shadowEl.animate(DOUGH_SHADOW_FRAMES, { duration: DOUGH_MS, iterations: Infinity, delay: delay, fill: "backwards" });
+            started++;
+          }
         } catch (e) { /* zostaje fallback CSS */ }
       });
+      /* CSS-owe klatki wyłączamy dopiero, gdy WAAPI faktycznie przejął ruch */
+      if (started) group.classList.add("is-waapi");
     });
   }
 
@@ -75,6 +84,26 @@
   var started = performance.now();
   var MIN_SHOW_MS = 1000;  /* kulki mają legalną chwilę występu — czytelne, ale nie męczące */
 
+  /* Podglądy (5 iframe-ów, w tym ciężki projekt z wideo) nie mogą startować,
+     gdy loader jeszcze gra — zabierały główny wątek i GPU, przez co kulki
+     gubiły klatki. Montujemy je dopiero po zdjęciu nakładki. */
+  var pageReady = false;
+
+  function markPageReady() {
+    if (pageReady) return;
+    pageReady = true;
+
+    /* Podglądy, które już zgłosiły chęć (były w zasięgu ekranu), montujemy
+       od razu — zaczynamy dopiero, gdy nakładka zdąży zniknąć. */
+    setTimeout(function () {
+      var previews = document.querySelectorAll(".card-preview");
+      previews.forEach(function (p) {
+        if (p._rjWantMount) mountPreview(p);
+      });
+      scheduleSweep();
+    }, 150);
+  }
+
   function hideOverlay(inst) {
     var el = getOverlay();
     if (!el || el._done) return;
@@ -84,8 +113,54 @@
     setTimeout(function () {
       el.classList.remove("is-shown");
       el.classList.add("is-hidden");
+      markPageReady();
     }, wait);
   }
+
+  /* ---------- Detektor gubionych klatek → tryb oszczędny ----------
+     Jeśli urządzenie nie wyrabia ~38 fps, wyłączamy cienie, puls podpisu i pop
+     (najdroższe efekty), zostawiając sam skok kulek. Dzięki temu animacja nigdy
+     nie „zamarza”, nawet na słabym sprzęcie. */
+  (function watchFramePacing() {
+    var el = getOverlay();
+    if (!el) return;
+
+    /* bardzo słaby sprzęt: od razu oszczędnie, bez zgadywania */
+    try {
+      if ((navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2) ||
+          (navigator.deviceMemory && navigator.deviceMemory <= 2)) {
+        el.classList.add("rj-loader--lite");
+      }
+    } catch (e) { /* ignorujemy */ }
+
+    if (!window.requestAnimationFrame) return;
+
+    var last = 0;
+    var samples = [];
+    var frames = 0;
+
+    function tick(ts) {
+      if (last) samples.push(ts - last);
+      last = ts;
+      frames++;
+
+      if (frames < 24 && !el.classList.contains("is-hidden")) {
+        window.requestAnimationFrame(tick);
+        return;
+      }
+      if (!samples.length) return;
+
+      samples.sort(function (a, b) { return a - b; });
+      var p75 = samples[Math.floor(samples.length * 0.75)];
+      if (p75 > 26) el.classList.add("rj-loader--lite");
+    }
+
+    window.requestAnimationFrame(tick);
+  })();
+
+  /* Strona bez nakładki (np. osadzenie loadera gdzie indziej) nie może
+     zablokować podglądów na zawsze — od razu zgadzamy się na montowanie. */
+  if (!getOverlay()) markPageReady();
 
   if (document.readyState === "complete") {
     hideOverlay();
@@ -280,6 +355,14 @@
     /* po jawnym niepowodzeniu ponawiamy tylko przez przycisk „Spróbuj ponownie" */
     if (preview._rjSettled && preview.classList.contains("is-failed")) return;
 
+    /* Podczas gry loadera nic ciężkiego: zapamiętujemy chęć i wracamy później.
+       Dzięki temu animacja kulek ma cały wątek dla siebie. */
+    if (!pageReady) {
+      preview._rjWantMount = true;
+      return;
+    }
+    preview._rjWantMount = false;
+
     var frame = preview.querySelector(".card-preview-frame");
     if (frame) {
       var snap = snapshotState(preview);
@@ -422,6 +505,7 @@
   /* Bezpiecznik: gdyby IntersectionObserver nie wystrzelił (bfcache, nietypowy
      layout, skok do kotwicy), montujemy podglądy blisko widoku ręcznie. */
   function sweepPreviews() {
+    if (!pageReady) return; /* loader jeszcze gra — nie zabieramy mu klatek */
     var previews = document.querySelectorAll(".card-preview");
     var vh = window.innerHeight || 0;
     previews.forEach(function (p) {
@@ -431,6 +515,22 @@
       if (!r.width && !r.height) return; /* ukryta sekcja */
       if (r.bottom > -900 && r.top < vh + 900) mountPreview(p);
     });
+  }
+
+  /* Skanowanie odroczone do czasu wolnego wątku: render kart przez app.js
+     potrafi dodać kilkadziesiąt węzłów w jednej chwili, a każde wywołanie
+     scan() robiło pełny querySelectorAll po całym dokumencie. */
+  var scanScheduled = false;
+
+  function scheduleScan() {
+    if (scanScheduled) return;
+    scanScheduled = true;
+    var run = function () {
+      scanScheduled = false;
+      scan(document);
+    };
+    if (window.requestIdleCallback) window.requestIdleCallback(run, { timeout: 300 });
+    else setTimeout(run, 60);
   }
 
   function scan(root) {
@@ -462,7 +562,7 @@
     var mo = new MutationObserver(function (muts) {
       for (var i = 0; i < muts.length; i++) {
         if (muts[i].addedNodes.length) {
-          scan(document);
+          scheduleScan();
           return;
         }
       }
