@@ -44,10 +44,10 @@
   width: calc(var(--ball) * 1.2);
   height: calc(var(--ball) * 0.32);
   border-radius: 50%;
-  background: rgba(4, 8, 18, 0.55);
-  filter: blur(calc(var(--ball) * 0.12));
+  /* gradient zamiast filter: blur() — brak przerastrowywania co klatkę */
+  background: radial-gradient(ellipse 50% 50% at 50% 50%, rgba(4, 8, 18, 0.62), rgba(4, 8, 18, 0.28) 62%, rgba(4, 8, 18, 0) 100%);
   animation: rj-dough-shadow 1.15s ease-in-out infinite;
-  will-change: transform, opacity;
+  will-change: transform;
 }
 
 /* fale — każda kulka zaczyna skok chwilę po poprzedniej */
@@ -55,6 +55,16 @@
 .dough-slot:nth-child(2) .shadow { animation-delay: 0.13s; }
 .dough-slot:nth-child(3) .ball   { animation-delay: 0.26s; }
 .dough-slot:nth-child(3) .shadow { animation-delay: 0.26s; }
+
+/* Gdy WAAPI przejmuje ruch, CSS-owe @keyframes są wyłączane (jedna animacja,
+   nie dwie). */
+.rj-dough.is-waapi .ball,
+.rj-dough.is-waapi .shadow { animation: none; }
+
+/* Tryb oszczędny dla urządzeń gubiących klatki */
+#rj-page-loader.rj-loader--lite .dough-slot .shadow { display: none; }
+#rj-page-loader.rj-loader--lite .rj-loader-caption { animation: none; opacity: 0.8; }
+#rj-page-loader.rj-loader--lite .rj-loader-box { animation: none; }
 
 /* Soczysta ciastolina: plac przy lądowaniu, elastyczny skok, rozsiadka */
 /* Soczysta ciastolina: plac przy lądowaniu, elastyczny skok, rozsiadka.

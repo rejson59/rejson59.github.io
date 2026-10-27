@@ -23,6 +23,7 @@ def check(page, name, cond, detail=""):
 
 
 def main():
+    JS = (ROOT / "js" / "loader.js").read_text(encoding="utf-8")
     for name in PAGES:
         path = ROOT / name
         html = path.read_text(encoding="utf-8")
@@ -52,7 +53,7 @@ def main():
 
         # 4. loader.css nie blokuje
         check(name, "loader.css jest non-blocking (media print + onload)",
-              'css/loader.css?v=5" media="print"' in html)
+              'css/loader.css?v=6" media="print"' in html)
 
         # 5. Bootstrap WAAPI zaraz po znaczniku nakładki
         idx_overlay_end = html.find('<noscript><style>#rj-page-loader')
@@ -93,6 +94,24 @@ def main():
         # 9. Bez var()/calc(var()) w klatkach animacji kulek (stary błąd silników)
         bounce = crit[crit.find("@keyframes rj-dough-bounce"):crit.find("@keyframes rj-dough-shadow")]
         check(name, "klatki kulek bez calc(var(...))", "calc(var" not in bounce)
+
+        # 10. Płynność: jedna animacja (WAAPI wyłącza CSS), bez droższego blura
+        check(name, "WAAPI wyłącza CSS-owe klatki (.is-waapi)", ".rj-dough.is-waapi .ball" in crit)
+        check(name, "bootstrap nadaje klasę is-waapi", 'classList.add("is-waapi")' in html)
+        shadow_css = crit[crit.find(".dough-slot .shadow"):crit.find(".dough-slot:nth-child(2)")]
+        # komentarze nie są kodem — usuwamy je przed sprawdzeniem
+        shadow_code = re.sub(r"/\*.*?\*/", "", shadow_css, flags=re.S)
+        check(name, "cień bez filter: blur (drogi przy animacji)", "filter: blur" not in shadow_code,
+              shadow_code[:80].replace("\n", " "))
+        check(name, "istnieje tryb oszczędny .rj-loader--lite", ".rj-loader--lite" in crit)
+        check(name, "tryb lite ukrywa cienie", "rj-loader--lite .dough-slot .shadow" in crit)
+
+        # 11. Podglądy nie konkurują z loaderem
+        check(name, "loader.js bramkuje montowanie podglądów (pageReady)",
+              "pageReady" in JS and "preview._rjWantMount" in JS)
+        check(name, "sweep respektuje pageReady", "if (!pageReady) return;" in JS)
+        check(name, "skanowanie DOM jest odroczone (scheduleScan)",
+              "function scheduleScan" in JS and "requestIdleCallback" in JS)
 
     print("\n" + "=" * 60)
     if failures:
