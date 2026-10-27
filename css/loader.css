@@ -59,6 +59,24 @@
 .rj-dough.is-waapi .ball,
 .rj-dough.is-waapi .shadow { animation: none; }
 
+/* Etap ładowania + marka pod paskiem (dwie linie, etap czytelny) */
+.rj-loader-labels {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-top: -6px;
+}
+.rj-loader-stage {
+  margin: 0;
+  min-height: 15px;
+  font-size: 12px;
+  letter-spacing: .01em;
+  color: var(--rj-loader-muted, #8c93a8);
+  opacity: .95;
+}
+#rj-page-loader.rj-loader--lite .rj-loader-stage { opacity: .8; }
+
 /* Tryb oszczędny dla urządzeń gubiących klatki */
 #rj-page-loader.rj-loader--lite .dough-slot .shadow { display: none; }
 #rj-page-loader.rj-loader--lite .rj-loader-caption { animation: none; opacity: 0.8; }

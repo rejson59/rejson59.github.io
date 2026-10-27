@@ -59,46 +59,58 @@ function mk(html, evalBoot, evalLoader) {
 }
 
 (async () => {
-  console.log("\n=== A. PASEK: KROKI, MONOTONICZNOŚĆ, LIMIT ===");
+  console.log("\n=== A. PASEK: TEMPO, MONOTONICZNOŚĆ, LIMIT ===");
   {
     /* bez loader.js — testujemy sam kontroler paska w izolacji */
     const d = mk(overlayHtml, true, null);
     const w = d.window, doc = w.document;
     const bar = doc.querySelector(".rj-progress"), fill = doc.querySelector(".rj-progress-fill");
+    const stage = doc.querySelector(".rj-loader-stage");
 
     check("kontroler istnieje", !!(w.RJProgress && w.RJProgress.set));
     check("markup: pasek + fill + shine", !!bar && !!fill && !!doc.querySelector(".rj-progress-shine"));
+    check("etap startowy: „uruchamianie”", stage && stage.textContent === "uruchamianie", stage ? stage.textContent : "brak");
 
     const samples = [];
     const timer = setInterval(() => samples.push(scale(fill)), 60);
-    await wait(1600);
+    await wait(1000);
+    const poSekundzie = scale(fill);
+    await wait(1400);
     clearInterval(timer);
 
+    console.log("   przebieg:", samples.map((v) => v.toFixed(2)).join(" "));
     check("pasek ruszył sam", samples.some((v) => v > 0.03));
     check("nigdy się nie cofa", samples.every((v, i) => i === 0 || v >= samples[i - 1] - 0.0001));
-    check("nie przekracza 90% przed końcem", samples.every((v) => v <= 0.9001), "max=" + Math.max(...samples).toFixed(3));
-    check("JS przejmuje pasek po pierwszym kroku", bar.classList.contains("is-managed"), bar.className);
+    check("po sekundzie NIE ma jeszcze połowy", poSekundzie < 0.45, "scaleX=" + poSekundzie.toFixed(3));
+    check("po ~2 s wciąż rośnie", samples[samples.length - 1] > 0.45, "scaleX=" + samples[samples.length - 1].toFixed(3));
+    check("brama trzyma do 55%, dopóki nie ma `load`", samples.every((v) => v <= 0.5501), "max=" + Math.max(...samples).toFixed(3));
 
-    w.RJProgress.set(0.5);
-    await wait(450);
-    const po5 = scale(fill);
-    check("set(0.5) podnosi poprzeczkę", po5 > 0.45, "scaleX=" + po5.toFixed(3));
+    w.RJProgress.set(0.97);
+    await wait(900);
+    check("po otwarciu bramy idzie wyżej niż 55%", scale(fill) > 0.55, "scaleX=" + scale(fill).toFixed(3));
     w.RJProgress.set(0.2);
     await wait(450);
-    check("set() nie cofa paska", scale(fill) >= po5 - 0.0001, "scaleX=" + scale(fill).toFixed(3));
-    w.RJProgress.set(1);
-    await wait(450);
-    check("set(1) i tak zatrzymuje się na 90%", scale(fill) <= 0.9001, "scaleX=" + scale(fill).toFixed(3));
+    check("set() nie cofa paska", scale(fill) > 0.55, "scaleX=" + scale(fill).toFixed(3));
+    check("nigdy nie przekracza sufitu 97%", scale(fill) <= 0.9701, "scaleX=" + scale(fill).toFixed(3));
+
+    check("po 3 s brama nie zamarza (wolno rośnie, ale nie ponad 90%)",
+          /if \(t > 3 && target < 0\.9\) target = Math\.min\(0\.9, target \+ 0\.02\);/.test(HTML),
+          "brak reguły wzrostu bramy");
+
+    w.RJProgress.stage("ładowanie projektów");
+    check("etap da się zmienić", stage.textContent === "ładowanie projektów", stage.textContent);
 
     w.RJProgress.complete();
     await wait(60);
     check("complete() → 100%", Math.abs(scale(fill) - 1) < 0.0001, "scaleX=" + scale(fill).toFixed(4));
     check("complete() dodaje is-done", bar.classList.contains("is-done"), bar.className);
+    check("complete() ustawia etap „gotowe”", stage.textContent === "gotowe", stage.textContent);
 
     w.RJProgress.reset();
     check("reset() → 0", scale(fill) === 0, "scaleX=" + scale(fill));
     check("reset() zdejmuje is-done", !bar.classList.contains("is-done"), bar.className);
     check("reset() przywraca startową animację CSS", !bar.classList.contains("is-managed"), bar.className);
+    check("reset() przywraca etap „uruchamianie”", stage.textContent === "uruchamianie", stage.textContent);
 
     w.RJProgress.complete(true);
     check("complete(true) → 100% bez animacji", Math.abs(scale(fill) - 1) < 0.0001);
@@ -121,7 +133,7 @@ function mk(html, evalBoot, evalLoader) {
     wrap("complete"); wrap("reset");
 
     w.dispatchEvent(new w.Event("load"));
-    await wait(1900);
+    await wait(3400);
     console.log("   kolejność:", events.join(" → "));
     check("complete przed ukryciem", events.indexOf("complete") > -1 && events.indexOf("complete") < events.indexOf("hidden"), events.join(","));
     check("nakładka ukryta", ov.classList.contains("is-hidden"));
@@ -137,7 +149,7 @@ function mk(html, evalBoot, evalLoader) {
     const fill = doc.querySelector(".rj-progress-fill");
 
     w.dispatchEvent(new w.Event("load"));
-    await wait(1900);
+    await wait(2700);
 
     const samples = [];
     const timer = setInterval(() => samples.push({ v: scale(fill), shown: ov.classList.contains("is-shown") }), 40);
@@ -168,7 +180,7 @@ function mk(html, evalBoot, evalLoader) {
       return [];
     };
     w.dispatchEvent(new w.Event("load"));
-    await wait(1900);
+    await wait(3400);
     const ov = doc.getElementById("rj-page-loader");
     check("getAnimations nie dotyka nakładki", touched.every((n) => n !== "rj-page-loader"), touched.join(", ") || "brak wywołań");
     check("nakładka i tak znika z układu", ov.style.display === "none", "display=" + (ov.style.display || "brak"));
@@ -199,7 +211,7 @@ function mk(html, evalBoot, evalLoader) {
     check("pod loaderem iframe nie startuje", !iframe.getAttribute("src"));
     check("zapamiętano chęć montowania", p._rjWantMount === true);
     d.window.dispatchEvent(new d.window.Event("load"));
-    await wait(1600);
+    await wait(3000);
     check("po zniknięciu loadera iframe startuje", !!iframe.getAttribute("src"));
   }
   {
@@ -317,7 +329,7 @@ function mk(html, evalBoot, evalLoader) {
     w.dispatchEvent(new w.Event("load"));
     let prev = 0, maxBurst = 0;
     const started = () => Array.from(doc.querySelectorAll("iframe")).filter((f) => f.getAttribute("src")).length;
-    for (let i = 0; i < 80; i++) {
+    for (let i = 0; i < 160; i++) {
       await wait(25);
       const now = started();
       maxBurst = Math.max(maxBurst, now - prev);
@@ -347,7 +359,7 @@ function mk(html, evalBoot, evalLoader) {
 
       const seen = [];
       const timer = setInterval(() => seen.push({ v: scale(fill), hidden: ov.classList.contains("is-hidden") }), 100);
-      await wait(2800);
+      await wait(3600);
       clearInterval(timer);
 
       const hiddenAt = seen.findIndex((s) => s.hidden);

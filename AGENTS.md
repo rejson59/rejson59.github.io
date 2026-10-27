@@ -79,6 +79,20 @@ Pracujesz na gałęzi sesji `arena/...` → commit → push → Pull Request do 
 GitHub Pages buduje `main` automatycznie (~1 min). Po merge zweryfikuj stronę na żywo
 (fetch pod `https://rejson59.github.io/...`), a potem rozważ wpis agenta wg zasad z sekcji 2.
 
+## 4a. Harmonogram paska postępu (nie ruszać bez czytania)
+
+Pasek nie jest „na oko" — ma trafić na moment znikania nakładki:
+
+- `CURVE_S` w bootstrapie na każdej stronie **musi** równać się `MIN_SHOW_MS / 1000`
+  w `js/loader.js` (obecnie `1.8` / `1800`). Pilnuje tego asercja w strażniku.
+- Krzywa: `0.05 + 0.89 * (t / CURVE_S) ** 1.6`, więc po sekundzie jest ~32%,
+  a 94% dokładnie w chwili `doHide` — na końcu nie ma skoku.
+- `set(v)` to **brama** (maksimum), nie wartość: bez zdarzenia `load` pasek nie
+  przekracza 0.55, a po 3 s brama wolno rośnie (max 0.9). 100% tylko na koniec.
+- Etapy (`RJProgress.stage`) mają minima po 520 ms każdy — inaczej migają.
+- Przechwycenie paska przez JS (`is-managed`) musi zachować to, co już pokazała
+  animacja CSS, i nigdy nie cofnąć wartości (`paint()`).
+
 ## 4. Testy loadera
 
 Dwa zestawy, oba trzeba przepuścić po każdej zmianie w `js/loader.js`, `css/loader.css`

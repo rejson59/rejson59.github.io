@@ -24,6 +24,7 @@ def check(page, name, cond, detail=""):
 
 def main():
     JS = (ROOT / "js" / "loader.js").read_text(encoding="utf-8")
+    LOADER_CSS = (ROOT / "css" / "loader.css").read_text(encoding="utf-8")
     for name in PAGES:
         path = ROOT / name
         html = path.read_text(encoding="utf-8")
@@ -53,7 +54,7 @@ def main():
 
         # 4. loader.css nie blokuje
         check(name, "loader.css jest non-blocking (media print + onload)",
-              'css/loader.css?v=9" media="print"' in html)
+              'css/loader.css?v=10" media="print"' in html)
 
         # 5. Bootstrap WAAPI zaraz po znaczniku nakładki
         idx_overlay_end = html.find('<noscript><style>#rj-page-loader')
@@ -125,12 +126,29 @@ def main():
               "@keyframes rj-progress-flash" in crit and ".rj-progress.is-done::after" in crit)
         check(name, "błysk wyłączony w trybie lite i reduced-motion",
               crit.count("is-done::after { animation: none; }") >= 2)
-        check(name, "dobicie mieści się w leadzie (transition <= lead)",
-              "transform .3s cubic-bezier" in crit and "PROGRESS_LEAD_MS = 300" in JS)
+        check(name, "dobicie mieści się w oknie widoczności (transition <= HOLD)",
+              "transform .3s cubic-bezier" in crit and "HOLD_MS = 320" in JS)
+        # tempo paska i czas widoczności loadera muszą być zsynchronizowane,
+        # inaczej na końcu zawsze zostaje skok do 100%
+        m_curve = re.search(r"var CURVE_S = ([\d.]+);", html)
+        m_show = re.search(r"var MIN_SHOW_MS = (\d+);", JS)
+        check(name, "tempo paska zsynchronizowane z czasem loadera (CURVE_S == MIN_SHOW)",
+              bool(m_curve and m_show) and abs(float(m_curve.group(1)) * 1000 - int(m_show.group(1))) < 1,
+              f"CURVE_S={m_curve.group(1) if m_curve else '?'} vs MIN_SHOW={m_show.group(1) if m_show else '?'}")
         check(name, "kontroler RJProgress w bootstrapie", "window.RJProgress" in html)
-        check(name, "loader.js podaje realne etapy (0.5 / 0.85)", "markProgress(0.5)" in JS and "markProgress(0.85)" in JS)
-        check(name, "loader.js domyka pasek przed zdjęciem nakładki",
-              "PROGRESS_LEAD_MS" in JS and "p.complete" in JS)
+        check(name, "loader.js podaje realne etapy z podpisami",
+              'markProgress(0.55, "składanie widoku")' in JS and
+              'markProgress(0.97, "ładowanie projektów")' in JS and
+              'markProgress(0.97, "prawie gotowe")' in JS)
+        check(name, "loader.js domyka pasek przed zdjęciem nakładki", "p.complete" in JS)
+        check(name, "etapy są widoczne w markupie (uruchamianie + rejson59)",
+              'class="rj-loader-stage"' in body and "uruchamianie" in body and "rejson59" in body)
+        check(name, "etap ma zarezerwowane miejsce (tekst nie skacze)",
+              ".rj-loader-stage" in crit and "min-height: 15px" in crit)
+        check(name, "arkusz zewnętrzny zna etap (style nie znikają po wczytaniu CSS)",
+              ".rj-loader-stage" in LOADER_CSS and ".rj-loader-labels" in LOADER_CSS)
+        check(name, "loader.js i loader.css w nowych wersjach (bez starej wersji z cache)",
+              "js/loader.js?v=12" in html and "css/loader.css?v=10" in html)
         # 10c. Odporność na słaby sprzęt (zgłoszenie: „zacina, pasek cofa się, stoi pusty”)
         check(name, "pierwszy ruch paska robi CSS (kompozytor), nie JS",
               "@keyframes rj-progress-creep" in crit and "animation: rj-progress-creep" in crit)
