@@ -85,9 +85,9 @@
   z-index: 100000;
   display: grid;
   place-items: center;
-  background: color-mix(in srgb, var(--bg, #0b0e13) 92%, transparent);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
+  /* Pełne krycie: arkusz ładuje się bez blokowania, więc pod nakładką może
+     jeszcze nie być gotowych stylów strony — nie chcemy, by cokolwiek prześwitywało. */
+  background: var(--bg, #0b0e13);
   opacity: 1;
   visibility: visible;
   transition: opacity 0.34s ease 0s, visibility 0s linear 0.37s;
