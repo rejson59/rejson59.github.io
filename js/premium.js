@@ -384,8 +384,8 @@
       return '<div class="rj-premium is-locked rj-club-card">' +
         '<span class="rj-premium__glow" aria-hidden="true"></span>' +
         '<div class="rj-premium__inner">' +
-          '<p class="rj-premium__head"><span class="rj-premium__dot"></span> Premium · u mnie za darmo</p>' +
-          '<h2 class="rj-club-title">Wystarczy się zalogować :)</h2>' +
+          '<p class="rj-premium__head"><span class="rj-premium__dot"></span> Rejson59 · Premium</p>' +
+          '<h2 class="rj-club-title">Premium jest u mnie za darmo — wystarczy się zalogować :)</h2>' +
           '<p class="rj-club-lead">Konto to nick i 4-cyfrowy PIN — bez maila, bez potwierdzania, ' +
             'jakieś 10 sekund. Odblokowuje rzeczy, które muszą wiedzieć, kim jesteś:</p>' +
           '<ul class="rj-premium__list">' +
