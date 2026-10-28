@@ -402,6 +402,39 @@
     }
   }
 
+  /* Dziennik: dzień po dniu — na jakich podstronach był i o której wszedł.
+     Wydzielone z renderVisitorProfile, żeby dało się sprawdzić testem
+     bez logowania do panelu. */
+  function buildDayLogHtml(dayLog, todayIso) {
+    if (!Array.isArray(dayLog) || !dayLog.length) return "";
+    return '<div class="vif-section"><h3 class="vif-h">Dzień po dniu — podstrony i godzina wejścia</h3>' +
+      '<div class="vif-days-log">' +
+      dayLog.map(function (d) {
+        var pages = Array.isArray(d.pages) ? d.pages : [];
+        var isToday = String(d.day).slice(0, 10) === String(todayIso || "").slice(0, 10);
+        return (
+          '<div class="vif-day' + (isToday ? " is-today" : "") + '">' +
+            '<div class="vif-day-head">' +
+              '<span class="vif-day-date mono">' + esc(dayLabel(d.day)) + (isToday ? " · dziś" : "") + "</span>" +
+              (d.entry_at ? '<span class="pa-time-chip" title="Pierwsze wejście tego dnia">🕘 wszedł ' + esc(clockTime(d.entry_at)) + "</span>" : "") +
+              (d.last_at ? '<span class="pa-time-chip" title="Ostatnia aktywność tego dnia">⏱ do ' + esc(clockTime(d.last_at)) + "</span>" : "") +
+              '<span class="pa-time-chip" title="Nowa wizyta po przerwie 30 min">🚪 ' + fmt(d.entries) + "</span>" +
+              '<span class="pa-time-chip" title="Kliknięcia i akcje tego dnia">🖱 ' + fmt(d.actions) + "</span>" +
+            "</div>" +
+            '<div class="vif-day-pages">' +
+              (pages.length
+                ? pages.map(function (slug) {
+                    var isPage = String(slug).toLowerCase() === SITE_SLUG;
+                    return '<span class="adm-proj-chip' + (isPage ? " is-page" : "") + '">' + esc(prettySlug(slug)) + "</span>";
+                  }).join("")
+                : '<span class="vif-day-empty">brak zapisanych podstron</span>') +
+            "</div>" +
+          "</div>"
+        );
+      }).join("") +
+      "</div></div>";
+  }
+
   /* ---------- Odwiedzający na żywo (identyfikator + ścieżka + akcje) ---------- */
   function renderVisitors(visitors) {
     var wrap = $("pa-visitors");
@@ -1017,11 +1050,19 @@
           (p.frozen && !p.is_bot ? '<span class="vif-badge vif-badge-frozen" title="Wszedł, ale nic nie kliknął i nie przeszedł na inną stronę">❄ zamrożony</span>' : "") +
         "</span>" +
         '<span class="vif-row-stats">' +
-          '<span class="pa-time-chip" title="Przejścia między stronami (ścieżki)">🛤 ' + fmt(p.visits) + "</span>" +
+          '<span class="pa-time-chip" title="Wejścia — nowa wizyta po przerwie dłuższej niż 30 minut">🚪 ' + fmt(p.visits) + "</span>" +
           '<span class="pa-time-chip" title="Odwiedzone podstrony">📄 ' + fmt(p.pages) + "</span>" +
           '<span class="pa-time-chip" title="Kliknięcia i akcje">🖱 ' + fmt(p.actions) + "</span>" +
           (Number(p.submissions) > 0 ? '<span class="pa-time-chip" title="Zgłoszenia na tablicę">📨 ' + fmt(p.submissions) + "</span>" : "") +
           (Number(p.votes) > 0 ? '<span class="pa-time-chip" title="Głosy na pomysły">👍 ' + fmt(p.votes) + "</span>" : "") +
+          (Array.isArray(p.today_pages) && p.today_pages.length
+            ? '<span class="vif-row-today" title="Dziś był na: ' + esc(p.today_pages.map(prettySlug).join(" · ")) + '">' +
+              "📄 dziś: " + esc(p.today_pages.slice(0, 3).map(prettySlug).join(" · ")) +
+              (p.today_pages.length > 3 ? " +" + (p.today_pages.length - 3) : "") + "</span>"
+            : "") +
+          (p.today_entry_at
+            ? '<span class="pa-time-chip" title="O której wszedł dziś pierwszy raz">🕘 ' + esc(clockTime(p.today_entry_at)) + "</span>"
+            : "") +
         "</span>" +
         '<span class="vif-row-seen mono" title="Ostatnio widziana">' + esc(relTime(p.last_seen_at)) + "</span>" +
         '<span class="vif-row-arrow" aria-hidden="true">›</span>' +
@@ -1093,7 +1134,7 @@
   function fetchVisitorList(retried) {
     if (!panelActive || !window.RejsonCloud || !window.RejsonCloud.rpc) return Promise.resolve(null);
     var daysEl = $("vif-days");
-    var days = daysEl ? Number(daysEl.value) || 3 : 3;
+    var days = daysEl ? Number(daysEl.value) || 7 : 7;
     return window.RejsonCloud.rpc("admin_visitor_list", { p_days: days }, true)
       .then(function (data) {
         visitorListData = (data && Array.isArray(data.people)) ? data.people : [];
@@ -1155,7 +1196,7 @@
 
     var kpiHtml =
       '<div class="vif-kpis">' +
-        '<span class="pa-time-chip">🛤 ' + fmt(p.visits) + " przechodów</span>" +
+        '<span class="pa-time-chip" title="Nowa wizyta po przerwie dłuższej niż 30 minut">🚪 ' + fmt(p.visits) + " wejść</span>" +
         '<span class="pa-time-chip">📄 ' + fmt(p.pages) + " podstron</span>" +
         '<span class="pa-time-chip">🖱 ' + fmt(p.action_count) + " akcji</span>" +
         '<span class="pa-time-chip">📨 ' + fmt(subs.length) + " zgłoszeń</span>" +
@@ -1163,15 +1204,21 @@
         '<span class="pa-time-chip">📝 ' + fmt(posts.length) + " wpisów · 💬 " + fmt(comments.length) + " komentarzy</span>" +
       "</div>";
 
-    /* Ścieżka jako pionowa oś czasu (ten sam komponent co na kartach na żywo) */
+    /* Trwała pamięć: osoba × dzień (podstrony + godzina wejścia) */
+    var dayLog = Array.isArray(p.day_log) ? p.day_log : [];
+    var dayLogHtml = buildDayLogHtml(dayLog, new Date().toISOString().slice(0, 10));
+
+    /* Ścieżka hop po hopie — celowo tylko z dzisiaj (starsze trasy nie są zapisywane) */
     var trailHtml = trail.length
-      ? '<div class="vif-section"><h3 class="vif-h">Ścieżka podstron (od najnowszego)</h3>' +
+      ? '<div class="vif-section"><h3 class="vif-h">Ścieżka z dziś (hop po hopie)</h3>' +
         trailTimelineHtml(trail, {}) + "</div>"
       : "";
 
     var actionsHtml = actions.length
-      ? '<div class="vif-section"><h3 class="vif-h">Kliknięcia i akcje</h3><div class="pa-actions-list vif-actions">' +
-        actions.slice(0, 30).map(function (a) {
+      ? '<div class="vif-section"><h3 class="vif-h">Kliknięcia i akcje' +
+        (actions.length > 60 ? ' <span class="vif-h-note mono">(ostatnie 60 z ' + fmt(p.action_count) + ")</span>" : "") +
+        '</h3><div class="pa-actions-list vif-actions">' +
+        actions.slice(0, 60).map(function (a) {
           return (
             '<div class="pa-action">' +
               '<span class="pa-action-icon" aria-hidden="true">' + actionIcon(a.kind) + "</span>" +
@@ -1220,11 +1267,11 @@
         }).join("") + "</div></div>"
       : "";
 
-    var emptyHtml = (!trail.length && !actions.length && !subs.length && !posts.length && !comments.length)
+    var emptyHtml = (!dayLog.length && !trail.length && !actions.length && !subs.length && !posts.length && !comments.length)
       ? '<div class="pa-empty">Ta osoba nie zostawiła jeszcze żadnego śladu w wybranym okresie.</div>'
       : "";
 
-    host.innerHTML = kpiHtml + trailHtml + actionsHtml + subsHtml + commHtml + emptyHtml;
+    host.innerHTML = kpiHtml + dayLogHtml + trailHtml + actionsHtml + subsHtml + commHtml + emptyHtml;
     visitorProfileShownId = p.id || null;
   }
 
@@ -1239,7 +1286,7 @@
     /* przy cichym odświeżaniu / ponownej próbie nie mrygamy loaderem */
     if (host && !opts.quiet) host.innerHTML = '<div class="pa-empty">Ładowanie profilu…</div>';
     var daysEl = $("vif-days");
-    var days = daysEl ? Number(daysEl.value) || 3 : 3;
+    var days = daysEl ? Number(daysEl.value) || 7 : 7;
     window.RejsonCloud.rpc("admin_visitor_profile", { p_id: id, p_days: days }, true)
       .then(function (data) { renderVisitorProfile(data); })
       .catch(function (err) {
@@ -1425,6 +1472,9 @@
       showAuth();
     }
   }
+
+  /* Podgląd kawałka renderowania dla testów (strona admina i tak jest za logowaniem). */
+  window.__rjAdmin = { buildDayLogHtml: buildDayLogHtml, dayLabel: dayLabel, prettySlug: prettySlug };
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", boot);

@@ -24,7 +24,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="rejson-widgets/css/studio.css?v=3">
   <link rel="stylesheet" href="rejson-widgets/css/admin.css?v=2026-10-26">
-  <link rel="stylesheet" href="css/admin-panel.css?v=2026-10-25c">
+  <link rel="stylesheet" href="css/admin-panel.css?v=2026-10-28">
 </head>
 <body>
 
@@ -377,7 +377,10 @@
             <span class="filter-label">Zakres <span class="vif-retention-note" title="Starsza aktywność jest automatycznie usuwana">retencja 3 dni</span></span>
             <select id="vif-days" class="ctrl-select">
               <option value="1">24 godziny</option>
-              <option value="3" selected>3 dni</option>
+              <option value="3">3 dni</option>
+              <option value="7" selected>7 dni</option>
+              <option value="14">14 dni</option>
+              <option value="30">30 dni</option>
             </select>
           </label>
           <span class="mono vif-count" id="vif-count"></span>
@@ -554,6 +557,6 @@
   <script src="js/view-tracker.js?v=3" defer></script>
   <script src="js/error-reporter.js?v=1" defer></script>
   <script src="js/admin-errors.js?v=1"></script>
-  <script src="js/admin-panel.js?v=2026-10-26"></script>
+  <script src="js/admin-panel.js?v=2026-10-28"></script>
 </body>
 </html>
