@@ -28,6 +28,7 @@
   var LINK_KEY = "rj_identity_link_v1";
   var SNOOZE_KEY = "rj_club_snooze_v1";
   var VISIT_KEY = "rj_visit_v1";           /* sessionStorage: raz na wizytę */
+  var VOTER_KEY = "rejson_widgets_voter_id_v1"; /* ten sam klucz co pigułka zgłoszeń */
   var SNOOZE_MS = 7 * 24 * 60 * 60 * 1000; /* „nie teraz” = tydzień spokoju */
 
   /* ---------- drobiazgi ---------- */
@@ -142,7 +143,17 @@
 
   /* ---------- powiadomienia ---------- */
 
-  var state = { items: [], loading: false, error: null, ownerOnline: false };
+  var state = { items: [], loading: false, error: null, ownerOnline: false, board: [] };
+
+  /* Klucz, którym pigułka/board podpisują głosy — bez niego `has_voted`
+     zawsze wracałoby false i „Twój wkład” kłamałby o zerze. */
+  function voterKey() {
+    try {
+      var k = window.localStorage.getItem(VOTER_KEY);
+      if (k && k.length >= 16) return k;
+    } catch (e) { /* tryb prywatny */ }
+    return null;
+  }
 
   /* Jedno przejście: porównujemy „co widziałem ostatnio” z tym, co jest teraz.
      Pierwsze uruchomienie tylko zapisuje punkt odniesienia — bez zalewu
@@ -182,8 +193,10 @@
     });
 
     /* 2. moje zgłoszenia na tablicy — status i odpowiedź */
-    var boardPromise = rpc("list_public_board", { p_limit: 60 })
-      .catch(function () { return null; });
+    var boardPromise = rpc("list_public_board", {
+      p_limit: 120,
+      p_voter_key: voterKey()          /* bez tego nie wiemy, na co już głosowałeś */
+    }).catch(function () { return null; });
 
     /* 3. obecność właściciela — realna, z bazy */
     var presencePromise = rpc("community_online_users", { p_window_seconds: 120 })
@@ -193,6 +206,29 @@
       var rows = Array.isArray(res[0]) ? res[0] : [];
       var online = Array.isArray(res[1]) ? res[1] : [];
       var nextSubs = {};
+      state.board = rows;
+
+      /* Nowe zgłoszenie w projekcie, który obserwuję. Prawdziwe zdarzenie:
+         wpis powstał po moim ostatnim wejściu. Pomijam własne zgłoszenia. */
+      var lastVisitMs = seen && seen.at ? new Date(seen.at).getTime() : 0;
+      if (!firstRun && lastVisitMs) {
+        rows.forEach(function (it) {
+          var slug = it.project_slug || it.project_name;
+          if (!slug || followed.indexOf(slug) === -1) return;
+          if (String(it.author_name || "").toLowerCase() === String(s.username).toLowerCase()) return;
+          var created = new Date(it.created_at).getTime();
+          if (!(created > lastVisitMs)) return;
+          events.push({
+            id: "newsub:" + it.id,
+            kind: "new_submission",
+            icon: "📣",
+            title: "Nowe zgłoszenie w „" + slug + "”",
+            text: it.title || "Ktoś coś zgłosił.",
+            href: "tablica-pomyslow#" + it.id,
+            when: it.created_at
+          });
+        });
+      }
 
       var mine = rows.filter(function (it) {
         return String(it.author_name || "").toLowerCase() === String(s.username).toLowerCase();
@@ -372,9 +408,63 @@
 
   /* ---------- sekcja „Premium za darmo” ---------- */
 
+  /* „Twój wkład” — wszystko policzone z realnych danych tablicy, które
+     i tak już pobieramy. Żadnych szacunków ani zaokrągleń „na pokaz”. */
+  function myStats() {
+    var s = session();
+    var uname = s ? String(s.username).toLowerCase() : "";
+    var rows = Array.isArray(state.board) ? state.board : [];
+    var mine = rows.filter(function (it) {
+      return uname && String(it.author_name || "").toLowerCase() === uname;
+    });
+    mine.sort(function (a, b) {
+      return String(b.updated_at || b.created_at || "").localeCompare(String(a.updated_at || a.created_at || ""));
+    });
+    return {
+      mine: mine,
+      shipped: mine.filter(function (it) { return it.status === "completed"; }).length,
+      votes: rows.filter(function (it) { return it.has_voted; }).length,
+      following: following().length
+    };
+  }
+
+  function statsHTML(st) {
+    var cells = [
+      [st.mine.length, "Twoje zgłoszenia"],
+      [st.shipped, "Wdrożone"],
+      [st.votes, "Oddane głosy"],
+      [st.following, "Obserwujesz"]
+    ];
+    return '<div class="rj-stats">' +
+      cells.map(function (c) {
+        return '<div class="rj-stat"><b>' + c[0] + '</b><span>' + esc(c[1]) + "</span></div>";
+      }).join("") +
+      "</div>";
+  }
+
+  function mineHTML(st) {
+    if (!st.mine.length) {
+      return '<p class="rj-mine-empty">Nie masz jeszcze własnych zgłoszeń — ' +
+        '<a href="tablica-pomyslow">coś Ci nie działa albo czegoś brakuje?</a> Napisz, to naprawdę trafia na listę.</p>';
+    }
+    return '<div class="rj-mine">' +
+      '<p class="rj-mine-head">Twoje zgłoszenia <span class="mono">(' + st.mine.length + ')</span> ' +
+        '<a href="tablica-pomyslow#moje">zobacz na tablicy →</a></p>' +
+      st.mine.slice(0, 3).map(function (it) {
+        return '<a class="rj-mine-item" href="tablica-pomyslow#' + esc(it.id) + '">' +
+          '<span class="rj-mine-title">' + esc(it.title || "Zgłoszenie") + "</span>" +
+          '<em>' + esc(STATUS_LABEL[it.status] || it.status || "") + "</em>" +
+          "</a>";
+      }).join("") +
+      "</div>";
+  }
+
   function clubHTML() {
     var perks = [
-      ["🔔", "Powiadomienia", "Twoje zgłoszenia, obserwowane projekty i realna obecność Rejsona."],
+      ["🔔", "Powiadomienia", "Status Twojego zgłoszenia, odpowiedź Rejsona i realna obecność — nic wymyślonego."],
+      ["📊", "Twój wkład", "Widzisz, ile Twoich zgłoszeń trafiło do realizacji i ile pomysłów poparłeś."],
+      ["🗂", "Moje zgłoszenia", "Skrót do własnych wpisów i filtr „tylko moje” na tablicy — bez szukania w tłumie."],
+      ["📣", "Nowości z obserwowanych", "Ktoś zgłosił coś w projekcie, który obserwujesz? Dowiesz się pierwszy."],
       ["🧵", "Jedna historia", "Wcześniejsze głosy i zgłoszenia dostają Twój nick — także z innych urządzeń."],
       ["⭐", "Obserwowane projekty", "Klikasz „obserwuj” i wiesz, gdy projekt się zmieni."]
     ];
@@ -383,6 +473,7 @@
     if (!s) {
       return '<div class="rj-premium is-locked rj-club-card">' +
         '<span class="rj-premium__glow" aria-hidden="true"></span>' +
+        '<span class="rj-premium__sheen" aria-hidden="true"></span>' +
         '<div class="rj-premium__inner">' +
           '<p class="rj-premium__head"><span class="rj-premium__dot"></span> Rejson59 · Premium</p>' +
           '<h2 class="rj-club-title">Premium jest u mnie za darmo — wystarczy się zalogować :)</h2>' +
@@ -407,16 +498,20 @@
       return !!(p.liveUrl || p.homepage || p.html_url);
     }).slice(0, 8);
     var list = following();
+    var st = myStats();
     return '<div class="rj-premium is-unlocked rj-club-card">' +
       '<span class="rj-premium__glow" aria-hidden="true"></span>' +
+      '<span class="rj-premium__sheen" aria-hidden="true"></span>' +
       '<div class="rj-premium__inner">' +
         '<p class="rj-premium__head"><span class="rj-premium__dot"></span> Twoje konto · ' + esc(s.username) + '</p>' +
         '<h2 class="rj-club-title">Wszystko odblokowane</h2>' +
         '<p class="rj-club-lead">' +
-          'Obserwowanych projektów: <strong>' + list.length + '</strong> · ' +
-          'powiadomień czeka: <strong>' + state.items.length + '</strong>' +
+          'Cześć <strong>' + esc(s.username) + '</strong> — to Twoje konto i Twoje rzeczy. ' +
+          'Powiadomień czeka: <strong>' + state.items.length + '</strong>' +
           (state.ownerOnline ? ' · <strong>Rejson59 jest teraz online</strong>' : '') +
         '</p>' +
+        statsHTML(st) +
+        mineHTML(st) +
         '<div class="rj-follow" role="group" aria-label="Obserwowane projekty">' +
           followable.map(function (p) {
             var on = list.indexOf(p.name) !== -1;
@@ -503,6 +598,7 @@
   function refresh() {
     if (!isLoggedIn()) {
       state.items = [];
+      state.board = [];
       paintCount();
       return Promise.resolve([]);
     }

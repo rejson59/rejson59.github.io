@@ -236,6 +236,16 @@
 .tag-wait { color: var(--faint); border-color: var(--border); background: color-mix(in srgb, currentColor 6%, transparent); }
 
 .btn-hide-done.is-active { border-color: color-mix(in srgb, var(--text) 35%, var(--border)); color: var(--text); }
+.btn-mine.is-active {
+  border-color: color-mix(in srgb, var(--accent, #6aa6ff) 55%, var(--border));
+  color: var(--accent, #6aa6ff);
+}
+/* „Twoje” — jedyny tag, który mówi o Tobie, nie o treści */
+.tag-mine {
+  color: #7fe9f7;
+  border-color: color-mix(in srgb, #22d3ee 45%, var(--border));
+  background: color-mix(in srgb, #22d3ee 12%, transparent);
+}
 
 .board-item-title { font-size: 15.5px; font-weight: 600; margin: 0 0 4px; letter-spacing: -0.01em; }
 .board-item-desc { font-size: 13px; color: var(--muted); margin: 0; overflow-wrap: anywhere; }
