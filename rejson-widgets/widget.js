@@ -1173,6 +1173,21 @@
   /* ========================================================================
      10. KOMUNIKACJA Z CHMURĄ SUPABASE + DIAGNOSTYKA
      ======================================================================== */
+  /* Zalogowany? Wtedy zgłoszenie podpisuje KONTO, nie wolny tekst.
+     Dzięki temu wpis od razu trafia do właściwej osoby i widać go w jej
+     powiadomieniach — bez ręcznego wpisywania nicku przy każdym zgłoszeniu. */
+  function sessionUsername() {
+    try {
+      var raw = localStorage.getItem("rejson_community_session_v1");
+      if (!raw) return null;
+      var s = JSON.parse(raw);
+      if (s && typeof s.token === "string" && s.token.length >= 16 && s.username) {
+        return String(s.username);
+      }
+    } catch (e) { /* ignorujemy */ }
+    return null;
+  }
+
   function getVoterId() {
     try {
       var id = localStorage.getItem(VOTER_KEY_NAME);
@@ -1524,7 +1539,7 @@
       p_category: state.type === "bug" ? "bug" : "feature",
       p_severity: "normal",
       p_is_public: true,
-      p_author_name: draft.author.trim() || "Anonim",
+      p_author_name: sessionUsername() || draft.author.trim() || "Anonim",
       p_author_contact: null,
       p_page_url: window.location.href,
       p_diagnostics: state.type === "bug" ? collectDiagnostics() : {},
