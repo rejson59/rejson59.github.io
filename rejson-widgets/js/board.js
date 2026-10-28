@@ -25,6 +25,16 @@
     typeFilter: "all",
     projectFilter: "all",
     sortBy: "top",
+    /* Wcześniej „zamknięte” znikały po cichu, bez żadnej informacji.
+       Teraz to jawna decyzja użytkownika, domyślnie pokazujemy wszystko —
+       inaczej ludzie nie wiedzą, że ich zgłoszenie gdzieś jeszcze jest. */
+    hideDone: (function () {
+      try {
+        return localStorage.getItem("rj_board_hide_done") === "1";
+      } catch (e) {
+        return false;
+      }
+    })(),
     online: false,
     loading: true
   };
@@ -40,6 +50,7 @@
   var refreshBtn = document.getElementById("btn-refresh");
   var toastEl = document.getElementById("board-toast");
   var typeButtons = Array.prototype.slice.call(document.querySelectorAll("[data-type-filter]"));
+  var hideDoneBtn = document.getElementById("toggle-hide-done");
 
   var kpiTotal = document.getElementById("kpi-total");
   var kpiIdeas = document.getElementById("kpi-ideas");
@@ -224,7 +235,7 @@
   /* ---------- Lista ---------- */
   function filteredItems() {
     var list = state.items.filter(function (it) {
-      if (it.status === "closed") return false;
+      if (state.hideDone && (it.status === "closed" || it.status === "completed")) return false;
       if (state.typeFilter !== "all" && it.type !== state.typeFilter) return false;
       if (state.projectFilter !== "all" && String(it.project_slug) !== state.projectFilter) return false;
       return true;
@@ -288,7 +299,9 @@
               '">' +
               esc(statusLabel) +
               "</span>"
-            : "") +
+            : it.status === "new" && !it.admin_reply
+              ? '<span class="tag tag-wait" title="Rejson jeszcze tego nie rozpatrzył">⏳ Czeka na reakcję</span>'
+              : "") +
           "    </div>" +
           '    <h3 class="board-item-title">' +
           esc(it.title) +
@@ -397,6 +410,31 @@
     state.sortBy = sortSelect.value;
     renderFeed();
   });
+
+  /* Ukrywanie wdrożonych i zamkniętych — jawny wybór, zapamiętany.
+     Nie chowamy nic po cichu: domyślnie widać wszystko. */
+  if (hideDoneBtn) {
+    function paintHideDone() {
+      hideDoneBtn.classList.toggle("is-active", state.hideDone);
+      hideDoneBtn.setAttribute("aria-pressed", state.hideDone ? "true" : "false");
+      hideDoneBtn.textContent = state.hideDone ? "👁 Pokaż wdrożone i zamknięte" : "🙈 Ukryj wdrożone i zamknięte";
+    }
+    paintHideDone();
+    hideDoneBtn.addEventListener("click", function () {
+      state.hideDone = !state.hideDone;
+      try {
+        localStorage.setItem("rj_board_hide_done", state.hideDone ? "1" : "0");
+      } catch (e) { /* tryb prywatny — trudno */ }
+      paintHideDone();
+      renderFeed();
+      if (state.hideDone) {
+        var done = state.items.filter(function (it) {
+          return it.status === "completed" || it.status === "closed";
+        }).length;
+        if (done) notify("Ukryto " + done + " zakończonych zgłoszeń. Wrócą jednym kliknięciem.");
+      }
+    });
+  }
 
   refreshBtn.addEventListener("click", function () {
     syncBoard().then(function () {
