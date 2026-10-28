@@ -264,7 +264,8 @@ html[data-theme="light"] .rj-premium {
    Sekcja „Premium za darmo” na stronie głównej
    ========================================================================== */
 
-.rj-club { padding: 44px 0 8px; }
+/* pod hero, obok zachęt do tablicy i społeczności */
+.rj-club { padding: 28px 0 4px; }
 .rj-club-card .rj-premium__inner { padding: 24px 26px; }
 .rj-club-title { margin: 0 0 8px; font-size: clamp(21px, 2.4vw, 26px); letter-spacing: -.02em; }
 .rj-club-lead { margin: 0; font-size: 14px; line-height: 1.65; color: var(--rj-premium-muted); }
