@@ -232,6 +232,10 @@
 .tag-pin { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 40%, var(--border)); }
 .tag-status { color: var(--progress); border-color: color-mix(in srgb, var(--progress) 40%, var(--border)); background: color-mix(in srgb, var(--progress) 8%, transparent); }
 .tag-status.is-done { color: var(--vote); border-color: color-mix(in srgb, var(--vote) 40%, var(--border)); background: color-mix(in srgb, var(--vote) 8%, transparent); }
+/* „czeka na reakcję” — mówi prawdę o stanie, zamiast milczeć */
+.tag-wait { color: var(--faint); border-color: var(--border); background: color-mix(in srgb, currentColor 6%, transparent); }
+
+.btn-hide-done.is-active { border-color: color-mix(in srgb, var(--text) 35%, var(--border)); color: var(--text); }
 
 .board-item-title { font-size: 15.5px; font-weight: 600; margin: 0 0 4px; letter-spacing: -0.01em; }
 .board-item-desc { font-size: 13px; color: var(--muted); margin: 0; overflow-wrap: anywhere; }
