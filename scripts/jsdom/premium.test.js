@@ -213,6 +213,13 @@ const count = (doc) => {
       notif.some((n) => n.kind === "reply"), titles);
     check("każde powiadomienie ma konkretne źródło (href)", notif.every((n) => !!n.href));
     check("każde ma znacznik czasu", notif.every((n) => !!n.when && !isNaN(new Date(n.when).getTime())));
+    /* Czas zdarzenia ma być prawdziwy (updated_at z tablicy), a nie moment,
+       w którym przeglądarka akurat odpytała serwer — inaczej „5 min temu”
+       kłamie. Kontrakt: list_public_board zwraca updated_at. */
+    const statusNote = notif.filter((n) => n.kind === "status")[0];
+    check("powiadomienie o statusie ma czas zdarzenia z bazy",
+      statusNote && String(statusNote.when).indexOf("2026-10-28T08:00:00") === 0,
+      statusNote ? String(statusNote.when) : "brak");
     check("licznik pokazuje liczbę zdarzeń",
       count(t2.doc) === (notif.length > 9 ? "9+" : String(notif.length)),
       count(t2.doc) + " vs " + notif.length);

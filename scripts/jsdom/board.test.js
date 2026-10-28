@@ -88,7 +88,7 @@ const titles = (doc) =>
     check("wszystkie trzy zgłoszenia na tablicy", all.length === 3, all.join(" | "));
     check("zamknięte zgłoszenie NIE znika po cichu", all.indexOf("Błąd odrzucony") !== -1);
     check("wdrożone też jest widoczne", all.indexOf("Pomysł już wdrożony") !== -1);
-    check("przełącznik mówi, co zrobi (a nie co zrobił)", /Ukryj wdrożone/.test(t.doc.getElementById("toggle-hide-done").textContent));
+    check("przełącznik mówi, co zrobi (a nie co zrobił)", /Ukryj zakończone/.test(t.doc.getElementById("toggle-hide-done").textContent));
     check("stan przełącznika: nieaktywny", t.doc.getElementById("toggle-hide-done").getAttribute("aria-pressed") === "false");
   }
 
@@ -100,7 +100,7 @@ const titles = (doc) =>
     await wait(20);
     const left = titles(t.doc);
     check("po kliknięciu zostaje tylko to, co czeka", left.length === 1 && left[0] === "Nowy pomysł bez odpowiedzi", left.join(" | "));
-    check("przełącznik zmienia tekst na powrót", /Pokaż wdrożone/.test(t.doc.getElementById("toggle-hide-done").textContent));
+    check("przełącznik zmienia tekst na powrót", /Pokaż zakończone/.test(t.doc.getElementById("toggle-hide-done").textContent));
     check("stan zapisany lokalnie", t.w.localStorage.getItem("rj_board_hide_done") === "1");
     check("użytkownik dostaje informację, co zniknęło",
       /Ukryto 2/.test(t.doc.getElementById("board-toast").textContent),
@@ -139,7 +139,7 @@ const titles = (doc) =>
     check("przełącznik jest w pasku filtrów", /id="toggle-hide-done"/.test(PAGE));
     check("pasek filtrów ma opis dla czytników ekranu", /aria-pressed/.test(PAGE));
     check("arkusz ma styl plakietki i przełącznika", /\.tag-wait/.test(CSS) && /\.btn-hide-done/.test(CSS));
-    check("wersje plików podbite (świeży cache)", /board\.js\?v=2/.test(PAGE) && /board\.css\?v=2/.test(PAGE));
+    check("wersje plików podbite (świeży cache)", /board\.js\?v=3/.test(PAGE) && /board\.css\?v=3/.test(PAGE));
   }
 
   const passed = out.filter(Boolean).length;

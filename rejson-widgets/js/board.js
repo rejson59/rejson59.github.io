@@ -417,7 +417,9 @@
     function paintHideDone() {
       hideDoneBtn.classList.toggle("is-active", state.hideDone);
       hideDoneBtn.setAttribute("aria-pressed", state.hideDone ? "true" : "false");
-      hideDoneBtn.textContent = state.hideDone ? "👁 Pokaż wdrożone i zamknięte" : "🙈 Ukryj wdrożone i zamknięte";
+      /* Serwer wysyła tylko zgłoszenia inne niż „zamknięte”, więc etykieta mówi
+         „zakończone” — to prawda i dla wdrożonych, i dla ewentualnych zamkniętych. */
+      hideDoneBtn.textContent = state.hideDone ? "👁 Pokaż zakończone" : "🙈 Ukryj zakończone";
     }
     paintHideDone();
     hideDoneBtn.addEventListener("click", function () {
