@@ -21,6 +21,8 @@ const ROOT = path.resolve(__dirname, "..", "..");
 const PREMIUM = fs.readFileSync(path.join(ROOT, "js", "premium.js"), "utf8");
 const WIDGET = fs.readFileSync(path.join(ROOT, "rejson-widgets", "widget.js"), "utf8");
 const INDEX = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
+const CSS = fs.readFileSync(path.join(ROOT, "css", "premium.css"), "utf8");
+const STYLE_CSS = fs.readFileSync(path.join(ROOT, "css", "style.css"), "utf8");
 
 const out = [];
 const check = (name, cond, detail) => {
@@ -108,9 +110,14 @@ const count = (doc) => {
     check("tytuł zawiera całą obietnicę, nie tylko ogon",
       /Premium jest u mnie za darmo/.test(card.querySelector(".rj-club-title").textContent),
       card.querySelector(".rj-club-title").textContent);
-    check("wymienione trzy realne korzyści",
-      (card.querySelectorAll(".rj-premium__list li").length === 3),
+    check("wymienione realne korzyści (6)",
+      (card.querySelectorAll(".rj-premium__list li").length === 6),
       String(card.querySelectorAll(".rj-premium__list li").length));
+    check("wśród nich wkład, moje zgłoszenia i nowości z obserwowanych",
+      /Twój wkład/.test(card.textContent) && /Moje zgłoszenia/.test(card.textContent) &&
+      /Nowości z obserwowanych/.test(card.textContent));
+    check("karta ma warstwę połysku (animacja światła, nie tylko ramka)",
+      !!card.querySelector(".rj-premium__sheen"));
     check("jest jedno wyraźne wezwanie do działania", !!cta && /konto|Zaloguj/.test(cta.textContent),
       cta ? cta.textContent : "brak");
     check("jest uczciwe „nie teraz”", !!t.doc.getElementById("rj-club-later"));
@@ -149,6 +156,14 @@ const count = (doc) => {
 
     check("stan wizualny: odblokowana", card.classList.contains("is-unlocked"), card.className);
     check("widać nick z konta", /RejsonFan/.test(card.textContent));
+    check("odblokowana karta też ma połysk", !!card.querySelector(".rj-premium__sheen"));
+
+    /* „Twój wkład” musi być policzony z danych, nie z sufitu */
+    const stats = Array.prototype.map.call(card.querySelectorAll(".rj-stat"), (el) => el.textContent.trim());
+    check("są cztery liczniki wkładu", stats.length === 4, stats.join(" | "));
+    check("zgłoszenia policzone z tablicy (1 zgłoszenie RejsonFan)", /^1/.test(stats[0] || ""), stats[0]);
+    check("wdrożone policzone ze statusów", /^0/.test(stats[1] || ""), stats[1]);
+    check("obserwowane projekty = 0 na starcie", /^0/.test(stats[3] || ""), stats[3]);
 
     const link = t.calls.filter((c) => c.fn === "community_link_submissions");
     check("scalanie historii wywołane", link.length === 1, "wywołań: " + link.length);
@@ -228,6 +243,62 @@ const count = (doc) => {
       count(t2.doc) + " vs " + notif.length);
   }
 
+  console.log("\n=== E2. NOWE ZGŁOSZENIE W OBSERWOWANYM PROJEKCIE ===");
+  {
+    /* Punkt odniesienia z pierwszej wizyty */
+    const first = mk({ loggedIn: true });
+    await wait(60);
+    const seen = first.w.localStorage.getItem("rj_seen_v1");
+
+    /* Ktoś inny zgłosił coś PO naszej ostatniej wizycie, w projekcie,
+       który obserwujemy — to realne zdarzenie, więc powiadomienie ma być. */
+    const future = new Date(Date.now() + 60 * 1000).toISOString();
+    const fresh = plansza();
+    fresh.push({
+      id: "22222222-2222-2222-2222-222222222222",
+      title: "Nowy pomysł kogoś innego",
+      status: "new",
+      author_name: "KtosInny",
+      admin_replied_at: null,
+      updated_at: future,
+      created_at: future,
+      project_slug: "mconline",
+      project_name: "mconline"
+    });
+
+    const t = mk({ loggedIn: true, board: fresh });
+    t.w.localStorage.setItem("rj_following_v1", JSON.stringify(["mconline"]));
+    t.w.localStorage.setItem("rj_seen_v1", seen);
+    t.w.eval(PREMIUM);
+    await wait(90);
+
+    const notif = t.w.RJPremium.notifications();
+    check("jest powiadomienie o nowym zgłoszeniu w obserwowanym projekcie",
+      notif.some((n) => n.kind === "new_submission" && /mconline/.test(n.title)),
+      notif.map((n) => n.kind).join(" | "));
+    check("nie powiadamiamy o własnych zgłoszeniach",
+      !notif.some((n) => n.kind === "new_submission" && /RejsonFan/.test(n.text)));
+    check("nieobserwowany projekt nie generuje powiadomienia", (() => {
+      const other = plansza();
+      other.push({
+        id: "33333333-3333-3333-3333-333333333333",
+        title: "Coś w JoyPad",
+        status: "new",
+        author_name: "KtosInny",
+        admin_replied_at: null,
+        updated_at: future,
+        created_at: future,
+        project_slug: "JoyPad",
+        project_name: "JoyPad"
+      });
+      const t2 = mk({ loggedIn: true, board: other });
+      t2.w.localStorage.setItem("rj_following_v1", JSON.stringify(["mconline"]));
+      t2.w.localStorage.setItem("rj_seen_v1", seen);
+      t2.w.eval(PREMIUM);
+      return !t2.w.RJPremium.notifications().some((n) => n.kind === "new_submission");
+    })());
+  }
+
   console.log("\n=== F. OBECNOŚĆ: TYLKO PRAWDA, RAZ NA WIZYTĘ ===");
   {
     const t = mk({ loggedIn: true, online: [] });
@@ -270,14 +341,33 @@ const count = (doc) => {
   console.log("\n=== I. STRONA: PODPIĘCIE ===");
   {
     check("karta premium podpięta na stronie głównej", /id="rj-club"/.test(INDEX));
-    check("arkusz premium dołączony", /css\/premium\.css\?v=1/.test(INDEX));
-    check("skrypt premium dołączony", /js\/premium\.js\?v=2/.test(INDEX));
+    check("arkusz premium dołączony", /css\/premium\.css\?v=3/.test(INDEX));
+    check("skrypt premium dołączony", /js\/premium\.js\?v=3/.test(INDEX));
     check("karta premium stoi przed listą projektów",
       INDEX.indexOf('id="rj-club"') < INDEX.indexOf('id="projekty"'));
     check("karta premium jest tuż pod hero (przed wyróżnionymi), a nie na końcu strony",
       INDEX.indexOf('class="cta-grid container"') < INDEX.indexOf('id="rj-club"') &&
       INDEX.indexOf('id="rj-club"') < INDEX.indexOf('class="origins container"'),
       "pozycja: " + INDEX.indexOf('id="rj-club"'));
+  }
+
+  console.log("\n=== J. ANIMACJA KARTY (zgłoszenie: „nie widać animacji”) ===");
+  {
+    check("obwód ma co najmniej 3 px (2 px ginęło na ciemnym tle)",
+      /padding:\s*3px/.test(CSS));
+    check("smuga obwodu ma własną animację", /animation:\s*rj-premium-sweep/.test(CSS) &&
+      /@keyframes rj-premium-sweep/.test(CSS));
+    check("po karcie przechodzi połysk (to on rzuca się w oczy)",
+      /animation:\s*rj-premium-sheen/.test(CSS) && /@keyframes rj-premium-sheen/.test(CSS));
+    check("połysk jest przycinany do karty", /\.rj-premium__inner \{[^}]*overflow:\s*hidden/.test(CSS));
+    check("treść leży nad połyskiem", /\.rj-premium__inner > \*:not\(\.rj-premium__sheen\)/.test(CSS));
+    check("strona ma globalną regułę zabijającą animacje dla reduced-motion",
+      /animation-duration:\s*\.01ms !important/.test(STYLE_CSS));
+    check("karta premium nadpisuje ją własnym !important (smuga zwalnia, nie znika)",
+      /@media \(prefers-reduced-motion: reduce\)[\s\S]*?\.rj-premium__glow \{[^}]*!important/.test(CSS));
+    check("jest dokładnie jeden blok reduced-motion (nie dwa sprzeczne)",
+      (CSS.match(/@media \(prefers-reduced-motion: reduce\)/g) || []).length === 1,
+      "bloków: " + (CSS.match(/@media \(prefers-reduced-motion: reduce\)/g) || []).length);
   }
 
   const passed = out.filter(Boolean).length;

@@ -96,6 +96,16 @@ Nigdy „ktoś właśnie coś zrobił”, jeśli to nie wydarzyło się naprawd�
 - „Nie teraz” działa naprawdę: 7 dni spokoju (`rj_club_snooze_v1`).
 - Zakazane: fałszywe liczniki „ostatnie miejsca”, wymyślone zdarzenia,
   modal wracający po „×”, blokowanie treści za rejestracją.
+- **Karta premium musi się ruszać** (zgłoszenie właściciela, 2026-10-28).
+  Efekt to DWIE warstwy: obwód 3 px ze smugą (`__glow`, obrót transformem)
+  i połysk przechodzący po karcie (`__sheen`, translateX). Sam obwód czyta się
+  jak statyczna ramka i uchodzi za brak animacji. Nie usuwaj `__sheen`.
+- Uwaga na pułapkę: `css/style.css` ma globalne
+  `@media (prefers-reduced-motion) { * { animation-duration: .01ms !important } }`,
+  które zabija każdą animację. Dla karty premium świadomie nadpisujemy je
+  własnym `!important` (smuga zwalnia do 14 s zamiast znikać).
+- Panel admina: nowe korzyści (`Twój wkład`, `Moje zgłoszenia`) liczone
+  wyłącznie z `list_public_board` — bez dodatkowych zapytań i bez szacunków.
 - Scalanie historii: `community_link_submissions(p_token)` dopisuje nick
   wyłącznie do wpisów bez podpisu (null / '' / 'Anonim') z urządzeń już
   powiązanych z kontem (`identity_links`, kind `fp`).

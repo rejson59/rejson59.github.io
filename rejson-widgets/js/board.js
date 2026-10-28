@@ -35,6 +35,8 @@
         return false;
       }
     })(),
+    /* „tylko moje”: dostępne wyłącznie po zalogowaniu */
+    mineOnly: false,
     online: false,
     loading: true
   };
@@ -51,6 +53,22 @@
   var toastEl = document.getElementById("board-toast");
   var typeButtons = Array.prototype.slice.call(document.querySelectorAll("[data-type-filter]"));
   var hideDoneBtn = document.getElementById("toggle-hide-done");
+  var mineBtn = document.getElementById("toggle-mine");
+
+  /* Nick z aktywnej sesji portalu. Bez niego „moje” nie ma czego filtrować —
+     i wtedy przycisk w ogóle się nie pokazuje (żadnych martwych kontrolek). */
+  function sessionUsername() {
+    try {
+      var raw = localStorage.getItem("rejson_community_session_v1");
+      if (!raw) return null;
+      var s = JSON.parse(raw);
+      if (s && typeof s.token === "string" && s.token.length >= 16 && s.username) {
+        return String(s.username);
+      }
+    } catch (e) { /* ignorujemy */ }
+    return null;
+  }
+  var me = sessionUsername();
 
   var kpiTotal = document.getElementById("kpi-total");
   var kpiIdeas = document.getElementById("kpi-ideas");
@@ -236,6 +254,7 @@
   function filteredItems() {
     var list = state.items.filter(function (it) {
       if (state.hideDone && (it.status === "closed" || it.status === "completed")) return false;
+      if (state.mineOnly && (!me || String(it.author_name || "").toLowerCase() !== me.toLowerCase())) return false;
       if (state.typeFilter !== "all" && it.type !== state.typeFilter) return false;
       if (state.projectFilter !== "all" && String(it.project_slug) !== state.projectFilter) return false;
       return true;
@@ -293,6 +312,9 @@
           esc(it.project_name || it.project_slug || "—") +
           "</span>" +
           (it.is_pinned ? '<span class="tag tag-pin">📌 Przypięte</span>' : "") +
+          (me && String(it.author_name || "").toLowerCase() === me.toLowerCase()
+            ? '<span class="tag tag-mine">Twoje</span>'
+            : "") +
           (statusLabel && statusLabel !== "Nowe"
             ? '<span class="tag tag-status' +
               (statusDone ? " is-done" : "") +
@@ -434,6 +456,34 @@
           return it.status === "completed" || it.status === "closed";
         }).length;
         if (done) notify("Ukryto " + done + " zakończonych zgłoszeń. Wrócą jednym kliknięciem.");
+      }
+    });
+  }
+
+  if (mineBtn && me) {
+    mineBtn.hidden = false;
+    var wantMine = /(^|#|&)moje(=|$)/.test(String(window.location.hash || "").replace(/^#/, "#"));
+    if (wantMine) state.mineOnly = true;
+
+    var paintMine = function () {
+      mineBtn.classList.toggle("is-active", state.mineOnly);
+      mineBtn.setAttribute("aria-pressed", state.mineOnly ? "true" : "false");
+      mineBtn.textContent = state.mineOnly ? "👥 Pokaż wszystkie" : "🗂 Tylko moje";
+    };
+    paintMine();
+    renderFeed();
+
+    mineBtn.addEventListener("click", function () {
+      state.mineOnly = !state.mineOnly;
+      paintMine();
+      renderFeed();
+      if (state.mineOnly) {
+        var howMany = state.items.filter(function (it) {
+          return String(it.author_name || "").toLowerCase() === me.toLowerCase();
+        }).length;
+        notify(howMany
+          ? "Filtruję: " + howMany + " Twoich zgłoszeń. Reszta wróci jednym kliknięciem."
+          : "Nie masz jeszcze własnych zgłoszeń — dodaj pierwsze pigułką „Zgłoś błąd / pomysł”.");
       }
     });
   }

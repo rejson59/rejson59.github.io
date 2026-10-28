@@ -25,6 +25,14 @@ const check = (name, cond, detail) => {
 };
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
+/* Zgłoszenie „mojej” osoby — używane tylko tam, gdzie testujemy filtr „tylko moje”,
+   żeby nie zmieniać liczników w pozostałych sekcjach. */
+const MY_ITEM = {
+  id: "aaaaaaaa-0000-0000-0000-000000000004", title: "Mój własny pomysł", type: "idea",
+  status: "new", project_slug: "mconline", project_name: "mconline", author_name: "RejsonFan",
+  admin_reply: null, upvotes_count: 2, created_at: "2026-10-28T10:00:00Z", has_voted: false
+};
+
 const ITEMS = [
   { id: "aaaaaaaa-0000-0000-0000-000000000001", title: "Nowy pomysł bez odpowiedzi", type: "idea",
     status: "new", project_slug: "mconline", project_name: "mconline", author_name: "Ktos",
@@ -38,7 +46,7 @@ const ITEMS = [
     admin_reply: null, upvotes_count: 1, created_at: "2026-10-10T10:00:00Z", has_voted: false }
 ];
 
-function mk(storage) {
+function mk(storage, hash, items) {
   const dom = new JSDOM(
     '<!doctype html><html><body>' +
       '<div class="board-toolbar">' +
@@ -46,6 +54,7 @@ function mk(storage) {
       '  <select id="filter-project"><option value="all">Wszystkie</option></select>' +
       '  <select id="filter-sort"><option value="top">top</option><option value="new">new</option></select>' +
       '  <button id="toggle-hide-done" aria-pressed="false"></button>' +
+      '  <button id="toggle-mine" aria-pressed="false" hidden></button>' +
       '  <button id="btn-refresh"></button><span id="board-updated"></span>' +
       '</div>' +
       '<section id="board-feed"></section><p id="board-empty" hidden></p>' +
@@ -55,14 +64,14 @@ function mk(storage) {
       '<span id="kpi-total"></span><span id="kpi-ideas"></span><span id="kpi-bugs"></span>' +
       '<span id="kpi-votes"></span><span id="kpi-progress"></span>' +
       '</body></html>',
-    { url: "https://rejson59.github.io/tablica-pomyslow", runScripts: "outside-only", pretendToBeVisual: true }
+    { url: "https://rejson59.github.io/tablica-pomyslow" + (hash || ""), runScripts: "outside-only", pretendToBeVisual: true }
   );
   const w = dom.window;
   if (storage) Object.keys(storage).forEach((k) => w.localStorage.setItem(k, storage[k]));
 
   w.RejsonCloud = {
     rpc: (fn) => {
-      if (fn === "list_public_board") return Promise.resolve(ITEMS.map((i) => Object.assign({}, i)));
+      if (fn === "list_public_board") return Promise.resolve((items || ITEMS).map((i) => Object.assign({}, i)));
       if (fn === "get_ecosystem_summary") return Promise.resolve({});
       return Promise.resolve(null);
     },
@@ -134,12 +143,52 @@ const titles = (doc) =>
         /Błąd odrzucony/.test(el.textContent) && el.querySelector(".tag-wait")));
   }
 
+  console.log("\n=== C2. „TYLKO MOJE” — DLA ZALOGOWANYCH ===");
+  {
+    const guest = mk();
+    await wait(40);
+    check("bez konta przycisk jest ukryty (żadnych martwych kontrolek)",
+      guest.doc.getElementById("toggle-mine").hidden === true);
+
+    const ME_STORE = { rejson_community_session_v1: JSON.stringify({ token: "t".repeat(40), username: "RejsonFan" }) };
+    const MINE_ITEMS = [MY_ITEM].concat(ITEMS);
+    const me = mk(ME_STORE, null, MINE_ITEMS);
+    await wait(40);
+    const btn = me.doc.getElementById("toggle-mine");
+    check("po zalogowaniu przycisk się pokazuje", btn.hidden === false);
+    check("na starcie pokazuje wszystko", titles(me.doc).length === 4, titles(me.doc).join(" | "));
+
+    const mineTags = Array.prototype.map.call(me.doc.querySelectorAll(".tag-mine"), (el) => el.textContent.trim());
+    check("własne zgłoszenie jest oznaczone „Twoje”", mineTags.length === 1 && mineTags[0] === "Twoje", mineTags.join(" | "));
+    check("oznaczone jest to właściwe zgłoszenie",
+      me.doc.querySelector(".tag-mine").closest(".board-item").textContent.indexOf("Mój własny pomysł") !== -1);
+
+    btn.click();
+    await wait(20);
+    const filtered = titles(me.doc);
+    check("filtr zostawia tylko moje", filtered.length === 1 && filtered[0] === "Mój własny pomysł", filtered.join(" | "));
+    check("przycisk mówi, jak wrócić", /Pokaż wszystkie/.test(btn.textContent));
+    check("użytkownik wie, ile widzi", /Twoich zgłoszeń/.test(me.doc.getElementById("board-toast").textContent),
+      me.doc.getElementById("board-toast").textContent);
+
+    btn.click();
+    await wait(20);
+    check("cofnięcie pokazuje znowu wszystko", titles(me.doc).length === 4);
+
+    /* Wejście z karty premium: tablica-pomyslow#moje */
+    const deep = mk(ME_STORE, "#moje", MINE_ITEMS);
+    await wait(40);
+    check("link „zobacz na tablicy” (#moje) od razu włącza filtr",
+      titles(deep.doc).length === 1, titles(deep.doc).join(" | "));
+  }
+
   console.log("\n=== D. STRONA ===");
   {
     check("przełącznik jest w pasku filtrów", /id="toggle-hide-done"/.test(PAGE));
     check("pasek filtrów ma opis dla czytników ekranu", /aria-pressed/.test(PAGE));
     check("arkusz ma styl plakietki i przełącznika", /\.tag-wait/.test(CSS) && /\.btn-hide-done/.test(CSS));
-    check("wersje plików podbite (świeży cache)", /board\.js\?v=3/.test(PAGE) && /board\.css\?v=3/.test(PAGE));
+    check("jest przycisk „tylko moje”", /id="toggle-mine"/.test(PAGE));
+    check("wersje plików podbite (świeży cache)", /board\.js\?v=4/.test(PAGE) && /board\.css\?v=4/.test(PAGE));
   }
 
   const passed = out.filter(Boolean).length;
