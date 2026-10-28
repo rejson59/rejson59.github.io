@@ -104,7 +104,10 @@ const count = (doc) => {
 
     check("karta premium jest widoczna", !!card);
     check("stan wizualny: zablokowana", card.classList.contains("is-locked"), card.className);
-    check("tytuł mówi wprost, czego trzeba", /Wystarczy się zalogować/.test(card.textContent));
+    check("tytuł mówi wprost, czego trzeba", /wystarczy się zalogować/i.test(card.textContent));
+    check("tytuł zawiera całą obietnicę, nie tylko ogon",
+      /Premium jest u mnie za darmo/.test(card.querySelector(".rj-club-title").textContent),
+      card.querySelector(".rj-club-title").textContent);
     check("wymienione trzy realne korzyści",
       (card.querySelectorAll(".rj-premium__list li").length === 3),
       String(card.querySelectorAll(".rj-premium__list li").length));
@@ -268,7 +271,7 @@ const count = (doc) => {
   {
     check("karta premium podpięta na stronie głównej", /id="rj-club"/.test(INDEX));
     check("arkusz premium dołączony", /css\/premium\.css\?v=1/.test(INDEX));
-    check("skrypt premium dołączony", /js\/premium\.js\?v=1/.test(INDEX));
+    check("skrypt premium dołączony", /js\/premium\.js\?v=2/.test(INDEX));
     check("karta premium stoi przed listą projektów",
       INDEX.indexOf('id="rj-club"') < INDEX.indexOf('id="projekty"'));
     check("karta premium jest tuż pod hero (przed wyróżnionymi), a nie na końcu strony",
