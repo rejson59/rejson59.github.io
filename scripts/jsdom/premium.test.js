@@ -264,6 +264,10 @@ const count = (doc) => {
     check("skrypt premium dołączony", /js\/premium\.js\?v=1/.test(INDEX));
     check("karta premium stoi przed listą projektów",
       INDEX.indexOf('id="rj-club"') < INDEX.indexOf('id="projekty"'));
+    check("karta premium jest tuż pod hero (przed wyróżnionymi), a nie na końcu strony",
+      INDEX.indexOf('class="cta-grid container"') < INDEX.indexOf('id="rj-club"') &&
+      INDEX.indexOf('id="rj-club"') < INDEX.indexOf('class="origins container"'),
+      "pozycja: " + INDEX.indexOf('id="rj-club"'));
   }
 
   const passed = out.filter(Boolean).length;
