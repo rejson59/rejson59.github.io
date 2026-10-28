@@ -100,6 +100,27 @@ Nigdy „ktoś właśnie coś zrobił”, jeśli to nie wydarzyło się naprawd�
   wyłącznie do wpisów bez podpisu (null / '' / 'Anonim') z urządzeń już
   powiązanych z kontem (`identity_links`, kind `fp`).
 
+## 3c. Co zbieramy: akcje tak, trasa nie
+
+Decyzja właściciela (2026-10-28): **więcej pamięci na kliknięcia i akcje,
+mniej na ścieżki podstron.** Wystarczy wiedzieć, na jakich podstronach dana
+osoba była danego dnia i o której weszła.
+
+| Tabela | Co trzyma | Jak długo |
+|---|---|---|
+| `visitor_days` | osoba × dzień: lista podstron, godzina wejścia, liczba wejść | 180 dni |
+| `page_trail` | kolejne hopy na żywo (podgląd „Ścieżka z dziś”) | 1 dzień |
+| `activity_events` | każde kliknięcie: co, gdzie, kiedy | 30 dni |
+| `page_presence` | kto jest teraz online | minuty (sprzątane) |
+
+Zasady:
+- Nowy wskaźnik dodajemy do `activity_events` (kliknięcia), nie przez nowy
+  wiersz trasy. Pełna trasa hop po hopie **nie jest** już pamięcią długoterminową.
+- „Wejście” = nowa wizyta po przerwie >30 min. Nie mylić z „odsłoną”.
+- Panel admina ma zakres 1–30 dni; dziennik liczy się z `visitor_days`,
+  więc nie zależy od tego, czy trasa z danego dnia jeszcze istnieje.
+- Nie dodawaj kolumn z surowym IP ani user-agentem — zostają wyłącznie hashe.
+
 ## 4a. Harmonogram paska postępu (nie ruszać bez czytania)
 
 Pasek nie jest „na oko" — ma trafić na moment znikania nakładki:
