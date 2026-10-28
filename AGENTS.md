@@ -79,6 +79,27 @@ Pracujesz na gałęzi sesji `arena/...` → commit → push → Pull Request do 
 GitHub Pages buduje `main` automatycznie (~1 min). Po merge zweryfikuj stronę na żywo
 (fetch pod `https://rejson59.github.io/...`), a potem rozważ wpis agenta wg zasad z sekcji 2.
 
+## 3b. Konto i powiadomienia — żadnych sztuczek
+
+Zasada nadrzędna: **każde powiadomienie musi pochodzić z realnych danych.**
+Nigdy „ktoś właśnie coś zrobił”, jeśli to nie wydarzyło się naprawdę.
+
+- Źródła powiadomień (`js/premium.js`): nowszy `updated_at` obserwowanego
+  projektu, zmiana statusu / odpowiedź na moje zgłoszenie, realna obecność
+  właściciela (`community_online_users`).
+- Pierwsze uruchomienie **tylko zapisuje punkt odniesienia** — bez zalewu
+  powiadomieniami o historii sprzed założenia konta.
+- Odświeżenie **scala** powiadomienia (dedupe po `id`), a nie podmienia —
+  inaczej powrót z innej karty kasuje to, co użytkownik widzi.
+- Bramka dotyczy wyłącznie DODATKÓW (powiadomienia, obserwacje, scalona
+  historia). Treść strony i tablica zostają dla wszystkich.
+- „Nie teraz” działa naprawdę: 7 dni spokoju (`rj_club_snooze_v1`).
+- Zakazane: fałszywe liczniki „ostatnie miejsca”, wymyślone zdarzenia,
+  modal wracający po „×”, blokowanie treści za rejestracją.
+- Scalanie historii: `community_link_submissions(p_token)` dopisuje nick
+  wyłącznie do wpisów bez podpisu (null / '' / 'Anonim') z urządzeń już
+  powiązanych z kontem (`identity_links`, kind `fp`).
+
 ## 4a. Harmonogram paska postępu (nie ruszać bez czytania)
 
 Pasek nie jest „na oko" — ma trafić na moment znikania nakładki:

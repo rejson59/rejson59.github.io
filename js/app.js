@@ -430,6 +430,9 @@
 
   function setProjects(repos, isLive) {
     allProjects = prepare(repos);
+    /* dla js/premium.js: powiadomienia o aktualizacjach obserwowanych projektów
+       muszą czytać DOKŁADNIE te dane, które widzi strona (żywe, nie kopia) */
+    window.RJ_PROJECTS = allProjects;
     gridProjects = allProjects.filter(function (p) { return !FEATURED[p.name]; });
     updateFeaturedMeta();
     updateStats();
