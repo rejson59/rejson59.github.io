@@ -36,16 +36,19 @@
 @keyframes rj-portal-caption { 0%{opacity:0;transform:translateY(8px)} 25%,65%{opacity:1;transform:none} 90%,100%{opacity:0} }
 #rj-portal-arrival { display:grid; place-items:center; background:radial-gradient(circle,#efffff 0%,#8bfff2 10%,#168c9f 31%,#031620 76%); }
 #rj-portal-arrival.is-playing { animation:rj-portal-emerge 1.05s cubic-bezier(.2,.7,.2,1) both; }
-#rj-portal-arrival .rj-portal-vortex { animation:none; background:radial-gradient(circle,#f2ffff 0%,#a0fff5 5%,#44ddd9 15%,#076479 31%,#031923 50%,transparent 64%); box-shadow:0 0 55px 14px rgba(87,242,225,.38),0 0 120px 35px rgba(45,176,197,.2); }
-#rj-portal-arrival .rj-portal-vortex::before { border-top-color:#d8ffff; border-right-color:#66ffe6; border-bottom-color:#63d7f2; box-shadow:0 0 18px #72ffff,inset 0 0 18px #6bddd4; }
-#rj-portal-arrival .rj-portal-vortex::after { border-top-color:#7af6eb; border-left-color:#d8ffff; }
+#rj-portal-arrival .rj-portal-vortex { animation:none; background:radial-gradient(circle,#f2ffff 0%,#a0fff5 5%,#44ddd9 15%,#076479 31%,#031923 50%,transparent 64%); box-shadow:none; }
+/* Bez wielokrotnie powiększanych, obracających się cieni — także na słabszych urządzeniach. */
+#rj-portal-arrival .rj-portal-vortex::before,#rj-portal-arrival .rj-portal-vortex::after { display:none; }
 #rj-portal-arrival.is-playing .rj-portal-vortex { animation:rj-vortex-out 1.05s ease-out both; }
 .rj-portal-arrival-caption { position:absolute; bottom:14%; color:#eef5ff; font:600 13px/1.5 system-ui,sans-serif; letter-spacing:.08em; text-align:center; }
 #rj-portal-arrival.is-playing .rj-portal-arrival-caption { opacity:0; }
 @keyframes rj-portal-emerge { 0%,12%{opacity:1} 100%{opacity:0} }
-@keyframes rj-vortex-out { from{transform:scale(5)} to{transform:scale(.25);opacity:0} }
+@keyframes rj-vortex-out { from{transform:scale(1.6)} to{transform:scale(.25);opacity:0} }
 @media (prefers-reduced-motion:reduce) {
   .btn.btn-portal::before,.btn.btn-portal::after { animation:none !important; }
   .btn.btn-portal,.btn.btn-portal:hover { transition:none; transform:none; }
-  #rj-portal-flight,#rj-portal-arrival { display:none !important; }
+  #rj-portal-flight,#rj-portal-arrival:not([data-motion-override]) { display:none !important; }
+  /* Wyłącznie po świadomym włączeniu animacji na stronie portalu. */
+  #rj-portal-arrival[data-motion-override].is-playing { animation-duration:1.05s !important; }
+  #rj-portal-arrival[data-motion-override].is-playing .rj-portal-vortex { animation-duration:1.05s !important; }
 }
