@@ -25,6 +25,7 @@
   <link rel="stylesheet" href="rejson-widgets/css/studio.css?v=3">
   <link rel="stylesheet" href="rejson-widgets/css/admin.css?v=2026-10-26">
   <link rel="stylesheet" href="css/admin-panel.css?v=2026-10-28">
+  <link rel="stylesheet" href="css/admin-partner.css?v=1">
 </head>
 <body>
 
@@ -84,6 +85,7 @@
 
     <nav class="adm-tabs" role="tablist" aria-label="Sekcje panelu admina">
       <button type="button" class="adm-tab is-active" id="tab-btn-activity" data-tab="activity" role="tab" aria-selected="true">📊 Aktywność <span class="adm-tab-note">na żywo</span></button>
+      <button type="button" class="adm-tab" id="tab-btn-partnership" data-tab="partnership" role="tab" aria-selected="false">🤝 Partnerstwo</button>
       <button type="button" class="adm-tab" id="tab-btn-submissions" data-tab="submissions" role="tab" aria-selected="false">🗂 Zgłoszenia</button>
       <button type="button" class="adm-tab" id="tab-btn-community" data-tab="community" role="tab" aria-selected="false">👥 Społeczność</button>
       <button type="button" class="adm-tab" id="tab-btn-visitors" data-tab="visitors" role="tab" aria-selected="false">👤 Identyfikatory <span class="adm-tab-note">profile</span></button>
@@ -512,6 +514,11 @@
     </section>
 
 
+    <section id="tab-partnership" role="tabpanel" aria-label="Zapytania o partnerstwo" hidden>
+      <div class="adm-section-head"><div><h2 class="adm-section-title">🤝 Zapytania o partnerstwo</h2><p class="adm-section-sub">Prywatne wiadomości z formularza. Odpowiadaj bezpośrednio na podany e-mail. Pokazujemy ostatnie 100 zapytań.</p></div><button class="btn btn-glass btn-sm" id="partner-admin-refresh" type="button">Odśwież</button></div>
+      <div id="partner-admin-list" class="partner-admin-list" aria-live="polite">Otwórz zakładkę, aby wczytać wiadomości.</div>
+    </section>
+
     <!-- ============ ZAKŁADKA: BŁĘDY WYKRYTE AUTOMATYCZNIE ============ -->
     <section id="tab-errors" role="tabpanel" aria-label="Błędy wykryte automatycznie" hidden>
 
@@ -554,9 +561,10 @@
 
   <script src="rejson-widgets/js/supabase-config.js"></script>
   <script src="rejson-widgets/js/admin.js?v=2"></script>
-  <script src="js/view-tracker.js?v=3" defer></script>
+  <script src="js/view-tracker.js?v=4" defer></script>
   <script src="js/error-reporter.js?v=1" defer></script>
   <script src="js/admin-errors.js?v=1"></script>
-  <script src="js/admin-panel.js?v=2026-10-28"></script>
+  <script src="js/admin-partner.js?v=1"></script>
+  <script src="js/admin-panel.js?v=2026-10-29"></script>
 </body>
 </html>

@@ -225,6 +225,7 @@
   var TAB_IDS = {
     activity: "tab-activity",
     submissions: "tab-submissions",
+    partnership: "tab-partnership",
     community: "tab-community",
     visitors: "tab-visitors",
     errors: "tab-errors"
@@ -245,6 +246,7 @@
             var el = $(TAB_IDS[key]);
             if (el) el.hidden = key !== tab;
           });
+          if (tab === "partnership" && window.RJAdminPartner) window.RJAdminPartner.load();
           if (tab === "community") fetchCommunity();
           if (tab === "visitors") fetchVisitorList();
           if (tab === "errors" && window.RJAdminErrors) window.RJAdminErrors.load();

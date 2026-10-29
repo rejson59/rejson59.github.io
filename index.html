@@ -244,6 +244,7 @@
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap"></noscript>
   <link rel="stylesheet" href="css/premium.css?v=3">
+  <link rel="stylesheet" href="css/partner-home.css?v=1">
   <link rel="stylesheet" href="css/style.css?v=2026-10-27-1">
   <link rel="stylesheet" href="css/loader.css?v=10" media="print" onload="this.media='all'">
   <script defer src="js/loader.js?v=12"></script>
@@ -499,6 +500,7 @@
       <div class="header-right">
         <nav id="site-nav" class="site-nav" aria-label="Nawigacja główna">
           <a href="logowanie">Konto / logowanie</a>
+          <a href="partnerstwo">Partnerstwo</a>
           <a href="spolecznosc">Społeczność</a>
           <a href="tablica-pomyslow">Tablica pomysłów</a>
           <a href="widzety">Widżety</a>
@@ -646,7 +648,11 @@
 
     <section class="rj-club container" aria-labelledby="rj-club-heading">
       <h2 id="rj-club-heading" class="sr-only">Premium za darmo — wystarczy się zalogować</h2>
-      <div id="rj-club"></div>
+      <div id="rj-club"><noscript><div class="rj-premium is-locked"><div class="rj-premium__inner"><h2>Premium jest za darmo — wystarczy się zalogować</h2><p>Odkrywaj korzyści konta i śledź swoje zgłoszenia.</p><a class="rj-cta" href="logowanie">Załóż konto lub zaloguj się</a></div></div></noscript></div>
+    </section>
+
+    <section class="container partner-home" aria-label="Partnerstwo i reklama">
+      <div class="partner-home-inner"><span class="partner-home-icon" aria-hidden="true">✦</span><div><p class="partner-home-label">PARTNERSTWO · REKLAMA</p><h2>Masz projekt, który warto pokazać?</h2><p>Porozmawiajmy o reklamie i współpracy. Wszystkie szczegóły ustalimy indywidualnie.</p></div><a class="partner-home-link" href="partnerstwo">Poznaj możliwości <span aria-hidden="true">↗</span></a></div>
     </section>
 
     <!-- ============ WYRÓŻNIONE: POCZĄTKI ORAZ NAJLEPSZA STRONA ============ -->
@@ -1091,11 +1097,11 @@
   </footer>
 
   <script defer src="js/projects-data.js"></script>
-  <script defer src="js/view-tracker.js?v=3"></script>
+  <script defer src="js/view-tracker.js?v=4"></script>
   <script defer src="js/error-reporter.js?v=1"></script>
   <script defer src="js/media-capture.js?v=1"></script>
     <script defer src="js/app.js?v=2026-10-27-3"></script>
-  <script defer src="js/premium.js?v=3"></script>
+  <script defer src="js/premium.js?v=4"></script>
   <script defer src="rejson-widgets/widget.js?v=6"></script>
 </body>
 </html>

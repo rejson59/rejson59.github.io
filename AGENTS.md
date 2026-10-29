@@ -93,7 +93,7 @@ Nigdy „ktoś właśnie coś zrobił”, jeśli to nie wydarzyło się naprawd�
   inaczej powrót z innej karty kasuje to, co użytkownik widzi.
 - Bramka dotyczy wyłącznie DODATKÓW (powiadomienia, obserwacje, scalona
   historia). Treść strony i tablica zostają dla wszystkich.
-- „Nie teraz” działa naprawdę: 7 dni spokoju (`rj_club_snooze_v1`).
+- Decyzja właściciela: karta premium na stronie głównej jest stale widoczna (bez „Nie teraz”); niezależną wyskakującą zachętę da się zamknąć na czas wizyty, bez natychmiastowego powrotu.
 - Zakazane: fałszywe liczniki „ostatnie miejsca”, wymyślone zdarzenia,
   modal wracający po „×”, blokowanie treści za rejestracją.
 - **Karta premium musi się ruszać** (zgłoszenie właściciela, 2026-10-28).

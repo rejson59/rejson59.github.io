@@ -63,7 +63,7 @@ self.addEventListener("fetch", function (event) {
     if (url.origin !== self.location.origin) return;
     /* Ekran logowania nie jest projektem: żadnych wstrzykniętych skryptów,
        widgetów ani rejestracji wejścia przez service worker. */
-    if (/^\/logowanie(?:\.html)?\/?$/i.test(url.pathname)) return;
+    if (/^\/(?:logowanie|partnerstwo)(?:\.html)?\/?$/i.test(url.pathname)) return;
 
     var parts = (url.pathname || "/").split("/").filter(function (s) {
       return s && !/\.html?$/i.test(s);
@@ -93,7 +93,7 @@ self.addEventListener("fetch", function (event) {
               var safeSlug = slug.replace(/[^A-Za-z0-9._-]/g, "");
               var inject = "";
               if (html.indexOf("view-tracker.js") === -1) {
-                inject += '\n<script src="/js/view-tracker.js" defer></script>';
+                inject += '\n<script src="/js/view-tracker.js?v=4" defer></script>';
               }
               if (html.indexOf("rejson-widgets/widget.js") === -1) {
                 inject += '\n<script src="/rejson-widgets/widget.js?v=4" data-project="' + safeSlug + '" defer></script>';

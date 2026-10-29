@@ -74,7 +74,7 @@ function create(initial, handler) {
   const handlers = {};
   const self = { location: {origin: 'https://rejson59.github.io'}, addEventListener: (name, cb) => { handlers[name] = cb; } };
   vm.runInNewContext(fs.readFileSync(path.join(root, 'sw.js'), 'utf8'), {self, URL, Promise, fetch: () => { throw Error('unexpected fetch'); }});
-  for (const route of ['/logowanie', '/logowanie.html']) {
+  for (const route of ['/logowanie', '/logowanie.html', '/partnerstwo', '/partnerstwo.html']) {
     let touched = false;
     handlers.fetch({request:{method:'GET', mode:'navigate', destination:'document', url:'https://rejson59.github.io' + route}, waitUntil:() => {touched = true;}, respondWith:() => {touched = true;}});
     assert.equal(touched, false, route + ' bez wstrzykiwania ani wejścia projektu');

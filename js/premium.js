@@ -9,7 +9,7 @@
    Bramka: sam ten moduł niczego nie blokuje. Odblokowuje DODATKI, które bez
    konta nie mają gdzie istnieć („Twoje” powiadomienia, „Twoje” obserwacje).
    Zero fałszywej presji: brak liczników „ostatnie miejsca”, brak wymyślonych
-   zdarzeń, „nie teraz” pamiętane na 7 dni.
+   zdarzeń.
 
    Publiczne API: window.RJPremium
    ========================================================================== */
@@ -26,10 +26,9 @@
   var FOLLOW_KEY = "rj_following_v1";
   var SEEN_KEY = "rj_seen_v1";
   var LINK_KEY = "rj_identity_link_v1";
-  var SNOOZE_KEY = "rj_club_snooze_v1";
   var VISIT_KEY = "rj_visit_v1";           /* sessionStorage: raz na wizytę */
   var VOTER_KEY = "rejson_widgets_voter_id_v1"; /* ten sam klucz co pigułka zgłoszeń */
-  var SNOOZE_MS = 7 * 24 * 60 * 60 * 1000; /* „nie teraz” = tydzień spokoju */
+  var LINK_INTERVAL_MS = 7 * 24 * 60 * 60 * 1000; /* odstęp między próbami scalania */
 
   /* ---------- drobiazgi ---------- */
 
@@ -92,7 +91,7 @@
     var s = session();
     if (!s) return Promise.resolve(null);
     var done = readJSON(window.localStorage, LINK_KEY, {});
-    if (done[s.username] && Date.now() - done[s.username] < SNOOZE_MS) return Promise.resolve(null);
+    if (done[s.username] && Date.now() - done[s.username] < LINK_INTERVAL_MS) return Promise.resolve(null);
 
     return rpc("community_link_submissions", { p_token: s.token })
       .then(function (res) {
@@ -486,7 +485,6 @@
           '</ul>' +
           '<div class="rj-club-actions">' +
             '<a class="rj-cta" href="spolecznosc">Załóż konto w 10 sekund</a>' +
-            '<button type="button" class="rj-cta ghost" id="rj-club-later">Nie teraz — przypomnij za tydzień</button>' +
           '</div>' +
         '</div>' +
       '</div>';
@@ -529,15 +527,9 @@
   function paintClub() {
     var host = document.getElementById("rj-club");
     if (!host) return;
-    if (isSnoozed() && !isLoggedIn()) { host.hidden = true; return; }
+    // Stary znacznik odłożenia nie ukrywa już stałego baneru.
     host.hidden = false;
     host.innerHTML = clubHTML();
-
-    var later = document.getElementById("rj-club-later");
-    if (later) later.addEventListener("click", function () {
-      writeJSON(window.localStorage, SNOOZE_KEY, Date.now());
-      host.hidden = true;
-    });
 
     host.querySelectorAll("[data-follow]").forEach(function (btn) {
       btn.addEventListener("click", function () {
@@ -547,11 +539,6 @@
         btn.textContent = (on ? "★ " : "☆ ") + btn.getAttribute("data-follow");
       });
     });
-  }
-
-  function isSnoozed() {
-    var ts = Number(window.localStorage.getItem(SNOOZE_KEY) || 0);
-    return !!ts && Date.now() - ts < SNOOZE_MS;
   }
 
   /* ---------- montowanie ---------- */
@@ -627,8 +614,7 @@
     linkIdentity: linkIdentity,
     notifications: function () { return state.items.slice(); },
     refresh: refresh,
-    mount: mount,
-    isSnoozed: isSnoozed
+    mount: mount
   };
 
   if (document.readyState === "loading") {
