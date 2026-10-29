@@ -7,11 +7,13 @@
   <meta name="robots" content="noindex">
   <title>Portal do projektu — Rejson59</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/css/portal-room.css?v=2">
+  <link rel="stylesheet" href="/css/portal-room.css?v=3">
   <script defer src="/js/projects-data.js"></script>
-  <script defer src="/js/portal-room.js?v=1"></script>
+  <script defer src="/js/portal-scene.js?v=1"></script>
+  <script defer src="/js/portal-room.js?v=2"></script>
 </head>
 <body>
+  <canvas id="portal-scene" class="portal-scene" aria-hidden="true"></canvas>
   <header class="portal-header">
     <a class="brand" href="/" aria-label="Rejson59 — strona główna"><span class="brand-mark">R<span>.</span></span><span>rejson59<span class="brand-dot">.</span></span></a>
     <span class="header-label"><span class="header-star">✳</span> PRZESTRZEŃ PROJEKTÓW</span>
@@ -19,15 +21,9 @@
   </header>
   <main class="room" id="room">
     <div class="world-frame">
-      <div class="world-image" aria-hidden="true"></div>
-      <div class="world-glow" aria-hidden="true"></div>
       <button class="portal-door" id="portal-door" type="button" disabled aria-label="Wejdź do portalu">
-        <span class="energy energy-one" aria-hidden="true"></span>
-        <span class="energy energy-two" aria-hidden="true"></span>
-        <span class="energy energy-three" aria-hidden="true"></span>
         <span class="door-label" aria-hidden="true"><span>✦</span> WEJDŹ DO ŚRODKA</span>
       </button>
-      <span class="spark spark-one" aria-hidden="true"></span><span class="spark spark-two" aria-hidden="true"></span><span class="spark spark-three" aria-hidden="true"></span>
     </div>
     <div class="room-content">
       <div class="intro">
@@ -45,6 +41,6 @@
     <noscript><p class="noscript">Portal wymaga JavaScriptu. <a href="/">Wróć do projektów</a>.</p></noscript>
   </main>
   <footer><span>REJSON59 <i>✦</i> UNIWERSUM PROJEKTÓW</span><span>ODKRYWAJ BEZ GRANIC <i>↗</i></span></footer>
-  <div class="flight" id="flight" aria-hidden="true"><div class="flight-world"></div><div class="flight-vortex"></div><div class="flight-stars"></div><div class="flight-flash"></div><p>W DRODZE DO NOWEGO ŚWIATA</p></div>
+  <div class="flight" id="flight" aria-hidden="true"><div class="flight-flash"></div><p>W DRODZE DO NOWEGO ŚWIATA</p></div>
 </body>
 </html>
