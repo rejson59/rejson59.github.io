@@ -10,6 +10,9 @@
   var direct = document.getElementById("direct");
   var status = document.getElementById("status");
   var flight = document.getElementById("flight");
+  var motionToggle = document.getElementById("motion-toggle");
+  var motionMedia = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
+  var motionOverride = false;
   var target = null;
   var travelling = false;
   var raf = 0;
@@ -18,8 +21,29 @@
   var FLIGHT_MS = 4200;
   // Samodzielne wejście do portalu też może przygotować znany globalny SW.
   if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")) {
-    navigator.serviceWorker.register("/sw.js?v=2", { scope: "/", updateViaCache: "none" }).catch(function () {});
+    try {
+      navigator.serviceWorker.register("/sw.js?v=2", { scope: "/", updateViaCache: "none" }).catch(function () {});
+    } catch (e) { /* SW nie może blokować portalu */ }
   }
+
+  function updateMotionControl() {
+    if (!motionToggle) return;
+    motionToggle.hidden = !(motionMedia && motionMedia.matches);
+    if (motionToggle.hidden) motionOverride = false;
+    document.body.classList.toggle("motion-override", motionOverride);
+    motionToggle.setAttribute("aria-pressed", String(motionOverride));
+    motionToggle.textContent = motionOverride ? "Wyłącz animację portalu" : "Włącz animację portalu";
+  }
+  if (motionToggle) motionToggle.addEventListener("click", function () {
+    if (travelling) return;
+    motionOverride = !motionOverride;
+    updateMotionControl();
+  });
+  if (motionMedia) {
+    if (motionMedia.addEventListener) motionMedia.addEventListener("change", updateMotionControl);
+    else if (motionMedia.addListener) motionMedia.addListener(updateMotionControl);
+  }
+  updateMotionControl();
 
   function find(list) {
     if (!Array.isArray(list)) return null;
@@ -57,18 +81,23 @@
     travelling = true;
     door.disabled = true; button.disabled = true;
     var url = new URL(target);
-    var reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    var reduced = !!(motionMedia && motionMedia.matches && !motionOverride);
     function navigate() {
       try {
-        if (!reduced && url.origin === location.origin) sessionStorage.setItem(KEY, JSON.stringify({ path: url.pathname, at: Date.now() }));
+        if (!reduced && url.origin === location.origin) sessionStorage.setItem(KEY, JSON.stringify({ path: url.pathname, at: Date.now(), motionOverride: motionOverride }));
         else sessionStorage.removeItem(KEY);
       } catch (e) { /* brak storage nie blokuje przejścia */ }
       location.assign(url.href);
     }
     if (reduced) { navigate(); return; }
+    var bounds = door.getBoundingClientRect();
+    if (bounds.width > 0) {
+      flight.style.setProperty("--portal-x", (bounds.left + bounds.width / 2) + "px");
+      flight.style.setProperty("--portal-y", (bounds.top + bounds.height / 2) + "px");
+      flight.style.setProperty("--portal-size", bounds.width + "px");
+    }
     flight.classList.add("is-active");
     document.body.classList.add("is-travelling");
-    try { if (window.RJPortalScene) window.RJPortalScene.start(FLIGHT_MS); } catch (e) { /* nawigacja nie zależy od grafiki */ }
     status.textContent = "Wyruszamy do projektu…";
     // Liczymy wyłącznie widoczny czas: przełączenie karty nie skróci animacji.
     var elapsed = 0;
@@ -92,7 +121,6 @@
     if (raf) cancelAnimationFrame(raf);
     travelling = false; flight.classList.remove("is-active");
     document.body.classList.remove("is-travelling");
-    try { if (window.RJPortalScene) window.RJPortalScene.reset(); } catch (e) { /* brak sceny nie blokuje powrotu */ }
     if (target) { door.disabled = false; button.disabled = false; status.textContent = ""; }
     try { sessionStorage.removeItem(KEY); } catch (e) { /* brak storage */ }
   });
@@ -114,11 +142,23 @@
   setTarget(featuredUrl || liveUrl(cached) || liveUrl(find(window.PROJECTS_FALLBACK)));
   if (!target) {
     // Repo dodane niedawno może nie być jeszcze w lokalnej kopii listy.
-    fetch("https://api.github.com/repos/rejson59/" + encodeURIComponent(name), { headers: { Accept: "application/vnd.github+json" } })
-      .then(function (r) { if (!r.ok) throw new Error("repo"); return r.json(); })
-      .then(function (repo) {
-        if (repo.name === name) setTarget(liveUrl(repo));
-        if (!target) status.textContent = "Nie znaleziono strony live tego projektu. Wróć na stronę główną.";
-      }).catch(function () { status.textContent = "Nie udało się odnaleźć projektu. Wróć na stronę główną i spróbuj ponownie."; });
+    var lookupTimer = setTimeout(function () {
+      if (!target) status.textContent = "Nie udało się odnaleźć projektu. Wróć na stronę główną i spróbuj ponownie.";
+    }, 8000);
+    try {
+      fetch("https://api.github.com/repos/rejson59/" + encodeURIComponent(name), { headers: { Accept: "application/vnd.github+json" } })
+        .then(function (r) { if (!r.ok) throw new Error("repo"); return r.json(); })
+        .then(function (repo) {
+          clearTimeout(lookupTimer);
+          if (repo.name === name) setTarget(liveUrl(repo));
+          if (!target) status.textContent = "Nie znaleziono strony live tego projektu. Wróć na stronę główną.";
+        }).catch(function () {
+          clearTimeout(lookupTimer);
+          status.textContent = "Nie udało się odnaleźć projektu. Wróć na stronę główną i spróbuj ponownie.";
+        });
+    } catch (e) {
+      clearTimeout(lookupTimer);
+      status.textContent = "Nie udało się odnaleźć projektu. Wróć na stronę główną i spróbuj ponownie.";
+    }
   }
 })();

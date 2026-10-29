@@ -13,7 +13,9 @@
   if (typeof marker.path !== "string" || typeof marker.at !== "number" ||
       Date.now() - marker.at < 0 || Date.now() - marker.at > 60000 ||
       path(marker.path) !== path(location.pathname)) return;
-  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  // Użytkownik może świadomie włączyć animację na stronie portalu.
+  var motionOverride = marker.motionOverride === true;
+  if (!motionOverride && window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   if (window.top !== window.self) return;
 
   // SW umieszcza arkusz przed skryptem; bez CSS nie pokazujemy zasłony.
@@ -22,6 +24,7 @@
   if (!stylesheet || !stylesheet.sheet) return;
   var root = document.createElement("div");
   root.id = "rj-portal-arrival";
+  if (motionOverride) root.setAttribute("data-motion-override", "");
   root.setAttribute("role", "status");
   root.setAttribute("aria-live", "polite");
   root.innerHTML = '<div class="rj-portal-vortex" aria-hidden="true"></div><div class="rj-portal-arrival-caption">Ładowanie projektu…</div>';

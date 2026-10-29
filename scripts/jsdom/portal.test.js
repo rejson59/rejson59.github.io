@@ -16,7 +16,8 @@ function room(project, options = {}) {
   const w = dom.window; w.matchMedia = () => ({ matches: !!options.reduced });
   w.PROJECTS_FALLBACK = options.fallback || [];
   if (options.cache) w.localStorage.setItem('rejson_repos_cache_v2', JSON.stringify({ data: options.cache }));
-  w.fetch = () => Promise.reject(new Error('offline'));
+  w.fetch = options.fetch || (() => Promise.reject(new Error('offline')));
+  if (options.brokenSW) Object.defineProperty(w.navigator, 'serviceWorker', { value: { register() { throw new Error('unavailable'); } } });
   let frames = [];
   w.requestAnimationFrame = cb => { frames.push(cb); return frames.length; };
   w.cancelAnimationFrame = () => { frames = []; };
@@ -43,84 +44,15 @@ function arrival(marker, opts = {}) {
   {
     const portal = new JSDOM(read('portal/index.html')).window.document;
     const css = read('css/portal-room.css');
-    assert.ok(portal.querySelector('canvas#portal-scene[aria-hidden="true"]'));
-    assert.ok(portal.querySelector('#portal-door'));
+    assert.equal(portal.querySelector('canvas'), null);
+    assert.equal(portal.querySelector('script[src*="portal-webgl"]'), null);
+    assert.equal(portal.querySelector('script[src*="portal-scene"]'), null);
+    assert.ok(portal.querySelector('#portal-door .portal-rim'));
+    assert.equal(portal.querySelectorAll('#flight .tunnel-ring').length, 7);
     assert.ok(portal.querySelector('#flight .flight-flash'));
-    assert.doesNotMatch(css, /portal-world\.jpg/);
+    assert.doesNotMatch(css, /portal-world\.jpg|cursor:\s*wait/);
     assert.match(css, /prefers-reduced-motion:\s*reduce/);
-    assert.match(read('js/portal-scene.js'), /requestAnimationFrame/);
-    assert.ok(portal.querySelector('script[src*="portal-webgl.js"]'));
-  }
-  {
-    // Udajemy GPU: renderer otrzymuje czas i postęp, a utrata kontekstu włącza fallback.
-    const t = room('RejStream');
-    const calls = [];
-    const gl = {
-      VERTEX_SHADER: 1, FRAGMENT_SHADER: 2, COMPILE_STATUS: 3, LINK_STATUS: 4,
-      ARRAY_BUFFER: 5, STATIC_DRAW: 6, FLOAT: 7, TRIANGLES: 8,
-      createShader: () => ({}), shaderSource() {}, compileShader() {},
-      getShaderParameter: () => true, deleteShader() {}, createProgram: () => ({}),
-      attachShader() {}, linkProgram() {}, getProgramParameter: () => true,
-      deleteProgram() {}, useProgram() {}, createBuffer: () => ({}), bindBuffer() {},
-      bufferData() {}, getAttribLocation: () => 0, enableVertexAttribArray() {},
-      vertexAttribPointer() {}, getUniformLocation: (_, name) => name,
-      viewport() {}, uniform2f() {}, uniform1f: (name, value) => calls.push([name, value]),
-      drawArrays() { calls.push(['draw']); }
-    };
-    t.w.HTMLCanvasElement.prototype.getContext = type => type === 'webgl' ? gl : null;
-    t.doc.getElementById('portal-door').getBoundingClientRect = () => ({ left:400, top:100, width:300, height:300 });
-    t.w.eval(read('js/portal-webgl.js'));
-    assert.ok(t.w.RJPortalScene); assert.equal(t.doc.querySelectorAll('canvas').length, 2);
-    t.frame(100); assert.ok(calls.some(c => c[0] === 'draw'));
-    t.w.RJPortalScene.start(4200); t.frame(200); t.frame(2300);
-    assert.ok(calls.some(c => c[0] === 'journey' && c[1] > .4));
-    const canvas = t.doc.querySelectorAll('canvas')[1];
-    const lost = new t.w.Event('webglcontextlost', { cancelable:true });
-    canvas.dispatchEvent(lost);
-    assert.equal(lost.defaultPrevented, true); assert.equal(t.w.RJPortalScene, undefined);
-    assert.ok(t.doc.querySelector('script[src*="portal-scene.js?v=2"]'));
-    t.dom.window.close();
-  }
-  {
-    // Brak WebGL albo błąd kompilacji nie blokuje wersji 2D.
-    const t = room('RejStream');
-    t.w.HTMLCanvasElement.prototype.getContext = () => null;
-    t.w.eval(read('js/portal-webgl.js'));
-    assert.equal(t.w.RJPortalScene, undefined); assert.equal(t.doc.querySelectorAll('canvas').length, 1);
-    t.dom.window.close();
-  }
-  {
-    const t = room('RejStream');
-    const calls = [];
-    const ctx = new Proxy({}, { get(obj, key) {
-      if (key === 'createRadialGradient') return () => ({ addColorStop() {} });
-      if (key in obj) return obj[key];
-      return () => calls.push(key);
-    }, set(obj, key, value) { obj[key] = value; return true; } });
-    t.w.HTMLCanvasElement.prototype.getContext = () => ctx;
-    t.doc.getElementById('portal-door').getBoundingClientRect = () => ({ left:400, top:100, width:300, height:300 });
-    t.w.eval(read('js/portal-scene.js'));
-    assert.ok(t.w.RJPortalScene);
-    assert.ok(t.doc.body.classList.contains('scene-ready'));
-    t.frame(0); assert.ok(calls.includes('lineTo')); // żywy wir
-    calls.length = 0;
-    t.w.RJPortalScene.start(4200); t.frame(10); t.frame(2300);
-    assert.ok(calls.includes('ellipse')); // perspektywiczne pierścienie tunelu
-    t.w.RJPortalScene.reset(); t.dom.window.close();
-  }
-  {
-    const t = room('RejStream', { reduced:true });
-    let draws = 0;
-    const ctx = new Proxy({}, { get(obj, key) {
-      if (key === 'createRadialGradient') return () => ({ addColorStop() {} });
-      if (key in obj) return obj[key];
-      return () => { draws++; };
-    }, set(obj, key, value) { obj[key] = value; return true; } });
-    t.w.HTMLCanvasElement.prototype.getContext = () => ctx;
-    t.doc.getElementById('portal-door').getBoundingClientRect = () => ({ left:400, top:100, width:300, height:300 });
-    t.w.eval(read('js/portal-scene.js'));
-    assert.ok(draws > 0); assert.equal(t.frames(), 0); // statyczna alternatywa dla reduced motion
-    t.dom.window.close();
+    assert.match(css, /animation:\s*portal-spin/);
   }
   {
     const t = room('RejStream');
@@ -129,7 +61,10 @@ function arrival(marker, opts = {}) {
     assert.equal(t.doc.getElementById('direct').href, 'https://rejson59.github.io/RejStream/');
     assert.equal(t.doc.getElementById('enter').disabled, false);
     assert.equal(t.doc.getElementById('flight').classList.contains('is-active'), false); // bez automatycznej nawigacji
+    t.doc.getElementById('portal-door').getBoundingClientRect = () => ({ left:400, top:100, width:300, height:300 });
     t.doc.getElementById('enter').click();
+    assert.equal(t.doc.getElementById('flight').style.getPropertyValue('--portal-x'), '550px');
+    assert.equal(t.doc.getElementById('flight').style.getPropertyValue('--portal-y'), '250px');
     assert.ok(t.doc.getElementById('flight').classList.contains('is-active'));
     assert.equal(t.w.sessionStorage.getItem(KEY), null); // czekamy na całą animację
     t.frame(0); t.frame(4100); assert.equal(t.w.sessionStorage.getItem(KEY), null);
@@ -152,6 +87,28 @@ function arrival(marker, opts = {}) {
     assert.ok(t.errors.some(x => /navigation/.test(x))); t.dom.window.close();
   }
   {
+    const t = room('RejStream', { reduced:true });
+    const toggle = t.doc.getElementById('motion-toggle');
+    assert.equal(toggle.hidden, false); assert.equal(toggle.getAttribute('aria-pressed'), 'false');
+    toggle.click(); assert.ok(t.doc.body.classList.contains('motion-override')); assert.equal(toggle.getAttribute('aria-pressed'), 'true');
+    t.doc.getElementById('enter').click();
+    assert.ok(t.doc.getElementById('flight').classList.contains('is-active'));
+    t.frame(0); t.frame(4200);
+    assert.equal(JSON.parse(t.w.sessionStorage.getItem(KEY)).motionOverride, true);
+    t.dom.window.close();
+  }
+  {
+    const t = room('RejStream', { reduced:true });
+    const toggle = t.doc.getElementById('motion-toggle'); toggle.click(); toggle.click();
+    assert.equal(toggle.getAttribute('aria-pressed'), 'false');
+    assert.equal(t.doc.body.classList.contains('motion-override'), false);
+    t.doc.getElementById('portal-door').click(); assert.equal(t.frames(), 0); t.dom.window.close();
+  }
+  {
+    const t = room('RejStream', { brokenSW:true });
+    assert.equal(t.doc.getElementById('enter').disabled, false); t.dom.window.close();
+  }
+  {
     const t = room('..'); assert.equal(t.doc.getElementById('enter').disabled, true); assert.match(t.doc.getElementById('status').textContent, /Nie znaleziono/); t.dom.window.close();
   }
   {
@@ -167,6 +124,10 @@ function arrival(marker, opts = {}) {
   }
   {
     const t = arrival({ path:'/Test/', at:Date.now() }); t.timers[0].fn(); assert.ok(t.doc.querySelector('#rj-portal-arrival.is-playing')); t.dom.window.close();
+  }
+  {
+    const t = arrival({ path:'/Test/', at:Date.now(), motionOverride:true }, { reduced:true });
+    assert.ok(t.doc.querySelector('#rj-portal-arrival[data-motion-override]')); t.dom.window.close();
   }
   for (const [marker, options] of [[null, {}], ['{broken', {}], [{path:'/Other/', at:Date.now()}, {}], [{path:'/Test/', at:Date.now()-61000}, {}], [{path:'/Test/', at:Date.now()+10000}, {}], [{path:'/Test/', at:Date.now()}, {noStyle:true}], [{path:'/Test/', at:Date.now()}, {reduced:true}]]) {
     const t = arrival(marker, options); assert.equal(t.doc.querySelector('#rj-portal-arrival'), null); t.dom.window.close();
