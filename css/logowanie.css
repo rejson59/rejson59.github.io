@@ -1,0 +1,35 @@
+/* Osobne wejście do istniejącego konta społeczności — bez obietnic SSO. */
+.account-skip { position: absolute; left: 12px; top: -100px; z-index: 100; padding: 10px; background: var(--bg-elev); color: var(--text); }
+.account-skip:focus { top: 12px; }
+.account-main { max-width: 1040px; padding: 70px 22px 100px; }
+.account-intro { text-align: center; margin: 0 auto 38px; max-width: 620px; }
+.account-eyebrow { display: inline-block; color: var(--accent-strong); font-size: 12px; font-weight: 700; letter-spacing: .12em; }
+.account-intro h1 { font-size: clamp(36px, 6vw, 58px); line-height: 1.08; letter-spacing: -.04em; margin: 16px 0; }
+.account-intro h1 span { color: var(--accent-strong); }
+.account-intro p { color: var(--muted); line-height: 1.65; margin: 0; }
+.account-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, .85fr); gap: 22px; align-items: start; }
+.account-card { margin: 0; max-width: none; }
+.account-card .comm-auth-inner { padding: 30px; }
+.account-card [hidden] { display: none !important; }
+.account-modes { display: flex; gap: 8px; margin: 20px 0; padding: 4px; border: 1px solid var(--border); background: var(--input-bg); border-radius: 14px; }
+.account-mode { flex: 1; border: 0; border-radius: 10px; background: transparent; color: var(--muted); font: inherit; font-size: 14px; padding: 10px; cursor: pointer; }
+.account-mode.is-active { background: var(--bg-elev); color: var(--text); box-shadow: 0 2px 12px rgba(0,0,0,.16); }
+.account-note, .account-footnote { color: var(--muted); font-size: 12px; line-height: 1.55; }
+.account-status { color: var(--live); display: block; font-size: 13px; font-weight: 600; margin-bottom: 12px; }
+.account-link { display: inline-flex; margin-top: 10px; }
+.account-text-link { display: block; margin-top: 18px; color: var(--accent-strong); }
+.account-logout { display: block; border: 0; padding: 0; margin-top: 24px; background: transparent; color: var(--muted); font: inherit; text-decoration: underline; cursor: pointer; }
+.account-benefits { padding: 24px 10px; }
+.account-benefits h2 { font-size: 20px; margin: 0 0 22px; }
+.account-benefit { display: flex; gap: 14px; margin: 0 0 22px; }
+.account-benefit > span { font-size: 23px; }
+.account-benefit h3 { font-size: 15px; margin: 0 0 5px; }
+.account-benefit p { color: var(--muted); font-size: 13px; line-height: 1.55; margin: 0; }
+.account-footnote { border-top: 1px solid var(--border); padding-top: 18px; }
+.account-mode:focus-visible, .account-logout:focus-visible { outline: 2px solid var(--accent-strong); outline-offset: 3px; }
+@media (max-width: 720px) {
+  .account-main { padding-top: 44px; }
+  .account-layout { grid-template-columns: minmax(0, 1fr); }
+  .account-card .comm-auth-inner { padding: 24px 20px; }
+  .account-benefits { padding: 8px 4px; }
+}
