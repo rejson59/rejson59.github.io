@@ -61,6 +61,9 @@ self.addEventListener("fetch", function (event) {
 
     var url = new URL(req.url);
     if (url.origin !== self.location.origin) return;
+    /* Ekran logowania nie jest projektem: żadnych wstrzykniętych skryptów,
+       widgetów ani rejestracji wejścia przez service worker. */
+    if (/^\/logowanie(?:\.html)?\/?$/i.test(url.pathname)) return;
 
     var parts = (url.pathname || "/").split("/").filter(function (s) {
       return s && !/\.html?$/i.test(s);
