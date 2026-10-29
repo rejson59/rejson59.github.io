@@ -11,8 +11,7 @@
   var status = document.getElementById("status");
   var flight = document.getElementById("flight");
   var motionToggle = document.getElementById("motion-toggle");
-  var motionMedia = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
-  var motionOverride = false;
+  var motionEnabled = true;
   var target = null;
   var travelling = false;
   var raf = 0;
@@ -26,23 +25,19 @@
     } catch (e) { /* SW nie może blokować portalu */ }
   }
 
+  // Animacja startuje od razu. Odwiedzający nadal może ją wyłączyć.
   function updateMotionControl() {
     if (!motionToggle) return;
-    motionToggle.hidden = !(motionMedia && motionMedia.matches);
-    if (motionToggle.hidden) motionOverride = false;
-    document.body.classList.toggle("motion-override", motionOverride);
-    motionToggle.setAttribute("aria-pressed", String(motionOverride));
-    motionToggle.textContent = motionOverride ? "Wyłącz animację portalu" : "Włącz animację portalu";
+    document.body.classList.toggle("motion-override", motionEnabled);
+    document.body.classList.toggle("motion-off", !motionEnabled);
+    motionToggle.setAttribute("aria-pressed", String(motionEnabled));
+    motionToggle.textContent = motionEnabled ? "Wyłącz animację portalu" : "Włącz animację portalu";
   }
   if (motionToggle) motionToggle.addEventListener("click", function () {
     if (travelling) return;
-    motionOverride = !motionOverride;
+    motionEnabled = !motionEnabled;
     updateMotionControl();
   });
-  if (motionMedia) {
-    if (motionMedia.addEventListener) motionMedia.addEventListener("change", updateMotionControl);
-    else if (motionMedia.addListener) motionMedia.addListener(updateMotionControl);
-  }
   updateMotionControl();
 
   function find(list) {
@@ -81,10 +76,10 @@
     travelling = true;
     door.disabled = true; button.disabled = true;
     var url = new URL(target);
-    var reduced = !!(motionMedia && motionMedia.matches && !motionOverride);
+    var reduced = !motionEnabled;
     function navigate() {
       try {
-        if (!reduced && url.origin === location.origin) sessionStorage.setItem(KEY, JSON.stringify({ path: url.pathname, at: Date.now(), motionOverride: motionOverride }));
+        if (!reduced && url.origin === location.origin) sessionStorage.setItem(KEY, JSON.stringify({ path: url.pathname, at: Date.now(), motionOverride: true }));
         else sessionStorage.removeItem(KEY);
       } catch (e) { /* brak storage nie blokuje przejścia */ }
       location.assign(url.href);
@@ -95,6 +90,7 @@
       flight.style.setProperty("--portal-x", (bounds.left + bounds.width / 2) + "px");
       flight.style.setProperty("--portal-y", (bounds.top + bounds.height / 2) + "px");
       flight.style.setProperty("--portal-size", bounds.width + "px");
+      flight.style.setProperty("--portal-height", bounds.height + "px");
       flight.style.setProperty("--travel-x", (window.innerWidth / 2 - bounds.left - bounds.width / 2) + "px");
       flight.style.setProperty("--travel-y", (window.innerHeight / 2 - bounds.top - bounds.height / 2) + "px");
     }

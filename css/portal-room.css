@@ -20,31 +20,35 @@ a { color: inherit; }
 .home-link:hover { color: #fff; }
 .room { position: relative; min-height: calc(100svh - 132px); display: flex; align-items: center; overflow: hidden; }
 .world-frame { position: absolute; width: min(1250px, 91vw); aspect-ratio: 1376 / 768; right: -1%; top: 50%; transform: translateY(-50%); }
-.portal-door { position: absolute; z-index: 2; left: 70.5%; top: 49%; width: 34%; aspect-ratio: 1; transform: translate(-50%, -50%); padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; overflow: visible; color: #fff; transition: filter .35s, box-shadow .35s; }
+/* Kamienna podstawa i odbicie dają bramie miejsce w przestrzeni. */
+.world-frame::before { content: ""; position: absolute; left: 47%; top: 86%; width: 47%; height: 17%; border-radius: 50%; background: radial-gradient(ellipse, #6ab7a233 0%, #183b4344 35%, transparent 70%); }
+.world-frame::after { content: ""; position: absolute; left: 49%; top: 89%; width: 43%; height: 5%; border-radius: 50%; border-top: 2px solid #91c5b175; background: linear-gradient(#465d5b, #111f24 60%, transparent); box-shadow: 0 10px 25px #0009; }
+.portal-door { position: absolute; z-index: 2; left: 70.5%; top: 49%; width: 36%; aspect-ratio: 4 / 5; transform: translate(-50%, -50%); padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; overflow: visible; color: #fff; transition: filter .35s, box-shadow .35s; }
 .portal-door:disabled { cursor: default; }
 .portal-door:not(:disabled):hover, .portal-door:focus-visible { filter: brightness(1.2); box-shadow: 0 0 55px #4bf9f665, inset 0 0 28px #bdffff50; }
 .portal-door:focus-visible, .enter-button:focus-visible, .motion-toggle:focus-visible, .direct-link:focus-visible, .home-link:focus-visible { outline: 2px solid #a4ffff; outline-offset: 6px; }
 
-/* Wir jest zwykłą animacją CSS: pojawia się od razu i nie czeka na GPU ani JS. */
-.portal-layers { position: absolute; inset: 0; display: block; border-radius: 50%; }
-.portal-layers { animation: portal-unfold 1.1s ease-out both; }
-.portal-layers > span { position: absolute; display: block; border-radius: 50%; pointer-events: none; }
-.portal-aura { inset: -19%; background: radial-gradient(circle, rgba(46,226,242,.1) 25%, rgba(48,115,255,.3) 49%, rgba(109,57,255,.12) 59%, transparent 71%); }
-.portal-halo { inset: -3%; border: 2px solid rgba(160,240,255,.7); box-shadow: 0 0 15px #7ffcff, 0 0 45px #3b77fa, 0 0 85px #5338d877, inset 0 0 24px #7aeeff; }
-.portal-halo::before, .portal-halo::after { content: ""; position: absolute; inset: -8%; border: 1px solid #89e7ff66; border-radius: 50%; }
-.portal-halo::before { transform: rotate(-25deg) scaleY(.84); }
-.portal-halo::after { transform: rotate(35deg) scaleY(.91); border-color: #aa8fff66; }
-.portal-rim { inset: 0; background: #146078; background: conic-gradient(from 0deg, #c8feff, #32b8ff, #4653df, #e6c8ff, #30dbf7, #1580b4, #c8feff); box-shadow: 0 0 35px #65efff99; animation: portal-spin 6s linear infinite; }
-.portal-rim::after { content: ""; position: absolute; inset: 5%; border-radius: 50%; background: #04112b; box-shadow: inset 0 0 20px 4px #37cbfbaa; }
-.portal-flow { inset: 8%; background: #0a3450; background: repeating-conic-gradient(from 0deg, #43d8ea 0deg, #173e8f 15deg, #070e2e 32deg, #774ddd 46deg, #36bbda 60deg); box-shadow: inset 0 0 30px #7fffff; }
-.flow-one { animation: portal-spin 8s linear infinite; }
-.flow-two { inset: 18%; background: repeating-conic-gradient(from 20deg, #082452 0deg, #2daac2 19deg, #acb6ff 29deg, #090d31 48deg, #21609d 60deg); animation: portal-spin-reverse 5s linear infinite; box-shadow: 0 0 28px #35dfffa3, inset 0 0 25px #0a164c; }
-.portal-center { inset: 30%; background: radial-gradient(circle, #e9ffff 0%, #9efaff 4%, #3d98ef 13%, #131f5f 38%, #07112b 70%); box-shadow: 0 0 30px #73caffaa, inset 0 0 18px #a6ffff88; animation: portal-breathe 2.6s ease-in-out infinite alternate; }
-.portal-sparks { inset: -9%; background-image: radial-gradient(3px 3px at 50% 0%, #fff 90%, transparent), radial-gradient(2px 2px at 85% 30%, #a8ffff 90%, transparent), radial-gradient(3px 3px at 18% 75%, #c4b4ff 90%, transparent), radial-gradient(2px 2px at 75% 90%, #fff 90%, transparent); animation: portal-spin-reverse 12s linear infinite; }
+/* Żywa brama: rysowana geometrią i światłem, bez zdjęcia i renderera 3D. */
+.portal-layers { position: absolute; inset: 0; display: block; animation: portal-unfold 1.1s ease-out both; }
+.portal-layers > span { position: absolute; display: block; pointer-events: none; }
+.portal-aura { inset: -25%; background: radial-gradient(ellipse, rgba(79,240,226,.20), rgba(43,101,212,.2) 37%, rgba(98,62,169,.10) 52%, transparent 68%); animation: portal-aura 4s ease-in-out infinite alternate; }
+.portal-well { inset: 12% 17% 5%; overflow: hidden; border-radius: 50% 50% 3% 3% / 34% 34% 3% 3%; background: #06171c; box-shadow: inset 0 0 30px #4effe4, 0 0 22px #41c9ce80; }
+.portal-well > span { position: absolute; display: block; pointer-events: none; }
+.portal-flow { width: 150%; aspect-ratio: 1; left: -25%; top: 10%; border-radius: 50%; }
+.flow-one { background: repeating-conic-gradient(from 10deg, #06181d 0deg, #176d72 15deg, #4dd0c5 23deg, #123752 34deg, #091321 52deg, #1c7d7a 60deg); animation: portal-spin 12s linear infinite; }
+.flow-two { width: 110%; left: -5%; top: 23%; background: repeating-conic-gradient(from 15deg, #091520 0deg, #235173 16deg, #55d8c4 25deg, #111d32 42deg, #28677c 60deg); opacity: .55; animation: portal-spin-reverse 8s linear infinite; }
+.portal-ripples { inset: 0; background: repeating-radial-gradient(ellipse at 50% 50%, transparent 0 8%, #8df8e228 9%, transparent 11% 17%); animation: portal-depth 4s ease-in-out infinite alternate; }
+.portal-filaments { width: 150%; aspect-ratio: 1; left: -25%; top: 10%; animation: portal-spin-reverse 16s linear infinite; }
+.portal-filaments svg { display: block; width: 100%; height: 100%; stroke: #b4ffeb; stroke-opacity: .48; stroke-width: 1.5; }
+.portal-center { inset: 0; background: radial-gradient(ellipse at 50% 50%, #010308 0%, #030a10 13%, #071b27 22%, #15435488 36%, transparent 70%), linear-gradient(90deg,#00111288, transparent 20%, transparent 80%,#00111288); animation: portal-depth 3.5s ease-in-out infinite alternate; }
+.portal-arch { inset: 0; }
+.portal-arch svg { width: 100%; height: 100%; display: block; }
+.portal-sparks { inset: -10%; border-radius: 50%; background-image: radial-gradient(2px 2px at 50% 0%, #d7fff5 90%, transparent), radial-gradient(2px 2px at 85% 30%, #74f5e4 90%, transparent), radial-gradient(3px 3px at 18% 75%, #92d9ff 90%, transparent), radial-gradient(2px 2px at 75% 90%, #fff6ce 90%, transparent); animation: portal-spin-reverse 15s linear infinite; }
 @keyframes portal-unfold { from { opacity: .55; transform: scale(.94); } to { opacity: 1; transform: scale(1); } }
+@keyframes portal-aura { from { opacity: .55; transform: scale(.94); } to { opacity: 1; transform: scale(1.04); } }
 @keyframes portal-spin { to { transform: rotate(360deg); } }
 @keyframes portal-spin-reverse { to { transform: rotate(-360deg); } }
-@keyframes portal-breathe { from { transform: scale(.85); opacity: .8; } to { transform: scale(1.12); opacity: 1; } }
+@keyframes portal-depth { from { opacity: .8; } to { opacity: 1; } }
 
 .door-label { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; opacity: 0; font-size: 9px; font-weight: 800; letter-spacing: .2em; text-shadow: 0 2px 12px #00131a, 0 0 12px #00131a; transition: opacity .25s; }
 .door-label span { font-size: 19px; }
@@ -76,11 +80,11 @@ footer { position: relative; z-index: 3; display: flex; justify-content: space-b
 /* Podróż składa się z lekkich warstw transform/opacity. Bez wielkich skalowanych cieni. */
 .flight { display: none; position: fixed; z-index: 20; inset: 0; overflow: hidden; pointer-events: none; }
 .flight.is-active { display: block; }
-.flight-space { position: absolute; inset: 0; background: radial-gradient(circle at center, #1b3169 0%, #0b1936 38%, #030b19 80%); animation: space-reveal 4.2s ease both; }
-.flight-mouth { position: absolute; width: var(--portal-size, 320px); height: var(--portal-size, 320px); left: var(--portal-x, 75%); top: var(--portal-y, 50%); border-radius: 50%; border: 4px solid #a6faff; background: radial-gradient(circle, #eaffff 0%, #51c3e6 9%, #254594 25%, #101b49 45%, #186782 72%, #83f5ff 95%); animation: flight-enter 4.2s ease both; }
-.flight-mouth span { position: absolute; inset: 7%; border: 5px solid #71dfffaa; border-radius: 50%; }
+.flight-space { position: absolute; inset: 0; background: radial-gradient(ellipse at center, #010308 0%, #071724 20%, #102d3a 50%, #03090f 86%); animation: space-reveal 4.2s ease both; }
+.flight-mouth { position: absolute; width: var(--portal-size, 320px); height: var(--portal-height, 400px); left: var(--portal-x, 75%); top: var(--portal-y, 50%); border-radius: 50% 50% 4% 4% / 35% 35% 4% 4%; border: 5px solid #829f96; background: radial-gradient(ellipse, #020509 5%, #062029 19%, #1b6870 46%, #225966 70%, #79e6d3 100%); animation: flight-enter 4.2s ease both; }
+.flight-mouth span { position: absolute; inset: 7%; border: 5px solid #71dfffaa; border-radius: 50% 50% 3% 3% / 35% 35% 3% 3%; }
 .flight-tunnel { position: absolute; inset: 0; opacity: 0; animation: flight-tunnel-visible 4.2s ease both; }
-.flight-tunnel::before { content: ""; position: absolute; inset: 0; background: radial-gradient(circle, #bffcff 0%, #5ab8ed 1%, #3859af 3%, #182854 8%, transparent 24%); opacity: .8; }
+.flight-tunnel::before { content: ""; position: absolute; inset: 0; background: repeating-conic-gradient(from 0deg at 50% 50%, #0c263000 0deg, #5de2ce22 8deg, #050b1700 16deg, #638cff1c 24deg); opacity: .7; }
 .tunnel-ring { position: absolute; left: 50%; top: 50%; width: min(80vw, 80vh); aspect-ratio: 1; border: 2px solid #8df5ff; border-radius: 50%; animation: tunnel-rush 1.75s linear infinite; }
 .tunnel-ring:nth-child(2) { animation-delay: -.25s; border-color: #bdb4ff; }
 .tunnel-ring:nth-child(3) { animation-delay: -.5s; }
@@ -89,7 +93,9 @@ footer { position: relative; z-index: 3; display: flex; justify-content: space-b
 .tunnel-ring:nth-child(6) { animation-delay: -1.25s; border-color: #bdb4ff; }
 .tunnel-ring:nth-child(7) { animation-delay: -1.5s; }
 .flight-streaks { position: absolute; inset: 0; width: 100%; height: 100%; color: #9aefff; stroke-width: 1.2; opacity: 0; animation: streaks-fly 4.2s ease both; }
+.flight-darkness { position: absolute; inset: 0; background: #010307; animation: flight-darkness 4.2s ease-in both; }
 .flight p { position: absolute; left: 0; right: 0; bottom: 12%; padding: 0 20px; text-align: center; font-size: 11px; letter-spacing: .25em; font-weight: 700; color: #eaffff; text-shadow: 0 2px 12px #00191e; animation: flight-caption 4.2s ease both; }
+@keyframes flight-darkness { 0%, 72% { opacity: 0; } 100% { opacity: 1; } }
 @keyframes space-reveal { 0% { opacity: 0; } 22%,100% { opacity: 1; } }
 @keyframes flight-enter { 0% { transform: translate(-50%,-50%) scale(1); opacity: 0; } 12% { opacity: 1; } 32% { transform: translate(-50%,-50%) translate(var(--travel-x, 0px),var(--travel-y, 0px)) scale(1.35); opacity: 1; } 62% { transform: translate(-50%,-50%) translate(var(--travel-x, 0px),var(--travel-y, 0px)) scale(2.1); opacity: .12; } 70%,100% { transform: translate(-50%,-50%) translate(var(--travel-x, 0px),var(--travel-y, 0px)) scale(2.2); opacity: 0; } }
 @keyframes flight-tunnel-visible { 0%,25% { opacity: 0; } 43%,85% { opacity: 1; } 100% { opacity: .15; } }
@@ -99,7 +105,7 @@ footer { position: relative; z-index: 3; display: flex; justify-content: space-b
 .portal-header, .room-content, footer, .portal-door { transition: opacity .6s ease; }
 .is-travelling .portal-header, .is-travelling .room-content, .is-travelling footer, .is-travelling .portal-door { opacity: 0; visibility: hidden; transition: opacity .6s ease, visibility 0s .6s; }
 /* Po rozpoczęciu podróży wir w tle nie musi nadal być przeliczany. */
-.is-travelling .portal-layers, .is-travelling .portal-layers > span { animation-play-state: paused; }
+.is-travelling .portal-layers, .is-travelling .portal-layers > span, .is-travelling .portal-well > span { animation-play-state: paused; }
 @media (max-width: 700px) {
   .portal-header { height: 64px; padding: 0 20px; }.header-label { display: none; }
   .room { min-height: calc(100svh - 112px); display: grid; grid-template-columns: minmax(0, 1fr); grid-template-areas: 'intro' 'world' 'actions'; grid-template-rows: auto auto auto; align-content: center; padding: 38px 24px 30px; text-align: center; }
@@ -115,5 +121,6 @@ footer { position: relative; z-index: 3; display: flex; justify-content: space-b
   .enter-button { justify-content: center; }
   footer { padding: 16px 20px; font-size: 8px; letter-spacing: .12em; }footer span:last-child { display: none; }
 }
+body.motion-off *, body.motion-off *::before, body.motion-off *::after { animation: none !important; transition: none !important; }
 @media (prefers-reduced-motion: reduce) { body:not(.motion-override) *, body:not(.motion-override) *::before, body:not(.motion-override) *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
 .flight.is-paused *, .flight.is-paused { animation-play-state: paused !important; }

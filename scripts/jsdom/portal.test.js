@@ -47,7 +47,10 @@ function arrival(marker, opts = {}) {
     assert.equal(portal.querySelector('canvas'), null);
     assert.equal(portal.querySelector('script[src*="portal-webgl"]'), null);
     assert.equal(portal.querySelector('script[src*="portal-scene"]'), null);
-    assert.ok(portal.querySelector('#portal-door .portal-rim'));
+    assert.ok(portal.querySelector('#portal-door .portal-arch svg path'));
+    assert.ok(portal.querySelector('#portal-door .portal-well .portal-flow'));
+    assert.ok(portal.body.classList.contains('motion-override'));
+    assert.ok(portal.querySelector('#flight .flight-darkness'));
     assert.equal(portal.querySelectorAll('#flight .tunnel-ring').length, 7);
     assert.ok(portal.querySelector('#flight .flight-space'));
     assert.ok(portal.querySelector('#flight .flight-streaks circle'));
@@ -55,6 +58,8 @@ function arrival(marker, opts = {}) {
     assert.match(css, /@keyframes space-reveal/);
     assert.match(css, /@keyframes streaks-fly/);
     assert.match(read('css/portal.css'), /@keyframes rj-arrival-breathe/);
+    assert.match(read('css/portal.css'), /mask-image:\s*radial-gradient/);
+    assert.match(css, /@keyframes flight-darkness/);
     assert.doesNotMatch(css, /portal-world\.jpg|cursor:\s*wait/);
     assert.match(css, /prefers-reduced-motion:\s*reduce/);
     assert.match(css, /animation:\s*portal-spin/);
@@ -102,27 +107,30 @@ function arrival(marker, opts = {}) {
     assert.equal(t.w.sessionStorage.getItem(KEY), null); t.dom.window.close();
   }
   {
-    const t = room('RejStream', { reduced:true }); t.doc.getElementById('enter').click();
-    assert.equal(t.frames(), 0); assert.equal(t.doc.getElementById('flight').classList.contains('is-active'), false);
-    assert.ok(t.errors.some(x => /navigation/.test(x))); t.dom.window.close();
-  }
-  {
+    // Animacja działa od razu także przy systemowym ograniczeniu ruchu.
     const t = room('RejStream', { reduced:true });
     const toggle = t.doc.getElementById('motion-toggle');
-    assert.equal(toggle.hidden, false); assert.equal(toggle.getAttribute('aria-pressed'), 'false');
-    toggle.click(); assert.ok(t.doc.body.classList.contains('motion-override')); assert.equal(toggle.getAttribute('aria-pressed'), 'true');
+    assert.equal(toggle.hidden, false); assert.equal(toggle.getAttribute('aria-pressed'), 'true');
+    assert.ok(t.doc.body.classList.contains('motion-override'));
     t.doc.getElementById('enter').click();
     assert.ok(t.doc.getElementById('flight').classList.contains('is-active'));
     t.frame(0); t.frame(4200);
     assert.equal(JSON.parse(t.w.sessionStorage.getItem(KEY)).motionOverride, true);
     t.dom.window.close();
   }
-  {
-    const t = room('RejStream', { reduced:true });
-    const toggle = t.doc.getElementById('motion-toggle'); toggle.click(); toggle.click();
+  for (const reduced of [false, true]) {
+    // Gość może wyłączyć ruch i przejść natychmiast.
+    const t = room('RejStream', { reduced });
+    const toggle = t.doc.getElementById('motion-toggle'); toggle.click();
     assert.equal(toggle.getAttribute('aria-pressed'), 'false');
-    assert.equal(t.doc.body.classList.contains('motion-override'), false);
-    t.doc.getElementById('portal-door').click(); assert.equal(t.frames(), 0); t.dom.window.close();
+    assert.ok(t.doc.body.classList.contains('motion-off'));
+    t.doc.getElementById('portal-door').click(); assert.equal(t.frames(), 0);
+    assert.ok(t.errors.some(x => /navigation/.test(x))); t.dom.window.close();
+  }
+  {
+    const t = room('RejStream', { reduced:true }); const toggle = t.doc.getElementById('motion-toggle');
+    toggle.click(); toggle.click(); assert.equal(toggle.getAttribute('aria-pressed'), 'true');
+    assert.ok(t.doc.body.classList.contains('motion-override')); t.dom.window.close();
   }
   {
     const t = room('RejStream', { brokenSW:true });
@@ -140,7 +148,7 @@ function arrival(marker, opts = {}) {
     const cover = t.doc.querySelector('#rj-portal-arrival'); assert.ok(cover); assert.equal(cover.className, '');
     assert.equal(t.w.sessionStorage.getItem(KEY), null); assert.equal(t.timers[0].delay, 12000);
     t.w.dispatchEvent(new t.w.Event('load')); assert.ok(cover.classList.contains('is-playing'));
-    assert.equal(t.timers[1].delay, 2200); t.timers[1].fn(); assert.equal(t.doc.querySelector('#rj-portal-arrival'), null); t.dom.window.close();
+    assert.equal(t.timers[1].delay, 3000); t.timers[1].fn(); assert.equal(t.doc.querySelector('#rj-portal-arrival'), null); t.dom.window.close();
   }
   {
     const t = arrival({ path:'/Test/', at:Date.now() }); t.timers[0].fn(); assert.ok(t.doc.querySelector('#rj-portal-arrival.is-playing')); t.dom.window.close();
