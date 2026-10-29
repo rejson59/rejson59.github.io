@@ -27,7 +27,7 @@
   if (motionOverride) root.setAttribute("data-motion-override", "");
   root.setAttribute("role", "status");
   root.setAttribute("aria-live", "polite");
-  root.innerHTML = '<div class="rj-portal-vortex" aria-hidden="true"></div><div class="rj-portal-arrival-caption">Ładowanie projektu…</div>';
+  root.innerHTML = '<div class="rj-arrival-panel rj-panel-nw" aria-hidden="true"></div><div class="rj-arrival-panel rj-panel-ne" aria-hidden="true"></div><div class="rj-arrival-panel rj-panel-sw" aria-hidden="true"></div><div class="rj-arrival-panel rj-panel-se" aria-hidden="true"></div><div class="rj-portal-vortex" aria-hidden="true"></div><div class="rj-portal-arrival-caption">Ładowanie projektu…</div>';
   document.documentElement.appendChild(root);
   var started = false;
   function remove() { if (root.parentNode) root.parentNode.removeChild(root); }
