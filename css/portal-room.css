@@ -20,7 +20,7 @@ a { color: inherit; }
 .home-link:hover { color: #fff; }
 .room { position: relative; min-height: calc(100svh - 132px); display: flex; align-items: center; overflow: hidden; }
 .world-frame { position: absolute; width: min(1250px, 91vw); aspect-ratio: 1376 / 768; right: -1%; top: 50%; transform: translateY(-50%); }
-.portal-door { position: absolute; z-index: 2; left: 70.5%; top: 49%; width: 29%; aspect-ratio: 1; transform: translate(-50%, -50%); padding: 0; border: 0; border-radius: 50%; background: radial-gradient(circle, #7cfff5 0%, #127e9b 22%, #101d50 58%, #2dbbc7 70%, transparent 72%); cursor: pointer; overflow: hidden; color: #fff; transition: filter .35s, box-shadow .35s; }
+.portal-door { position: absolute; z-index: 2; left: 70.5%; top: 49%; width: 34%; aspect-ratio: 1; transform: translate(-50%, -50%); padding: 0; border: 0; border-radius: 50%; background: radial-gradient(circle, #7cfff5 0%, #127e9b 22%, #101d50 58%, #2dbbc7 70%, transparent 72%); cursor: pointer; overflow: hidden; color: #fff; transition: filter .35s, box-shadow .35s; }
 .scene-ready .portal-door { background: transparent; }
 .portal-door:disabled { cursor: wait; }
 .portal-door:not(:disabled):hover, .portal-door:focus-visible { filter: brightness(1.2); box-shadow: 0 0 55px #4bf9f665, inset 0 0 28px #bdffff50; }

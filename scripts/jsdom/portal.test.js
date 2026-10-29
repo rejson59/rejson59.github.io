@@ -49,6 +49,45 @@ function arrival(marker, opts = {}) {
     assert.doesNotMatch(css, /portal-world\.jpg/);
     assert.match(css, /prefers-reduced-motion:\s*reduce/);
     assert.match(read('js/portal-scene.js'), /requestAnimationFrame/);
+    assert.ok(portal.querySelector('script[src*="portal-webgl.js"]'));
+  }
+  {
+    // Udajemy GPU: renderer otrzymuje czas i postęp, a utrata kontekstu włącza fallback.
+    const t = room('RejStream');
+    const calls = [];
+    const gl = {
+      VERTEX_SHADER: 1, FRAGMENT_SHADER: 2, COMPILE_STATUS: 3, LINK_STATUS: 4,
+      ARRAY_BUFFER: 5, STATIC_DRAW: 6, FLOAT: 7, TRIANGLES: 8,
+      createShader: () => ({}), shaderSource() {}, compileShader() {},
+      getShaderParameter: () => true, deleteShader() {}, createProgram: () => ({}),
+      attachShader() {}, linkProgram() {}, getProgramParameter: () => true,
+      deleteProgram() {}, useProgram() {}, createBuffer: () => ({}), bindBuffer() {},
+      bufferData() {}, getAttribLocation: () => 0, enableVertexAttribArray() {},
+      vertexAttribPointer() {}, getUniformLocation: (_, name) => name,
+      viewport() {}, uniform2f() {}, uniform1f: (name, value) => calls.push([name, value]),
+      drawArrays() { calls.push(['draw']); }
+    };
+    t.w.HTMLCanvasElement.prototype.getContext = type => type === 'webgl' ? gl : null;
+    t.doc.getElementById('portal-door').getBoundingClientRect = () => ({ left:400, top:100, width:300, height:300 });
+    t.w.eval(read('js/portal-webgl.js'));
+    assert.ok(t.w.RJPortalScene); assert.equal(t.doc.querySelectorAll('canvas').length, 2);
+    t.frame(100); assert.ok(calls.some(c => c[0] === 'draw'));
+    t.w.RJPortalScene.start(4200); t.frame(200); t.frame(2300);
+    assert.ok(calls.some(c => c[0] === 'journey' && c[1] > .4));
+    const canvas = t.doc.querySelectorAll('canvas')[1];
+    const lost = new t.w.Event('webglcontextlost', { cancelable:true });
+    canvas.dispatchEvent(lost);
+    assert.equal(lost.defaultPrevented, true); assert.equal(t.w.RJPortalScene, undefined);
+    assert.ok(t.doc.querySelector('script[src*="portal-scene.js?v=2"]'));
+    t.dom.window.close();
+  }
+  {
+    // Brak WebGL albo błąd kompilacji nie blokuje wersji 2D.
+    const t = room('RejStream');
+    t.w.HTMLCanvasElement.prototype.getContext = () => null;
+    t.w.eval(read('js/portal-webgl.js'));
+    assert.equal(t.w.RJPortalScene, undefined); assert.equal(t.doc.querySelectorAll('canvas').length, 1);
+    t.dom.window.close();
   }
   {
     const t = room('RejStream');
