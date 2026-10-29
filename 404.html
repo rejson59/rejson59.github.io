@@ -4,6 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Nie znaleziono strony — rejson59.github.io</title>
+  <script>
+    // GitHub Pages zwraca tę stronę dla przyjaznych adresów /portal/nazwa.
+    var portalMatch = location.pathname.match(/^\/portal\/([A-Za-z0-9._-]{1,100})\/?$/);
+    if (portalMatch && portalMatch[1] !== "." && portalMatch[1] !== "..") {
+      location.replace("/portal/?projekt=" + encodeURIComponent(portalMatch[1]));
+    }
+  </script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <script>
     try {
@@ -44,6 +51,6 @@
       <a class="btn btn-primary" href="/">Wróć na stronę główną</a>
     </div>
   </main>
-  <script src="js/error-reporter.js?v=1"></script>
+  <script src="/js/error-reporter.js?v=1"></script>
 </body>
 </html>

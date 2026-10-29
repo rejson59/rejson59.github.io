@@ -22,11 +22,20 @@
   if (!stylesheet || !stylesheet.sheet) return;
   var root = document.createElement("div");
   root.id = "rj-portal-arrival";
-  root.className = "is-playing";
-  root.setAttribute("aria-hidden", "true");
-  root.innerHTML = '<div class="rj-portal-vortex"></div>';
+  root.setAttribute("role", "status");
+  root.setAttribute("aria-live", "polite");
+  root.innerHTML = '<div class="rj-portal-vortex" aria-hidden="true"></div><div class="rj-portal-arrival-caption">Ładowanie projektu…</div>';
   document.documentElement.appendChild(root);
+  var started = false;
   function remove() { if (root.parentNode) root.parentNode.removeChild(root); }
+  function reveal() {
+    if (started) return;
+    started = true;
+    root.classList.add("is-playing");
+    setTimeout(remove, 2200); // awaryjne sprzątanie po animacji
+  }
   root.addEventListener("animationend", function (event) { if (event.target === root) remove(); });
-  setTimeout(remove, 2200); // nigdy nie zostawiaj strony zakrytej
+  if (document.readyState === "complete") reveal();
+  else window.addEventListener("load", reveal, { once: true });
+  setTimeout(reveal, 12000); // nieskończone ładowanie nie może blokować projektu
 })();

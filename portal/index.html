@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#060716">
+  <meta name="robots" content="noindex">
+  <title>Portal do projektu — Rejson59</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/css/portal-room.css?v=1">
+  <script defer src="/js/projects-data.js"></script>
+  <script defer src="/js/portal-room.js?v=1"></script>
+</head>
+<body>
+  <div class="cosmos" aria-hidden="true"></div>
+  <header class="portal-header">
+    <a class="brand" href="/" aria-label="Rejson59 — strona główna"><span class="brand-mark">R<span>.</span></span><span>rejson59<span class="brand-dot">.</span></span></a>
+    <span class="header-label"><span class="header-star">✧</span> PRZESTRZEŃ PROJEKTÓW</span>
+    <a class="home-link" href="/">← <span>Strona główna</span></a>
+  </header>
+  <main class="room" id="room">
+    <div class="intro">
+      <div class="eyebrow"><span></span> TWOJA PODRÓŻ ZACZYNA SIĘ TUTAJ <span></span></div>
+      <h1>Portal do <em id="project-name">projektu</em></h1>
+      <p>Każdy projekt to osobny świat.<br>Ten czeka właśnie na Ciebie.</p>
+    </div>
+    <div class="portal-stage">
+      <span class="orbital orbit-one" aria-hidden="true"></span><span class="orbital orbit-two" aria-hidden="true"></span>
+      <button class="portal-door" id="portal-door" type="button" disabled aria-label="Wejdź do portalu">
+        <span class="portal-halo" aria-hidden="true"></span>
+        <span class="portal-ring ring-outer" aria-hidden="true"></span>
+        <span class="portal-ring ring-middle" aria-hidden="true"></span>
+        <span class="portal-ring ring-inner" aria-hidden="true"></span>
+        <span class="portal-core" aria-hidden="true"><span class="core-glow"></span><span class="core-symbol">✦</span><span class="core-label">WEJDŹ</span></span>
+      </button>
+      <span class="stage-line" aria-hidden="true"></span><span class="stage-spark spark-a" aria-hidden="true">✧</span><span class="stage-spark spark-b" aria-hidden="true">✦</span>
+    </div>
+    <div class="actions" id="actions">
+      <button class="enter-button" id="enter" type="button" disabled><span>✦</span> Kliknij, żeby wejść do portalu <b>↗</b></button>
+      <p class="hint">Możesz zostać tu tak długo, jak chcesz.</p>
+      <a class="direct-link" id="direct" hidden>Otwórz projekt bez animacji →</a>
+      <p class="status" id="status" role="status" aria-live="polite">Przygotowujemy portal...</p>
+    </div>
+    <noscript><p class="noscript">Portal wymaga JavaScriptu. <a href="/">Wróć do projektów</a>.</p></noscript>
+  </main>
+  <footer><span>REJSON59 <i>✦</i> UNIWERSUM PROJEKTÓW</span><span>ODKRYWAJ BEZ GRANIC</span></footer>
+  <div class="flight" id="flight" aria-hidden="true"><div class="flight-stars"></div><div class="flight-rings"><i></i><i></i><i></i></div><div class="flight-flash"></div><p>W DRODZE DO NOWEGO ŚWIATA</p></div>
+</body>
+</html>
