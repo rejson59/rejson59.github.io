@@ -2,6 +2,7 @@
    Ten moduł jest tylko dekoracją; nawigacja działa też bez canvas. */
 (function () {
   "use strict";
+  if (window.RJPortalScene) return; // WebGL jest już gotowy; to bezpieczny wariant zastępczy.
   var canvas = document.getElementById("portal-scene");
   var door = document.getElementById("portal-door");
   if (!canvas || !door) return;
