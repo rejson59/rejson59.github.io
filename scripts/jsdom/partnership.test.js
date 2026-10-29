@@ -1,0 +1,73 @@
+/* Testy formularza, prywatnej skrzynki oraz zachęty na czas wizyty. */
+const fs = require('fs');
+const path = require('path');
+const assert = require('assert');
+const { JSDOM } = require('jsdom');
+const root = path.resolve(__dirname, '../..');
+const read = p => fs.readFileSync(path.join(root,p),'utf8');
+const tick = () => new Promise(r => setTimeout(r,5));
+(async () => {
+  const dom = new JSDOM(read('partnerstwo.html'), {url:'https://rejson59.github.io/partnerstwo',runScripts:'outside-only'});
+  const w=dom.window, d=w.document, form=d.getElementById('partner-form');
+  let response={received:true}, calls=[];
+  w.RejsonCloud={rpc:(fn,data,auth)=>{ calls.push({fn,data,auth}); return response instanceof Error ? Promise.reject(response) : Promise.resolve(response); }};
+  w.eval(read('js/partnerstwo.js'));
+  form.elements.namedItem('name').value='Partner';
+  form.elements.namedItem('email').value='partner@example.org';
+  form.elements.namedItem('kind').value='banner';
+  form.elements.namedItem('message').value='Chcę omówić wspólną kampanię reklamową.';
+  form.elements.namedItem('consent').checked=true;
+  response=new Error('offline');
+  form.dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true})); await tick();
+  assert.match(d.getElementById('partner-feedback').textContent,/Nie mogę potwierdzić wysłania/);
+  assert.match(form.elements.namedItem('message').value,/kampanię/);
+  assert.equal(calls[0].fn,'submit_partnership_inquiry');
+  assert.equal(calls[0].auth,false);
+  assert.equal(calls[0].data.p_consent,true);
+  response={received:true};
+  form.dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true})); await tick();
+  assert.match(d.getElementById('partner-feedback').textContent,/dotarła do panelu/);
+  assert.equal(form.elements.namedItem('message').value,'');
+  assert.ok(!read('partnerstwo.html').includes('view-tracker.js'));
+  assert.match(read('sw.js'),/logowanie\|partnerstwo/);
+  dom.window.close();
+
+  const adm=new JSDOM('<div id="partner-admin-list"></div><button id="partner-admin-refresh"></button>',{url:'https://rejson59.github.io/admin',runScripts:'outside-only'});
+  const a=adm.window, ad=a.document, adminCalls=[];
+  const row={id:'test-id', name:'<img src=x onerror=alert(1)>', email:'p@example.org', message:'<script>evil()</script>', kind:'card', status:'new', created_at:'2026-10-29T12:00:00Z'};
+  a.RejsonCloud={rpc:(fn,args,auth)=>{adminCalls.push({fn,args,auth}); return Promise.resolve(fn==='admin_partnership_inquiries'?[row]:true);}};
+  a.eval(read('js/admin-partner.js')); await a.RJAdminPartner.load();
+  assert.equal(adminCalls[0].auth,true);
+  assert.equal(ad.querySelectorAll('img,script').length,0);
+  assert.match(ad.getElementById('partner-admin-list').textContent,/<script>evil/);
+  assert.match(ad.querySelector('a').href,/^mailto:/);
+  ad.querySelector('button.btn').click(); await tick();
+  assert.equal(adminCalls[1].fn,'admin_partnership_action');
+  assert.equal(adminCalls[1].args.p_action,'read');
+  adm.window.close();
+
+  const tracker=read('js/view-tracker.js');
+  const excerpt=tracker.slice(tracker.indexOf('  var JOIN_NUDGE_SESSION'),tracker.indexOf('  /* ---------- Inicjalizacja ---------- */'));
+  assert.ok(excerpt.length>200);
+  function nudge(sessionValue,legacy) {
+    const dom=new JSDOM('<html><head></head><body></body></html>',{url:'https://rejson59.github.io/',runScripts:'outside-only',pretendToBeVisual:true});
+    const w=dom.window, timers=[];
+    if(sessionValue) w.sessionStorage.setItem('rejson_join_nudge_closed_session_v2','1');
+    if(legacy) w.localStorage.setItem('rejson_join_nudge_v1',JSON.stringify({done:true}));
+    w.setTimeout=(fn,ms)=>{timers.push({fn,ms});return timers.length};
+    w.eval('(function(){function isInsideCardThumbnail(){return false;}'+excerpt+';window.runNudge=setupJoinNudge;})();');
+    w.runNudge(); return {w,timers};
+  }
+  const first=nudge(false,true);
+  assert.equal(first.timers.length,1,'legacy preference no longer hides popup');
+  first.timers[0].fn();
+  const popup=first.w.document.getElementById('join-nudge'); assert.ok(popup);
+  assert.equal(popup.querySelector('.jn-later'),null);
+  popup.querySelector('.jn-x').click();
+  assert.equal(first.w.sessionStorage.getItem('rejson_join_nudge_closed_session_v2'),'1');
+  first.w.runNudge(); assert.equal(first.timers.filter(t=>t.ms===25000).length,1);
+  first.w.close();
+  const dismissed=nudge(true,false); assert.equal(dismissed.timers.length,0); dismissed.w.close();
+  const next=nudge(false,false); assert.equal(next.timers.length,1); next.w.close();
+  console.log('Partnerstwo, skrzynka i zachęta — testy OK');
+})().catch(e=>{console.error(e);process.exitCode=1});

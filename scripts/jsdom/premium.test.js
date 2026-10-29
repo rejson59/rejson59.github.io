@@ -120,7 +120,7 @@ const count = (doc) => {
       !!card.querySelector(".rj-premium__sheen"));
     check("jest jedno wyraźne wezwanie do działania", !!cta && /konto|Zaloguj/.test(cta.textContent),
       cta ? cta.textContent : "brak");
-    check("jest uczciwe „nie teraz”", !!t.doc.getElementById("rj-club-later"));
+    check("brak przycisku ukrywania stałej karty", !t.doc.getElementById("rj-club-later"));
     check("bez konta nie ma powiadomień (nie udajemy ich)", count(t.doc) === "0", count(t.doc));
     check("dzwonek istnieje i mówi, że funkcja jest dla zalogowanych", (() => {
       const bell = t.doc.getElementById("rj-bell");
@@ -130,22 +130,15 @@ const count = (doc) => {
     })());
   }
 
-  console.log("\n=== B. „NIE TERAZ” JEST SZANOWANE (7 DNI SPOKOJU) ===");
+  console.log("\n=== B. STAŁA KARTA PREMIUM ===");
   {
     const t = mk({ loggedIn: false });
+    t.w.localStorage.setItem("rj_club_snooze_v1", String(Date.now()));
     await wait(20);
-    t.doc.getElementById("rj-club-later").click();
-    check("po „nie teraz” sekcja znika", t.doc.getElementById("rj-club").hidden === true);
-    check("decyzja zapisana lokalnie",
-      !!t.w.localStorage.getItem("rj_club_snooze_v1"),
-      t.w.localStorage.getItem("rj_club_snooze_v1"));
-
-    const again = mk({ loggedIn: false });
-    again.w.localStorage.setItem("rj_club_snooze_v1", String(Date.now()));
-    again.w.eval(PREMIUM);            /* drugie wejście na tę samą stronę */
-    await wait(20);
-    check("po odświeżeniu nadal nie zawraca głowy",
-      again.doc.getElementById("rj-club").hidden === true);
+    check("stare odłożenie nie ukrywa baneru", !t.doc.getElementById("rj-club").hidden);
+    check("karta jest dostępna mimo starego odłożenia", !!t.doc.querySelector("#rj-club .rj-premium"));
+    t.w.RJPremium.mount();
+    check("ponowne montowanie nie ukrywa baneru", !t.doc.getElementById("rj-club").hidden);
   }
 
   console.log("\n=== C. PO ZALOGOWANIU: ODBLOKOWANE + SCALANIE RAZ ===");
@@ -342,7 +335,7 @@ const count = (doc) => {
   {
     check("karta premium podpięta na stronie głównej", /id="rj-club"/.test(INDEX));
     check("arkusz premium dołączony", /css\/premium\.css\?v=3/.test(INDEX));
-    check("skrypt premium dołączony", /js\/premium\.js\?v=3/.test(INDEX));
+    check("skrypt premium dołączony", /js\/premium\.js\?v=4/.test(INDEX));
     check("karta premium stoi przed listą projektów",
       INDEX.indexOf('id="rj-club"') < INDEX.indexOf('id="projekty"'));
     check("karta premium jest tuż pod hero (przed wyróżnionymi), a nie na końcu strony",

@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="pl" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Porozmawiajmy o reklamie lub partnerstwie z Rejson59. Wyślij propozycję przez formularz.">
+  <title>Partnerstwo i reklama — Rejson59</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <script>try{var t=localStorage.getItem('theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch(e){}</script>
+  <link rel="stylesheet" href="css/style.css?v=2026-10-27-1">
+  <link rel="stylesheet" href="css/partnerstwo.css?v=1">
+  <script defer src="rejson-widgets/js/supabase-config.js"></script>
+  <script defer src="js/partnerstwo.js?v=1"></script>
+</head>
+<body class="partner-page">
+  <a class="partner-skip" href="#propozycja">Przejdź do formularza</a>
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="./" aria-label="Rejson59 — strona główna"><img class="brand-mark" src="favicon.svg" alt="" width="30" height="30"><span class="brand-text">rejson59<span class="brand-suffix">.github.io / partnerstwo</span></span></a>
+      <button class="hamburger-btn" id="partner-menu" aria-label="Otwórz menu" aria-expanded="false" aria-controls="partner-nav" type="button">☰</button>
+      <nav id="partner-nav" class="site-nav" aria-label="Nawigacja">
+        <a href="./">Strona główna</a><a href="spolecznosc">Społeczność</a><a href="logowanie">Konto</a>
+        <button id="partner-theme" class="theme-toggle" type="button" aria-label="Przełącz motyw jasny/ciemny"><span aria-hidden="true">◐</span><span class="theme-toggle-label"> Zmień motyw</span></button>
+      </nav>
+    </div>
+  </header>
+  <main>
+    <section class="partner-hero container">
+      <div class="partner-hero-copy">
+        <p class="partner-eyebrow"><span aria-hidden="true">✦</span> PARTNERSTWO · REKLAMA · WSPÓŁPRACA</p>
+        <h1>Masz coś, czym warto się <span>podzielić?</span></h1>
+        <p class="partner-lead">Stwórzmy miejsce dla Twojego projektu, marki albo pomysłu. Napisz, co chcesz pokazać — wspólnie ustalimy najlepszą formę współpracy.</p>
+        <a href="#propozycja" class="partner-primary">Porozmawiajmy o reklamie <span aria-hidden="true">↗</span></a>
+        <p class="partner-tiny">Bez zobowiązań · szczegóły i cena ustalane indywidualnie</p>
+      </div>
+      <div class="partner-visual" aria-hidden="true">
+        <div class="partner-orb"></div>
+        <div class="partner-preview"><span class="partner-preview-label">TWÓJ POMYSŁ + REJSON59</span><div class="partner-preview-mark">✦</div><strong>Razem możemy<br>zrobić coś fajnego.</strong><span class="partner-preview-line"></span><span class="partner-preview-small">Miejsce na Twoją historię ↗</span></div>
+      </div>
+    </section>
+    <section class="partner-options container" aria-labelledby="options-title">
+      <div class="partner-section-head"><p class="partner-eyebrow">MOŻLIWOŚCI</p><h2 id="options-title">Jak możemy współpracować?</h2><p>To propozycje formatów — dostępność i szczegóły ustalimy indywidualnie.</p></div>
+      <div class="partner-grid">
+        <article class="partner-option"><span class="partner-icon">↗</span><span class="partner-num">01 / WIDOCZNOŚĆ</span><h3>Baner reklamowy</h3><p>Przedstaw swoją stronę, usługę lub projekt w wyraźnym miejscu.</p></article>
+        <article class="partner-option"><span class="partner-icon">✦</span><span class="partner-num">02 / ODKRYWANIE</span><h3>Wyróżniona karta</h3><p>Opowiedz o swoim pomyśle w formie dopasowanej do strony.</p></article>
+        <article class="partner-option"><span class="partner-icon">✺</span><span class="partner-num">03 / TWÓJ POMYSŁ</span><h3>Coś innego?</h3><p>Masz własny plan? Chętnie o nim przeczytam i odpowiem.</p></article>
+      </div>
+    </section>
+    <section class="partner-contact container" id="propozycja" aria-labelledby="form-title">
+      <div class="partner-contact-intro"><p class="partner-eyebrow">ZACZNIJMY ROZMOWĘ</p><h2 id="form-title">Opowiedz mi<br><span>o swoim pomyśle.</span></h2><p>Napisz, co chcesz promować. Odpowiem na podany adres e-mail, a cenę i szczegóły ustalimy wspólnie.</p><div class="partner-note"><span>✉</span><p>To zapytanie, nie zamówienie. Wysłanie formularza nic nie kosztuje i nie uruchamia płatności.</p></div></div>
+      <div class="partner-form-card">
+        <form id="partner-form">
+          <div class="partner-row">
+            <label>Imię lub nazwa <input name="name" autocomplete="name" required minlength="2" maxlength="100" placeholder="Jak mam się do Ciebie zwracać?"></label>
+            <label>Adres e-mail <input name="email" type="email" autocomplete="email" required maxlength="254" placeholder="ty@przyklad.pl"></label>
+          </div>
+          <label>Rodzaj współpracy <select name="kind" required><option value="">Wybierz lub napisz własny pomysł</option><option value="banner">Baner reklamowy</option><option value="card">Wyróżniona karta</option><option value="other">Inna współpraca</option><option value="undecided">Jeszcze nie wiem</option></select></label>
+          <label>Adres strony lub projektu <span class="partner-optional">opcjonalnie</span><input name="website" type="url" maxlength="500" placeholder="https://twoj-projekt.pl"></label>
+          <label>Opowiedz o propozycji <textarea name="message" required minlength="20" maxlength="4000" rows="6" placeholder="Co chcesz pokazać? Jakiej współpracy szukasz?"></textarea></label>
+          <label class="partner-consent"><input type="checkbox" name="consent" required><span>Zgadzam się na wykorzystanie tych danych do odpowiedzi na moje zapytanie o współpracę.</span></label>
+          <p class="partner-privacy">Wiadomość i dane kontaktowe trafią do panelu administratora strony, aby mógł odpowiedzieć. Nie podawaj haseł ani poufnych danych.</p>
+          <p id="partner-feedback" class="partner-feedback" role="status" aria-live="polite" hidden></p>
+          <button class="partner-primary partner-submit" type="submit">Wyślij propozycję <span aria-hidden="true">↗</span></button>
+          <noscript><p class="partner-feedback">Do wysłania formularza potrzebny jest JavaScript.</p></noscript>
+        </form>
+      </div>
+    </section>
+  </main>
+  <footer class="partner-footer container"><a href="./">← Wróć do Rejson59</a><span>Partnerstwo i reklama · Rejson59</span></footer>
+</body>
+</html>
