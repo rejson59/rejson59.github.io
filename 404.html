@@ -8,7 +8,7 @@
     // GitHub Pages zwraca tę stronę dla przyjaznych adresów /portal/nazwa.
     var portalMatch = location.pathname.match(/^\/portal\/([A-Za-z0-9._-]{1,100})\/?$/);
     if (portalMatch && portalMatch[1] !== "." && portalMatch[1] !== "..") {
-      location.replace("/portal/?projekt=" + encodeURIComponent(portalMatch[1]));
+      location.replace("/portal/?projekt=" + encodeURIComponent(portalMatch[1]) + "&v=7");
     }
   </script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">

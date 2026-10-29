@@ -13,7 +13,7 @@
   if (typeof marker.path !== "string" || typeof marker.at !== "number" ||
       Date.now() - marker.at < 0 || Date.now() - marker.at > 60000 ||
       path(marker.path) !== path(location.pathname)) return;
-  // Użytkownik może świadomie włączyć animację na stronie portalu.
+  // Strona portalu przekazuje informację, czy animacja jest włączona.
   var motionOverride = marker.motionOverride === true;
   if (!motionOverride && window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   if (window.top !== window.self) return;
@@ -35,7 +35,7 @@
     if (started) return;
     started = true;
     root.classList.add("is-playing");
-    setTimeout(remove, 2200); // awaryjne sprzątanie po animacji
+    setTimeout(remove, 3000); // awaryjne sprzątanie po animacji
   }
   root.addEventListener("animationend", function (event) { if (event.target === root) remove(); });
   if (document.readyState === "complete") reveal();

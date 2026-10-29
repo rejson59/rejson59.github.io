@@ -7,11 +7,11 @@
   <meta name="robots" content="noindex">
   <title>Portal do projektu — Rejson59</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/css/portal-room.css?v=6">
+  <link rel="stylesheet" href="/css/portal-room.css?v=7">
   <script defer src="/js/projects-data.js"></script>
-  <script defer src="/js/portal-room.js?v=4"></script>
+  <script defer src="/js/portal-room.js?v=5"></script>
 </head>
-<body>
+<body class="motion-override">
   <header class="portal-header">
     <a class="brand" href="/" aria-label="Rejson59 — strona główna"><span class="brand-mark">R<span>.</span></span><span>rejson59<span class="brand-dot">.</span></span></a>
     <span class="header-label"><span class="header-star">✳</span> PRZESTRZEŃ PROJEKTÓW</span>
@@ -21,9 +21,23 @@
     <div class="world-frame">
       <button class="portal-door" id="portal-door" type="button" disabled aria-label="Wejdź do portalu">
         <span class="portal-layers" aria-hidden="true">
-          <span class="portal-aura"></span><span class="portal-halo"></span>
-          <span class="portal-rim"></span><span class="portal-flow flow-one"></span><span class="portal-flow flow-two"></span>
-          <span class="portal-center"></span><span class="portal-sparks"></span>
+          <span class="portal-aura"></span>
+          <span class="portal-well"><span class="portal-flow flow-one"></span><span class="portal-flow flow-two"></span><span class="portal-ripples"></span><span class="portal-filaments"><svg viewBox="0 0 400 400" aria-hidden="true"><g fill="none" stroke-linecap="round"><path d="M201 198 C173 189 161 155 179 128 C197 100 244 103 270 79 C291 60 291 35 278 12"/><path d="M199 202 C227 211 239 245 221 272 C203 300 156 297 130 321 C109 340 109 365 122 388"/><path d="M202 199 C211 171 245 159 272 177 C300 195 297 242 321 268 C340 289 365 289 388 276"/><path d="M198 201 C189 229 155 241 128 223 C100 205 103 158 79 132 C60 111 35 111 12 124"/></g></svg></span><span class="portal-center"></span></span>
+          <span class="portal-arch"><svg viewBox="0 0 400 500" preserveAspectRatio="none" aria-hidden="true">
+            <defs>
+              <linearGradient id="stone" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#b4c9c3"/><stop offset=".18" stop-color="#415b60"/><stop offset=".48" stop-color="#13272d"/><stop offset=".75" stop-color="#536c6a"/><stop offset="1" stop-color="#14242b"/></linearGradient>
+              <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f6e4b4"/><stop offset=".4" stop-color="#987d52"/><stop offset=".72" stop-color="#e0cf9b"/><stop offset="1" stop-color="#504638"/></linearGradient>
+            </defs>
+            <path fill="url(#stone)" fill-rule="evenodd" d="M20 488V220C20 89 89 14 200 14S380 89 380 220V488H20ZM70 472H330V220C330 115 282 64 200 64S70 115 70 220V472Z"/>
+            <path fill="none" stroke="url(#metal)" stroke-width="3" d="M33 480V220C33 97 96 28 200 28S367 97 367 220V480M56 478V220C56 107 107 50 200 50S344 107 344 220V478"/>
+            <path fill="none" stroke="#a1cfc4" stroke-opacity=".3" stroke-width="2" d="M20 260H68M20 335H68M20 410H68M332 260H380M332 335H380M332 410H380M43 145l39 16M73 80l32 34M136 27l13 37M357 145l-39 16M327 80l-32 34M264 27l-13 37"/>
+            <path fill="url(#metal)" d="M200 13l11 18-11 18-11-18zM42 292l6 9-6 9-6-9zM358 292l6 9-6 9-6-9zM42 373l6 9-6 9-6-9zM358 373l6 9-6 9-6-9z"/>
+            <path fill="none" stroke="#8ef2ee" stroke-opacity=".6" stroke-width="2" d="M66 476V220C66 111 114 60 200 60S334 111 334 220V476"/>
+            <path fill="#0b171c" fill-opacity=".7" d="M20 472h52v16H20zM328 472h52v16h-52z"/>
+            <path fill="none" stroke="#e9d5a0" stroke-opacity=".7" stroke-width="2" d="M20 471h52M328 471h52M25 479h42M333 479h42"/>
+            <path fill="none" stroke="#d0e5d1" stroke-opacity=".2" stroke-width="1" d="M26 234h30M26 309h30M26 384h30M344 234h30M344 309h30M344 384h30M90 55l14 17M108 43l12 19M292 55l-14 17M274 43l-12 19"/>
+          </svg></span>
+          <span class="portal-sparks"></span>
         </span>
         <span class="door-label" aria-hidden="true"><span>✦</span> WEJDŹ DO ŚRODKA</span>
       </button>
@@ -37,7 +51,7 @@
       <div class="actions" id="actions">
         <button class="enter-button" id="enter" type="button" disabled><span class="button-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2.5c.7 5.2 2.3 6.8 7.5 7.5-5.2.7-6.8 2.3-7.5 7.5-.7-5.2-2.3-6.8-7.5-7.5 5.2-.7 6.8-2.3 7.5-7.5ZM19.5 15c.3 1.9.9 2.5 2.8 2.8-1.9.3-2.5.9-2.8 2.8-.3-1.9-.9-2.5-2.8-2.8 1.9-.3 2.5-.9 2.8-2.8Z"/></svg></span><span>Kliknij, żeby wejść do portalu</span><b aria-hidden="true">↗</b></button>
         <p class="hint"><span aria-hidden="true">✧</span> Możesz zostać tu tak długo, jak chcesz.</p>
-        <button class="motion-toggle" id="motion-toggle" type="button" aria-pressed="false" hidden>Włącz animację portalu</button>
+        <button class="motion-toggle" id="motion-toggle" type="button" aria-pressed="true">Wyłącz animację portalu</button>
         <a class="direct-link" id="direct" hidden>Otwórz projekt bez animacji <span aria-hidden="true">↗</span></a>
         <p class="status" id="status" role="status" aria-live="polite">Przygotowujemy portal...</p>
       </div>
@@ -56,7 +70,7 @@
       </g>
       <g fill="currentColor" opacity=".7"><circle cx="220" cy="170" r="2"/><circle cx="780" cy="140" r="2"/><circle cx="150" cy="670" r="2"/><circle cx="850" cy="720" r="2"/><circle cx="410" cy="105" r="1.5"/><circle cx="620" cy="880" r="1.5"/></g>
     </svg>
-    <p>W DRODZE DO NOWEGO ŚWIATA</p>
+    <div class="flight-darkness"></div><p>W DRODZE DO NOWEGO ŚWIATA</p>
   </div>
 </body>
 </html>
