@@ -1,0 +1,46 @@
+/* Przyciski portalu i efekt przejścia — bez ingerowania w 3D kart. */
+.btn.btn-portal,
+[data-theme="light"] .btn.btn-portal {
+  position: relative; isolation: isolate; overflow: hidden;
+  min-height: 46px; gap: 10px; border: 1px solid rgba(157,182,255,.5);
+  border-radius: 14px; color: #f7fbff; background: linear-gradient(120deg,#151a42,#292061 58%,#164a67);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 6px 25px rgba(80,90,220,.24);
+  transition: transform .3s cubic-bezier(.22,.8,.25,1), box-shadow .3s, border-color .3s;
+  will-change: auto;
+}
+.btn.btn-portal::before {
+  content: ""; flex: 0 0 23px; width: 23px; height: 23px; border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, #fff 0 4%, #c4faff 12%, #7e7af9 28%, #17103d 49%, transparent 51%), conic-gradient(from 30deg,#79f8ff,#ad8dff,#fff,#79f8ff,#8d69f6,#79f8ff);
+  box-shadow: 0 0 0 1px rgba(208,248,255,.72), 0 0 12px #76cfff, inset 0 0 4px #fff;
+}
+.btn.btn-portal:hover::before, .btn.btn-portal:focus-visible::before { animation: rj-portal-spin 4s linear infinite; }
+.btn.btn-portal::after { content:""; position:absolute; inset:-100% -60%; z-index:-1; border:0; border-radius:0; opacity:.36; box-shadow:none; background:linear-gradient(110deg,transparent 44%,rgba(180,225,255,.35) 50%,transparent 56%); transform:translateX(-65%); }
+.btn.btn-portal:hover::after,.btn.btn-portal:focus-visible::after { animation:rj-portal-button-sheen 3s ease-in-out infinite; }
+.btn.btn-portal:hover,.btn.btn-portal:focus-visible { transform:translateY(-2px); border-color:#c9efff; color:#fff; background:linear-gradient(120deg,#1e255c,#3b2c82 58%,#195d79); box-shadow:0 10px 30px rgba(112,117,255,.42),0 0 16px rgba(99,224,255,.24); }
+.btn.btn-portal:active { transform:scale(.98); }
+.btn.btn-portal .icon { width:14px; height:14px; opacity:.8; }
+@keyframes rj-portal-spin { to { transform: rotate(360deg); } }
+@keyframes rj-portal-button-sheen { 0%,20%{transform:translateX(-65%)} 55%,100%{transform:translateX(65%)} }
+
+/* Cały ekran jest niezależną warstwą, więc nie zmieniamy transformów kart. */
+#rj-portal-flight,#rj-portal-arrival { position:fixed; inset:0; z-index:2147483646; overflow:hidden; pointer-events:none; background:#050517; color:white; }
+#rj-portal-flight { display:grid; place-items:center; animation:rj-flight-backdrop 1.35s ease both; }
+.rj-portal-stars { position:absolute; inset:-40%; background-image:radial-gradient(1px 1px at 12% 23%,#fff 96%,transparent),radial-gradient(2px 2px at 70% 30%,#b8eaff 96%,transparent),radial-gradient(1px 1px at 42% 68%,#fff 96%,transparent),radial-gradient(2px 2px at 80% 74%,#bda9ff 96%,transparent); background-size:200px 180px,280px 250px,240px 200px,300px 260px; opacity:.7; animation:rj-star-rush 1.35s ease-in both; }
+.rj-portal-vortex { position:relative; width:min(58vw,440px); aspect-ratio:1; border-radius:50%; background:radial-gradient(circle, #f5ffff 0%,#bafaff 3%,#7488ff 11%,#382e8c 22%,#100d31 39%,#07091f 50%, transparent 64%); box-shadow:0 0 55px 14px rgba(97,126,255,.38),0 0 120px 35px rgba(86,90,240,.16); animation:rj-vortex-in 1.35s cubic-bezier(.45,0,.72,.4) both; }
+.rj-portal-vortex::before,.rj-portal-vortex::after { content:""; position:absolute; inset:8%; border-radius:50%; border:4px solid transparent; border-top-color:#d6fcff; border-right-color:#8678ff; border-bottom-color:#68dfff; box-shadow:0 0 18px #6ba9ff,inset 0 0 18px #8c75ff; animation:rj-portal-spin 1.2s linear infinite; }
+.rj-portal-vortex::after { inset:18%; border-width:2px; border-top-color:#bb9dff; border-left-color:#c7faff; border-right-color:transparent; animation-direction:reverse; animation-duration:.85s; }
+.rj-portal-caption { position:absolute; bottom:12%; left:20px; right:20px; text-align:center; font:600 13px/1.5 system-ui,sans-serif; letter-spacing:.12em; text-transform:uppercase; color:#d2dfff; animation:rj-portal-caption 1.35s ease both; }
+@keyframes rj-flight-backdrop { 0%{opacity:0} 15%{opacity:1} 100%{opacity:1} }
+@keyframes rj-vortex-in { 0%{transform:scale(.08);opacity:.3} 35%{transform:scale(.72);opacity:1} 76%{transform:scale(1.6);opacity:1} 100%{transform:scale(8);opacity:1} }
+@keyframes rj-star-rush { 0%{transform:scale(.5);opacity:0} 30%{opacity:.8} 100%{transform:scale(3.2);opacity:0} }
+@keyframes rj-portal-caption { 0%{opacity:0;transform:translateY(8px)} 25%,65%{opacity:1;transform:none} 90%,100%{opacity:0} }
+#rj-portal-arrival { display:grid; place-items:center; background:radial-gradient(circle,#fff 0%,#a8eaff 10%,#6e6bf1 28%,#0b0b26 76%); }
+#rj-portal-arrival.is-playing { animation:rj-portal-emerge 1.05s cubic-bezier(.2,.7,.2,1) both; }
+#rj-portal-arrival .rj-portal-vortex { animation:rj-vortex-out 1.05s ease-out both; }
+@keyframes rj-portal-emerge { 0%,12%{opacity:1} 100%{opacity:0} }
+@keyframes rj-vortex-out { from{transform:scale(5)} to{transform:scale(.25);opacity:0} }
+@media (prefers-reduced-motion:reduce) {
+  .btn.btn-portal::before,.btn.btn-portal::after { animation:none !important; }
+  .btn.btn-portal,.btn.btn-portal:hover { transition:none; transform:none; }
+  #rj-portal-flight,#rj-portal-arrival { display:none !important; }
+}

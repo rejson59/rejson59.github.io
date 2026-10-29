@@ -98,20 +98,29 @@ self.addEventListener("fetch", function (event) {
               if (html.indexOf("rejson-widgets/widget.js") === -1) {
                 inject += '\n<script src="/rejson-widgets/widget.js?v=4" data-project="' + safeSlug + '" defer></script>';
               }
-              if (!inject) {
+              // Efekt wyjścia tylko na dokumentach projektów pod /projekt/.
+              // Skrypt działa wyłącznie, jeśli ta karta ma jednorazowy znacznik
+              // z prawdziwego wejścia przez portal. Nigdy nie dotyczy iframe.
+              var portalHead = /^\/[A-Za-z0-9._-]+\//.test(url.pathname) &&
+                /<\/head\s*>/i.test(html) && html.indexOf("portal-arrival.js") === -1
+                ? '<link rel="stylesheet" href="/css/portal.css?v=1" data-rj-portal-style><script src="/js/portal-arrival.js?v=1"></script>' : "";
+              if (!inject && !portalHead) {
                 return new Response(html, {
                   status: res.status,
                   statusText: res.statusText,
                   headers: res.headers
                 });
               }
-              var updatedHtml = /<\/body>/i.test(html)
-                ? html.replace(/<\/body>/i, inject + "\n</body>")
-                : html + inject;
+              var updatedHtml = portalHead
+                ? html.replace(/<\/head\s*>/i, function (head) { return portalHead + head; })
+                : html;
+              updatedHtml = /<\/body>/i.test(updatedHtml)
+                ? updatedHtml.replace(/<\/body>/i, inject + "\n</body>")
+                : updatedHtml + inject;
               var headers = new Headers(res.headers);
               headers.delete("content-length");
               headers.delete("content-encoding");
-              headers.delete("content-security-policy");
+              // Nie osłabiaj polityki bezpieczeństwa projektu dla animacji.
               return new Response(updatedHtml, {
                 status: res.status,
                 statusText: res.statusText,
