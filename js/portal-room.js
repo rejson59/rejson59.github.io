@@ -15,6 +15,7 @@
   var raf = 0;
   var previous = null;
   var KEY = "rj_portal_arrival_v1";
+  var FLIGHT_MS = 4200;
   // Samodzielne wejście do portalu też może przygotować znany globalny SW.
   if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")) {
     navigator.serviceWorker.register("/sw.js?v=2", { scope: "/", updateViaCache: "none" }).catch(function () {});
@@ -66,6 +67,8 @@
     }
     if (reduced) { navigate(); return; }
     flight.classList.add("is-active");
+    document.body.classList.add("is-travelling");
+    try { if (window.RJPortalScene) window.RJPortalScene.start(FLIGHT_MS); } catch (e) { /* nawigacja nie zależy od grafiki */ }
     status.textContent = "Wyruszamy do projektu…";
     // Liczymy wyłącznie widoczny czas: przełączenie karty nie skróci animacji.
     var elapsed = 0;
@@ -75,7 +78,7 @@
         if (previous !== null) elapsed += Math.max(0, now - previous);
         previous = now;
       } else previous = null;
-      if (elapsed >= 2800) navigate();
+      if (elapsed >= FLIGHT_MS) navigate();
       else raf = requestAnimationFrame(tick);
     }
     raf = requestAnimationFrame(tick);
@@ -88,6 +91,8 @@
     if (!event.persisted) return;
     if (raf) cancelAnimationFrame(raf);
     travelling = false; flight.classList.remove("is-active");
+    document.body.classList.remove("is-travelling");
+    try { if (window.RJPortalScene) window.RJPortalScene.reset(); } catch (e) { /* brak sceny nie blokuje powrotu */ }
     if (target) { door.disabled = false; button.disabled = false; status.textContent = ""; }
     try { sessionStorage.removeItem(KEY); } catch (e) { /* brak storage */ }
   });

@@ -43,12 +43,45 @@ function arrival(marker, opts = {}) {
   {
     const portal = new JSDOM(read('portal/index.html')).window.document;
     const css = read('css/portal-room.css');
-    assert.ok(portal.querySelector('.world-image'));
-    assert.equal(portal.querySelectorAll('#portal-door .energy').length, 3);
-    assert.ok(portal.querySelector('#flight .flight-world'));
-    assert.match(css, /portal-world\.jpg/);
-    assert.ok(fs.existsSync(path.join(root, 'assets/portal-world.jpg')));
+    assert.ok(portal.querySelector('canvas#portal-scene[aria-hidden="true"]'));
+    assert.ok(portal.querySelector('#portal-door'));
+    assert.ok(portal.querySelector('#flight .flight-flash'));
+    assert.doesNotMatch(css, /portal-world\.jpg/);
     assert.match(css, /prefers-reduced-motion:\s*reduce/);
+    assert.match(read('js/portal-scene.js'), /requestAnimationFrame/);
+  }
+  {
+    const t = room('RejStream');
+    const calls = [];
+    const ctx = new Proxy({}, { get(obj, key) {
+      if (key === 'createRadialGradient') return () => ({ addColorStop() {} });
+      if (key in obj) return obj[key];
+      return () => calls.push(key);
+    }, set(obj, key, value) { obj[key] = value; return true; } });
+    t.w.HTMLCanvasElement.prototype.getContext = () => ctx;
+    t.doc.getElementById('portal-door').getBoundingClientRect = () => ({ left:400, top:100, width:300, height:300 });
+    t.w.eval(read('js/portal-scene.js'));
+    assert.ok(t.w.RJPortalScene);
+    assert.ok(t.doc.body.classList.contains('scene-ready'));
+    t.frame(0); assert.ok(calls.includes('lineTo')); // żywy wir
+    calls.length = 0;
+    t.w.RJPortalScene.start(4200); t.frame(10); t.frame(2300);
+    assert.ok(calls.includes('ellipse')); // perspektywiczne pierścienie tunelu
+    t.w.RJPortalScene.reset(); t.dom.window.close();
+  }
+  {
+    const t = room('RejStream', { reduced:true });
+    let draws = 0;
+    const ctx = new Proxy({}, { get(obj, key) {
+      if (key === 'createRadialGradient') return () => ({ addColorStop() {} });
+      if (key in obj) return obj[key];
+      return () => { draws++; };
+    }, set(obj, key, value) { obj[key] = value; return true; } });
+    t.w.HTMLCanvasElement.prototype.getContext = () => ctx;
+    t.doc.getElementById('portal-door').getBoundingClientRect = () => ({ left:400, top:100, width:300, height:300 });
+    t.w.eval(read('js/portal-scene.js'));
+    assert.ok(draws > 0); assert.equal(t.frames(), 0); // statyczna alternatywa dla reduced motion
+    t.dom.window.close();
   }
   {
     const t = room('RejStream');
@@ -60,8 +93,8 @@ function arrival(marker, opts = {}) {
     t.doc.getElementById('enter').click();
     assert.ok(t.doc.getElementById('flight').classList.contains('is-active'));
     assert.equal(t.w.sessionStorage.getItem(KEY), null); // czekamy na całą animację
-    t.frame(0); t.frame(2700); assert.equal(t.w.sessionStorage.getItem(KEY), null);
-    t.frame(2800); assert.equal(JSON.parse(t.w.sessionStorage.getItem(KEY)).path, '/RejStream/');
+    t.frame(0); t.frame(4100); assert.equal(t.w.sessionStorage.getItem(KEY), null);
+    t.frame(4200); assert.equal(JSON.parse(t.w.sessionStorage.getItem(KEY)).path, '/RejStream/');
     assert.ok(t.errors.some(x => /navigation/.test(x))); // jsdom nie nawiguje
     t.w.dispatchEvent(new t.w.PageTransitionEvent('pageshow', { persisted: true }));
     assert.equal(t.doc.getElementById('flight').classList.contains('is-active'), false);
@@ -71,7 +104,7 @@ function arrival(marker, opts = {}) {
   {
     const t = room('Test', { cache: [{ name:'Test', homepage:'https://site.example/app', has_pages:true }] });
     assert.equal(t.doc.getElementById('direct').href, 'https://site.example/app');
-    t.doc.getElementById('portal-door').click(); t.frame(0); t.frame(2800);
+    t.doc.getElementById('portal-door').click(); t.frame(0); t.frame(4200);
     assert.equal(t.w.sessionStorage.getItem(KEY), null); t.dom.window.close();
   }
   {
