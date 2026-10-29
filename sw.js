@@ -63,7 +63,7 @@ self.addEventListener("fetch", function (event) {
     if (url.origin !== self.location.origin) return;
     /* Ekran logowania nie jest projektem: żadnych wstrzykniętych skryptów,
        widgetów ani rejestracji wejścia przez service worker. */
-    if (/^\/(?:logowanie|partnerstwo)(?:\.html)?\/?$/i.test(url.pathname)) return;
+    if (/^\/(?:logowanie|partnerstwo)(?:\.html)?\/?$/i.test(url.pathname) || /^\/portal(?:\/|$)/i.test(url.pathname)) return;
 
     var parts = (url.pathname || "/").split("/").filter(function (s) {
       return s && !/\.html?$/i.test(s);
@@ -103,7 +103,7 @@ self.addEventListener("fetch", function (event) {
               // z prawdziwego wejścia przez portal. Nigdy nie dotyczy iframe.
               var portalHead = /^\/[A-Za-z0-9._-]+\//.test(url.pathname) &&
                 /<\/head\s*>/i.test(html) && html.indexOf("portal-arrival.js") === -1
-                ? '<link rel="stylesheet" href="/css/portal.css?v=1" data-rj-portal-style><script src="/js/portal-arrival.js?v=1"></script>' : "";
+                ? '<link rel="stylesheet" href="/css/portal.css?v=2" data-rj-portal-style><script src="/js/portal-arrival.js?v=2"></script>' : "";
               if (!inject && !portalHead) {
                 return new Response(html, {
                   status: res.status,

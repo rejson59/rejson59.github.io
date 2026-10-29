@@ -36,7 +36,10 @@
 @keyframes rj-portal-caption { 0%{opacity:0;transform:translateY(8px)} 25%,65%{opacity:1;transform:none} 90%,100%{opacity:0} }
 #rj-portal-arrival { display:grid; place-items:center; background:radial-gradient(circle,#fff 0%,#a8eaff 10%,#6e6bf1 28%,#0b0b26 76%); }
 #rj-portal-arrival.is-playing { animation:rj-portal-emerge 1.05s cubic-bezier(.2,.7,.2,1) both; }
-#rj-portal-arrival .rj-portal-vortex { animation:rj-vortex-out 1.05s ease-out both; }
+#rj-portal-arrival .rj-portal-vortex { animation:none; }
+#rj-portal-arrival.is-playing .rj-portal-vortex { animation:rj-vortex-out 1.05s ease-out both; }
+.rj-portal-arrival-caption { position:absolute; bottom:14%; color:#eef5ff; font:600 13px/1.5 system-ui,sans-serif; letter-spacing:.08em; text-align:center; }
+#rj-portal-arrival.is-playing .rj-portal-arrival-caption { opacity:0; }
 @keyframes rj-portal-emerge { 0%,12%{opacity:1} 100%{opacity:0} }
 @keyframes rj-vortex-out { from{transform:scale(5)} to{transform:scale(.25);opacity:0} }
 @media (prefers-reduced-motion:reduce) {
