@@ -41,6 +41,16 @@ function arrival(marker, opts = {}) {
   }
   assert.equal(html.querySelector('script[src*="js/portal.js"]'), null);
   {
+    const portal = new JSDOM(read('portal/index.html')).window.document;
+    const css = read('css/portal-room.css');
+    assert.ok(portal.querySelector('.world-image'));
+    assert.equal(portal.querySelectorAll('#portal-door .energy').length, 3);
+    assert.ok(portal.querySelector('#flight .flight-world'));
+    assert.match(css, /portal-world\.jpg/);
+    assert.ok(fs.existsSync(path.join(root, 'assets/portal-world.jpg')));
+    assert.match(css, /prefers-reduced-motion:\s*reduce/);
+  }
+  {
     const t = room('RejStream');
     assert.equal(t.w.location.pathname, '/portal/RejStream');
     assert.equal(t.doc.getElementById('project-name').textContent, 'RejStream');
