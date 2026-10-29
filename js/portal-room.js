@@ -95,6 +95,8 @@
       flight.style.setProperty("--portal-x", (bounds.left + bounds.width / 2) + "px");
       flight.style.setProperty("--portal-y", (bounds.top + bounds.height / 2) + "px");
       flight.style.setProperty("--portal-size", bounds.width + "px");
+      flight.style.setProperty("--travel-x", (window.innerWidth / 2 - bounds.left - bounds.width / 2) + "px");
+      flight.style.setProperty("--travel-y", (window.innerHeight / 2 - bounds.top - bounds.height / 2) + "px");
     }
     flight.classList.add("is-active");
     document.body.classList.add("is-travelling");

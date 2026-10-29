@@ -7,9 +7,9 @@
   <meta name="robots" content="noindex">
   <title>Portal do projektu — Rejson59</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/css/portal-room.css?v=5">
+  <link rel="stylesheet" href="/css/portal-room.css?v=6">
   <script defer src="/js/projects-data.js"></script>
-  <script defer src="/js/portal-room.js?v=3"></script>
+  <script defer src="/js/portal-room.js?v=4"></script>
 </head>
 <body>
   <header class="portal-header">
@@ -47,9 +47,16 @@
   <footer><span>REJSON59 <i>✦</i> UNIWERSUM PROJEKTÓW</span><span>ODKRYWAJ BEZ GRANIC <i>↗</i></span></footer>
   <div class="flight" id="flight" aria-hidden="true">
     <div class="flight-space"></div>
-    <div class="flight-mouth"></div>
+    <div class="flight-mouth"><span></span></div>
     <div class="flight-tunnel"><div class="tunnel-ring"></div><div class="tunnel-ring"></div><div class="tunnel-ring"></div><div class="tunnel-ring"></div><div class="tunnel-ring"></div><div class="tunnel-ring"></div><div class="tunnel-ring"></div></div>
-    <div class="flight-rays"></div><div class="flight-flash"></div><p>W DRODZE DO NOWEGO ŚWIATA</p>
+    <svg class="flight-streaks" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <g fill="none" stroke="currentColor" stroke-linecap="round">
+        <path d="M500 220V60 M500 780v160 M220 500H60 M780 500h160 M300 300 170 170 M700 300 830 170 M300 700 170 830 M700 700 830 830"/>
+        <path d="M390 240 330 100 M610 240 670 100 M240 390 100 330 M760 390 900 330 M240 610 100 670 M760 610 900 670 M390 760 330 900 M610 760 670 900"/>
+      </g>
+      <g fill="currentColor" opacity=".7"><circle cx="220" cy="170" r="2"/><circle cx="780" cy="140" r="2"/><circle cx="150" cy="670" r="2"/><circle cx="850" cy="720" r="2"/><circle cx="410" cy="105" r="1.5"/><circle cx="620" cy="880" r="1.5"/></g>
+    </svg>
+    <p>W DRODZE DO NOWEGO ŚWIATA</p>
   </div>
 </body>
 </html>

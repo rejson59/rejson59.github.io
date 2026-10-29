@@ -34,21 +34,25 @@
 @keyframes rj-vortex-in { 0%{transform:scale(.08);opacity:.3} 35%{transform:scale(.72);opacity:1} 76%{transform:scale(1.6);opacity:1} 100%{transform:scale(8);opacity:1} }
 @keyframes rj-star-rush { 0%{transform:scale(.5);opacity:0} 30%{opacity:.8} 100%{transform:scale(3.2);opacity:0} }
 @keyframes rj-portal-caption { 0%{opacity:0;transform:translateY(8px)} 25%,65%{opacity:1;transform:none} 90%,100%{opacity:0} }
-#rj-portal-arrival { display:grid; place-items:center; background:radial-gradient(circle,#efffff 0%,#8bfff2 10%,#168c9f 31%,#031620 76%); }
-#rj-portal-arrival.is-playing { animation:rj-portal-emerge 1.05s cubic-bezier(.2,.7,.2,1) both; }
-#rj-portal-arrival .rj-portal-vortex { animation:none; background:radial-gradient(circle,#f2ffff 0%,#a0fff5 5%,#44ddd9 15%,#076479 31%,#031923 50%,transparent 64%); box-shadow:none; }
-/* Bez wielokrotnie powiększanych, obracających się cieni — także na słabszych urządzeniach. */
-#rj-portal-arrival .rj-portal-vortex::before,#rj-portal-arrival .rj-portal-vortex::after { display:none; }
-#rj-portal-arrival.is-playing .rj-portal-vortex { animation:rj-vortex-out 1.05s ease-out both; }
+/* Wyjście kontynuuje kolorystykę lotu; podczas ładowania pulsuje bez udawania postępu. */
+#rj-portal-arrival { display:grid; place-items:center; background:radial-gradient(circle at center,#1b3169 0%,#0b1936 38%,#030b19 80%); }
+#rj-portal-arrival.is-playing { animation:rj-portal-emerge 1.35s ease-in-out both; }
+#rj-portal-arrival .rj-portal-vortex { width:min(46vw,320px); animation:rj-arrival-breathe 2.8s ease-in-out infinite alternate; background:radial-gradient(circle,#f2ffff 0%,#9af9ff 4%,#4f9fe1 13%,#283575 32%,#101c40 50%,transparent 70%); box-shadow:none; }
+#rj-portal-arrival .rj-portal-vortex::before, #rj-portal-arrival .rj-portal-vortex::after { display:block; border:1px solid #a3efff99; box-shadow:none; animation:none; }
+#rj-portal-arrival .rj-portal-vortex::before { inset:10%; }
+#rj-portal-arrival .rj-portal-vortex::after { inset:20%; border-color:#c1b5ff99; }
+#rj-portal-arrival.is-playing .rj-portal-vortex { animation:rj-vortex-out 1.35s ease-in-out both; }
 .rj-portal-arrival-caption { position:absolute; bottom:14%; color:#eef5ff; font:600 13px/1.5 system-ui,sans-serif; letter-spacing:.08em; text-align:center; }
-#rj-portal-arrival.is-playing .rj-portal-arrival-caption { opacity:0; }
+#rj-portal-arrival.is-playing .rj-portal-arrival-caption { opacity:0; transition:opacity .35s; }
+@keyframes rj-arrival-breathe { from { transform:scale(.92); opacity:.8; } to { transform:scale(1.04); opacity:1; } }
 @keyframes rj-portal-emerge { 0%,12%{opacity:1} 100%{opacity:0} }
-@keyframes rj-vortex-out { from{transform:scale(1.6)} to{transform:scale(.25);opacity:0} }
+@keyframes rj-vortex-out { from{transform:scale(1.2);opacity:1} to{transform:scale(.25);opacity:0} }
 @media (prefers-reduced-motion:reduce) {
   .btn.btn-portal::before,.btn.btn-portal::after { animation:none !important; }
   .btn.btn-portal,.btn.btn-portal:hover { transition:none; transform:none; }
   #rj-portal-flight,#rj-portal-arrival:not([data-motion-override]) { display:none !important; }
   /* Wyłącznie po świadomym włączeniu animacji na stronie portalu. */
-  #rj-portal-arrival[data-motion-override].is-playing { animation-duration:1.05s !important; }
-  #rj-portal-arrival[data-motion-override].is-playing .rj-portal-vortex { animation-duration:1.05s !important; }
+  #rj-portal-arrival[data-motion-override] .rj-portal-vortex { animation-duration:2.8s !important; }
+  #rj-portal-arrival[data-motion-override].is-playing { animation-duration:1.35s !important; }
+  #rj-portal-arrival[data-motion-override].is-playing .rj-portal-vortex { animation-duration:1.35s !important; }
 }
