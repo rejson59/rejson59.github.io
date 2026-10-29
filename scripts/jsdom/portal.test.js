@@ -49,7 +49,12 @@ function arrival(marker, opts = {}) {
     assert.equal(portal.querySelector('script[src*="portal-scene"]'), null);
     assert.ok(portal.querySelector('#portal-door .portal-rim'));
     assert.equal(portal.querySelectorAll('#flight .tunnel-ring').length, 7);
-    assert.ok(portal.querySelector('#flight .flight-flash'));
+    assert.ok(portal.querySelector('#flight .flight-space'));
+    assert.ok(portal.querySelector('#flight .flight-streaks circle'));
+    assert.ok(portal.querySelector('#flight .flight-streaks path'));
+    assert.match(css, /@keyframes space-reveal/);
+    assert.match(css, /@keyframes streaks-fly/);
+    assert.match(read('css/portal.css'), /@keyframes rj-arrival-breathe/);
     assert.doesNotMatch(css, /portal-world\.jpg|cursor:\s*wait/);
     assert.match(css, /prefers-reduced-motion:\s*reduce/);
     assert.match(css, /animation:\s*portal-spin/);
@@ -65,6 +70,8 @@ function arrival(marker, opts = {}) {
     t.doc.getElementById('enter').click();
     assert.equal(t.doc.getElementById('flight').style.getPropertyValue('--portal-x'), '550px');
     assert.equal(t.doc.getElementById('flight').style.getPropertyValue('--portal-y'), '250px');
+    assert.equal(t.doc.getElementById('flight').style.getPropertyValue('--travel-x'), (t.w.innerWidth / 2 - 550) + 'px');
+    assert.equal(t.doc.getElementById('flight').style.getPropertyValue('--travel-y'), (t.w.innerHeight / 2 - 250) + 'px');
     assert.ok(t.doc.getElementById('flight').classList.contains('is-active'));
     assert.equal(t.w.sessionStorage.getItem(KEY), null); // czekamy na całą animację
     t.frame(0); t.frame(4100); assert.equal(t.w.sessionStorage.getItem(KEY), null);
@@ -74,6 +81,19 @@ function arrival(marker, opts = {}) {
     assert.equal(t.doc.getElementById('flight').classList.contains('is-active'), false);
     assert.equal(t.doc.getElementById('enter').disabled, false); assert.equal(t.w.sessionStorage.getItem(KEY), null);
     t.dom.window.close();
+  }
+  {
+    const t = room('RejStream');
+    Object.defineProperty(t.doc, 'visibilityState', { configurable:true, value:'visible' });
+    t.doc.getElementById('enter').click(); t.frame(0); t.frame(2000);
+    Object.defineProperty(t.doc, 'visibilityState', { configurable:true, value:'hidden' });
+    t.doc.dispatchEvent(new t.w.Event('visibilitychange'));
+    assert.ok(t.doc.getElementById('flight').classList.contains('is-paused'));
+    t.frame(5000);
+    Object.defineProperty(t.doc, 'visibilityState', { configurable:true, value:'visible' });
+    t.doc.dispatchEvent(new t.w.Event('visibilitychange')); t.frame(6000); t.frame(8000);
+    assert.equal(t.w.sessionStorage.getItem(KEY), null);
+    t.frame(8200); assert.ok(t.w.sessionStorage.getItem(KEY)); t.dom.window.close();
   }
   {
     const t = room('Test', { cache: [{ name:'Test', homepage:'https://site.example/app', has_pages:true }] });
