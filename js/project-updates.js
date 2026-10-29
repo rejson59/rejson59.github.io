@@ -11,16 +11,17 @@
  * scripts/update-project-updates.py). Ręcznie edytuj TYLKO dopiski note.
  */
 window.PROJECT_UPDATES = {
-  "mconline": { version: "v2026.10.27" },
-  "rejson59.github.io": { version: "v2026.10.27", note: "Społeczność 2.0: zdjęcia i filmy w postach, wątki odpowiedzi, agent AI" },
+  "rejson59.github.io": { version: "v2026.10.28", note: "Społeczność 2.0: zdjęcia i filmy w postach, wątki odpowiedzi, agent AI" },
+  "mc-launcher": { version: "v2026.10.28" },
+  "Jakuplayer": { version: "v2026.10.28" },
+  "ProStudent": { version: "v2026.10.28" },
+  "mconline": { version: "v2026.10.28" },
+  "roblox-online": { version: "v2026.10.28" },
+  "zaplecze-resellera": { version: "v2026.10.28" },
   "Zayra-ai-asistant": { version: "v2026.10.26" },
-  "ProStudent": { version: "v2026.10.26" },
   "RejStream": { version: "v2026.10.26" },
   "JoyPad": { version: "v2026.10.23" },
-  "Jakuplayer": { version: "v2026.10.23" },
-  "roblox-online": { version: "v2026.10.23" },
   "kompi": { version: "v2026.10.23" },
-  "zaplecze-resellera": { version: "v2026.10.21" },
   "zayra-voice": { version: "v2026.10.18" },
   "FocusIt": { version: "v2026.10.13" },
   "MeshRouter": { version: "v2026.10.13" },
