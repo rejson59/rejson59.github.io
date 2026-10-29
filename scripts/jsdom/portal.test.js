@@ -47,8 +47,12 @@ function arrival(marker, opts = {}) {
     assert.equal(portal.querySelector('canvas'), null);
     assert.equal(portal.querySelector('script[src*="portal-webgl"]'), null);
     assert.equal(portal.querySelector('script[src*="portal-scene"]'), null);
-    assert.ok(portal.querySelector('#portal-door .portal-arch svg path'));
-    assert.ok(portal.querySelector('#portal-door .portal-well .portal-flow'));
+    assert.ok(portal.querySelector('#portal-door .orb-core .core-rift'));
+    assert.equal(portal.querySelectorAll('#portal-door .orb-world .orbit').length, 4);
+    assert.equal(portal.querySelectorAll('#portal-door .orb-world .shard').length, 4);
+    assert.equal(portal.querySelectorAll('#portal-door .orb-world .shard i').length, 12);
+    assert.match(css, /transform-style:\s*preserve-3d/);
+    assert.match(css, /translateZ\(/);
     assert.ok(portal.body.classList.contains('motion-override'));
     assert.ok(portal.querySelector('#flight .flight-darkness'));
     assert.equal(portal.querySelectorAll('#flight .tunnel-ring').length, 7);
@@ -58,11 +62,12 @@ function arrival(marker, opts = {}) {
     assert.match(css, /@keyframes space-reveal/);
     assert.match(css, /@keyframes streaks-fly/);
     assert.match(read('css/portal.css'), /@keyframes rj-arrival-breathe/);
-    assert.match(read('css/portal.css'), /mask-image:\s*radial-gradient/);
+    assert.doesNotMatch(read('css/portal.css'), /mask-image|--rj-aperture/);
+    assert.match(read('css/portal.css'), /@keyframes rj-panel-open/);
     assert.match(css, /@keyframes flight-darkness/);
     assert.doesNotMatch(css, /portal-world\.jpg|cursor:\s*wait/);
     assert.match(css, /prefers-reduced-motion:\s*reduce/);
-    assert.match(css, /animation:\s*portal-spin/);
+    assert.match(css, /animation:\s*orbit-one/);
   }
   {
     const t = room('RejStream');
@@ -145,7 +150,7 @@ function arrival(marker, opts = {}) {
   }
   {
     const t = arrival({ path:'/Test', at:Date.now() });
-    const cover = t.doc.querySelector('#rj-portal-arrival'); assert.ok(cover); assert.equal(cover.className, '');
+    const cover = t.doc.querySelector('#rj-portal-arrival'); assert.ok(cover); assert.equal(cover.className, ''); assert.equal(cover.querySelectorAll('.rj-arrival-panel').length, 4);
     assert.equal(t.w.sessionStorage.getItem(KEY), null); assert.equal(t.timers[0].delay, 12000);
     t.w.dispatchEvent(new t.w.Event('load')); assert.ok(cover.classList.contains('is-playing'));
     assert.equal(t.timers[1].delay, 3000); t.timers[1].fn(); assert.equal(t.doc.querySelector('#rj-portal-arrival'), null); t.dom.window.close();

@@ -23,32 +23,48 @@ a { color: inherit; }
 /* Kamienna podstawa i odbicie dają bramie miejsce w przestrzeni. */
 .world-frame::before { content: ""; position: absolute; left: 47%; top: 86%; width: 47%; height: 17%; border-radius: 50%; background: radial-gradient(ellipse, #6ab7a233 0%, #183b4344 35%, transparent 70%); }
 .world-frame::after { content: ""; position: absolute; left: 49%; top: 89%; width: 43%; height: 5%; border-radius: 50%; border-top: 2px solid #91c5b175; background: linear-gradient(#465d5b, #111f24 60%, transparent); box-shadow: 0 10px 25px #0009; }
-.portal-door { position: absolute; z-index: 2; left: 70.5%; top: 49%; width: 36%; aspect-ratio: 4 / 5; transform: translate(-50%, -50%); padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; overflow: visible; color: #fff; transition: filter .35s, box-shadow .35s; }
+.portal-door { position: absolute; z-index: 2; left: 70.5%; top: 49%; width: 43%; aspect-ratio: 1; transform: translate(-50%, -50%); padding: 0; border: 0; border-radius: 50%; background: transparent; cursor: pointer; overflow: visible; color: #fff; transition: filter .35s, box-shadow .35s; }
 .portal-door:disabled { cursor: default; }
 .portal-door:not(:disabled):hover, .portal-door:focus-visible { filter: brightness(1.2); box-shadow: 0 0 55px #4bf9f665, inset 0 0 28px #bdffff50; }
 .portal-door:focus-visible, .enter-button:focus-visible, .motion-toggle:focus-visible, .direct-link:focus-visible, .home-link:focus-visible { outline: 2px solid #a4ffff; outline-offset: 6px; }
 
-/* Żywa brama: rysowana geometrią i światłem, bez zdjęcia i renderera 3D. */
+/* Przestrzenna osobliwość: niezależne orbity leżą w różnych płaszczyznach 3D.
+   Zwykłe warstwy CSS, bez blokującej kompilacji shaderów ani bitmapy. */
 .portal-layers { position: absolute; inset: 0; display: block; animation: portal-unfold 1.1s ease-out both; }
-.portal-layers > span { position: absolute; display: block; pointer-events: none; }
-.portal-aura { inset: -25%; background: radial-gradient(ellipse, rgba(79,240,226,.20), rgba(43,101,212,.2) 37%, rgba(98,62,169,.10) 52%, transparent 68%); animation: portal-aura 4s ease-in-out infinite alternate; }
-.portal-well { inset: 12% 17% 5%; overflow: hidden; border-radius: 50% 50% 3% 3% / 34% 34% 3% 3%; background: #06171c; box-shadow: inset 0 0 30px #4effe4, 0 0 22px #41c9ce80; }
-.portal-well > span { position: absolute; display: block; pointer-events: none; }
-.portal-flow { width: 150%; aspect-ratio: 1; left: -25%; top: 10%; border-radius: 50%; }
-.flow-one { background: repeating-conic-gradient(from 10deg, #06181d 0deg, #176d72 15deg, #4dd0c5 23deg, #123752 34deg, #091321 52deg, #1c7d7a 60deg); animation: portal-spin 12s linear infinite; }
-.flow-two { width: 110%; left: -5%; top: 23%; background: repeating-conic-gradient(from 15deg, #091520 0deg, #235173 16deg, #55d8c4 25deg, #111d32 42deg, #28677c 60deg); opacity: .55; animation: portal-spin-reverse 8s linear infinite; }
-.portal-ripples { inset: 0; background: repeating-radial-gradient(ellipse at 50% 50%, transparent 0 8%, #8df8e228 9%, transparent 11% 17%); animation: portal-depth 4s ease-in-out infinite alternate; }
-.portal-filaments { width: 150%; aspect-ratio: 1; left: -25%; top: 10%; animation: portal-spin-reverse 16s linear infinite; }
-.portal-filaments svg { display: block; width: 100%; height: 100%; stroke: #b4ffeb; stroke-opacity: .48; stroke-width: 1.5; }
-.portal-center { inset: 0; background: radial-gradient(ellipse at 50% 50%, #010308 0%, #030a10 13%, #071b27 22%, #15435488 36%, transparent 70%), linear-gradient(90deg,#00111288, transparent 20%, transparent 80%,#00111288); animation: portal-depth 3.5s ease-in-out infinite alternate; }
-.portal-arch { inset: 0; }
-.portal-arch svg { width: 100%; height: 100%; display: block; }
-.portal-sparks { inset: -10%; border-radius: 50%; background-image: radial-gradient(2px 2px at 50% 0%, #d7fff5 90%, transparent), radial-gradient(2px 2px at 85% 30%, #74f5e4 90%, transparent), radial-gradient(3px 3px at 18% 75%, #92d9ff 90%, transparent), radial-gradient(2px 2px at 75% 90%, #fff6ce 90%, transparent); animation: portal-spin-reverse 15s linear infinite; }
+.portal-layers > span, .orb-scene > span, .orb-world > span, .orb-core > span { position: absolute; display: block; pointer-events: none; }
+.orb-glow { inset: -20%; border-radius: 50%; background: radial-gradient(circle, #4fdde344 4%, #2d6aa439 30%, #513a9b24 48%, transparent 68%); animation: portal-aura 4s ease-in-out infinite alternate; }
+.orb-scene { inset: 0; perspective: 850px; perspective-origin: 50% 50%; }
+.orb-world { inset: 0; transform-style: preserve-3d; transform: rotateX(-13deg) rotateY(-20deg); }
+.orbit { inset: 6%; border: 2px solid #86f9f0; border-radius: 50%; transform-style: preserve-3d; backface-visibility: visible; }
+.orbit::before, .orbit::after { content: ""; position: absolute; border-radius: 50%; }
+.orbit::before { inset: 4%; border: 1px solid #bed8ff99; }
+.orbit::after { width: 9px; height: 9px; top: -5px; left: 50%; background: #d9fff7; box-shadow: 0 0 14px 3px #74fbe8; }
+.orbit-one { border-color: #9affebaa; animation: orbit-one 13s linear infinite; }
+.orbit-two { inset: 12%; border-color: #bda8ffbd; animation: orbit-two 17s linear infinite; }
+.orbit-three { inset: 17%; border: 5px solid #67d7d788; border-left-color: #fff2c0; border-right-color: #315470; animation: orbit-three 21s linear infinite; }
+.orbit-four { inset: 1%; border: 1px dashed #e6d39f99; animation: orbit-four 28s linear infinite; }
+.orb-core { left: 24%; top: 24%; width: 52%; height: 52%; border-radius: 50%; transform: translateZ(12px); background: radial-gradient(circle at 41% 36%, #0b1c2a 0%, #02060f 38%, #02040b 60%, #273b62 76%, #78e4d4 86%, #121c3a 95%, transparent 100%); box-shadow: 0 0 28px #47bbd677, 0 0 60px #5865d344; }
+.core-abyss { inset: 9%; border-radius: 50%; background: radial-gradient(circle at center, #000106 15%, #020711 45%, transparent 72%); }
+.core-rift { left: 39%; top: 13%; width: 22%; height: 74%; clip-path: polygon(55% 0,45% 24%,69% 37%,52% 54%,61% 68%,30% 100%,40% 68%,25% 51%,40% 34%,34% 18%); background: linear-gradient(90deg, #44dcd400, #8afee8 40%, #d4fcff 50%, #927fff 67%, #44dcd400); animation: rift-breathe 2.8s ease-in-out infinite alternate; }
+.shard { width: 10%; height: 17%; transform-style: preserve-3d; }
+.shard i { position: absolute; inset: 0; display: block; clip-path: polygon(50% 0,100% 58%,50% 100%,0 58%); background: linear-gradient(130deg,#d5fff0,#62d5d4 35%,#25334e 50%,#a49cff); backface-visibility: visible; }
+.shard i:nth-child(2) { transform: rotateY(60deg); background: linear-gradient(130deg,#87e6dd,#293b65 48%,#c6b7ff); }
+.shard i:nth-child(3) { transform: rotateY(120deg); background: linear-gradient(130deg,#c5fff1,#487891 45%,#5e4a92); }
+.shard-one { left: 8%; top: 16%; transform: translateZ(100px) rotate(24deg); animation: shard-one 5s ease-in-out infinite alternate; }
+.shard-two { left: 84%; top: 26%; width: 7%; height: 12%; transform: translateZ(-65px) rotate(-24deg); animation: shard-two 6s ease-in-out infinite alternate; }
+.shard-three { left: 19%; top: 75%; width: 6%; height: 11%; transform: translateZ(-35px) rotate(36deg); animation: shard-one 7s ease-in-out infinite alternate; }
+.shard-four { left: 79%; top: 77%; width: 8%; height: 14%; transform: translateZ(80px) rotate(-18deg); animation: shard-two 5.5s ease-in-out infinite alternate; }
+.orb-dust { inset: -10%; border-radius: 50%; background-image: radial-gradient(2px 2px at 50% 0%, #d7fff5 90%, transparent), radial-gradient(2px 2px at 85% 30%, #74f5e4 90%, transparent), radial-gradient(3px 3px at 18% 75%, #92d9ff 90%, transparent), radial-gradient(2px 2px at 75% 90%, #fff6ce 90%, transparent); animation: portal-spin-reverse 18s linear infinite; }
 @keyframes portal-unfold { from { opacity: .55; transform: scale(.94); } to { opacity: 1; transform: scale(1); } }
 @keyframes portal-aura { from { opacity: .55; transform: scale(.94); } to { opacity: 1; transform: scale(1.04); } }
-@keyframes portal-spin { to { transform: rotate(360deg); } }
 @keyframes portal-spin-reverse { to { transform: rotate(-360deg); } }
-@keyframes portal-depth { from { opacity: .8; } to { opacity: 1; } }
+@keyframes orbit-one { from { transform: rotateX(68deg) rotateZ(0deg); } to { transform: rotateX(68deg) rotateZ(360deg); } }
+@keyframes orbit-two { from { transform: rotateY(68deg) rotateZ(360deg); } to { transform: rotateY(68deg) rotateZ(0deg); } }
+@keyframes orbit-three { from { transform: rotateX(48deg) rotateY(46deg) rotateZ(0deg); } to { transform: rotateX(48deg) rotateY(46deg) rotateZ(360deg); } }
+@keyframes orbit-four { from { transform: rotateX(-48deg) rotateY(48deg) rotateZ(360deg); } to { transform: rotateX(-48deg) rotateY(48deg) rotateZ(0deg); } }
+@keyframes rift-breathe { from { opacity: .48; transform: scale(.95); } to { opacity: 1; transform: scale(1.08); } }
+@keyframes shard-one { from { transform: translateZ(80px) translateY(-4px) rotate(22deg); } to { transform: translateZ(110px) translateY(9px) rotate(36deg); } }
+@keyframes shard-two { from { transform: translateZ(-50px) translateY(7px) rotate(-24deg); } to { transform: translateZ(10px) translateY(-9px) rotate(-8deg); } }
 
 .door-label { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; opacity: 0; font-size: 9px; font-weight: 800; letter-spacing: .2em; text-shadow: 0 2px 12px #00131a, 0 0 12px #00131a; transition: opacity .25s; }
 .door-label span { font-size: 19px; }
@@ -81,9 +97,9 @@ footer { position: relative; z-index: 3; display: flex; justify-content: space-b
 .flight { display: none; position: fixed; z-index: 20; inset: 0; overflow: hidden; pointer-events: none; }
 .flight.is-active { display: block; }
 .flight-space { position: absolute; inset: 0; background: radial-gradient(ellipse at center, #010308 0%, #071724 20%, #102d3a 50%, #03090f 86%); animation: space-reveal 4.2s ease both; }
-.flight-mouth { position: absolute; width: var(--portal-size, 320px); height: var(--portal-height, 400px); left: var(--portal-x, 75%); top: var(--portal-y, 50%); border-radius: 50% 50% 4% 4% / 35% 35% 4% 4%; border: 5px solid #829f96; background: radial-gradient(ellipse, #020509 5%, #062029 19%, #1b6870 46%, #225966 70%, #79e6d3 100%); animation: flight-enter 4.2s ease both; }
-.flight-mouth span { position: absolute; inset: 7%; border: 5px solid #71dfffaa; border-radius: 50% 50% 3% 3% / 35% 35% 3% 3%; }
-.flight-tunnel { position: absolute; inset: 0; opacity: 0; animation: flight-tunnel-visible 4.2s ease both; }
+.flight-mouth { position: absolute; width: var(--portal-size, 320px); height: var(--portal-height, 400px); left: var(--portal-x, 75%); top: var(--portal-y, 50%); border-radius: 50%; border: 2px solid #8cf7e0; background: radial-gradient(circle, #02030b 16%, #091626 45%, #345174 72%, #73ddcf 94%); animation: flight-enter 4.2s ease both; }
+.flight-mouth span { position: absolute; inset: 7%; border: 5px solid #71dfffaa; border-radius: 50%; }
+.flight-tunnel { position: absolute; inset: 0; perspective: 650px; opacity: 0; animation: flight-tunnel-visible 4.2s ease both; }
 .flight-tunnel::before { content: ""; position: absolute; inset: 0; background: repeating-conic-gradient(from 0deg at 50% 50%, #0c263000 0deg, #5de2ce22 8deg, #050b1700 16deg, #638cff1c 24deg); opacity: .7; }
 .tunnel-ring { position: absolute; left: 50%; top: 50%; width: min(80vw, 80vh); aspect-ratio: 1; border: 2px solid #8df5ff; border-radius: 50%; animation: tunnel-rush 1.75s linear infinite; }
 .tunnel-ring:nth-child(2) { animation-delay: -.25s; border-color: #bdb4ff; }
@@ -99,13 +115,13 @@ footer { position: relative; z-index: 3; display: flex; justify-content: space-b
 @keyframes space-reveal { 0% { opacity: 0; } 22%,100% { opacity: 1; } }
 @keyframes flight-enter { 0% { transform: translate(-50%,-50%) scale(1); opacity: 0; } 12% { opacity: 1; } 32% { transform: translate(-50%,-50%) translate(var(--travel-x, 0px),var(--travel-y, 0px)) scale(1.35); opacity: 1; } 62% { transform: translate(-50%,-50%) translate(var(--travel-x, 0px),var(--travel-y, 0px)) scale(2.1); opacity: .12; } 70%,100% { transform: translate(-50%,-50%) translate(var(--travel-x, 0px),var(--travel-y, 0px)) scale(2.2); opacity: 0; } }
 @keyframes flight-tunnel-visible { 0%,25% { opacity: 0; } 43%,85% { opacity: 1; } 100% { opacity: .15; } }
-@keyframes tunnel-rush { 0% { transform: translate(-50%,-50%) scale(.05); opacity: 0; } 15% { opacity: .7; } 75% { opacity: .8; } 100% { transform: translate(-50%,-50%) scale(1.7); opacity: 0; } }
+@keyframes tunnel-rush { 0% { transform: translate(-50%,-50%) translateZ(-1100px); opacity: 0; } 15% { opacity: .7; } 75% { opacity: .8; } 100% { transform: translate(-50%,-50%) translateZ(260px); opacity: 0; } }
 @keyframes streaks-fly { 0%,30% { opacity: 0; transform: scale(.85); } 52%,78% { opacity: .55; } 100% { opacity: 0; transform: scale(1.2); } }
 @keyframes flight-caption { 0%,15% { opacity: 0; } 28%,70% { opacity: 1; } 90%,100% { opacity: 0; } }
 .portal-header, .room-content, footer, .portal-door { transition: opacity .6s ease; }
 .is-travelling .portal-header, .is-travelling .room-content, .is-travelling footer, .is-travelling .portal-door { opacity: 0; visibility: hidden; transition: opacity .6s ease, visibility 0s .6s; }
 /* Po rozpoczęciu podróży wir w tle nie musi nadal być przeliczany. */
-.is-travelling .portal-layers, .is-travelling .portal-layers > span, .is-travelling .portal-well > span { animation-play-state: paused; }
+.is-travelling .portal-layers, .is-travelling .portal-layers * { animation-play-state: paused; }
 @media (max-width: 700px) {
   .portal-header { height: 64px; padding: 0 20px; }.header-label { display: none; }
   .room { min-height: calc(100svh - 112px); display: grid; grid-template-columns: minmax(0, 1fr); grid-template-areas: 'intro' 'world' 'actions'; grid-template-rows: auto auto auto; align-content: center; padding: 38px 24px 30px; text-align: center; }

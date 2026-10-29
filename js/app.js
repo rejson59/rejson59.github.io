@@ -173,7 +173,7 @@
     return meta;
   }
 
-  function portalUrl(name) { return "/portal/?projekt=" + encodeURIComponent(name) + "&v=7"; }
+  function portalUrl(name) { return "/portal/?projekt=" + encodeURIComponent(name) + "&v=8"; }
 
   function actionsHTML(p) {
     var liveBtn = p.liveUrl

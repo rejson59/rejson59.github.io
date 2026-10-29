@@ -34,24 +34,31 @@
 @keyframes rj-vortex-in { 0%{transform:scale(.08);opacity:.3} 35%{transform:scale(.72);opacity:1} 76%{transform:scale(1.6);opacity:1} 100%{transform:scale(8);opacity:1} }
 @keyframes rj-star-rush { 0%{transform:scale(.5);opacity:0} 30%{opacity:.8} 100%{transform:scale(3.2);opacity:0} }
 @keyframes rj-portal-caption { 0%{opacity:0;transform:translateY(8px)} 25%,65%{opacity:1;transform:none} 90%,100%{opacity:0} }
-/* Wyjście z ciemności: przez powiększający się otwór widać prawdziwą stronę. */
-@property --rj-aperture { syntax: "<length>"; inherits: false; initial-value: 0px; }
+/* Odsłanianie od środka bez animowania pełnoekranowej maski.
+   Cztery wstępnie narysowane powierzchnie przesuwają się tylko transformem. */
 #rj-portal-arrival { display:grid; place-items:center; background:#010307; }
-#rj-portal-arrival.is-playing {
-  --rj-aperture: 0px;
-  -webkit-mask-image: radial-gradient(circle at center, transparent var(--rj-aperture), #000 calc(var(--rj-aperture) + 6vmax));
-  mask-image: radial-gradient(circle at center, transparent var(--rj-aperture), #000 calc(var(--rj-aperture) + 6vmax));
-  animation:rj-portal-emerge 1.9s ease-in-out both;
-}
+.rj-arrival-panel { position:absolute; inset:0; background:#010307; }
+/* Nieruchome kształty, przesuwane jak całe warstwy — bez przeliczania maski w każdej klatce. */
+.rj-panel-nw { clip-path:polygon(50% 50%,-200% -100%,300% -100%); }
+.rj-panel-ne { clip-path:polygon(50% 50%,200% -200%,200% 300%); }
+.rj-panel-sw { clip-path:polygon(50% 50%,-100% -200%,-100% 300%); }
+.rj-panel-se { clip-path:polygon(50% 50%,-200% 200%,300% 200%); }
+#rj-portal-arrival.is-playing { background:transparent; animation:rj-arrival-finished 1.9s linear both; }
+#rj-portal-arrival.is-playing .rj-arrival-panel { animation: rj-panel-open 1.9s cubic-bezier(.4,0,.6,1) both; }
+#rj-portal-arrival.is-playing .rj-panel-nw { --rj-x:0%; --rj-y:-51%; }
+#rj-portal-arrival.is-playing .rj-panel-ne { --rj-x:51%; --rj-y:0%; }
+#rj-portal-arrival.is-playing .rj-panel-sw { --rj-x:-51%; --rj-y:0%; }
+#rj-portal-arrival.is-playing .rj-panel-se { --rj-x:0%; --rj-y:51%; }
 #rj-portal-arrival .rj-portal-vortex { width:min(40vw,260px); animation:rj-arrival-breathe 2.8s ease-in-out infinite alternate; background:radial-gradient(circle,#010307 0%,#020c10 20%,#0b2d32 43%,transparent 70%); box-shadow:none; opacity:.6; }
 #rj-portal-arrival .rj-portal-vortex::before, #rj-portal-arrival .rj-portal-vortex::after { display:block; border:1px solid #55b7ae55; box-shadow:none; animation:none; }
 #rj-portal-arrival .rj-portal-vortex::before { inset:10%; }
 #rj-portal-arrival .rj-portal-vortex::after { inset:20%; border-color:#4f80a144; }
-#rj-portal-arrival.is-playing .rj-portal-vortex { opacity:0; transition:opacity .35s; }
+#rj-portal-arrival.is-playing .rj-portal-vortex { display:none; }
 .rj-portal-arrival-caption { position:absolute; bottom:14%; color:#95b6b6; font:600 13px/1.5 system-ui,sans-serif; letter-spacing:.08em; text-align:center; }
-#rj-portal-arrival.is-playing .rj-portal-arrival-caption { opacity:0; transition:opacity .35s; }
+#rj-portal-arrival.is-playing .rj-portal-arrival-caption { display:none; }
 @keyframes rj-arrival-breathe { from { transform:scale(.92); opacity:.35; } to { transform:scale(1.04); opacity:.6; } }
-@keyframes rj-portal-emerge { 0% { --rj-aperture:0px; opacity:1; } 80% { opacity:1; } 100% { --rj-aperture:75vmax; opacity:0; } }
+@keyframes rj-panel-open { from { transform:translate(0,0); } to { transform:translate(var(--rj-x),var(--rj-y)); } }
+@keyframes rj-arrival-finished { 0%,40% { opacity:1; } 100% { opacity:0; } }
 @media (prefers-reduced-motion:reduce) {
   .btn.btn-portal::before,.btn.btn-portal::after { animation:none !important; }
   .btn.btn-portal,.btn.btn-portal:hover { transition:none; transform:none; }
@@ -59,5 +66,5 @@
   /* Strona portalu domyślnie włącza animację, chyba że odwiedzający ją wyłączy. */
   #rj-portal-arrival[data-motion-override] .rj-portal-vortex { animation-duration:2.8s !important; }
   #rj-portal-arrival[data-motion-override].is-playing { animation-duration:1.9s !important; }
-  #rj-portal-arrival[data-motion-override].is-playing .rj-portal-vortex { animation-duration:1.9s !important; }
+  #rj-portal-arrival[data-motion-override].is-playing .rj-arrival-panel { animation-duration:1.9s !important; }
 }
