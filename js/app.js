@@ -72,7 +72,10 @@
 
   function liveUrlFor(repo) {
     var home = (repo.homepage || "").trim();
-    if (home) return home;
+    try {
+      var parsedHome = new URL(home);
+      if (parsedHome.protocol === "http:" || parsedHome.protocol === "https:") return parsedHome.href;
+    } catch (e) { /* nieprawidłowy adres — spróbuj GitHub Pages */ }
     if (repo.has_pages || repo.name === "rejson-widgets") {
       return "https://" + GH_USER + ".github.io/" + repo.name + "/";
     }
@@ -172,7 +175,7 @@
 
   function actionsHTML(p) {
     var liveBtn = p.liveUrl
-      ? '<a class="btn btn-live btn-sm" href="' + esc(p.liveUrl) + '" target="_blank" rel="noopener noreferrer">Wersja live ' + ICON_ARROW + "</a>"
+      ? '<a class="btn btn-live btn-portal btn-sm" data-portal href="' + esc(p.liveUrl) + '"><span>Przejdź do portalu</span>' + ICON_ARROW + "</a>"
       : "";
     var feedbackBtn = '<button class="btn btn-feedback btn-sm" type="button" data-feedback-project="' + esc(p.name) + '" data-rj-keep>' +
       '<span class="feedback-pill-dot" aria-hidden="true"></span>Zgłoś błąd / pomysł</button>';
@@ -189,7 +192,7 @@
 
     var cleanHost = p.liveUrl ? p.liveUrl.replace(/^https?:\/\//, "") : "";
     var preview = p.liveUrl
-      ? '<a class="card-preview" href="' + esc(p.liveUrl) + '" target="_blank" rel="noopener noreferrer" aria-label="Podgląd ' + esc(p.name) + ' — otwórz live">' +
+      ? '<a class="card-preview" data-portal href="' + esc(p.liveUrl) + '" aria-label="Podgląd ' + esc(p.name) + ' — otwórz live">' +
           '<div class="card-preview-frame" aria-hidden="true"><iframe data-src="' + esc(p.liveUrl) + '" name="rejson-card-preview" data-card-preview="1" tabindex="-1" aria-hidden="true"></iframe><div class="card-preview-topbar"><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-url">' + esc(cleanHost) + '</span></div></div><span class="card-preview-hint">otwórz ↗</span></a>'
       : "";
 
@@ -202,7 +205,7 @@
             '<span class="card-badges">' + badgesHTML(p) + "</span>" +
           "</div>" +
           preview +
-          '<h3 class="card-title"><a href="' + esc(p.liveUrl || p.url) + '" target="_blank" rel="noopener noreferrer">' + esc(p.name) + "</a></h3>" +
+          '<h3 class="card-title"><a href="' + esc(p.liveUrl || p.url) + '"' + (p.liveUrl ? ' data-portal' : ' target="_blank" rel="noopener noreferrer"') + '>' + esc(p.name) + "</a></h3>" +
           '<p class="card-desc">' + esc(p.description) + "</p>" +
           topics +
           '<p class="card-meta">' + metaHTML(p) + "</p>" +
@@ -1340,39 +1343,4 @@
   setInterval(function () {
     if (document.visibilityState === "visible") syncWithGitHub(false);
   }, 45000);
-})();
-
-/* ---------- Soczyste przyciski live: żelkowe trzęsienie po kliknięciu ---------- */
-(function () {
-  var reduce = window.matchMedia ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
-
-  function jelly(btn) {
-    if (!btn || (reduce && reduce.matches)) return;
-    btn.classList.remove("is-jelly");
-    void btn.offsetWidth; /* wymusza restart animacji przy szybkim ponownym kliknięciu */
-    btn.classList.add("is-jelly");
-  }
-
-  function liveButtonFrom(ev) {
-    var t = ev.target;
-    return t && t.closest ? t.closest(".btn-live") : null;
-  }
-
-  document.addEventListener("pointerdown", function (ev) {
-    var btn = liveButtonFrom(ev);
-    if (btn) jelly(btn);
-  }, { passive: true });
-
-  /* Enter na linku nie generuje pointerdown — animujemy też klawiaturę */
-  document.addEventListener("click", function (ev) {
-    if (ev.detail !== 0) return;
-    var btn = liveButtonFrom(ev);
-    if (btn) jelly(btn);
-  });
-
-  document.addEventListener("animationend", function (ev) {
-    if (ev.animationName === "rj-jelly" && ev.target && ev.target.classList) {
-      ev.target.classList.remove("is-jelly");
-    }
-  });
 })();
