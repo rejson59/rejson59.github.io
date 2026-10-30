@@ -50,13 +50,17 @@ jobs:
           REPO: ${{ steps.projekt.outputs.name }}
         run: |
           set -euo pipefail
-          access=$(gh api "repos/rejson59/$REPO" --jq 'select(.private == false and .permissions.push == true) | .full_name')
-          if [[ -z "$access" ]]; then
-            echo 'Aplikacja nie potwierdziła dostępu do projektu.' >&2
+          # App installation tokens may report user-role permissions.push as false,
+          # even when the token has Contents:write. Check the scoped installation
+          # repository list instead; the preceding token request asked GitHub for
+          # Contents:write and Pull requests:write explicitly.
+          repos=$(gh api --paginate installation/repositories --jq '.repositories[] | select(.private == false and .archived == false and .owner.login == "rejson59") | .full_name')
+          if ! grep -Fxq "rejson59/$REPO" <<< "$repos"; then
+            echo 'Wskazany projekt nie znajduje się na liście repozytoriów dostępnych dla aplikacji.' >&2
             exit 1
           fi
           {
             echo '## Połączenie działa'
-            echo "Aplikacja uzyskała dostęp do publicznego projektu $access z wymaganymi uprawnieniami."
+            echo "Aplikacja uzyskała dostęp do publicznego projektu rejson59/$REPO z wymaganymi uprawnieniami."
             echo 'To był tylko test odczytu: nie utworzono gałęzi ani PR-a i nic nie zmieniono w projekcie.'
           } >> "$GITHUB_STEP_SUMMARY"
