@@ -1,0 +1,43 @@
+name: Zmiany w projektach
+on:
+  workflow_dispatch:
+    inputs:
+      utworz_pr:
+        description: "Zatwierdzam utworzenie propozycji (PR) w projektach wymienionych w planie"
+        type: boolean
+        default: false
+        required: true
+permissions:
+  contents: read
+concurrency:
+  group: koordynator-zmian-projektow
+  cancel-in-progress: false
+jobs:
+  propozycje:
+    if: github.repository == 'rejson59/rejson59.github.io' && github.ref == 'refs/heads/main' && github.actor == github.repository_owner && github.triggering_actor == github.repository_owner
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Pobierz zatwierdzony plan z głównej gałęzi
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Sprawdź plan i pokaż jego zawartość
+        id: plan
+        run: python3 scripts/project_bridge.py inspect
+      - name: Uzyskaj krótkotrwały dostęp wyłącznie do projektów z planu
+        if: steps.plan.outputs.ready == 'true' && inputs.utworz_pr
+        id: dostep
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2
+        with:
+          app-id: ${{ vars.PROJECT_BRIDGE_APP_ID }}
+          private-key: ${{ secrets.PROJECT_BRIDGE_APP_PRIVATE_KEY }}
+          owner: rejson59
+          repositories: ${{ steps.plan.outputs.repositories }}
+          permission-contents: write
+          permission-pull-requests: write
+      - name: Utwórz propozycje, bez scalania
+        if: steps.plan.outputs.ready == 'true' && inputs.utworz_pr
+        env:
+          PROJECT_BRIDGE_TOKEN: ${{ steps.dostep.outputs.token }}
+        run: python3 scripts/project_bridge.py create
