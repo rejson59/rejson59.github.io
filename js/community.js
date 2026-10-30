@@ -17,6 +17,7 @@
 
   var session = loadSession(); /* {token, username} | null */
   var nameCheckTimer = null;
+  var authBusy = false;
   var nameStatus = { valid: false, taken: false, checked: false };
   var feedTimer = null;
   var expandedPosts = {}; /* postId -> true gdy komentarze rozwinięte */
@@ -281,8 +282,9 @@
     var pinEl = document.getElementById("auth-pin");
     if (!btn || !pinEl) return;
     var pinOk = /^[0-9]{4}$/.test(pinEl.value || "");
-    var nameOk = nameStatus.checked && nameStatus.valid;
-    btn.disabled = !(pinOk && nameOk);
+    var nameInput = document.getElementById("auth-username");
+    var nameOk = nameStatus.checked && nameStatus.valid && nameInput && nameStatus.name === nameInput.value.trim();
+    btn.disabled = authBusy || !(pinOk && nameOk);
     if (!nameOk) {
       btn.textContent = "Zaloguj / utwórz konto";
     } else if (nameStatus.taken) {
@@ -315,11 +317,15 @@
       return;
     }
 
+    nameStatus = { valid: false, taken: false, checked: false };
     setNameStatus("sprawdzam nazwę…");
+    refreshAuthSubmit();
     nameCheckTimer = setTimeout(function () {
       rpc("community_username_status", { p_username: name })
         .then(function (data) {
+          if (input.value.trim() !== name) return;
           nameStatus = {
+            name: name,
             valid: Boolean(data && data.valid),
             taken: Boolean(data && data.taken),
             checked: true
@@ -334,6 +340,7 @@
           refreshAuthSubmit();
         })
         .catch(function () {
+          if (input.value.trim() !== name) return;
           nameStatus = { valid: false, taken: false, checked: false };
           setNameStatus("nie udało się sprawdzić nazwy — sprawdź połączenie");
           refreshAuthSubmit();
@@ -350,9 +357,10 @@
 
     var name = nameEl.value.trim();
     var pin = pinEl.value.trim();
-    if (!nameStatus.checked || !nameStatus.valid || !/^[0-9]{4}$/.test(pin)) return;
+    if (authBusy || !nameStatus.checked || !nameStatus.valid || nameStatus.name !== name || !/^[0-9]{4}$/.test(pin)) return;
 
     setAuthError(null);
+    authBusy = true;
     btn.disabled = true;
     var fn = nameStatus.taken ? "community_login" : "community_register";
 
@@ -360,14 +368,18 @@
       .then(function (data) {
         if (!data || !data.token) throw new Error("Brak tokena sesji w odpowiedzi.");
         saveSession({ token: data.token, username: data.username });
+        pinEl.value = "";
         renderAuthZone();
-        var textarea = document.getElementById("post-content");
+        var dialog = document.getElementById("chat-auth-dialog");
+        if (dialog && dialog.open) dialog.close();
+        var chatPanel = document.getElementById("panel-chat");
+        var textarea = chatPanel && !chatPanel.hidden ? document.getElementById("chat-input") : document.getElementById("post-content");
         if (textarea) textarea.focus();
       })
       .catch(function (err) {
         setAuthError(err.message || "Nie udało się zalogować.");
-        refreshAuthSubmit();
-      });
+      })
+      .finally(function () { authBusy = false; refreshAuthSubmit(); });
   }
 
   function handleLogout() {
@@ -387,6 +399,8 @@
 
     if (session) {
       loginCard.hidden = true;
+      var chatDialog = document.getElementById("chat-auth-dialog");
+      if (chatDialog && chatDialog.open) chatDialog.close();
       composer.hidden = false;
       var nameEl = document.getElementById("user-name");
       var avatarEl = document.getElementById("user-avatar");
@@ -807,6 +821,9 @@
           var loginCard = document.getElementById("login-card");
           if (loginCard) {
             loginCard.hidden = false;
+            var authDialog = document.getElementById("chat-auth-dialog");
+            if (authDialog && typeof authDialog.showModal !== "function") { window.location.assign("/logowanie"); return; }
+            if (authDialog && !authDialog.open) authDialog.showModal();
             loginCard.classList.remove("comm-flash");
             void loginCard.offsetWidth;
             loginCard.classList.add("comm-flash");
@@ -875,6 +892,9 @@
           var loginCard2 = document.getElementById("login-card");
           if (loginCard2) {
             loginCard2.hidden = false;
+            var authDialog2 = document.getElementById("chat-auth-dialog");
+            if (authDialog2 && typeof authDialog2.showModal !== "function") { window.location.assign("/logowanie"); return; }
+            if (authDialog2 && !authDialog2.open) authDialog2.showModal();
             loginCard2.classList.remove("comm-flash");
             void loginCard2.offsetWidth;
             loginCard2.classList.add("comm-flash");
@@ -1250,7 +1270,7 @@
     if (!box) return;
     if (!users.length) {
       box.innerHTML =
-        '<span class="comm-online-empty">Nikogo z zalogowanych nie ma teraz online — zaloguj się, a pokażesz się tutaj ze swoją nazwą.</span>';
+        '<span class="comm-online-empty">Na razie nikogo tu nie ma. Zajrzyj ponownie później!</span>';
       return;
     }
     box.innerHTML = users.map(onlineUserHTML).join("");
