@@ -69,7 +69,7 @@ function arrival(marker, opts = {}) {
     assert.match(read('css/portal.css'), /@keyframes rj-wide-reveal/);
     // Globalne `* { animation: none !important }` w RejStream nie może
     // wyłączyć żadnej warstwy wyjścia przy ograniczeniu ruchu.
-    for (const name of ['rj-arrival-finished', 'rj-veil-reveal', 'rj-small-reveal', 'rj-medium-reveal', 'rj-wide-reveal', 'rj-arrival-ring']) {
+    for (const name of ['rj-arrival-finished', 'rj-veil-reveal', 'rj-small-reveal', 'rj-medium-reveal', 'rj-wide-reveal', 'rj-arrival-ring', 'rj-echo-one', 'rj-echo-two', 'rj-arrival-ray', 'rj-arrival-ray-late']) {
       assert.match(read('css/portal.css'), new RegExp('animation:' + name + ' 2\\.8s[^;]*!important'));
     }
     assert.doesNotMatch(read('css/portal.css'), /rj-panel-open/);
@@ -159,7 +159,7 @@ function arrival(marker, opts = {}) {
   }
   {
     const t = arrival({ path:'/Test', at:Date.now() });
-    const cover = t.doc.querySelector('#rj-portal-arrival'); assert.ok(cover); assert.equal(cover.className, ''); assert.ok(cover.querySelector('.rj-arrival-veil')); assert.equal(cover.querySelectorAll('.rj-arrival-vignette').length, 3); assert.ok(cover.querySelector('.rj-arrival-ring')); assert.equal(cover.querySelector('.rj-arrival-panel'), null);
+    const cover = t.doc.querySelector('#rj-portal-arrival'); assert.ok(cover); assert.equal(cover.className, ''); assert.ok(cover.querySelector('.rj-arrival-veil')); assert.equal(cover.querySelectorAll('.rj-arrival-vignette').length, 3); assert.ok(cover.querySelector('.rj-arrival-ring')); assert.equal(cover.querySelectorAll('.rj-arrival-echo').length, 2); assert.equal(cover.querySelectorAll('.rj-arrival-rays i').length, 8); assert.equal(cover.querySelector('.rj-arrival-panel'), null);
     assert.equal(t.w.sessionStorage.getItem(KEY), null); assert.equal(t.timers[0].delay, 12000);
     t.w.dispatchEvent(new t.w.Event('load')); assert.ok(cover.classList.contains('is-playing'));
     // Animacje elementów wewnętrznych nie mogą zdjąć zasłony przed czasem.

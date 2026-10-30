@@ -36,7 +36,7 @@ const server = http.createServer((req, res) => {
     assert.equal(await cover.evaluate(el => el.classList.contains('is-playing')), false); // czeka na obraz
     await page.waitForFunction(() => document.querySelector('#rj-portal-arrival.is-playing'));
     const result = await cover.evaluate(el => {
-      const selectors = [null,'.rj-arrival-veil','.rj-arrival-small','.rj-arrival-medium','.rj-arrival-wide','.rj-arrival-ring'];
+      const selectors = [null,'.rj-arrival-veil','.rj-arrival-small','.rj-arrival-medium','.rj-arrival-wide','.rj-arrival-ring','.rj-arrival-echo--one','.rj-arrival-echo--two','.rj-arrival-rays i','.rj-arrival-rays i:nth-child(2)'];
       const styles = selectors.map(s => { const cs = getComputedStyle(s ? el.querySelector(s) : el); return [cs.animationName, cs.animationDuration]; });
       const animations = el.getAnimations({ subtree:true });
       animations.forEach(a => a.pause());
@@ -47,11 +47,13 @@ const server = http.createServer((req, res) => {
       animations.forEach(a => a.play());
       return { styles, values };
     });
-    assert.deepEqual(result.styles.map(s => s[0]), ['rj-arrival-finished','rj-veil-reveal','rj-small-reveal','rj-medium-reveal','rj-wide-reveal','rj-arrival-ring']);
+    assert.deepEqual(result.styles.map(s => s[0]), ['rj-arrival-finished','rj-veil-reveal','rj-small-reveal','rj-medium-reveal','rj-wide-reveal','rj-arrival-ring','rj-echo-one','rj-echo-two','rj-arrival-ray','rj-arrival-ray-late']);
     assert.ok(result.styles.every(s => s[1] === '2.8s'));
     assert.ok(result.values[0][1] > .9 && result.values[1][1] < result.values[0][1] && result.values[2][1] < .1);
     assert.ok(result.values[1][2] < result.values[0][2] && result.values[2][3] < result.values[1][3]);
     assert.ok(result.values[1][4] > .4);
+    assert.ok(result.values[1][5] > .3 && result.values[1][6] > .3 && result.values[1][7] > .3 && result.values[1][8] > .3);
+    assert.ok(result.values[2][5] < result.values[1][5] && result.values[2][7] < result.values[1][7]);
     await cover.waitFor({ state:'detached', timeout:15000 });
     console.log('PASS: CSP, opóźnione ładowanie i wyjście z portalu mimo globalnego animation:none');
   } finally { await browser.close(); server.close(); }
