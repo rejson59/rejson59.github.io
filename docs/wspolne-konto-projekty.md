@@ -1,6 +1,6 @@
 # Wspólne konto w projektach GitHub Pages
 
-To ten sam backend Supabase i ta sama sesja `rejson_community_session_v1`, których używają strona główna, RejChat i RejStream. **Nie jest to nowy dostawca SSO** ani logowanie między domenami. Nie są wdrożone nowe hasła lub kody odzyskiwania. Obecne konta nadal logują się nazwą i czterocyfrowym PIN-em; nie zakładaj, że istnieje skuteczna ochrona przed zgadywaniem PIN-u.
+To ten sam backend Supabase i ta sama sesja `rejson_community_session_v1`, których używają strona główna, RejChat i RejStream. **Nie jest to nowy dostawca SSO** ani logowanie między domenami. Istniejące konta mogą używać starszego czterocyfrowego PIN-u lub ustawić hasło; nowe formularze strony głównej obsługują hasła. Backend ogranicza próby logowania na konto, ale może to też umożliwiać czasową blokadę konta i nie chroni przed spamem rejestracji. Rzeczywiste odpowiedzi HTTP PostgREST nie zostały jeszcze osobno potwierdzone. Nie ma automatycznego odzyskiwania zapomnianego hasła.
 
 ## Dla odwiedzającego
 
