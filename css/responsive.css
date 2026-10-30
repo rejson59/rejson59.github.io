@@ -1,0 +1,88 @@
+/* Zwarty układ głównej witryny. Osobne projekty nie korzystają z tego pliku. */
+.metric-more-panel { display:inline-flex; align-items:center; gap:8px; }
+.metric-more-toggle, .mobile-account { display:none; }
+.rj-portal .portal-account { display:inline-flex; align-items:center; justify-content:center; flex:none; width:42px; height:42px; border:1px solid #b9ecf32b; border-radius:999px; background:#142633a8; color:#efffff; text-decoration:none; }
+.rj-portal .portal-account:focus-visible { outline:2px solid #8cf7e0; outline-offset:3px; }
+
+@media (max-width:1200px) {
+  .mobile-account { display:inline-flex; align-items:center; justify-content:center; flex:none; width:40px; height:40px; border:1px solid var(--border); border-radius:12px; background:var(--bg-elev); color:var(--text); text-decoration:none; }
+  .mobile-account .ui-icon { width:19px; height:19px; }
+  .mobile-account:focus-visible, .metric-more-toggle:focus-visible { outline:2px solid var(--accent-strong); outline-offset:3px; }
+  .rj-partner .mobile-account { margin-left:auto; }
+}
+@media (min-width:641px) and (max-width:1050px) {
+  .rj-home .showcase-grid, .rj-home .grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .rj-home .card-actions { flex-wrap:wrap; }
+  .rj-home .project-card .card-preview { aspect-ratio:4 / 3; max-width:none; }
+  .rj-partner .partner-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media (max-width:760px) {
+  .rj-home .header-inner { gap:6px; }
+  .rj-home:not(.metrics-ready) .header-inner { flex-wrap:wrap; padding-block:8px; }
+  .rj-home:not(.metrics-ready) .header-right { flex-basis:100%; justify-content:space-between; }
+  .rj-home .header-right { gap:6px; }
+  .rj-home .header-metrics { position:relative; gap:4px; }
+  .rj-home.metrics-ready .metric-more-toggle { display:inline-flex; align-items:center; justify-content:center; width:40px; height:40px; padding:0 0 5px; border:1px solid var(--border); border-radius:12px; background:var(--bg-elev); color:var(--text); font:700 22px/1 system-ui,sans-serif; cursor:pointer; }
+  .rj-home.metrics-ready .metric-more-panel { display:none; position:absolute; top:calc(100% + 10px); right:0; z-index:210; width:max-content; max-width:calc(100vw - 32px); padding:10px; border:1px solid var(--border-strong); border-radius:14px; background:var(--bg-elev); box-shadow:0 14px 40px #0005; }
+  .rj-home.metrics-ready .header-metrics.is-open .metric-more-panel { display:flex; }
+  .rj-home .metric-badge { min-height:40px; }
+  .rj-home .brand-mark { width:26px; height:26px; }
+  .rj-home .brand { gap:6px; font-size:15px; }
+  .rj-home .hero { gap:20px; padding-top:28px; padding-bottom:20px; }
+  .rj-home .hero h1 { font-size:clamp(32px,8vw,42px); }
+  .rj-home .hero-copy .eyebrow { margin-bottom:9px; }
+  .rj-home .hero h1 + .hero-lead { margin-top:10px; }
+  .rj-home .hero-lead { margin-bottom:16px; line-height:1.55; }
+  .rj-home .profile-card { padding:18px; }
+  .rj-home .stats { margin-top:12px; }
+  .rj-home .universe-nav { margin-bottom:20px; }
+  .rj-home .universe-links { gap:8px; }
+  .rj-home .universe-links a { gap:12px; padding:10px 14px; min-height:0; }
+  .rj-home .universe-icon { width:36px; height:36px; border-radius:12px; }
+  .rj-home .showcase-grid, .rj-home .grid { gap:16px; }
+  .rj-home .section-intro { line-height:1.5; }
+  .rj-home .card-inner { padding:17px; }
+  .rj-home .card-content { gap:7px; }
+  .rj-home .card-actions { margin-top:10px; gap:8px; }
+  .rj-home .project-card .card-preview { aspect-ratio:4 / 3; width:100%; max-width:none; }
+  .rj-home .origins-note { margin-top:16px; padding:14px; }
+  .rj-home .cta-grid { margin:18px auto 0; gap:12px; }
+  .rj-home .cta-grid .board-cta-inner { padding:14px; }
+  .rj-home .rj-premium { margin:16px auto 0; }
+  .rj-home .rj-club-card .rj-premium__inner { padding:20px; }
+  .rj-home .rj-premium__list { grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; }
+  .rj-home .rj-premium__list li { padding:8px; font-size:11.5px; line-height:1.4; gap:6px; }
+  .rj-home .rj-profile-teaser { margin-top:12px; padding:10px; }
+  .rj-home .partner-home { margin-top:14px; margin-bottom:20px; }
+  .rj-home .partner-home-inner { padding:16px; gap:12px; }
+  .rj-home .btn, .rj-home .hamburger-btn, .rj-community .rejchat-tabs button { min-height:42px; }
+
+  .rj-community .comm-main, .rj-board .board-main, .rj-widgets .wid-main { padding-top:26px; }
+  .rj-community .comm-hero { margin-bottom:16px; }
+  .rj-community .comm-hero h1, .rj-board .board-hero h1, .rj-widgets .wid-hero h1 { font-size:clamp(32px,8vw,42px); }
+  .rj-community .comm-hero p { line-height:1.5; }
+  .rj-community .rejchat-tabs { margin-bottom:14px; }
+  .rj-community .comm-chat { padding:16px; }
+  .rj-community .comm-chat-list { min-height:200px; height:clamp(200px,38vh,380px); }
+  .rj-files .hero { min-height:0; padding:28px 0 22px; gap:16px; }
+  .rj-files .hero h1 { font-size:clamp(40px,10vw,58px); margin:12px 0; }
+  .rj-files .hero-copy > p { line-height:1.5; }
+  .rj-files .facts { margin-top:14px; gap:6px; }
+  .rj-files .shell { padding-bottom:60px; }
+  .rj-account .account-main { padding-top:28px; padding-bottom:60px; }
+  .rj-account .profile-shell { padding-top:30px; padding-bottom:60px; }
+  .rj-partner .partner-hero { min-height:0; padding-top:30px; padding-bottom:34px; }
+  .rj-partner .partner-hero h1 { font-size:clamp(36px,9vw,50px); margin-bottom:14px; }
+  .rj-partner .partner-visual { min-height:0; }
+  .rj-partner .partner-preview { min-height:0; padding:18px; transform:none; }
+  .rj-partner .partner-preview-mark { margin:10px 0 6px; font-size:28px; }
+  .rj-partner .partner-preview strong { font-size:20px; }
+  .rj-partner .partner-preview-line { margin:12px 0; }
+  .rj-partner .partner-options { padding-bottom:36px; }
+  .rj-partner .partner-contact { padding-bottom:60px; }
+}
+
+/* Decyzja właściciela: również przy ograniczeniu ruchu połysk premium ma się poruszać. */
+@media (prefers-reduced-motion:reduce) {
+  .rj-home .rj-premium__sheen { animation:rj-premium-sheen 14s cubic-bezier(.45,.05,.35,1) infinite !important; }
+}

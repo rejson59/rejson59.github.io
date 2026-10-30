@@ -338,10 +338,12 @@ const count = (doc) => {
     check("skrypt premium dołączony", /js\/premium\.js\?v=5/.test(INDEX));
     check("karta premium stoi przed listą projektów",
       INDEX.indexOf('id="rj-club"') < INDEX.indexOf('id="projekty"'));
-    check("karta premium jest tuż pod hero (przed wyróżnionymi), a nie na końcu strony",
-      INDEX.indexOf('class="cta-grid container"') < INDEX.indexOf('id="rj-club"') &&
+    check("karta premium jest widoczna przed wyróżnionymi projektami",
       INDEX.indexOf('id="rj-club"') < INDEX.indexOf('class="origins container"'),
       "pozycja: " + INDEX.indexOf('id="rj-club"'));
+    check("zachęty do tablicy i RejChat pozostają na stronie, poniżej wyróżnionych",
+      INDEX.indexOf('class="cta-grid container"') > INDEX.indexOf('class="origins container"') &&
+      INDEX.indexOf('class="cta-grid container"') < INDEX.indexOf('id="projekty"'));
   }
 
   console.log("\n=== J. ANIMACJA KARTY (zgłoszenie: „nie widać animacji”) ===");

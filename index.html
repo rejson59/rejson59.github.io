@@ -261,6 +261,7 @@
   <link rel="stylesheet" href="/css/liquid.css?v=2026-10-30-2">
   <link rel="stylesheet" href="/css/rejchat.css?v=1">
   <script defer src="/js/rejchat-profiles.js?v=1"></script>
+  <link rel="stylesheet" href="/css/responsive.css?v=1">
 </head>
 <body class="rj-home">
   <div id="rj-page-loader" aria-hidden="true">
@@ -502,6 +503,7 @@
       </a>
 
       <div class="header-right">
+        <a href="logowanie" class="mobile-account" aria-label="Konto / logowanie" title="Konto / logowanie"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#account"></use></svg></a>
         <nav id="site-nav" class="site-nav" aria-label="Nawigacja główna">
           <a href="logowanie" class="nav-icon-link" title="Konto / logowanie" aria-label="Konto / logowanie"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#account"></use></svg><span class="nav-label">Konto</span></a>
           <a href="partnerstwo" class="nav-icon-link" title="Partnerstwo" aria-label="Partnerstwo"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#partner"></use></svg><span class="nav-label">Partnerstwo</span></a>
@@ -531,6 +533,8 @@
             <span id="site-total-online-count" class="online-count mono">1</span>
           </button>
 
+          <button class="metric-more-toggle" id="metric-more-toggle" type="button" aria-expanded="false" aria-controls="metric-more-panel" aria-label="Pokaż statystyki strony" title="Statystyki strony">⋯</button>
+          <div class="metric-more-panel" id="metric-more-panel">
           <button
             id="site-views-badge"
             class="metric-badge is-clicks"
@@ -554,6 +558,7 @@
             <svg class="icon icon-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12s3.5-6.5 9.5-6.5S21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></svg>
             <span id="site-unique-count" class="unique-count mono">0</span>
           </button>
+          </div>
         </div>
 
         <button
@@ -632,28 +637,6 @@
         <a href="rejfile"><span class="universe-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 6.5h6l2 2H20v9.5H4z"/><path d="M11 15l5-5M12 10h4v4"/></svg></span><span><b>RejFile</b><small>Podziel się plikiem</small></span><span class="universe-arrow" aria-hidden="true">↗</span></a>
       </div>
     </nav>
-
-    <!-- Zachęty: tablica pomysłów oraz społeczność -->
-    <div class="cta-grid container">
-      <section class="board-cta" aria-label="Tablica pomysłów — zachęta">
-        <div class="board-cta-inner">
-          <span class="board-cta-icon" aria-hidden="true">💡</span>
-          <p class="board-cta-text">Masz pomysł na rozwój albo znalazłeś błąd? Odwiedź <strong>Tablicę pomysłów</strong> — tam zgłaszane są propozycje i błędy, a <strong>polubienia 👍 decydują, czym zajmę się w pierwszej kolejności</strong>. <span id="board-cta-counts">zgłoszenia i głosy aktualizowane na żywo</span>.</p>
-          <a class="btn btn-ghost btn-sm" href="tablica-pomyslow">Zobacz tablicę
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg>
-          </a>
-        </div>
-      </section>
-      <section class="comm-cta" aria-label="Społeczność — zachęta">
-        <div class="board-cta-inner comm-cta-inner">
-          <span class="board-cta-icon" aria-hidden="true">👥</span>
-          <p class="board-cta-text">Dołącz do <strong>RejChat</strong> — wystarczy nazwa i 4-cyfrowy PIN. Zobaczysz, <strong>kto jest teraz online</strong>, przeczytasz agentowe aktualności, a własne wpisy ozdobisz <strong>zdjęciami i filmami</strong>.</p>
-          <a class="btn btn-ghost btn-sm" href="rejchat">Dołącz
-            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg>
-          </a>
-        </div>
-      </section>
-    </div>
 
     <section class="rj-club container" aria-labelledby="rj-club-heading">
       <h2 id="rj-club-heading" class="sr-only">Premium za darmo — wystarczy się zalogować</h2>
@@ -1025,6 +1008,28 @@
       </div>
     </section>
 
+    <!-- Zachęty: tablica pomysłów oraz społeczność -->
+    <div class="cta-grid container">
+      <section class="board-cta" aria-label="Tablica pomysłów — zachęta">
+        <div class="board-cta-inner">
+          <span class="board-cta-icon" aria-hidden="true">💡</span>
+          <p class="board-cta-text">Masz pomysł na rozwój albo znalazłeś błąd? Odwiedź <strong>Tablicę pomysłów</strong> — tam zgłaszane są propozycje i błędy, a <strong>polubienia 👍 decydują, czym zajmę się w pierwszej kolejności</strong>. <span id="board-cta-counts">zgłoszenia i głosy aktualizowane na żywo</span>.</p>
+          <a class="btn btn-ghost btn-sm" href="tablica-pomyslow">Zobacz tablicę
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg>
+          </a>
+        </div>
+      </section>
+      <section class="comm-cta" aria-label="Społeczność — zachęta">
+        <div class="board-cta-inner comm-cta-inner">
+          <span class="board-cta-icon" aria-hidden="true">👥</span>
+          <p class="board-cta-text">Dołącz do <strong>RejChat</strong> — wystarczy nazwa i 4-cyfrowy PIN. Zobaczysz, <strong>kto jest teraz online</strong>, przeczytasz agentowe aktualności, a własne wpisy ozdobisz <strong>zdjęciami i filmami</strong>.</p>
+          <a class="btn btn-ghost btn-sm" href="rejchat">Dołącz
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg>
+          </a>
+        </div>
+      </section>
+    </div>
+
     <!-- ============ PROJEKTY ============ -->
     <section class="projects container" id="projekty">
       <div class="section-head">
@@ -1111,6 +1116,7 @@
   <script defer src="js/error-reporter.js?v=1"></script>
   <script defer src="js/media-capture.js?v=1"></script>
   <script defer src="js/app.js?v=2026-10-30-portal-5"></script>
+  <script defer src="/js/responsive.js?v=1"></script>
   <script defer src="js/premium.js?v=5"></script>
   <script defer src="rejson-widgets/widget.js?v=8"></script>
 </body>
