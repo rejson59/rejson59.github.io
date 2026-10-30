@@ -1,4 +1,55 @@
 {
   "wersja": 1,
-  "stan": "brak"
+  "stan": "gotowy",
+  "id": "rejstream-konto-20261030",
+  "tytul": "Wspólne konto i profile RejChat w RejStream",
+  "opis": "## Co zmienia propozycja\n- Logowanie istniejącym PIN-em lub hasłem oraz tworzenie wspólnego konta z hasłem bez opuszczania RejStream.\n- Poprawia parametry RPC profilu, bezpieczne gotowe awatary i link do istniejącego profilu; odświeżenie profilu nie restartuje odtwarzacza.\n- Zachowuje backend i dane RejStream. Wspólna sesja automatycznie współdzieli się tylko na tym samym originie; inne domeny wymagają zalogowania.\n\n## Testy i ograniczenia\n- 128 testów Vitest/JSDOM i produkcyjny build Vite przeszły w kopii repozytorium. RPC w testach są mockowane; nie przetestowano logowania HTTP na produkcji.\n- Nowy formularz nie dodaje ochrony serwerowej przed spamem rejestracji; to osobny, nadal otwarty temat. Brak automatycznego odzyskiwania hasła.\n- Żaden PR nie jest scalany automatycznie.",
+  "projekty": [
+    {
+      "repozytorium": "RejStream",
+      "podstawa": "54f3a8a3e58f9a4fc7727dd4cdd3c7dd564de65f",
+      "pliki": [
+        {
+          "sciezka": "account.js",
+          "zrodlo": "koordynator/paczki/rejstream-konto-20261030/RejStream/account.js",
+          "sha256": "625236f1341093ce7d9f0d37e1cd8cb7c2a7b59f297ee4bb01e12c653b0e1b74"
+        },
+        {
+          "sciezka": "src.js",
+          "zrodlo": "koordynator/paczki/rejstream-konto-20261030/RejStream/src.js",
+          "sha256": "2c77e87be751dd615697d786fb0cb996a9e0a53fe665731bab80a96b2ac2a66b"
+        },
+        {
+          "sciezka": "style.css",
+          "zrodlo": "koordynator/paczki/rejstream-konto-20261030/RejStream/style.css",
+          "sha256": "fbc7017faa63d96f1236a7bc50b4717fcfca1a84f45757e011c00eeb13c0fa41"
+        },
+        {
+          "sciezka": "README.md",
+          "zrodlo": "koordynator/paczki/rejstream-konto-20261030/RejStream/README.md",
+          "sha256": "6073fc70bd168311a78a6a56086383dae7e7f4fbe24ffc497ed374cd1fe2a802"
+        },
+        {
+          "sciezka": "tests/account.test.js",
+          "zrodlo": "koordynator/paczki/rejstream-konto-20261030/RejStream/tests/account.test.js",
+          "sha256": "8bee13919ca4604e7473797db827b12385da5dc9d597cf725b387452d7cb1474"
+        },
+        {
+          "sciezka": "tests/rejchat-profile.test.js",
+          "zrodlo": "koordynator/paczki/rejstream-konto-20261030/RejStream/tests/rejchat-profile.test.js",
+          "sha256": "71f398eae6f75c0f0863a319a9b1a6589298d61f92e7edab9e5ca61f8361b483"
+        },
+        {
+          "sciezka": "tests/ui.test.js",
+          "zrodlo": "koordynator/paczki/rejstream-konto-20261030/RejStream/tests/ui.test.js",
+          "sha256": "2c30d6d73e6060415120d1e6c83bcdad3280895a3537bf16d30d11e2349bc904"
+        },
+        {
+          "sciezka": "tests/account-ui.test.js",
+          "zrodlo": "koordynator/paczki/rejstream-konto-20261030/RejStream/tests/account-ui.test.js",
+          "sha256": "1880f8e52b05f6cf710ca51d6850d3a8e9d6c0a2ee6f043d236b60cedb4e948c"
+        }
+      ]
+    }
+  ]
 }

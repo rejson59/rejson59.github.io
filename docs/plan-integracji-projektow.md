@@ -1,0 +1,67 @@
+# Plan łączenia projektów Rejsona
+
+Stan: 30 października 2026. To **plan i rejestr pracy**, nie deklaracja, że projekty są już połączone. Spis obejmuje publiczne, niearchiwalne repozytoria właściciela widoczne w GitHub API; repozytoriów prywatnych nie kopiujemy do publicznego planu. Sama obecność na liście nie oznacza audytu ani tego, że dana aplikacja potrzebuje konta.
+
+## Zasady
+
+- Zachować działające projekty, ich dane, istniejące konta i niezależne funkcje. Wprowadzać integrację stopniowo, z testem i oddzielnym PR-em dla danego projektu. Właściciel uruchamia workflow i zatwierdza PR-y; koordynator nie scala ich automatycznie.
+- Wspólne konto oparte jest na obecnym Supabase strony głównej. Automatyczna wspólna sesja przez `localStorage` działa tylko na tym samym originie; dla innych domen potrzebne jest bezpieczne rozwiązanie, nie wolno przekazywać tokenów w URL ani ufać samej nazwie użytkownika.
+- Autoryzację danych prywatnych wymusza backend, nie tylko interfejs. Przenoszenie już istniejących danych i łączenie kont wymaga bezpiecznego potwierdzenia własności, zgody i sposobu wycofania; nie łączymy cudzych kont po samym nicku ani słabym PIN-ie.
+- Zależności, nowe usługi i ewentualne koszty wideo/TURN czy hostingu ustalać uczciwie przed ich wprowadzeniem. Zachować używane przez użytkownika GitHub Pages i Supabase; nie wprowadzać osobnego hostingu jako warunku bez jego zgody.
+- Repozytoria mogą być bibliotekami, grami offline, narzędziami lub aplikacjami lokalnymi; integracja powinna mieć sens w danym produkcie i nie może odbierać mu działania offline.
+
+## Kolejność i status
+
+1. **RejStream — pierwsza propozycja przygotowana, nie wdrożona.** Hasło i stary PIN, rejestracja w projekcie, naprawa danych i linku profilu RejChat; testy w kopii projektu. Plan i paczka są w `koordynator/`, do uruchomienia i przeglądu przez właściciela. Rzeczywisty PR i logowanie HTTP nie były jeszcze testowane.
+2. **Wspólne konto — prace częściowe.** Hasła i ograniczenie prób logowania wdrożono wcześniej; pozostaje sprawdzić rzeczywiste HTTP PostgREST oraz ograniczyć spam rejestracji po stronie serwera. Bez e-maila nie ma automatycznego odzyskania hasła.
+3. **mconline — analiza częściowa.** Gra korzysta z osobnego projektu Supabase i lokalnego identyfikatora gracza. Należy zaprojektować serwerowo weryfikowane powiązanie ze wspólnym kontem oraz migrację istniejących danych bez przejmowania cudzych światów. Nie zakładać, że sesja z innej domeny jest już wspólna.
+4. **RejChat — częściowy publiczny czat i profile.** Do zrobienia: zaproszenia i znajomi, prywatne wiadomości, grupy, blokady oraz prawdziwe powiadomienia; potem głos i wideo z uwzględnieniem sygnalizacji, NAT/TURN, uprawnień i kosztów. Bez RLS/RPC i testów izolacji nie przedstawiać prywatności jako gotowej.
+5. **Pozostałe projekty — audyt kolejno.** Ustalić w każdym origin, sposób uruchamiania, istniejące konta i dane, sieć, SW/CSP, zasadność wspólnego konta i przejść portalowych. Osobno przygotować plan oraz testy, bez automatycznego łączenia danych.
+
+## Publiczne repozytoria do przeglądu
+
+Lista jest inwentaryzacją, a nie wynikiem pełnego audytu. Statusy szczegółowe opisano wyżej; pozostałe wymagają rozpoznania.
+
+- [AbsurdalneGry](https://github.com/rejson59/AbsurdalneGry)
+- [AnimationBuilder](https://github.com/rejson59/AnimationBuilder)
+- [ASI](https://github.com/rejson59/ASI)
+- [Blessed-Optimizer](https://github.com/rejson59/Blessed-Optimizer)
+- [ClassQuest](https://github.com/rejson59/ClassQuest)
+- [CrystalChat](https://github.com/rejson59/CrystalChat)
+- [DiffrentReality](https://github.com/rejson59/DiffrentReality)
+- [DreamKnight](https://github.com/rejson59/DreamKnight)
+- [FocusIt](https://github.com/rejson59/FocusIt)
+- [Jakuplayer](https://github.com/rejson59/Jakuplayer)
+- [JoyPad](https://github.com/rejson59/JoyPad)
+- [kompi](https://github.com/rejson59/kompi)
+- [Lisi](https://github.com/rejson59/Lisi)
+- [lumen-os](https://github.com/rejson59/lumen-os)
+- [mc-launcher](https://github.com/rejson59/mc-launcher)
+- [mconline](https://github.com/rejson59/mconline)
+- [MeshRouter](https://github.com/rejson59/MeshRouter)
+- [MiniVS-Code](https://github.com/rejson59/MiniVS-Code)
+- [MiraOS](https://github.com/rejson59/MiraOS)
+- [NexoAgents](https://github.com/rejson59/NexoAgents)
+- [nimo](https://github.com/rejson59/nimo)
+- [Nixi](https://github.com/rejson59/Nixi)
+- [Nixi-v2](https://github.com/rejson59/Nixi-v2)
+- [OffChat](https://github.com/rejson59/OffChat)
+- [Private-valut](https://github.com/rejson59/Private-valut)
+- [ProStudent](https://github.com/rejson59/ProStudent)
+- [QuickDraw](https://github.com/rejson59/QuickDraw)
+- [Qwazon-LLM](https://github.com/rejson59/Qwazon-LLM)
+- [RealisticCarNight](https://github.com/rejson59/RealisticCarNight)
+- [RejFile](https://github.com/rejson59/RejFile)
+- [rejson59.github.io](https://github.com/rejson59/rejson59.github.io)
+- [RejStream](https://github.com/rejson59/RejStream)
+- [ReysonAI](https://github.com/rejson59/ReysonAI)
+- [roblox-online](https://github.com/rejson59/roblox-online)
+- [RobloxAIGameBuilder](https://github.com/rejson59/RobloxAIGameBuilder)
+- [SiteStore](https://github.com/rejson59/SiteStore)
+- [TheMostPowerfulPrompt](https://github.com/rejson59/TheMostPowerfulPrompt)
+- [VibeAnimations](https://github.com/rejson59/VibeAnimations)
+- [VibeCodeAI](https://github.com/rejson59/VibeCodeAI)
+- [X-Offline](https://github.com/rejson59/X-Offline)
+- [zaplecze-resellera](https://github.com/rejson59/zaplecze-resellera)
+- [Zayra-ai-asistant](https://github.com/rejson59/Zayra-ai-asistant)
+- [zayra-voice](https://github.com/rejson59/zayra-voice)
