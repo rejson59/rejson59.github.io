@@ -63,7 +63,7 @@ self.addEventListener("fetch", function (event) {
     if (url.origin !== self.location.origin) return;
     /* Konto i strony usługowe nie są projektami: żadnych wstrzykniętych skryptów,
        widgetów ani rejestracji wejścia przez service worker. */
-    if (/^\/(?:logowanie|partnerstwo|rejfile)(?:\.html)?\/?$/i.test(url.pathname) || /^\/portal(?:\/|$)/i.test(url.pathname)) return;
+    if (/^\/(?:logowanie|partnerstwo|rejfile|rejchat|spolecznosc|profil)(?:\.html)?\/?$/i.test(url.pathname) || /^\/portal(?:\/|$)/i.test(url.pathname)) return;
 
     var parts = (url.pathname || "/").split("/").filter(function (s) {
       return s && !/\.html?$/i.test(s);
@@ -93,7 +93,7 @@ self.addEventListener("fetch", function (event) {
               var safeSlug = slug.replace(/[^A-Za-z0-9._-]/g, "");
               var inject = "";
               if (html.indexOf("view-tracker.js") === -1) {
-                inject += '\n<script src="/js/view-tracker.js?v=4" defer></script>';
+                inject += '\n<script src="/js/view-tracker.js?v=5" defer></script>';
               }
               // Sam komentarz z przykładem nie oznacza, że skrypt widżetu istnieje.
               var scriptHtml = html.replace(/<!--[\s\S]*?-->/g, "");

@@ -61,6 +61,7 @@
       session = null;
       try { localStorage.removeItem(SESSION_KEY); } catch (e) { /* ignorujemy */ }
     }
+    window.dispatchEvent(new Event("rj:session-change"));
   }
 
   function rpc(fnName, body) {
@@ -121,8 +122,14 @@
         "</span>"
       );
     }
-    return '<span class="comm-avatar" aria-hidden="true">' + esc(initial) + "</span>";
+    return '<span class="comm-avatar" data-profile-avatar="' + esc(name) + '" aria-hidden="true">' + esc(initial) + "</span>";
   }
+
+  function profileLink(name) {
+    if (!window.RJProfiles || !window.RJProfiles.safeName(name)) return esc(name);
+    return '<a href="/profil?u=' + encodeURIComponent(name) + '" data-profile-name="' + esc(name) + '">' + esc(name) + '</a>';
+  }
+  function hydrateProfiles(root) { if (window.RJProfiles) window.RJProfiles.hydrate(root || document); }
 
   /* Odznaka właściciela strony obok nazwy */
   function isOwnerName(name, flagFromDb) {
@@ -384,12 +391,13 @@
       var nameEl = document.getElementById("user-name");
       var avatarEl = document.getElementById("user-avatar");
       if (nameEl) {
-        nameEl.innerHTML =
-          esc(session.username) + ownerBadgeHTML(session.username) + botBadgeHTML(isAgentName(session.username));
+        nameEl.innerHTML = profileLink(session.username) + ownerBadgeHTML(session.username) + botBadgeHTML(isAgentName(session.username));
       }
       if (avatarEl) {
         avatarEl.textContent = (session.username.charAt(0) || "?").toUpperCase();
+        avatarEl.setAttribute("data-profile-avatar", session.username);
       }
+      hydrateProfiles(composer);
       /* dociągnij listę projektów do otagowania wpisu */
       loadProjectsForTags();
     } else {
@@ -427,7 +435,7 @@
           '<div class="post-head">' +
             avatarFor(p.author_name, p.is_bot) +
             '<div class="post-head-meta">' +
-              '<span class="post-author">' + esc(p.author_name) + authorBadges(p.author_name, p) + "</span>" +
+              '<span class="post-author">' + profileLink(p.author_name) + authorBadges(p.author_name, p) + "</span>" +
               '<span class="post-time mono">' + relTime(p.created_at) + "</span>" +
             "</div>" +
             (mine
@@ -464,6 +472,7 @@
     }).join("");
 
     hydrateLazyMedia(feed);
+    hydrateProfiles(feed);
 
     /* Przywróć szkice w formularzach komentarzy (te już obecne w DOM) */
     restoreCommentDrafts(feedDrafts);
@@ -554,13 +563,15 @@
   }
 
   function loadPosts(silent) {
+    var requestToken = session && session.token ? session.token : null;
     return rpc("community_list_posts", {
       p_limit: 40,
       p_offset: 0,
-      p_token: session && session.token ? session.token : null,
+      p_token: requestToken,
       p_tag: activeTag
     })
       .then(function (data) {
+        if ((session && session.token ? session.token : null) !== requestToken) return [];
         var posts = (data && Array.isArray(data.posts)) ? data.posts : [];
         lastPostsTotal = (data && Number(data.total)) || posts.length;
         if (data && Array.isArray(data.available_tags)) {
@@ -690,7 +701,7 @@
         avatarFor(c.author_name, c.is_bot) +
         '<div class="comment-body">' +
           '<div class="comment-head">' +
-            '<span class="comment-author">' + esc(c.author_name) + authorBadges(c.author_name, c) + "</span>" +
+            '<span class="comment-author">' + profileLink(c.author_name) + authorBadges(c.author_name, c) + "</span>" +
             '<span class="comment-time mono">' + relTime(c.created_at) + "</span>" +
             (mine
               ? '<button class="comment-delete" type="button" data-delete-comment="' + esc(c.id) + '" data-post="' + esc(postId) + '" title="Usuń komentarz" aria-label="Usuń komentarz">✕</button>'
@@ -746,6 +757,7 @@
             (replies ? '<div class="comment-replies">' + replies + "</div>" : "")
           );
         }).join("");
+        hydrateProfiles(list);
         /* przywróć szkice (głównie odpowiedzi) po przebudowie listy */
         restoreCommentDrafts(feedDrafts);
       })
@@ -1223,10 +1235,10 @@
     return (
       '<span class="comm-online-user">' +
         '<span class="comm-online-dot" aria-hidden="true"></span>' +
-        '<span class="comm-avatar comm-avatar-sm' + (isAgent ? " comm-avatar-bot" : "") + '" aria-hidden="true">' + esc((name.charAt(0) || "?").toUpperCase()) +
+        '<span class="comm-avatar comm-avatar-sm' + (isAgent ? " comm-avatar-bot" : "") + '"' + (isAgent ? '' : ' data-profile-avatar="' + esc(name) + '"') + ' aria-hidden="true">' + esc((name.charAt(0) || "?").toUpperCase()) +
           (isAgent ? '<img src="' + AGENT_AVATAR_SRC + '" alt="" loading="lazy" onerror="this.remove()">' : "") +
         "</span>" +
-        esc(name) + ownerBadgeHTML(name) + botBadgeHTML(isAgent) +
+        profileLink(name) + ownerBadgeHTML(name) + botBadgeHTML(isAgent) +
         (tabs > 1 ? '<span class="comm-online-count mono" title="Ta sama osoba ma tyle kart otwartych">' + tabs + " karty</span>" : "") +
         (projects > 1 ? '<span class="comm-online-count mono" title="Ile stron/projektów ma teraz otwarte">' + projects + " strony</span>" : "") +
       "</span>"
@@ -1242,6 +1254,7 @@
       return;
     }
     box.innerHTML = users.map(onlineUserHTML).join("");
+    hydrateProfiles(box);
   }
 
   function loadOnline() {
@@ -1287,7 +1300,7 @@
         avatarFor(m.author_name, m.is_bot) +
         '<div class="chat-bubble">' +
           '<div class="chat-meta">' +
-            '<span class="chat-author">' + esc(m.author_name) + authorBadges(m.author_name, m) + "</span>" +
+            '<span class="chat-author">' + profileLink(m.author_name) + authorBadges(m.author_name, m) + "</span>" +
             '<span class="chat-time mono">' + relTime(m.created_at) + "</span>" +
             (canDel
               ? '<button class="chat-delete" type="button" data-chat-delete="' + esc(m.id) + '" title="Usuń wiadomość" aria-label="Usuń wiadomość">✕</button>'
@@ -1320,6 +1333,7 @@
       return;
     }
     box.innerHTML = rows.map(chatMsgHTML).join("");
+    hydrateProfiles(box);
   }
 
   function appendChat(rows) {
@@ -1327,7 +1341,10 @@
     if (!box || !rows.length) return;
     var empty = box.querySelector(".comm-chat-empty");
     if (empty) box.innerHTML = "";
+    var existing = Array.prototype.map.call(box.querySelectorAll('[data-chat-id]'), function (el) { return el.getAttribute('data-chat-id'); });
+    rows = rows.filter(function (row) { return existing.indexOf(String(row.id)) < 0; });
     box.insertAdjacentHTML("beforeend", rows.map(chatMsgHTML).join(""));
+    hydrateProfiles(box);
     while (box.children.length > CHAT_MAX_SHOWN) box.removeChild(box.firstChild);
   }
 
@@ -1393,10 +1410,14 @@
     var content = (input.value || "").trim();
     if (!content) return;
     chatBusy = true;
+    var sendStatus = document.getElementById("chat-send-status");
+    if (sendStatus) sendStatus.textContent = "";
     refreshChatSend();
-    rpc("community_chat_send", { p_token: session.token, p_content: content })
+    var sendingToken = session.token;
+    rpc("community_chat_send", { p_token: sendingToken, p_content: content })
       .then(function (row) {
-        input.value = "";
+        if (!session || session.token !== sendingToken) return;
+        if (input.value.trim() === content) input.value = "";
         if (row && row.id) {
           appendChat([{
             id: row.id,
@@ -1413,9 +1434,9 @@
         }
       })
       .catch(function (err) {
-        input.value = "";
-        input.placeholder = (err && err.message) ? err.message : "Nie udało się wysłać wiadomości.";
-        setTimeout(refreshChatAuth, 1800);
+        if (!session || session.token !== sendingToken) return;
+        var status = document.getElementById("chat-send-status");
+        if (status) status.textContent = (err && err.message) ? err.message : "Nie udało się wysłać wiadomości.";
       })
       .then(function () { chatBusy = false; refreshChatSend(); });
   }
@@ -1537,13 +1558,21 @@
       loadOnline();
     });
 
-    /* Jeśli sesja wygasła po stronie serwera, wyloguj migawkowo w tle */
+    // Zmiana konta w innej karcie nie może zostawić starego formularza i przycisków.
+    window.addEventListener("storage", function (event) {
+      if (event.key !== SESSION_KEY && event.key !== null) return;
+      session = loadSession();
+      expandedPosts = {}; openReplyForms = {};
+      renderAuthZone(); loadPosts(true); loadChatFull();
+    });
+    /* Sprawdzamy zapisany token; opóźniona odpowiedź nie może nadpisać nowej sesji. */
     if (session) {
-      rpc("community_whoami", { p_token: session.token })
+      var checkingToken = session.token;
+      rpc("community_whoami", { p_token: checkingToken })
         .then(function (data) {
-          if (data && data.username) {
-            saveSession({ token: session.token, username: data.username });
-          }
+          if (!session || session.token !== checkingToken) return;
+          if (data && data.username) saveSession({ token: checkingToken, username: data.username });
+          else if (data && data.username === null) { saveSession(null); renderAuthZone(); loadPosts(true); loadChatFull(); }
         })
         .catch(function () { /* chwilowy brak sieci — zostaw sesję */ });
     }

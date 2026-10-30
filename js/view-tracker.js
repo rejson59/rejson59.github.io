@@ -1310,7 +1310,7 @@
   function renderOnlinePopUsers(data) {
     var users = data && Array.isArray(data.users) ? data.users : [];
     if (!users.length) {
-      return '<p class="mop-desc">Poza Tobą nikt z zalogowanych nie przegląda teraz tej strony. Wróć tu później albo napisz coś na <a href="spolecznosc.html">Społeczności</a> ✨</p>';
+      return '<p class="mop-desc">Poza Tobą nikt z zalogowanych nie przegląda teraz tej strony. Wróć tu później albo napisz coś na <a href="/rejchat">RejChat</a> ✨</p>';
     }
     var items = users.map(function (u) {
       var badges = "";
@@ -1330,7 +1330,7 @@
     return (
       '<p class="mop-desc">Zalogowani, którzy są teraz na tej stronie:</p>' +
       '<ul class="mop-list">' + items + "</ul>" +
-      '<p class="mop-foot">Dołącz do rozmowy na <a href="spolecznosc.html">Społeczności</a></p>'
+      '<p class="mop-foot">Dołącz do rozmowy na <a href="/rejchat">RejChat</a></p>'
     );
   }
 
@@ -1350,7 +1350,7 @@
         head +
         '<p class="mop-desc"><strong>Zobacz, kto aktualnie przegląda tę stronę.</strong> ' +
         'To funkcja premium dla zalogowanych — mając konto, widzisz, kto tu jest razem z Tobą, a inni widzą Ciebie ✨</p>' +
-        '<a class="btn btn-primary btn-sm mop-cta" href="spolecznosc.html">Zaloguj lub załóż konto</a>';
+        '<a class="btn btn-primary btn-sm mop-cta" href="/logowanie">Zaloguj lub załóż konto</a>';
       pop.hidden = false;
       onlinePopAnchor = anchor;
       attachOnlinePopViewportListeners();
@@ -1514,7 +1514,7 @@
 
   function nudgeBlockedPath() {
     var p = (location.pathname || "/").toLowerCase();
-    return /admin|spolecznosc|tablica-pomyslow|logowanie|partnerstwo/.test(p);
+    return /admin|spolecznosc|rejchat|profil|tablica-pomyslow|logowanie|partnerstwo/.test(p);
   }
 
   function hasCommunityAccount() {
@@ -1565,13 +1565,13 @@
       var card = document.createElement("aside");
       card.id = "join-nudge";
       card.setAttribute("role", "dialog");
-      card.setAttribute("aria-label", "Zachęta do dołączenia do społeczności");
+      card.setAttribute("aria-label", "Zachęta do dołączenia do RejChat");
       card.innerHTML =
         '<button class="jn-x" aria-label="Zamknij na czas wizyty">✕</button>' +
-        "<h4>👋 Dołącz do społeczności</h4>" +
-        '<p>Załóż konto (tylko nazwa + 4-cyfrowy PIN), aby pisać wpisy, komentować, lajkować ❤ i widzieć, kto jest teraz online.</p>' +
+        "<h4>✨ Twój profil. Twoje rozmowy.</h4>" +
+        '<p>Wybierz awatar, dodaj bio i dołącz do rozmów w RejChat. Konto jest darmowe: nick i PIN, bez e-maila.</p>' +
         '<div class="jn-actions">' +
-          '<a class="jn-go" href="https://rejson59.github.io/spolecznosc">Dołącz do społeczności</a>' +
+          '<a class="jn-go" href="https://rejson59.github.io/logowanie">Załóż darmowe konto</a>' +
         "</div>";
       document.body.appendChild(card);
 
