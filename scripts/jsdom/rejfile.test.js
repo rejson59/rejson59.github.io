@@ -46,5 +46,14 @@ const ID='a47ac10b-58cc-4372-a567-0e02b2c3d479', OWN='a'.repeat(64), SHARE='b'.r
  const link=w.document.getElementById('share-link').value;assert.match(link,/^https:\/\/rejson59\.github\.io\/rejfile#f=/);assert.ok(!new URL(link).search);assert.ok(!link.includes('TEST_SERVICE_KEY'));
  const created=JSON.parse(callsUI.find(x=>x.url.includes('/functions/')&&JSON.parse(x.init.body).action==='create').init.body);assert.equal(created.size,10485765);assert.equal(created.name,'film.bin');assert.equal(created.share.length,64);assert.notEqual(created.share,created.owner);
  w.document.querySelector('#sent-list .file-actions button:nth-child(2)').click();await wait(()=>!w.document.getElementById('download').hidden);w.document.getElementById('download').click();await wait(()=>downloads.length>0);assert.equal(downloads[0].download,'film.bin');assert.equal(callsUI.filter(x=>x.url.includes('/functions/')&&JSON.parse(x.init.body).action==='chunk').length,2);
- dom.window.close();console.log('PASS: RejFile limit 100 MB i upload w częściach, limity, linki, pobieranie i API');
+ dom.window.close();
+ // Zmiana nazwy konta nie może usunąć ikony; wylogowanie przywraca etykietę.
+ const d2=new JSDOM(html,{url:'https://rejson59.github.io/rejfile',runScripts:'outside-only',pretendToBeVisual:true});const w2=d2.window;
+ w2.localStorage.setItem('rejson_community_session_v1',JSON.stringify({token:'x'.repeat(32)}));
+ w2.fetch=async(url,init={})=>String(url).includes('community_whoami') ? {ok:true,json:async()=>({username:'TestUser'})} : {ok:true,json:async()=>[]};
+ w2.eval(read('js/rejfile.js')); await wait(()=>w2.document.querySelector('#account-link .nav-label').textContent==='TestUser');
+ assert.ok(w2.document.querySelector('#account-link svg use'));assert.equal(w2.document.querySelector('#account-link').getAttribute('aria-label'),'Konto: TestUser');
+ w2.localStorage.removeItem('rejson_community_session_v1');w2.dispatchEvent(new w2.StorageEvent('storage',{key:'rejson_community_session_v1'}));
+ await wait(()=>w2.document.querySelector('#account-link .nav-label').textContent==='Konto');assert.ok(w2.document.querySelector('#account-link svg use'));
+ d2.window.close();console.log('PASS: RejFile limit 100 MB i upload w częściach, limity, linki, pobieranie i API');
 })().catch(e=>{console.error(e);process.exitCode=1;});

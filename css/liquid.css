@@ -192,3 +192,18 @@ body.rj-studio[data-backdrop="vivid"] .studio-backdrop {
 }
 .rj-admin .adm-tabs { top:82px; }
 @media (max-width:760px) { .rj-admin .adm-tabs { top:70px; } }
+/* Spójne, opisane ikony nawigacji. Nazwa ikony pozostaje dostępna czytnikom. */
+.nav-icon-link { display:inline-flex; align-items:center; justify-content:center; gap:7px; }
+.ui-icon { display:inline-block; flex:none; width:17px; height:17px; color:currentColor; vertical-align:middle; }
+.nav-icon-only .nav-label { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+.page-mark { display:inline-block; vertical-align:.04em; width:.57em; height:.57em; margin-right:.23em; color:var(--accent-strong,#a9f0d0); opacity:.9; }
+.rj-files .page-mark { color:#a9f0d0; }
+.rj-portal .home-link .ui-icon { color:#89e3e3; }
+@media (max-width:760px) {
+  .site-nav .nav-icon-only .nav-label { position:static; width:auto; height:auto; margin:0; clip:auto; overflow:visible; white-space:normal; }
+  .site-nav .nav-icon-link { justify-content:flex-start; }
+}
+@media (min-width:761px) and (max-width:1200px) {
+  .rj-home .site-nav .nav-icon-only .nav-label { position:static; width:auto; height:auto; margin:0; clip:auto; overflow:visible; white-space:normal; }
+}
+.ui-icon, .page-mark { fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }

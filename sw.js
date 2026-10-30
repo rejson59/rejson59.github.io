@@ -95,8 +95,11 @@ self.addEventListener("fetch", function (event) {
               if (html.indexOf("view-tracker.js") === -1) {
                 inject += '\n<script src="/js/view-tracker.js?v=4" defer></script>';
               }
-              if (html.indexOf("rejson-widgets/widget.js") === -1) {
-                inject += '\n<script src="/rejson-widgets/widget.js?v=4" data-project="' + safeSlug + '" defer></script>';
+              // Sam komentarz z przykładem nie oznacza, że skrypt widżetu istnieje.
+              var scriptHtml = html.replace(/<!--[\s\S]*?-->/g, "");
+              var hasWidgetScript = /<script\b[^>]*\bsrc\s*=\s*(["'])[^"']*rejson-widgets\/widget\.js(?:\?[^"']*)?\1/i.test(scriptHtml);
+              if (!hasWidgetScript) {
+                inject += '\n<script src="/rejson-widgets/widget.js?v=7" data-project="' + safeSlug + '" defer></script>';
               }
               // Efekt wyjścia tylko na dokumentach projektów pod /projekt/.
               // Skrypt działa wyłącznie, jeśli ta karta ma jednorazowy znacznik
@@ -104,16 +107,12 @@ self.addEventListener("fetch", function (event) {
               var portalHead = /^\/[A-Za-z0-9._-]+\//.test(url.pathname) &&
                 /<\/head\s*>/i.test(html) && html.indexOf("portal-arrival.js") === -1
                 ? '<link rel="stylesheet" href="/css/portal.css?v=11" data-rj-portal-style><script src="/js/portal-arrival.js?v=9"></script>' : "";
-              if (!inject && !portalHead) {
-                return new Response(html, {
-                  status: res.status,
-                  statusText: res.statusText,
-                  headers: res.headers
-                });
-              }
+              // Znane wpisane na sztywno stare wersje wspólnego widżetu też
+              // dostają aktualny adres; nie zmieniamy innych parametrów skryptu.
+              var upgradedHtml = html.replace(/(<script\b[^>]*\bsrc\s*=\s*["'](?:https:\/\/rejson59\.github\.io)?\/rejson-widgets\/widget\.js)(?:\?v=[0-6])?(["'])/gi, "$1?v=7$2");
               var updatedHtml = portalHead
-                ? html.replace(/<\/head\s*>/i, function (head) { return portalHead + head; })
-                : html;
+                ? upgradedHtml.replace(/<\/head\s*>/i, function (head) { return portalHead + head; })
+                : upgradedHtml;
               updatedHtml = /<\/body>/i.test(updatedHtml)
                 ? updatedHtml.replace(/<\/body>/i, inject + "\n</body>")
                 : updatedHtml + inject;

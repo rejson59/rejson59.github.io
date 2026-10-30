@@ -144,6 +144,10 @@
     status.textContent = "Nie znaleziono tego portalu. Wróć na stronę główną i wybierz projekt.";
     return;
   }
+  /* Każdy projekt ma stałą, własną aurę; kolory nie zmieniają celu ani animacji lotu. */
+  var hueHash = 0;
+  for (var i = 0; i < name.length; i++) hueHash = (hueHash * 31 + name.charCodeAt(i)) >>> 0;
+  document.body.dataset.aura = ["mint", "violet", "azure", "rose"][hueHash % 4];
   document.getElementById("project-name").textContent = name;
   document.title = "Portal do " + name + " — Rejson59";
   // GitHub Pages nie obsługuje dynamicznego routingu: katalog /portal/ jest

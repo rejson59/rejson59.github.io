@@ -76,9 +76,9 @@
   }
   $('refresh').addEventListener('click',refreshInbox);
   async function verifySession() {
-    var version=++sessionVersion;token=null;$('inbox-list').textContent='';var s;try{s=JSON.parse(localStorage.getItem(SESSION)||'null');}catch(_){}
+    var version=++sessionVersion;token=null;$('inbox-list').textContent='';var link=$('account-link'), label=link.querySelector('.nav-label'); if(label) label.textContent='Konto'; else link.textContent='Konto'; link.setAttribute('aria-label','Konto / logowanie'); link.title='Konto / logowanie';var s;try{s=JSON.parse(localStorage.getItem(SESSION)||'null');}catch(_){}
     if(!s||typeof s.token!=='string'||s.token.length<16){refreshInbox();return;}
-    try {var r=await fetch(BASE+'/rest/v1/rpc/community_whoami',{method:'POST',cache:'no-store',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json'},body:JSON.stringify({p_token:s.token})});var d=await r.json();if(version!==sessionVersion)return;if(!r.ok||!d||typeof d.username!=='string')throw new Error();token=s.token;$('account-link').textContent=d.username+' ↗';await refreshInbox();}
+    try {var r=await fetch(BASE+'/rest/v1/rpc/community_whoami',{method:'POST',cache:'no-store',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json'},body:JSON.stringify({p_token:s.token})});var d=await r.json();if(version!==sessionVersion)return;if(!r.ok||!d||typeof d.username!=='string')throw new Error();token=s.token;var accountLink=$('account-link'); var accountLabel=accountLink.querySelector('.nav-label'); if(accountLabel) accountLabel.textContent=d.username; else accountLink.textContent=d.username; accountLink.setAttribute('aria-label','Konto: '+d.username); accountLink.title='Konto: '+d.username;await refreshInbox();}
     catch(_){if(version!==sessionVersion)return;$('inbox-status').textContent='Nie można potwierdzić sesji. Sprawdź połączenie lub zaloguj się ponownie.';$('login').hidden=false;$('refresh').hidden=false;}
   }
   form.addEventListener('submit',async function(e){e.preventDefault();if(busy)return;report($('error'),'');var file=selected;

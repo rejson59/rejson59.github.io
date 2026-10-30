@@ -394,7 +394,7 @@
     "  touch-action: auto;",
     "}",
     ".rj-vessel.is-pointer-locked {",
-    "  opacity: 0.14;",
+    "  opacity: 0.38;",
     "  pointer-events: none;",
     "}",
     /* Cieniutki szklany rant 1px */
@@ -837,6 +837,12 @@
      ======================================================================== */
   var hostEl = document.createElement("div");
   hostEl.id = "rejson-liquid-widget-root";
+  /* Izolacja od ogólnych reguł projektu, także tych z !important. */
+  [["display", "block"], ["visibility", "visible"], ["opacity", "1"],
+   ["position", "fixed"], ["inset", "0"], ["width", "0"], ["height", "0"],
+   ["z-index", "2147483000"], ["pointer-events", "none"]].forEach(function (rule) {
+    hostEl.style.setProperty(rule[0], rule[1], "important");
+  });
   var shadow = hostEl.attachShadow({ mode: "open" });
 
   ["keydown", "keyup", "keypress"].forEach(function (evName) {
@@ -1762,6 +1768,27 @@
     kickMorphSpring();
   });
 
+  /* Anulowane przechwycenie, zmiana karty albo utrata fokusu nie mogą
+     zostawić przeciąganej pigułki poza ekranem. */
+  function cancelDrag() {
+    if (!drag && !state.dragging) return;
+    var pointerId = drag && drag.id;
+    drag = null;
+    state.dragging = false;
+    if (pointerId != null) {
+      try { if (closedBtn.hasPointerCapture(pointerId)) closedBtn.releasePointerCapture(pointerId); } catch (e) {}
+    }
+    morph.dx = morph.dy = morph.vx = morph.vy = 0;
+    applyAnchorPosition();
+    flushMorphFrame();
+    kickMorphSpring();
+  }
+  window.addEventListener("pointercancel", cancelDrag);
+  window.addEventListener("blur", cancelDrag);
+  closedBtn.addEventListener("lostpointercapture", function () {
+    if (state.dragging) cancelDrag();
+  });
+
   closedBtn.addEventListener("click", function () {
     if (state.dragging) return;
     openMorph();
@@ -1950,6 +1977,7 @@
     state.pointerLocked = Boolean(document.pointerLockElement);
     vesselEl.classList.toggle("is-pointer-locked", state.pointerLocked);
     if (state.pointerLocked && state.open) closeMorph();
+    positionCollapseBtn();
   }
   function onWindowResize() {
     if (state.open) kickMorphSpring();
@@ -1968,28 +1996,67 @@
     el.style.transform = "none";
   }
 
+  var destroyed = false;
+  var mountObserver = null;
+  var themeObserver = null;
+
+  function widgetParent() {
+    var full = document.fullscreenElement;
+    /* Elementy zastępowane (canvas, video, iframe) nie renderują potomków.
+       Ich pełny ekran nie daje zwykłym nakładkom DOM miejsca do wyświetlenia. */
+    if (full && full.nodeType === 1 && !/^(CANVAS|VIDEO|IFRAME|IMG|OBJECT|EMBED)$/.test(full.tagName)) return full;
+    return document.documentElement;
+  }
+
+  function ensureMounted() {
+    if (destroyed || !document.documentElement) return;
+    var parent = widgetParent();
+    if (hostEl.parentNode !== parent) {
+      parent.appendChild(hostEl);
+      resetPaplaVars(hostEl);
+      applyAnchorPosition();
+      flushMorphFrame();
+    }
+    if (mountObserver) {
+      mountObserver.disconnect();
+      /* Tylko bezpośrednie dzieci, bez obserwowania całego drzewa gry. */
+      mountObserver.observe(document.documentElement, { childList: true });
+      if (parent !== document.documentElement) mountObserver.observe(parent, { childList: true });
+    }
+  }
+
+  function onWidgetVisibility() {
+    if (document.visibilityState === "hidden") cancelDrag();
+    else { ensureMounted(); onPointerLockChange(); }
+  }
+
   function mount() {
-    if (!document.body) return;
-    document.body.appendChild(hostEl);
-    resetPaplaVars(hostEl);
+    if (!document.documentElement || destroyed) return;
+    mountObserver = new MutationObserver(function () {
+      if (hostEl.parentNode !== widgetParent() || !hostEl.isConnected) ensureMounted();
+    });
+    ensureMounted();
     syncVisualAppearance();
+    onPointerLockChange();
     var m = closedMetrics();
     morph.w = morph.tw = m.w;
     morph.h = morph.th = m.h;
     morph.r = morph.tr = m.r;
     flushMorphFrame();
 
-    new MutationObserver(function () {
+    themeObserver = new MutationObserver(function () {
       var next = detectTheme();
       if (next !== state.resolvedTheme) {
         state.resolvedTheme = next;
         hostEl.setAttribute("data-theme", next);
       }
-    }).observe(document.documentElement, {
+    });
+    themeObserver.observe(document.documentElement, {
       attributes: true,
       attributeFilter: ["data-theme", "data-bs-theme", "class", "style"]
     });
-
+    document.addEventListener("fullscreenchange", ensureMounted);
+    document.addEventListener("visibilitychange", onWidgetVisibility);
     syncBoard();
   }
 
@@ -2025,6 +2092,13 @@
     },
     captureError: pushCapturedError,
     destroy: function () {
+      destroyed = true;
+      if (mountObserver) mountObserver.disconnect();
+      if (themeObserver) themeObserver.disconnect();
+      document.removeEventListener("fullscreenchange", ensureMounted);
+      document.removeEventListener("visibilitychange", onWidgetVisibility);
+      window.removeEventListener("pointercancel", cancelDrag);
+      window.removeEventListener("blur", cancelDrag);
       try { resetPaplaVars(hostEl); } catch (e) {}
       try {
         hostEl.style.removeProperty("--papla-rot");
