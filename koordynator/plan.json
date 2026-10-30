@@ -1,69 +1,109 @@
 {
   "wersja": 1,
   "stan": "gotowy",
-  "id": "portale-offline-20261030",
-  "tytul": "Poprawa przejścia z portalu i bezpieczeństwa offline",
-  "opis": "## Proponowane zmiany\n- **mconline:** uruchomienie animacji wyjścia z portalu przed startem gry na wspólnej domenie, także bez przejęcia dokumentu przez główny service worker.\n- **ProStudent / Plecak:** takie samo wyjście z portalu oraz poprawka service workera: czyszczenie tylko własnych cache, przechwytywanie tylko właściwego POST udostępniania i zapytań we własnym zakresie; tryb offline zostaje.\n- Bez zmiany danych gry, danych szkolnych, tożsamości gracza i kont; to nie jest jeszcze synchronizacja mconline ani Plecaka ze wspólnym kontem.\n\n## Testy i ograniczenia\n- mconline: typecheck, pełny istniejący harness (287 kontroli UI), build oraz testy portalu na HTML źródłowym i wynikowym — OK.\n- ProStudent: typecheck, 119 testów Vitest, build i 6 testów portalu/service workera — OK.\n- Rzeczywiste skrypty i CSS portalu w zbudowanych dokumentach zbadano w JSDOM. Pełnej animacji w przeglądarce użytkownika i rzeczywistego offline/PWA na produkcji jeszcze nie potwierdzono.\n- Automatyczne wyjście dotyczy tej samej domeny i jednorazowego znacznika; inne originy nie współdzielą sessionStorage. PR-y nie są scalane automatycznie.",
+  "id": "konto-mconline-plecak-20261030",
+  "tytul": "Wspólne konto Rejson w mconline i Plecaku",
+  "opis": "## Proponowane zmiany\n- Opcjonalne logowanie i rejestracja wspólnego konta Rejson bez opuszczania mconline i ProStudent/Plecaka; obecne konto, hasło lub starszy PIN, ta sama sesja na tym samym originie. Rejestracja wymaga hasła, tożsamość sesji potwierdza serwer.\n- Bez zmiany tożsamości multiplayera, światów lub danych szkolnych. To pierwszy etap: logowanie **nie przenosi i nie synchronizuje** żadnych danych. Na innych domenach trzeba się zalogować osobno. Zmiana PIN-u na hasło pozostaje na stronie konta. Wylogowanie usuwa tylko lokalną sesję.\n- mconline: import ręcznej kopii może zastąpić świat o tym samym ID i ograniczyć listę do 8; Plecak: import po potwierdzeniu zastępuje dane. Nie wykonywać importów bez wcześniejszej kopii.\n\n## Testy i ograniczenia\n- Oba projekty: typecheck, pełne testy i build OK; formularz w prawdziwej aplikacji testowany z imitacją API i JSDOM, w mconline również wyścig odpowiedzi sesji; lokalne dane zachowane w testach.\n- mconline: 287 kontroli UI i 5 dodatkowych kontroli konta. ProStudent: 124 testy Vitest i testy portalu/service workera.\n- Nie wykonano prawdziwego logowania HTTP z produkcyjnej strony. Działanie backendu poza testami SQL i lokalnym mockiem, CORS i pełne E2E wymagają weryfikacji po wdrożeniu.\n- Brak serwerowej ochrony przed spamem rejestracji; ograniczenie prób dotyczy istniejącego konta. Bez e-maila brak automatycznego odzyskania hasła. PR-y nie są scalane automatycznie.",
   "projekty": [
     {
       "repozytorium": "mconline",
-      "podstawa": "ed9cc03482f53d10fb3cb893a8c990be0178d85f",
+      "podstawa": "e3eb88750d7fe6b227cbf93c1d9c85e7f65d5f1b",
       "pliki": [
         {
-          "sciezka": "index.html",
-          "zrodlo": "koordynator/paczki/portale-offline-20261030/mconline/index.html",
-          "sha256": "31bd6376fb68d17371447e7113920947cfc2f2d51bc79a1e7ce598e6875d8139"
+          "sciezka": ".harness/account.tsx",
+          "zrodlo": "koordynator/paczki/konto-mconline-plecak-20261030/mconline/.harness/account.tsx",
+          "sha256": "8fbfd690fe6b62261f7e231a885cc4326e8d4df83cfd1d0ee3874a4622d3e743"
         },
         {
-          "sciezka": "package.json",
-          "zrodlo": "koordynator/paczki/portale-offline-20261030/mconline/package.json",
-          "sha256": "7beaa689eb6c3b3a45a77486fabf6b7bc8f78b446841587d72c0100e94755048"
+          "sciezka": ".harness/run.mjs",
+          "zrodlo": "koordynator/paczki/konto-mconline-plecak-20261030/mconline/.harness/run.mjs",
+          "sha256": "f5e96d3b5259a3505f2bc98ceb49d68e522226b7cae153dfb7533c0b762b6d8b"
         },
         {
           "sciezka": "README.md",
-          "zrodlo": "koordynator/paczki/portale-offline-20261030/mconline/README.md",
-          "sha256": "6dac568cf1e6c6a5cd8689e6bd8e0c76538fb78087631b87177b3d4c127f0293"
+          "zrodlo": "koordynator/paczki/konto-mconline-plecak-20261030/mconline/README.md",
+          "sha256": "9094f0f6061cbc2a7ead7b5c29998ffdd2455b1dc775a838f2d1119553cf3d1b"
         },
         {
-          "sciezka": "scripts/portal-bootstrap.test.mjs",
-          "zrodlo": "koordynator/paczki/portale-offline-20261030/mconline/scripts/portal-bootstrap.test.mjs",
-          "sha256": "de0d3a91d48d765bc5381e8254959c7e007b908651635f649ab45e69bc07959f"
+          "sciezka": "src/App.tsx",
+          "zrodlo": "koordynator/paczki/konto-mconline-plecak-20261030/mconline/src/App.tsx",
+          "sha256": "639115c7ad4307c2238e052b497677ca65fa080800b5261744b43e526979b635"
+        },
+        {
+          "sciezka": "src/components/CommunityAccount.tsx",
+          "zrodlo": "koordynator/paczki/konto-mconline-plecak-20261030/mconline/src/components/CommunityAccount.tsx",
+          "sha256": "c8f45658d33fe2d7a81670c8f6a9d0f149314d1b42a14f41e340e5a4b7c0b482"
+        },
+        {
+          "sciezka": "src/components/Menus.tsx",
+          "zrodlo": "koordynator/paczki/konto-mconline-plecak-20261030/mconline/src/components/Menus.tsx",
+          "sha256": "dfdb27bf8473e0c559670cef2e67d0cc37a580af098f9222260f52d6c9ab0464"
+        },
+        {
+          "sciezka": "src/game/communityAccount.ts",
+          "zrodlo": "koordynator/paczki/konto-mconline-plecak-20261030/mconline/src/game/communityAccount.ts",
+          "sha256": "8b9e1261f174490c631c3e36343b2d732d24588cbdc47c509dfd57184c0c64ef"
+        },
+        {
+          "sciezka": "tsconfig.json",
+          "zrodlo": "koordynator/paczki/konto-mconline-plecak-20261030/mconline/tsconfig.json",
+          "sha256": "b6cdc4dd237646b4f972f30d2eb2760fa183d2b9e3859a2eb0289969fcb0c6f8"
         }
       ]
     },
     {
       "repozytorium": "ProStudent",
-      "podstawa": "6f8b832923188781cd0f24ed661faae67f1dbdc2",
+      "podstawa": "876cbfadf717ffd81f58ea9267f2080a7d98ac66",
       "pliki": [
         {
-          "sciezka": "index.html",
-          "zrodlo": "koordynator/paczki/portale-offline-20261030/ProStudent/index.html",
-          "sha256": "94ee561575f8d01a09631517193ac78adf752fb3e6f55d29bd7bc2dcb6903253"
+          "sciezka": "README.md",
+          "zrodlo": "koordynator/paczki/konto-mconline-plecak-20261030/ProStudent/README.md",
+          "sha256": "cee67db11c718c2b968c1ed54722576064a5e62e9cde3a3cbbf252e9f6918609"
+        },
+        {
+          "sciezka": "package-lock.json",
+          "zrodlo": "koordynator/paczki/konto-mconline-plecak-20261030/ProStudent/package-lock.json",
+          "sha256": "a9647f18b1a3b0d794b2ec1ecaea99b2449fcf71e7fcd7863d137f098a20d20e"
         },
         {
           "sciezka": "package.json",
-          "zrodlo": "koordynator/paczki/portale-offline-20261030/ProStudent/package.json",
-          "sha256": "eda2fdc963adb2a1c3531570b93e932ef35b3a4b5ac381d02449b9fe0e6250c7"
+          "zrodlo": "koordynator/paczki/konto-mconline-plecak-20261030/ProStudent/package.json",
+          "sha256": "1360e6c5b5df57fef9775bcd5182a85d612b0427cb0cf92d94ae33bcbab1b8b2"
         },
         {
-          "sciezka": "README.md",
-          "zrodlo": "koordynator/paczki/portale-offline-20261030/ProStudent/README.md",
-          "sha256": "28ade0edc450a3de1abb23333fb599991482f788433ee9310ab277bce2f69488"
+          "sciezka": "src/App.tsx",
+          "zrodlo": "koordynator/paczki/konto-mconline-plecak-20261030/ProStudent/src/App.tsx",
+          "sha256": "4811743a8d4d9b8727c658f55def3cf19c47cfa2b88bb37f4465d026ff00f526"
         },
         {
-          "sciezka": "public/sw.js",
-          "zrodlo": "koordynator/paczki/portale-offline-20261030/ProStudent/public/sw.js",
-          "sha256": "94e076ebd80cfcef488a64edcdec75e012d108e3a1ed04360b6e93c48ca30c71"
+          "sciezka": "src/components/CommunityAccount.test.tsx",
+          "zrodlo": "koordynator/paczki/konto-mconline-plecak-20261030/ProStudent/src/components/CommunityAccount.test.tsx",
+          "sha256": "cc38709e6f9b35670dbc1102ad27f97cee17f00210876660c519e1bd1b876821"
         },
         {
-          "sciezka": "scripts/portal-bootstrap.test.mjs",
-          "zrodlo": "koordynator/paczki/portale-offline-20261030/ProStudent/scripts/portal-bootstrap.test.mjs",
-          "sha256": "de0d3a91d48d765bc5381e8254959c7e007b908651635f649ab45e69bc07959f"
+          "sciezka": "src/components/CommunityAccount.tsx",
+          "zrodlo": "koordynator/paczki/konto-mconline-plecak-20261030/ProStudent/src/components/CommunityAccount.tsx",
+          "sha256": "5ac732fe835857dd0998eb94e5b438406e034fcd45ee5544f449d12fffbd9088"
         },
         {
-          "sciezka": "scripts/service-worker.test.mjs",
-          "zrodlo": "koordynator/paczki/portale-offline-20261030/ProStudent/scripts/service-worker.test.mjs",
-          "sha256": "7afb52978eede1414b5054d1931063d6351b14fb6d2ea9bae01819f5e37b4996"
+          "sciezka": "src/components/Icon.tsx",
+          "zrodlo": "koordynator/paczki/konto-mconline-plecak-20261030/ProStudent/src/components/Icon.tsx",
+          "sha256": "6685431e9bc78422b3ecf3e2adc12073e61501a72e22c700ed1c91b487fd549b"
+        },
+        {
+          "sciezka": "src/lib/communityAccount.test.ts",
+          "zrodlo": "koordynator/paczki/konto-mconline-plecak-20261030/ProStudent/src/lib/communityAccount.test.ts",
+          "sha256": "529568719670e3a0b78967b7f615bb533f57b8ba35bdb84c348b74ddff891b74"
+        },
+        {
+          "sciezka": "src/lib/communityAccount.ts",
+          "zrodlo": "koordynator/paczki/konto-mconline-plecak-20261030/ProStudent/src/lib/communityAccount.ts",
+          "sha256": "8b9e1261f174490c631c3e36343b2d732d24588cbdc47c509dfd57184c0c64ef"
+        },
+        {
+          "sciezka": "vitest.config.ts",
+          "zrodlo": "koordynator/paczki/konto-mconline-plecak-20261030/ProStudent/vitest.config.ts",
+          "sha256": "b98f89147970398acefa6326449b09eab4b6161bf46718b2c087d4cfac3fbc3f"
         }
       ]
     }
