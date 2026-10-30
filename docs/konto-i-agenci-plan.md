@@ -2,6 +2,8 @@
 
 Stan na 29.10.2026. To plan techniczny, nie opis gotowego SSO ani automatyzacji.
 
+> Aktualizacja 30.10.2026: właściciel wybrał pozostanie przy GitHub Pages i obecnym Supabase. Wspólna sesja dla projektów **tego samego originu**, sposób integracji i ograniczenia są opisane w [wspolne-konto-projekty.md](wspolne-konto-projekty.md). Wcześniejszy prototyp Keycloak jest tylko archiwalnym eksperymentem; nie jest wybranym rozwiązaniem ani wdrożoną usługą.
+
 ## Co już działa
 
 - `logowanie` i `spolecznosc` korzystają z obecnego konta społeczności (nazwa + czterocyfrowy PIN) i tej samej sesji w `localStorage` na tym samym originie. Ekran logowania nie jest nowym systemem tożsamości.

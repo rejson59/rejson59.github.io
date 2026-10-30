@@ -32,12 +32,12 @@ const server=http.createServer((req,res)=>{
     await page.goto(origin+'/Project/');
     await page.locator('#rejson-liquid-widget-root').waitFor({state:'attached',timeout:10000});
     assert.equal(await page.evaluate(()=>window.RejsonWidget.getState().config.project),'Project');
-    assert.ok(requests.some(r=>r.startsWith('/rejson-widgets/widget.js?v=7')),'komentarz nie blokuje dodania');
+    assert.ok(requests.some(r=>r.startsWith('/rejson-widgets/widget.js?v=8')),'komentarz nie blokuje dodania');
     requests.length=0;
     await page.goto(origin+'/OldVersion/');
     await page.locator('#rejson-liquid-widget-root').waitFor({state:'attached',timeout:10000});
     assert.equal(await page.evaluate(()=>window.RejsonWidget.getState().config.project),'OldVersion');
-    assert.ok(requests.some(r=>r.startsWith('/rejson-widgets/widget.js?v=7')),'stary jawny adres dostaje aktualną wersję');
+    assert.ok(requests.some(r=>r.startsWith('/rejson-widgets/widget.js?v=8')),'stary jawny adres dostaje aktualną wersję');
     assert.ok(!requests.some(r=>r.startsWith('/rejson-widgets/widget.js?v=4')));
     assert.equal(await page.locator('#rejson-liquid-widget-root').count(),1);
     console.log('PASS: prawdziwy SW dodaje pigułkę mimo komentarza i aktualizuje stary adres bez duplikatów');
