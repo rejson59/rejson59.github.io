@@ -54,6 +54,8 @@ function arrival(marker, opts = {}) {
     assert.equal(portal.querySelector('script[src*="portal-scene"]'), null);
     assert.ok(portal.querySelector('#portal-door .orb-core .core-rift'));
     assert.equal(portal.querySelectorAll('#portal-door .orb-world .orbit').length, 4);
+    assert.equal(portal.querySelectorAll('#portal-door .orb-world .orbit-flare').length, 2);
+    assert.match(css, /animation:orbit-one 8s linear infinite/);
     assert.equal(portal.querySelectorAll('#portal-door .orb-world .shard').length, 4);
     assert.equal(portal.querySelectorAll('#portal-door .orb-world .shard i').length, 12);
     assert.match(css, /transform-style:\s*preserve-3d/);
@@ -87,6 +89,7 @@ function arrival(marker, opts = {}) {
     const t = room('RejStream');
     assert.equal(t.w.location.pathname, '/portal/RejStream');
     assert.equal(t.doc.getElementById('project-name').textContent, 'RejStream');
+    assert.equal(t.doc.body.dataset.aura, 'rose');
     assert.equal(t.doc.getElementById('direct').href, 'https://rejson59.github.io/RejStream/');
     assert.equal(t.doc.getElementById('enter').disabled, false);
     assert.equal(t.doc.getElementById('flight').classList.contains('is-active'), false); // bez automatycznej nawigacji
@@ -274,7 +277,7 @@ function arrival(marker, opts = {}) {
   assert.equal(live({ homepage:'https://', name:'A' }), null);
   assert.match(app, /btn-live btn-portal btn-sm.*portalUrl\(p.name\)/); assert.match(app, /card-preview.*portalUrl\(p.name\)/);
   const listeners = {};
-  const source = '<html><head><meta http-equiv="Content-Security-Policy" content="default-src \'self\'"></head><body>test</body></html>';
+  let source = '<html><head><meta http-equiv="Content-Security-Policy" content="default-src \'self\'"></head><body>test</body></html>';
   const sw = { location:{ origin:'https://rejson59.github.io' }, addEventListener:(n,cb) => listeners[n]=cb };
   const fetchMock = async url => String(url).includes('/rest/') ? new Response('{}') : new Response(source, { headers:{'content-type':'text/html','content-security-policy':"default-src 'self'"} });
   vm.runInNewContext(read('sw.js'), { self:sw, URL, Response, Headers, fetch:fetchMock, Promise, Date, console });
@@ -282,6 +285,16 @@ function arrival(marker, opts = {}) {
   const response = await request('https://rejson59.github.io/Test/'); const body = await response.text();
   assert.equal(response.headers.get('content-security-policy'), "default-src 'self'");
   assert.ok(body.indexOf('Content-Security-Policy') < body.indexOf('portal-arrival.js')); assert.match(body,/view-tracker\.js/); assert.match(body,/rejson-widgets\/widget\.js/);
+  source = '<html><head></head><body><!-- przykładowy rejson-widgets/widget.js --></body></html>';
+  const commented = await (await request('https://rejson59.github.io/Example/')).text();
+  assert.match(commented, /<script src="\/rejson-widgets\/widget\.js\?v=7"/);
+  source = '<html><head></head><body><script defer data-project="Test" src="https://rejson59.github.io/rejson-widgets/widget.js?v=4"></script></body></html>';
+  const existing = await (await request('https://rejson59.github.io/Example/')).text();
+  assert.match(existing, /widget\.js\?v=7/); assert.equal((existing.match(/<script[^>]+rejson-widgets\/widget\.js/g) || []).length, 1);
+  assert.match(existing, /data-project="Test"/);
+  source = source.replace('?v=4','?v=99');
+  const future = await (await request('https://rejson59.github.io/Example/')).text();
+  assert.match(future, /widget\.js\?v=99/);
   for (const url of ['https://rejson59.github.io/portal/', 'https://rejson59.github.io/portal/RejStream', 'https://rejson59.github.io/partnerstwo', 'https://rejson59.github.io/rejfile', 'https://rejson59.github.io/rejfile.html', 'https://another.example/Test/']) assert.equal(await request(url), undefined);
   assert.equal(await request('https://rejson59.github.io/Test/', 'iframe'), undefined);
   assert.match(read('404.html'), /location\.replace\("\/portal\/\?projekt=/);

@@ -12,6 +12,15 @@ for (const page of pages) {
   assert.ok(document.body.className.includes('rj-'), `${page}: izolacja styli`);
   assert.ok(document.querySelector('main'), `${page}: treść główna`);
 }
+const svg = new JSDOM(read('assets/ui-icons.svg'), {contentType:'image/svg+xml'}).window.document;
+for (const page of pages.filter(p => p !== '404.html')) {
+  const document = new JSDOM(read(page)).window.document;
+  for (const link of document.querySelectorAll('header a.nav-icon-link')) {
+    assert.ok(link.getAttribute('aria-label') && link.getAttribute('title'), `${page}: dostępna nazwa ikony`);
+    const use = link.querySelector('use');
+    assert.ok(use && svg.getElementById(use.getAttribute('href').split('#')[1]), `${page}: istniejący symbol`);
+  }
+}
 const home = new JSDOM(read('index.html')).window.document;
 for (const href of ['#projekty','spolecznosc','rejfile']) assert.ok(home.querySelector(`.universe-nav a[href="${href}"]`));
 assert.ok(home.querySelector('[data-tilt]'), 'zachowany efekt 3D');
