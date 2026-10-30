@@ -242,8 +242,8 @@
   <script defer src="js/error-reporter.js?v=1"></script>
   <script defer src="/js/liquid-nav.js?v=1"></script>
   <link rel="stylesheet" href="/css/liquid.css?v=2026-10-30-2">
-  <link rel="stylesheet" href="/css/rejchat.css?v=1">
   <link rel="stylesheet" href="/css/responsive.css?v=1">
+  <link rel="stylesheet" href="/css/rejchat.css?v=2">
 </head>
 <body class="rj-community community-page">
   <div id="rj-page-loader" aria-hidden="true">
@@ -504,9 +504,9 @@
   <main class="container comm-main">
 
     <section class="comm-hero">
-      <p class="rejchat-brow">✦ MIEJSCE DLA SPOŁECZNOŚCI REJSON59</p>
+      <p class="rejchat-brow">✦ TWOJE MIEJSCE NA ROZMOWY</p>
       <h1 class="comm-title"><svg class="page-mark" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#people"></use></svg>RejChat<span class="rejchat-title-dot">.</span></h1>
-      <p class="comm-lead">Rozmawiaj o projektach, dziel się pomysłami i poznaj innych. Czat oraz wpisy możesz czytać bez konta — zaloguj się, żeby dołączyć do rozmowy i stworzyć swój profil.</p>
+      <p class="comm-lead">Wpadnij pogadać, podziel się pomysłem i poznaj innych.</p>
     </section>
     <div class="rejchat-tabs" role="tablist" aria-label="Widoki RejChat">
       <button type="button" role="tab" id="chat-tab" aria-controls="panel-chat" aria-selected="true"><svg class="ui-icon" aria-hidden="true"><use href="/assets/ui-icons.svg?v=2#chat"></use></svg> Czat</button>
@@ -514,6 +514,20 @@
     </div>
 
     <div class="comm-layout">
+      <aside class="comm-sidebar" aria-label="Kto jest online">
+        <div class="chat-channel-list" aria-label="Dostępne rozmowy">
+          <span class="chat-channel-label">ROZMOWY</span>
+          <button type="button" id="channel-general" class="chat-channel is-active" aria-controls="panel-chat"><span class="chat-channel-icon" aria-hidden="true">✦</span><span><strong>Czat ogólny</strong><small>Porozmawiaj ze społecznością</small></span></button>
+        </div>
+        <!-- ============ KTO JEST TERAZ ONLINE ============ -->
+        <section class="comm-online-card glass-card" aria-label="Zalogowani użytkownicy online">
+          <h2><span class="comm-online-dot" aria-hidden="true"></span> Zalogowani teraz online</h2>
+          <div class="comm-online" id="comm-online">
+            <span class="comm-online-empty">Ładowanie…</span>
+          </div>
+          <p class="rejchat-online-note">Chcesz przedstawić się innym? Wybierz awatar i dodaj kilka słów na swoim profilu.</p>
+        </section>
+      </aside>
       <div class="comm-primary">
         <section id="panel-chat" role="tabpanel" aria-labelledby="chat-tab">
         <!-- ============ CZAT NA ŻYWO ============ -->
@@ -524,7 +538,7 @@
           </header>
           <label class="rejchat-search"><span class="sr-only">Szukaj we wczytanych wiadomościach</span><input class="comm-input" id="chat-search" type="search" maxlength="100" placeholder="Szukaj we wczytanych wiadomościach…"></label>
           <p class="rejchat-search-hint" id="chat-search-status" aria-live="polite">Widoczne są ostatnie wczytane wiadomości.</p>
-          <p class="rejchat-search-hint">Wiadomości starsze niż 14 dni są usuwane przy wysłaniu nowej. Wpisy znajdują się w osobnej zakładce.</p>
+          <p class="rejchat-search-hint">Wiadomości starsze niż 14 dni są usuwane przy wysłaniu nowej.</p>
           <div class="comm-chat-list" id="chat-list" aria-live="polite">
             <p class="comm-chat-empty">Ładowanie czatu…</p>
           </div>
@@ -534,35 +548,11 @@
             <button class="btn btn-primary btn-sm" id="chat-send" type="submit" disabled>Wyślij</button>
           </form>
           <p id="chat-send-status" class="comm-chat-note" role="status" aria-live="polite"></p>
-          <p class="comm-chat-note" id="chat-note">Zaloguj się nazwą i PIN-em, aby pisać na czacie — czytanie nie wymaga konta. <a href="logowanie">Zaloguj się →</a></p>
+          <p class="comm-chat-note" id="chat-note"><span>Czytasz jako gość.</span> <button type="button" class="chat-join" id="chat-join" hidden>Dołącz do rozmowy ↗</button><a id="chat-join-fallback" href="logowanie">Dołącz do rozmowy ↗</a></p>
         </section>
 
         </section>
         <div id="panel-posts" role="tabpanel" aria-labelledby="posts-tab" hidden>
-        <!-- ============ LOGOWANIE / REJESTRACJA ============ -->
-        <section class="comm-auth" id="login-card" hidden aria-label="Logowanie lub rejestracja">
-          <div class="comm-auth-inner">
-            <h2>Dołącz do RejChat</h2>
-            <p class="comm-auth-sub">Wpisz nazwę użytkownika — powiemy Ci od razu, czy jest wolna.
-              Jeśli jest wolna: wymyślisz PIN. Jeśli zajęta: zalogujesz się swoim PIN-em.</p>
-
-            <form id="auth-form" novalidate>
-              <label class="comm-label" for="auth-username">Nazwa użytkownika</label>
-              <input class="comm-input" id="auth-username" name="username" type="text" autocomplete="username"
-                     maxlength="24" placeholder="np. Kuba_Craft" spellcheck="false" autocapitalize="off">
-              <p class="comm-name-status" id="name-status" aria-live="polite">3–24 znaki: litery, cyfry oraz _ . -</p>
-
-              <label class="comm-label" for="auth-pin">PIN (4 cyfry)</label>
-              <input class="comm-input comm-pin" id="auth-pin" name="pin" type="password" inputmode="numeric"
-                     autocomplete="current-password" maxlength="4" pattern="[0-9]{4}" placeholder="••••">
-
-              <p class="comm-error" id="auth-error" hidden></p>
-
-              <button class="btn btn-primary comm-auth-btn" id="auth-submit" type="submit" disabled>Zaloguj / utwórz konto</button>
-            </form>
-          </div>
-        </section>
-
         <!-- ============ KOMPONOWANIE WPISU (po zalogowaniu) ============ -->
         <section class="comm-composer glass-card" id="composer-card" hidden aria-label="Nowy wpis">
           <div class="comm-user-row">
@@ -614,18 +604,36 @@
 
         </div>
       </div>
-      <aside class="comm-sidebar" aria-label="Kto jest online">
-        <!-- ============ KTO JEST TERAZ ONLINE ============ -->
-        <section class="comm-online-card glass-card" aria-label="Zalogowani użytkownicy online">
-          <h2><span class="comm-online-dot" aria-hidden="true"></span> Zalogowani teraz online</h2>
-          <div class="comm-online" id="comm-online">
-            <span class="comm-online-empty">Ładowanie…</span>
-          </div>
-          <p class="rejchat-online-note">Chcesz przedstawić się innym? Wybierz awatar i dodaj kilka słów na swoim profilu.</p>
-        </section>
-      </aside>
     </div>
   </main>
+
+  <dialog class="chat-auth-dialog" id="chat-auth-dialog" aria-labelledby="chat-auth-title">
+    <button class="chat-auth-close" id="chat-auth-close" type="button" aria-label="Zamknij">×</button>
+        <!-- ============ LOGOWANIE / REJESTRACJA ============ -->
+        <section class="comm-auth" id="login-card" hidden aria-label="Logowanie lub rejestracja">
+          <div class="comm-auth-inner">
+            <h2 id="chat-auth-title">Dołącz do rozmowy</h2>
+            <p class="comm-auth-sub">Wpisz nazwę i PIN, aby dołączyć. Z tym samym kontem możesz zalogować się na innym urządzeniu i odzyskać swój profil.</p>
+            <p class="comm-auth-sub">To obecny czterocyfrowy PIN, nie nowe hasło. Nie ma jeszcze odzyskiwania zapomnianego PIN-u.</p>
+
+            <form id="auth-form" novalidate>
+              <label class="comm-label" for="auth-username">Nazwa użytkownika</label>
+              <input class="comm-input" id="auth-username" name="username" type="text" autocomplete="username"
+                     maxlength="24" placeholder="np. Kuba_Craft" spellcheck="false" autocapitalize="off">
+              <p class="comm-name-status" id="name-status" aria-live="polite">3–24 znaki: litery, cyfry oraz _ . -</p>
+
+              <label class="comm-label" for="auth-pin">PIN (4 cyfry)</label>
+              <input class="comm-input comm-pin" id="auth-pin" name="pin" type="password" inputmode="numeric"
+                     autocomplete="current-password" maxlength="4" pattern="[0-9]{4}" placeholder="••••">
+
+              <p class="comm-error" id="auth-error" hidden></p>
+
+              <button class="btn btn-primary comm-auth-btn" id="auth-submit" type="submit" disabled>Zaloguj / utwórz konto</button>
+            </form>
+          </div>
+        </section>
+
+  </dialog>
 
   <footer class="site-footer">
     <div class="container footer-inner">
@@ -633,13 +641,13 @@
         <a href="./">Strona główna</a>
         <a href="tablica-pomyslow">Tablica pomysłów i błędów</a>
       </p>
-      <p class="footer-note">Konto w społeczności to tylko nazwa + 4-cyfrowy PIN — bez e-maila i bez podawania danych.</p>
+      <p class="footer-note">Profil RejChat jest dostępny na innych urządzeniach po zalogowaniu na to samo konto.</p>
     </div>
   </footer>
 
   <script defer src="js/view-tracker.js?v=5"></script>
   <script defer src="/js/rejchat-profiles.js?v=1"></script>
-  <script defer src="js/community.js?v=2026-10-30-rejchat-1"></script>
-  <script defer src="/js/rejchat.js?v=1"></script>
+  <script defer src="js/community.js?v=2026-10-30-rejchat-2"></script>
+  <script defer src="/js/rejchat.js?v=2"></script>
 </body>
 </html>

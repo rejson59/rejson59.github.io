@@ -15,6 +15,15 @@
   });
   function hash(){activate(location.hash==='#wpisy'?1:0,false,false);}
   window.addEventListener('hashchange',hash);hash();
+  var channel=document.getElementById('channel-general');
+  if(channel)channel.addEventListener('click',function(){activate(0,false,true);});
+  var dialog=document.getElementById('chat-auth-dialog'),join=document.getElementById('chat-join'),fallback=document.getElementById('chat-join-fallback'),close=document.getElementById('chat-auth-close');
+  if(dialog && join && typeof dialog.showModal==='function'){
+    join.hidden=false;if(fallback)fallback.hidden=true;
+    join.addEventListener('click',function(){if(!dialog.open)dialog.showModal();var name=document.getElementById('auth-username');if(name)name.focus();});
+    if(close)close.addEventListener('click',function(){dialog.close();join.focus();});
+    dialog.addEventListener('click',function(e){if(e.target===dialog){dialog.close();join.focus();}});
+  }
   var input=document.getElementById('chat-search'),list=document.getElementById('chat-list'),status=document.getElementById('chat-search-status');
   function filter(){
     var q=input.value.trim().toLocaleLowerCase('pl'), count=0,all=0;
