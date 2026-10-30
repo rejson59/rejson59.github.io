@@ -1,0 +1,13 @@
+# WYŁĄCZNIE lokalny, jednorazowy prototyp — nie podłączać prawdziwych danych!
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.8.1
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: local-admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: local-demo-only-do-not-use
+      KC_HOSTNAME: http://localhost:8080
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - ./realm:/opt/keycloak/data/import:ro

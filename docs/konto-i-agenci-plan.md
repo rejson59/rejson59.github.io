@@ -8,9 +8,15 @@ Stan na 29.10.2026. To plan techniczny, nie opis gotowego SSO ani automatyzacji.
 - RejStream już używa tego samego konta: jego repozytorium opisuje chmurowy zapis ulubionych, historii i postępu. Jest naturalnym pierwszym projektem do testowania nowej tożsamości, a nie dopiero kandydatem do napisania integracji od zera. Najpierw trzeba ochronić istniejące dane, a nie podłączać kolejne aplikacje do PIN-u.
 - ProStudent trzyma m.in. dane szkolne lokalnie. Nie należy wysyłać ich do chmury bez odrębnego projektu prywatności, zabezpieczeń i świadomej zgody użytkownika.
 
+## Prototyp wspólnego logowania (30.10.2026)
+
+W `eksperymenty/wspolne-konto/` znajduje się izolowane lokalne demo dwóch klientów OIDC z PKCE, `state`, `nonce` oraz przykładową konfiguracją Keycloak z opcjonalnym e-mailem i ochroną przed zgadywaniem. Nie jest podłączone do istniejących danych, PIN-u ani projektów produkcyjnych. Test Chromium używa serwera OIDC wyłącznie w pamięci; prawdziwy Keycloak, jego formularz rejestracji i blokada prób nie zostały tu uruchomione. Demo nie jest gotowe na publiczny serwer.
+
+**Korekta wcześniejszego planu:** kody odzyskiwania Keycloak służą standardowo jako awaryjny drugi składnik, nie są same w sobie odzyskiwaniem zapomnianego hasła. W tym prototypie reset hasła jest wyłączony; jego bezpieczne odzyskiwanie bez e-maila nadal trzeba zaprojektować i przetestować. Nie obiecywać gotowych kodów resetujących hasło.
+
 ## Konto docelowe
 
-Właściciel wybrał **nazwę i hasło bez e-maila**. Bez e-maila należy jawnie zaprojektować kody odzyskiwania; ich utrata wraz z hasłem może oznaczać brak dostępu. Sam Supabase Auth według dokumentacji standardowo łączy trwałą tożsamość z e-mailem, telefonem lub dostawcą zewnętrznym; nie zakładać sztucznych adresów e-mail ani nie zmieniać globalnej konfiguracji istniejącego projektu w ciemno.
+Właściciel wybrał **nazwę i hasło bez e-maila**. Bez e-maila należy zaprojektować bezpieczne odzyskiwanie hasła, np. odrębne kody odzyskiwania; dopóki nie zostaną wdrożone i sprawdzone, utrata hasła może oznaczać brak dostępu. Sam Supabase Auth według dokumentacji standardowo łączy trwałą tożsamość z e-mailem, telefonem lub dostawcą zewnętrznym; nie zakładać sztucznych adresów e-mail ani nie zmieniać globalnej konfiguracji istniejącego projektu w ciemno.
 
 Zbadać dostawcę tożsamości z logowaniem bez e-maila, np. Keycloak (opcjonalny e-mail, OIDC i PKCE), wraz z realnym hostingiem, kosztami, backupami i utrzymaniem. Nie wystawiać własnego, niesprawdzonego protokołu logowania. Wymagania:
 
