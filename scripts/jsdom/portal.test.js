@@ -18,18 +18,23 @@ function room(project, options = {}) {
   if (options.cache) w.localStorage.setItem('rejson_repos_cache_v2', JSON.stringify({ data: options.cache }));
   w.fetch = options.fetch || (() => Promise.reject(new Error('offline')));
   if (options.brokenSW) Object.defineProperty(w.navigator, 'serviceWorker', { value: { register() { throw new Error('unavailable'); } } });
+  if (options.serviceWorker) Object.defineProperty(w.navigator, 'serviceWorker', { value:options.serviceWorker });
+  const timers = [];
+  if (options.mockTimers) { w.setTimeout = (fn,delay) => { timers.push({fn,delay}); return timers.length; }; w.clearTimeout = id => { if (timers[id-1]) timers[id-1].cleared = true; }; }
   let frames = [];
   w.requestAnimationFrame = cb => { frames.push(cb); return frames.length; };
   w.cancelAnimationFrame = () => { frames = []; };
   w.eval(ROOM);
-  return { dom, w, doc: w.document, errors, frame: time => { const list = frames; frames = []; list.forEach(cb => cb(time)); }, frames: () => frames.length };
+  return { dom, w, doc: w.document, errors, timers, frame: time => { const list = frames; frames = []; list.forEach(cb => cb(time)); }, frames: () => frames.length };
 }
 function arrival(marker, opts = {}) {
-  const dom = new JSDOM('<!doctype html><head></head><body></body>', { url: 'https://rejson59.github.io/Test/', runScripts: 'outside-only', pretendToBeVisual: true });
+  const dom = new JSDOM('<!doctype html><head></head><body></body>', { url: 'https://rejson59.github.io' + (opts.url || '/Test/'), runScripts: 'outside-only', pretendToBeVisual: true });
   const w = dom.window; w.matchMedia = () => ({ matches: !!opts.reduced });
   Object.defineProperty(w.document, 'readyState', { configurable: true, value: opts.ready ? 'complete' : 'loading' });
   const timers = [];
+  if (opts.hidden) Object.defineProperty(w.document, 'visibilityState', { configurable:true, value:'hidden' });
   w.setTimeout = (fn, delay) => { timers.push({ fn, delay }); return timers.length; };
+  w.clearTimeout = id => { if (timers[id-1]) timers[id-1].cleared = true; };
   if (!opts.noStyle) { const link = w.document.createElement('link'); link.setAttribute('data-rj-portal-style', ''); Object.defineProperty(link, 'sheet', { value: {} }); w.document.head.appendChild(link); }
   if (marker !== null) w.sessionStorage.setItem(KEY, typeof marker === 'string' ? marker : JSON.stringify(marker));
   w.eval(ARRIVAL); return { dom, w, doc: w.document, timers };
@@ -151,6 +156,59 @@ function arrival(marker, opts = {}) {
     assert.equal(t.doc.getElementById('enter').disabled, false); t.dom.window.close();
   }
   {
+    // Pierwsza wizyta: po locie czekamy na aktywny SW, zanim ustawimy marker.
+    let activate; const ready = new Promise(resolve => { activate = resolve; });
+    const t = room('RejStream', { serviceWorker:{ register:() => Promise.resolve({}), ready }, mockTimers:true });
+    t.doc.getElementById('enter').click(); t.frame(0); t.frame(4200);
+    assert.equal(t.w.sessionStorage.getItem(KEY), null); assert.equal(t.timers[0].delay, 5000);
+    activate({}); await new Promise(resolve => setImmediate(resolve));
+    assert.ok(t.timers[0].cleared); assert.ok(t.w.sessionStorage.getItem(KEY));
+    assert.equal(t.errors.filter(x => /navigation/.test(x)).length, 1);
+    t.timers[0].fn(); assert.equal(t.errors.filter(x => /navigation/.test(x)).length, 1);
+    t.dom.window.close();
+  }
+  {
+    // Niedostępny SW nie może zatrzymać nawigacji na zawsze.
+    const ready = new Promise(() => {});
+    const t = room('RejStream', { serviceWorker:{ register:() => Promise.resolve({}), ready }, mockTimers:true });
+    t.doc.getElementById('enter').click(); t.frame(0); t.frame(4200);
+    t.timers[0].fn(); assert.ok(t.w.sessionStorage.getItem(KEY));
+    assert.equal(t.errors.filter(x => /navigation/.test(x)).length, 1); t.dom.window.close();
+  }
+  {
+    // Odmowa rejestracji nie zatrzymuje użytkownika i nie wywołuje timeoutu.
+    const t = room('RejStream', { serviceWorker:{ register:() => Promise.reject(new Error('blocked')) }, mockTimers:true });
+    await new Promise(resolve => setImmediate(resolve));
+    t.doc.getElementById('enter').click(); t.frame(0); t.frame(4200);
+    assert.equal(t.timers.length, 0); assert.ok(t.errors.some(x => /navigation/.test(x))); t.dom.window.close();
+  }
+  {
+    // Powrót z historii podczas oczekiwania nie wywołuje spóźnionej nawigacji.
+    let activate; const ready = new Promise(resolve => { activate = resolve; });
+    const t = room('RejStream', { serviceWorker:{ register:() => Promise.resolve({}), ready }, mockTimers:true });
+    t.doc.getElementById('enter').click(); t.frame(0); t.frame(4200);
+    t.w.dispatchEvent(new t.w.PageTransitionEvent('pageshow', { persisted:true }));
+    activate({}); await new Promise(resolve => setImmediate(resolve)); t.timers[0].fn();
+    assert.equal(t.errors.filter(x => /navigation/.test(x)).length, 0);
+    assert.equal(t.w.sessionStorage.getItem(KEY), null); t.dom.window.close();
+  }
+  {
+    // Na zewnętrznym projekcie nasz SW nie może nic wstrzyknąć: nie czekamy.
+    const ready = new Promise(() => {});
+    const t = room('Test', { cache:[{ name:'Test', homepage:'https://site.example/app' }], serviceWorker:{ register:() => Promise.resolve({}), ready }, mockTimers:true });
+    t.doc.getElementById('enter').click(); t.frame(0); t.frame(4200);
+    assert.equal(t.timers.length, 0); assert.equal(t.w.sessionStorage.getItem(KEY), null);
+    assert.ok(t.errors.some(x => /navigation/.test(x))); t.dom.window.close();
+  }
+  {
+    // Wyłączony ruch nie czeka na SW ani nie zapisuje znacznika.
+    const ready = new Promise(() => {});
+    const t = room('RejStream', { serviceWorker:{ register:() => Promise.resolve({}), ready }, mockTimers:true });
+    t.doc.getElementById('motion-toggle').click(); t.doc.getElementById('enter').click();
+    assert.equal(t.timers.length, 0); assert.equal(t.w.sessionStorage.getItem(KEY), null);
+    assert.ok(t.errors.some(x => /navigation/.test(x))); t.dom.window.close();
+  }
+  {
     const t = room('..'); assert.equal(t.doc.getElementById('enter').disabled, true); assert.match(t.doc.getElementById('status').textContent, /Nie znaleziono/); t.dom.window.close();
   }
   {
@@ -183,6 +241,27 @@ function arrival(marker, opts = {}) {
   {
     const t = arrival({ path:'/Test/', at:Date.now(), motionOverride:true }, { reduced:true });
     assert.ok(t.doc.querySelector('#rj-portal-arrival[data-motion-override]')); t.dom.window.close();
+  }
+  {
+    // Wyjście uruchomione w tle czeka na powrót karty; licznik awaryjny
+    // także jest wstrzymany, a po powrocie odlicza pozostały widoczny czas.
+    const t = arrival({ path:'/Test/', at:Date.now(), motionOverride:true }, { hidden:true });
+    const cover = t.doc.querySelector('#rj-portal-arrival'); let now = 10000;
+    t.w.Date.now = () => now; t.w.dispatchEvent(new t.w.Event('load'));
+    assert.ok(cover.classList.contains('is-paused')); assert.ok(cover.classList.contains('is-playing'));
+    assert.equal(t.timers.length, 1); // tylko 12-sekundowy timeout wczytywania
+    Object.defineProperty(t.doc, 'visibilityState', { configurable:true, value:'visible' });
+    t.doc.dispatchEvent(new t.w.Event('visibilitychange')); assert.equal(t.timers[1].delay, 4000);
+    assert.equal(cover.classList.contains('is-paused'), false);
+    now += 1200; Object.defineProperty(t.doc, 'visibilityState', { configurable:true, value:'hidden' });
+    t.doc.dispatchEvent(new t.w.Event('visibilitychange')); assert.ok(t.timers[1].cleared); assert.ok(cover.classList.contains('is-paused'));
+    now += 10000; Object.defineProperty(t.doc, 'visibilityState', { configurable:true, value:'visible' });
+    t.doc.dispatchEvent(new t.w.Event('visibilitychange')); assert.equal(t.timers[2].delay, 2800);
+    t.timers[2].fn(); assert.equal(t.doc.querySelector('#rj-portal-arrival'), null); t.dom.window.close();
+  }
+  {
+    // Kanoniczne przekierowanie /projekt/ → /projekt/index.html zachowuje wyjście.
+    const t = arrival({ path:'/Test/', at:Date.now() }, { url:'/Test/index.html' }); assert.ok(t.doc.querySelector('#rj-portal-arrival')); t.dom.window.close();
   }
   for (const [marker, options] of [[null, {}], ['{broken', {}], [{path:'/Other/', at:Date.now()}, {}], [{path:'/Test/', at:Date.now()-61000}, {}], [{path:'/Test/', at:Date.now()+10000}, {}], [{path:'/Test/', at:Date.now()}, {noStyle:true}], [{path:'/Test/', at:Date.now()}, {reduced:true}]]) {
     const t = arrival(marker, options); assert.equal(t.doc.querySelector('#rj-portal-arrival'), null); t.dom.window.close();

@@ -9,7 +9,7 @@
     if (!marker) return;
     sessionStorage.removeItem(KEY); // znacznik jest jednorazowy, także po odświeżeniu
   } catch (e) { return; }
-  function path(p) { return String(p || "").replace(/\/+$/, "") || "/"; }
+  function path(p) { return String(p || "").replace(/\/index\.html?$/i, "").replace(/\/+$/, "") || "/"; }
   if (typeof marker.path !== "string" || typeof marker.at !== "number" ||
       Date.now() - marker.at < 0 || Date.now() - marker.at > 60000 ||
       path(marker.path) !== path(location.pathname)) return;
@@ -30,15 +30,47 @@
   root.innerHTML = '<div class="rj-arrival-vignette rj-arrival-wide" aria-hidden="true"></div><div class="rj-arrival-vignette rj-arrival-medium" aria-hidden="true"></div><div class="rj-arrival-vignette rj-arrival-small" aria-hidden="true"></div><div class="rj-arrival-ring" aria-hidden="true"></div><div class="rj-arrival-echo rj-arrival-echo--one" aria-hidden="true"></div><div class="rj-arrival-echo rj-arrival-echo--two" aria-hidden="true"></div><div class="rj-arrival-rays" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="rj-arrival-veil" aria-hidden="true"></div><div class="rj-portal-vortex" aria-hidden="true"></div><div class="rj-portal-arrival-caption">Ładowanie projektu…</div>';
   document.documentElement.appendChild(root);
   var started = false;
-  function remove() { if (root.parentNode) root.parentNode.removeChild(root); }
-  function reveal() {
-    if (started) return;
-    started = true;
-    root.classList.add("is-playing");
-    setTimeout(remove, 4000); // awaryjne sprzątanie po animacji
+  var removed = false;
+  var timer = 0;
+  var loadTimer = 0;
+  var remaining = 4000;
+  var visibleSince = 0;
+  function remove() {
+    if (removed) return;
+    removed = true;
+    clearTimeout(timer);
+    clearTimeout(loadTimer);
+    document.removeEventListener("visibilitychange", syncVisibility);
+    if (root.parentNode) root.parentNode.removeChild(root);
   }
+  function syncVisibility() {
+    if (removed) return;
+    var hidden = document.visibilityState === "hidden";
+    root.classList.toggle("is-paused", hidden);
+    if (!started) return;
+    if (hidden) {
+      if (timer) {
+        clearTimeout(timer);
+        timer = 0;
+        remaining = Math.max(0, remaining - (Date.now() - visibleSince));
+      }
+    } else if (!timer) {
+      visibleSince = Date.now();
+      timer = setTimeout(remove, remaining);
+    }
+  }
+  function reveal() {
+    if (started || removed) return;
+    started = true;
+    // Stan pauzy ustawiamy przed rozpoczęciem animacji, również gdy strona
+    // zdąży się załadować w nieaktywnej karcie.
+    syncVisibility();
+    root.classList.add("is-playing");
+  }
+  document.addEventListener("visibilitychange", syncVisibility);
+  syncVisibility();
   root.addEventListener("animationend", function (event) { if (event.target === root && event.animationName === "rj-arrival-finished") remove(); });
   if (document.readyState === "complete") reveal();
   else window.addEventListener("load", reveal, { once: true });
-  setTimeout(reveal, 12000); // nieskończone ładowanie nie może blokować projektu
+  loadTimer = setTimeout(reveal, 12000); // nieskończone ładowanie nie może blokować projektu
 })();
