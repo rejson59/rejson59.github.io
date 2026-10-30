@@ -1,0 +1,37 @@
+/* Struktura wspólnego widoku i dostępna nawigacja. */
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const { JSDOM } = require('jsdom');
+const root = path.resolve(__dirname, '../..');
+const read = file => fs.readFileSync(path.join(root, file), 'utf8');
+const pages = ['index.html','spolecznosc.html','logowanie.html','partnerstwo.html','rejfile.html','tablica-pomyslow.html','widzety.html','admin.html','404.html','portal/index.html','rejson-widgets/index.html'];
+for (const page of pages) {
+  const document = new JSDOM(read(page)).window.document;
+  assert.ok(document.querySelector('link[href^="/css/liquid.css?v="]'), `${page}: wspólny arkusz`);
+  assert.ok(document.body.className.includes('rj-'), `${page}: izolacja styli`);
+  assert.ok(document.querySelector('main'), `${page}: treść główna`);
+}
+const home = new JSDOM(read('index.html')).window.document;
+for (const href of ['#projekty','spolecznosc','rejfile']) assert.ok(home.querySelector(`.universe-nav a[href="${href}"]`));
+assert.ok(home.querySelector('[data-tilt]'), 'zachowany efekt 3D');
+const comm = new JSDOM(read('spolecznosc.html')).window.document;
+for (const id of ['login-card','composer-card','posts-feed','comm-online','chat-list','chat-form']) assert.equal(comm.querySelectorAll(`#${id}`).length, 1, id);
+assert.ok(comm.querySelector('.comm-primary #posts-feed'));
+assert.ok(comm.querySelector('.comm-sidebar #chat-list'));
+for (const page of ['spolecznosc.html','widzety.html']) {
+  const dom = new JSDOM(read(page), {url:'https://rejson59.github.io/',runScripts:'outside-only'});
+  const {document, KeyboardEvent, MouseEvent} = dom.window;
+  dom.window.eval(read('js/liquid-nav.js'));
+  const button = document.querySelector('#liquid-menu-toggle');
+  const nav = document.querySelector('#site-nav');
+  assert.equal(button.getAttribute('aria-controls'), nav.id);
+  button.click(); assert.equal(button.getAttribute('aria-expanded'),'true'); assert.ok(nav.classList.contains('is-open'));
+  document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape'}));
+  assert.equal(button.getAttribute('aria-expanded'),'false'); assert.equal(document.activeElement,button);
+  button.click(); document.body.dispatchEvent(new MouseEvent('click',{bubbles:true}));
+  assert.equal(button.getAttribute('aria-expanded'),'false');
+  dom.window.close();
+}
+assert.match(read('css/liquid.css'), /\[hidden\]:not\(\[hidden="until-found"\]\)/);
+console.log('PASS: wspólny styl stron, struktura społeczności, nawigacja i ukrywanie elementów');
