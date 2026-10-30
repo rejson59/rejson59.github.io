@@ -109,6 +109,18 @@
       flight.style.setProperty("--travel-x", (window.innerWidth / 2 - bounds.left - bounds.width / 2) + "px");
       flight.style.setProperty("--travel-y", (window.innerHeight / 2 - bounds.top - bounds.height / 2) + "px");
     }
+    // Wejście zaczyna się na prawdziwej, żywej bramie, nie na nowym płaskim kółku.
+    // Klon istnieje tylko przez czas lotu; oryginał pozostaje na stronie portalu.
+    var mouth = document.getElementById("flight-mouth");
+    var scene = door.querySelector(".portal-layers");
+    if (mouth && scene) {
+      var oldScene = mouth.querySelector(".flight-source");
+      if (oldScene) oldScene.remove();
+      var source = scene.cloneNode(true);
+      source.classList.add("flight-source");
+      mouth.appendChild(source);
+      mouth.classList.add("has-source");
+    }
     flight.classList.add("is-active");
     document.body.classList.add("is-travelling");
     status.textContent = "Wyruszamy do projektu…";
@@ -134,6 +146,8 @@
     if (raf) cancelAnimationFrame(raf);
     travelling = false; flight.classList.remove("is-active");
     document.body.classList.remove("is-travelling");
+    var mouth = document.getElementById("flight-mouth");
+    if (mouth) { var copy = mouth.querySelector(".flight-source"); if (copy) copy.remove(); mouth.classList.remove("has-source"); }
     if (target) { door.disabled = false; button.disabled = false; status.textContent = ""; }
     try { sessionStorage.removeItem(KEY); } catch (e) { /* brak storage */ }
   });

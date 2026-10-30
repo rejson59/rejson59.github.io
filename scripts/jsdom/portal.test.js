@@ -64,6 +64,8 @@ function arrival(marker, opts = {}) {
     assert.ok(portal.querySelector('#flight .flight-darkness'));
     assert.equal(portal.querySelectorAll('#flight .tunnel-ring').length, 7);
     assert.ok(portal.querySelector('#flight .flight-space'));
+    assert.equal(portal.querySelectorAll('#flight .tunnel-rails i').length, 8);
+    assert.match(css, /@keyframes rail-rush/);
     assert.ok(portal.querySelector('#flight .flight-streaks circle'));
     assert.ok(portal.querySelector('#flight .flight-streaks path'));
     assert.match(css, /@keyframes space-reveal/);
@@ -100,6 +102,7 @@ function arrival(marker, opts = {}) {
     assert.equal(t.doc.getElementById('flight').style.getPropertyValue('--travel-x'), (t.w.innerWidth / 2 - 550) + 'px');
     assert.equal(t.doc.getElementById('flight').style.getPropertyValue('--travel-y'), (t.w.innerHeight / 2 - 250) + 'px');
     assert.ok(t.doc.getElementById('flight').classList.contains('is-active'));
+    assert.ok(t.doc.querySelector('#flight-mouth.has-source .flight-source .orb-core .core-rift'));
     assert.equal(t.w.sessionStorage.getItem(KEY), null); // czekamy na całą animację
     t.frame(0); t.frame(4100); assert.equal(t.w.sessionStorage.getItem(KEY), null);
     t.frame(4200); assert.equal(JSON.parse(t.w.sessionStorage.getItem(KEY)).path, '/RejStream/');
@@ -107,6 +110,7 @@ function arrival(marker, opts = {}) {
     t.w.dispatchEvent(new t.w.PageTransitionEvent('pageshow', { persisted: true }));
     assert.equal(t.doc.getElementById('flight').classList.contains('is-active'), false);
     assert.equal(t.doc.getElementById('enter').disabled, false); assert.equal(t.w.sessionStorage.getItem(KEY), null);
+    assert.equal(t.doc.querySelector('#flight-mouth .flight-source'), null);
     t.dom.window.close();
   }
   {

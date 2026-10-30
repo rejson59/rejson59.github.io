@@ -107,10 +107,29 @@ footer { position: relative; z-index: 3; display: flex; justify-content: space-b
 .flight.is-active { display: block; }
 .flight-space { position: absolute; inset: 0; background: radial-gradient(ellipse at center, #010308 0%, #071724 20%, #102d3a 50%, #03090f 86%); animation: space-reveal 4.2s ease both; }
 .flight-mouth { position: absolute; width: var(--portal-size, 320px); height: var(--portal-height, 400px); left: var(--portal-x, 75%); top: var(--portal-y, 50%); border-radius: 50%; border: 2px solid #8cf7e0; background: radial-gradient(circle, #02030b 16%, #091626 45%, #345174 72%, #73ddcf 94%); animation: flight-enter 4.2s ease both; }
-.flight-mouth span { position: absolute; inset: 7%; border: 5px solid #71dfffaa; border-radius: 50%; }
+.flight-mouth > .flight-mouth-fallback { position: absolute; inset: 7%; border: 5px solid #71dfffaa; border-radius: 50%; }
+.flight-mouth.has-source { border:0; background:transparent; }
+.flight-mouth.has-source > .flight-mouth-fallback { display:none; }
+.flight-mouth > .flight-source { inset:0; animation:flight-source-life 4.2s steps(1,end) both; }
+@keyframes flight-source-life { 0% { visibility:visible; } 70%,100% { visibility:hidden; } }
+/* Środek tunelu pozostaje czarny, a świetlne prowadnice zbiegają się daleko przed widzem. */
+.tunnel-vanishing { position:absolute; left:50%; top:50%; width:22vmin; aspect-ratio:1; border-radius:50%; transform:translate(-50%,-50%); background:radial-gradient(circle,#010307 12%,#03121b 48%,transparent 72%); }
+.tunnel-rails { position:absolute; inset:0; overflow:hidden; }
+.tunnel-rails i { position:absolute; left:50%; top:50%; width:2px; height:52vmax; transform-origin:50% 0; opacity:0; background:linear-gradient(to bottom,transparent 0%,#9bfdf2 22%,#5c86e6 67%,transparent 100%); animation:rail-rush 1.7s linear infinite; }
+.tunnel-rails i:nth-child(1) { --angle:0deg; animation-delay:0s; }
+.tunnel-rails i:nth-child(2) { --angle:45deg; animation-delay:-.21s; }
+.tunnel-rails i:nth-child(3) { --angle:90deg; animation-delay:-.42s; }
+.tunnel-rails i:nth-child(4) { --angle:135deg; animation-delay:-.63s; }
+.tunnel-rails i:nth-child(5) { --angle:180deg; animation-delay:-.84s; }
+.tunnel-rails i:nth-child(6) { --angle:225deg; animation-delay:-1.05s; }
+.tunnel-rails i:nth-child(7) { --angle:270deg; animation-delay:-1.26s; }
+.tunnel-rails i:nth-child(8) { --angle:315deg; animation-delay:-1.47s; }
+@keyframes rail-rush { 0% { transform:rotate(var(--angle)) translateY(1vmin) scaleY(.12); opacity:0; } 22% { opacity:.35; } 70% { opacity:.65; } 100% { transform:rotate(var(--angle)) translateY(60vmin) scaleY(.9); opacity:0; } }
 .flight-tunnel { position: absolute; inset: 0; perspective: 650px; opacity: 0; animation: flight-tunnel-visible 4.2s ease both; }
 .flight-tunnel::before { content: ""; position: absolute; inset: 0; background: repeating-conic-gradient(from 0deg at 50% 50%, #0c263000 0deg, #5de2ce22 8deg, #050b1700 16deg, #638cff1c 24deg); opacity: .7; }
-.tunnel-ring { position: absolute; left: 50%; top: 50%; width: min(80vw, 80vh); aspect-ratio: 1; border: 2px solid #8df5ff; border-radius: 50%; animation: tunnel-rush 1.75s linear infinite; }
+.tunnel-ring { position: absolute; left: 50%; top: 50%; width: min(80vw, 80vh); aspect-ratio: 1; border: 3px solid #8df5ff; border-bottom-color:#8df5ff55; border-radius: 50%; animation: tunnel-rush 1.75s linear infinite; }
+.tunnel-ring::before { content:""; position:absolute; inset:3%; border:1px solid #9affee99; border-left-color:transparent; border-bottom-color:transparent; border-radius:50%; transform:rotate(-28deg); }
+.tunnel-ring::after { content:""; position:absolute; left:50%; top:-5px; width:8px; height:8px; border-radius:50%; background:#cafff4; }
 .tunnel-ring:nth-child(2) { animation-delay: -.25s; border-color: #bdb4ff; }
 .tunnel-ring:nth-child(3) { animation-delay: -.5s; }
 .tunnel-ring:nth-child(4) { animation-delay: -.75s; border-color: #bdb4ff; }
@@ -124,13 +143,13 @@ footer { position: relative; z-index: 3; display: flex; justify-content: space-b
 @keyframes space-reveal { 0% { opacity: 0; } 22%,100% { opacity: 1; } }
 @keyframes flight-enter { 0% { transform: translate(-50%,-50%) scale(1); opacity: 0; } 12% { opacity: 1; } 32% { transform: translate(-50%,-50%) translate(var(--travel-x, 0px),var(--travel-y, 0px)) scale(1.35); opacity: 1; } 62% { transform: translate(-50%,-50%) translate(var(--travel-x, 0px),var(--travel-y, 0px)) scale(2.1); opacity: .12; } 70%,100% { transform: translate(-50%,-50%) translate(var(--travel-x, 0px),var(--travel-y, 0px)) scale(2.2); opacity: 0; } }
 @keyframes flight-tunnel-visible { 0%,25% { opacity: 0; } 43%,85% { opacity: 1; } 100% { opacity: .15; } }
-@keyframes tunnel-rush { 0% { transform: translate(-50%,-50%) translateZ(-1100px); opacity: 0; } 15% { opacity: .7; } 75% { opacity: .8; } 100% { transform: translate(-50%,-50%) translateZ(260px); opacity: 0; } }
+@keyframes tunnel-rush { 0% { transform: translate(-50%,-50%) translateZ(-1100px) rotateX(17deg) rotateY(-12deg); opacity: 0; } 15% { opacity: .7; } 75% { opacity: .8; } 100% { transform: translate(-50%,-50%) translateZ(260px) rotateX(17deg) rotateY(-12deg); opacity: 0; } }
 @keyframes streaks-fly { 0%,30% { opacity: 0; transform: scale(.85); } 52%,78% { opacity: .55; } 100% { opacity: 0; transform: scale(1.2); } }
 @keyframes flight-caption { 0%,15% { opacity: 0; } 28%,70% { opacity: 1; } 90%,100% { opacity: 0; } }
 .portal-header, .room-content, footer, .portal-door { transition: opacity .6s ease; }
 .is-travelling .portal-header, .is-travelling .room-content, .is-travelling footer, .is-travelling .portal-door { opacity: 0; visibility: hidden; transition: opacity .6s ease, visibility 0s .6s; }
 /* Po rozpoczęciu podróży wir w tle nie musi nadal być przeliczany. */
-.is-travelling .portal-layers, .is-travelling .portal-layers * { animation-play-state: paused; }
+.is-travelling .portal-door .portal-layers, .is-travelling .portal-door .portal-layers * { animation-play-state: paused; }
 @media (max-width: 700px) {
   .portal-header { height: 64px; padding: 0 20px; }.header-label { display: none; }
   .room { min-height: calc(100svh - 112px); display: grid; grid-template-columns: minmax(0, 1fr); grid-template-areas: 'intro' 'world' 'actions'; grid-template-rows: auto auto auto; align-content: center; padding: 38px 24px 30px; text-align: center; }
