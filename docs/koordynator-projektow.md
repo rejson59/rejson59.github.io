@@ -15,6 +15,12 @@ GitHub nie pozwala użyć standardowego `GITHUB_TOKEN` do zapisywania w innych r
 
 Instalacja aplikacji daje jej powyższe uprawnienia do **wybranych** repozytoriów. Przy uruchomieniu tworzony jest krótkotrwały token ograniczony dodatkowo do repozytoriów wymienionych w planie; GitHub unieważnia go po zakończeniu zadania. To zaufana aplikacja: jej prywatny klucz pozwala uzyskać dostęp do wybranych projektów, więc przechowuj go wyłącznie w GitHub Secrets i kontroluj, kto może zmieniać workflow i sekret.
 
+## Sprawdzenie konfiguracji
+
+Po jednorazowej konfiguracji uruchom [Actions → Test dostępu do projektów](https://github.com/rejson59/rejson59.github.io/actions/workflows/test-dostepu-do-projektow.yml). Wybierz gałąź `main`, wpisz nazwę jednego publicznego projektu, który został wybrany przy instalacji aplikacji (domyślnie `RejStream`), i kliknij **Run workflow**. Test próbuje uzyskać krótkotrwały token z wymaganymi uprawnieniami i odczytać informacje o projekcie. **Nie tworzy gałęzi ani PR-a i nie zmienia plików.**
+
+Zielony wynik oznacza, że konfiguracja aplikacji oraz jej dostęp do tego konkretnego projektu działają; inne projekty muszą być również wybrane w ustawieniach instalacji. Czerwony wynik może oznaczać np. błędny App ID, klucz, brak wybranego repozytorium lub wymaganych uprawnień. Nie wysyłaj klucza ani sekretów na czat.
+
 ## Korzystanie
 
 1. Napisz w tym czacie, co zmienić w których projektach. Agent analizuje je i przygotowuje plan oraz pliki w tym repozytorium. Agent nie uruchamia narzędzia i nie zapisuje bezpośrednio do innych projektów.
