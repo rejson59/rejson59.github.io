@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <!-- rj-portal-bootstrap:start: tylko ta sama domena i powrót z portalu -->
+    <script>
+      (function () {
+        try {
+          if (location.origin !== "https://rejson59.github.io" || window.top !== window.self ||
+              !sessionStorage.getItem("rj_portal_arrival_v1") ||
+              document.querySelector('script[src*="/js/portal-arrival.js"]')) return;
+          // Parser ładuje arkusz przed skryptem, zanim zacznie się aplikacja.
+          document.write('<link rel="stylesheet" href="/css/portal.css?v=11" data-rj-portal-style>' +
+            '<scr' + 'ipt src="/js/portal-arrival.js?v=10"></scr' + 'ipt>');
+        } catch (_) { /* Bez pamięci sesji gra/aplikacja działa normalnie. */ }
+      })();
+    </script>
+    <!-- rj-portal-bootstrap:end -->
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#3b2a1e" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>BlockCraft 2.32.4 – Minecraft 26.2 w przeglądarce, na publicznym serwerze</title>
+    <meta
+      name="description"
+      content="BlockCraft 2.32 „Skrzynia 1:1, tryb ziemniak i klawiatura na tablecie” – darmowa gra sandboxowa w przeglądarce: skrzynia z prawdziwego modelu Minecrafta (także podwójna i z otwieranym wiekiem), czwarty stopień automatu jakości i preset „Ziemniak” dla 30 FPS na słabym sprzęcie, automatyczne sterowanie klawiaturą i myszką na tablecie, publiczny serwer. Bez instalacji i bez konta."
+    />
+    <meta name="author" content="mconline" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="BlockCraft 2.32 – skrzynia 1:1, tryb ziemniak i klawiatura na tablecie" />
+    <meta
+      property="og:description"
+      content="Wersja 2.32: skrzynia ma prawdziwy model i teksturę z Minecrafta (korpus, wieko na zawiasie, zamek, podwójna skrzynia i animacja otwierania), automat jakości ma czwarty stopień plus preset „Ziemniak” dla 30 FPS na słabym sprzęcie, a tablet z klawiaturą i myszką Bluetooth przełącza się na sterowanie komputerowe w locie."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%238b6240'/%3E%3Crect width='16' height='5' fill='%2364a83c'/%3E%3Crect y='5' width='16' height='1' fill='%23508a2e'/%3E%3C/svg%3E"
+    />
+  </head>
+  <body>
+    <div id="root">
+      <!-- Instant loading placeholder – replaced by React as soon as it mounts -->
+      <div
+        style="
+          position: fixed;
+          inset: 0;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 18px;
+          background: #000;
+          color: #e0e0e0;
+          font-family: monospace;
+          text-align: center;
+        "
+      >
+        <div style="font-size: 28px; letter-spacing: 2px; text-shadow: 2px 2px 0 #3f3f3f">BLOCKCRAFT</div>
+        <div style="width: 220px; height: 12px; background: #1f1f1f; border: 2px solid #000">
+          <div style="width: 40%; height: 100%; background: #64a83c"></div>
+        </div>
+        <div style="font-size: 14px; opacity: 0.8">Ładowanie gry…</div>
+      </div>
+    </div>
+    <noscript>
+      <div style="color: #fff; font-family: monospace; padding: 24px; text-align: center">
+        BlockCraft wymaga włączonego JavaScriptu. Włącz go i odśwież stronę.
+      </div>
+    </noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -12,9 +12,11 @@ Stan: 30 października 2026. To **plan i rejestr pracy**, nie deklaracja, że pr
 
 ## Kolejność i status
 
-1. **RejStream — pierwsza propozycja przygotowana, nie wdrożona.** Hasło i stary PIN, rejestracja w projekcie, naprawa danych i linku profilu RejChat; testy w kopii projektu. Plan i paczka są w `koordynator/`, do uruchomienia i przeglądu przez właściciela. Rzeczywisty PR i logowanie HTTP nie były jeszcze testowane.
+1. **RejStream — propozycja #28 scalona i wdrożona.** Hasło i stary PIN, rejestracja w projekcie, naprawa danych i linku profilu RejChat; testy w projekcie oraz publikacja GitHub Pages zakończyły się sukcesem. Rzeczywiste logowanie HTTP po wdrożeniu nie zostało jeszcze sprawdzone.
 2. **Wspólne konto — prace częściowe.** Hasła i ograniczenie prób logowania wdrożono wcześniej; pozostaje sprawdzić rzeczywiste HTTP PostgREST oraz ograniczyć spam rejestracji po stronie serwera. Bez e-maila nie ma automatycznego odzyskania hasła.
-3. **mconline — analiza częściowa.** Gra korzysta z osobnego projektu Supabase i lokalnego identyfikatora gracza. Należy zaprojektować serwerowo weryfikowane powiązanie ze wspólnym kontem oraz migrację istniejących danych bez przejmowania cudzych światów. Nie zakładać, że sesja z innej domeny jest już wspólna.
+3. **mconline — analiza częściowa.** Gra korzysta z osobnego projektu Supabase i lokalnego identyfikatora gracza. Należy zaprojektować serwerowo weryfikowane powiązanie ze wspólnym kontem oraz migrację istniejących danych bez przejmowania cudzych światów. Nie zakładać, że sesja z innej domeny jest już wspólna. W kolejnej paczce przygotowano poprawkę wyjścia z portalu, ale nie jest ona integracją konta.
+
+   **ProStudent / Plecak — częściowa analiza.** Dane szkolne leżą w lokalnym magazynie; automatyczna synchronizacja nie jest gotowa. W tej samej paczce przygotowano wyjście z portalu oraz ograniczenie service workera do własnego cache i zakresu; propozycje czekają na uruchomienie i przegląd właściciela.
 4. **RejChat — częściowy publiczny czat i profile.** Do zrobienia: zaproszenia i znajomi, prywatne wiadomości, grupy, blokady oraz prawdziwe powiadomienia; potem głos i wideo z uwzględnieniem sygnalizacji, NAT/TURN, uprawnień i kosztów. Bez RLS/RPC i testów izolacji nie przedstawiać prywatności jako gotowej.
 5. **Pozostałe projekty — audyt kolejno.** Ustalić w każdym origin, sposób uruchamiania, istniejące konta i dane, sieć, SW/CSP, zasadność wspólnego konta i przejść portalowych. Osobno przygotować plan oraz testy, bez automatycznego łączenia danych.
 

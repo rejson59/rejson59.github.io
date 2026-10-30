@@ -1,0 +1,53 @@
+{
+  "name": "blockcraft",
+  "private": true,
+  "version": "4.6.0",
+  "description": "BlockCraft – naturalne osady, świątynie, ruiny, chatki na bagnach i zniszczone portale",
+  "type": "module",
+  "license": "MIT",
+  "keywords": [
+    "minecraft",
+    "voxel",
+    "browser-game",
+    "threejs",
+    "vite",
+    "react",
+    "github-pages"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build && node --test scripts/portal-bootstrap.test.mjs",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "test": "node .harness/run.mjs && node --test scripts/portal-bootstrap.test.mjs",
+    "test:engine": "node .harness/run.mjs smoke",
+    "test:ui": "node .harness/run.mjs ui",
+    "deploy:branch": "npm run build && npx --yes gh-pages -d dist"
+  },
+  "dependencies": {
+    "@fontsource/pixelify-sans": "^5.3.0",
+    "@supabase/supabase-js": "^2.118.0",
+    "clsx": "2.1.1",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "tailwind-merge": "3.4.0",
+    "three": "^0.186.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "4.1.17",
+    "@types/node": "22.19.17",
+    "@types/react": "19.2.7",
+    "@types/react-dom": "19.2.3",
+    "@types/three": "^0.186.0",
+    "@vitejs/plugin-react": "5.1.1",
+    "esbuild": "^0.28.2",
+    "jsdom": "^26.1.0",
+    "tailwindcss": "4.1.17",
+    "typescript": "5.9.3",
+    "vite": "^7.3.6",
+    "vite-plugin-singlefile": "2.3.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
