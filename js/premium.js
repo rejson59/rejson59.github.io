@@ -279,7 +279,7 @@
           icon: "🟢",
           title: "Rejson59 jest teraz online",
           text: "Realna obecność — nie timer, który ma Cię popędzać.",
-          href: "spolecznosc",
+          href: "rejchat",
           when: nowIso()
         });
       }
@@ -357,7 +357,7 @@
           '<p class="rj-panel-guest-title">Powiadomienia są dla zalogowanych</p>' +
           '<p>Dowiesz się tutaj, gdy Twoje zgłoszenie zmieni status albo gdy projekt, który ' +
              'obserwujesz, dostanie aktualizację.</p>' +
-          '<a class="rj-cta" href="spolecznosc">Załóż konto w 10 sekund</a>' +
+          '<a class="rj-cta" href="logowanie">Załóż darmowe konto</a>' +
         '</div>';
       if (foot) foot.innerHTML = "";
       return;
@@ -460,12 +460,12 @@
 
   function clubHTML() {
     var perks = [
-      ["🔔", "Powiadomienia", "Status Twojego zgłoszenia, odpowiedź Rejsona i realna obecność — nic wymyślonego."],
-      ["📊", "Twój wkład", "Widzisz, ile Twoich zgłoszeń trafiło do realizacji i ile pomysłów poparłeś."],
-      ["🗂", "Moje zgłoszenia", "Skrót do własnych wpisów i filtr „tylko moje” na tablicy — bez szukania w tłumie."],
-      ["📣", "Nowości z obserwowanych", "Ktoś zgłosił coś w projekcie, który obserwujesz? Dowiesz się pierwszy."],
-      ["🧵", "Jedna historia", "Wcześniejsze głosy i zgłoszenia dostają Twój nick — także z innych urządzeń."],
-      ["⭐", "Obserwowane projekty", "Klikasz „obserwuj” i wiesz, gdy projekt się zmieni."]
+      ["bell", "Powiadomienia", "Status Twojego zgłoszenia, odpowiedź Rejsona i realna obecność — nic wymyślonego."],
+      ["board", "Twój wkład", "Widzisz, ile Twoich zgłoszeń trafiło do realizacji i ile pomysłów poparłeś."],
+      ["file", "Moje zgłoszenia", "Skrót do własnych wpisów i filtr „tylko moje” na tablicy — bez szukania w tłumie."],
+      ["chat", "Nowości z obserwowanych", "Ktoś zgłosił coś w projekcie, który obserwujesz? Dowiesz się pierwszy."],
+      ["account", "Twój profil", "Wybierz awatar i kolor nicka, dodaj bio i przedstaw się w RejChat."],
+      ["portal", "Obserwowane projekty", "Klikasz „obserwuj” i wiesz, gdy projekt się zmieni."]
     ];
 
     var s = session();
@@ -476,15 +476,15 @@
         '<div class="rj-premium__inner">' +
           '<p class="rj-premium__head"><span class="rj-premium__dot"></span> Rejson59 · Premium</p>' +
           '<h2 class="rj-club-title">Premium jest u mnie za darmo — wystarczy się zalogować :)</h2>' +
-          '<p class="rj-club-lead">Konto to nick i 4-cyfrowy PIN — bez maila, bez potwierdzania, ' +
-            'jakieś 10 sekund. Odblokowuje rzeczy, które muszą wiedzieć, kim jesteś:</p>' +
+          '<p class="rj-club-lead">Własny profil, rozmowy i projekty bliżej Ciebie. Konto jest bezpłatne: wystarczy nick i 4-cyfrowy PIN, bez e-maila.</p>' +
+          '<div class="rj-profile-teaser" aria-label="Przykładowe awatary profilu"><span class="rj-profile-teaser__avatars"><img src="/assets/avatars/cat.svg" alt=""><img src="/assets/avatars/planet.svg" alt=""><img src="/assets/avatars/fox.svg" alt=""></span><span><strong>Twój profil, Twój styl</strong><small>Awatar · kolor nicka · publiczne bio</small></span></div>' +
           '<ul class="rj-premium__list">' +
             perks.map(function (p) {
-              return "<li><strong>" + esc(p[1]) + ".</strong> " + esc(p[2]) + "</li>";
+              return '<li><svg class="rj-perk-icon ui-icon" aria-hidden="true"><use href="/assets/ui-icons.svg?v=2#' + p[0] + '"></use></svg><span><strong>' + esc(p[1]) + '.</strong> ' + esc(p[2]) + '</span></li>';
             }).join("") +
           '</ul>' +
           '<div class="rj-club-actions">' +
-            '<a class="rj-cta" href="spolecznosc">Załóż konto w 10 sekund</a>' +
+            '<a class="rj-cta" href="logowanie">Załóż darmowe konto</a>' +
           '</div>' +
         '</div>' +
       '</div>';

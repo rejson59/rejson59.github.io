@@ -243,7 +243,7 @@
   <link rel="preconnect" href="https://api.github.com" crossorigin>
   <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" onload="this.onload=null;this.rel='stylesheet'">
   <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap"></noscript>
-  <link rel="stylesheet" href="css/premium.css?v=3">
+  <link rel="stylesheet" href="css/premium.css?v=4">
   <link rel="stylesheet" href="css/portal.css?v=11">
   <link rel="stylesheet" href="css/partner-home.css?v=1">
   <link rel="stylesheet" href="css/style.css?v=2026-10-27-1">
@@ -259,6 +259,8 @@
     }
   </style>
   <link rel="stylesheet" href="/css/liquid.css?v=2026-10-30-2">
+  <link rel="stylesheet" href="/css/rejchat.css?v=1">
+  <script defer src="/js/rejchat-profiles.js?v=1"></script>
 </head>
 <body class="rj-home">
   <div id="rj-page-loader" aria-hidden="true">
@@ -504,7 +506,7 @@
           <a href="logowanie" class="nav-icon-link" title="Konto / logowanie" aria-label="Konto / logowanie"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#account"></use></svg><span class="nav-label">Konto</span></a>
           <a href="partnerstwo" class="nav-icon-link" title="Partnerstwo" aria-label="Partnerstwo"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#partner"></use></svg><span class="nav-label">Partnerstwo</span></a>
           <a href="rejfile" class="nav-icon-link" title="RejFile" aria-label="RejFile"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#file"></use></svg><span class="nav-label">RejFile</span></a>
-          <a href="spolecznosc" class="nav-icon-link" title="Społeczność" aria-label="Społeczność"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#people"></use></svg><span class="nav-label">Społeczność</span></a>
+          <a href="rejchat" class="nav-icon-link" title="RejChat" aria-label="RejChat"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#people"></use></svg><span class="nav-label">RejChat</span></a>
           <a href="tablica-pomyslow" class="nav-icon-link" title="Tablica pomysłów" aria-label="Tablica pomysłów"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#board"></use></svg><span class="nav-label">Pomysły</span></a>
           <a href="widzety" class="nav-icon-link" title="Widżety" aria-label="Widżety"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#widget"></use></svg><span class="nav-label">Widżety</span></a>
           <a href="https://github.com/rejson59" target="_blank" rel="noopener noreferrer" class="nav-icon-link nav-icon-only" title="Profil na GitHubie" aria-label="Profil na GitHubie"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#github"></use></svg><span class="nav-label">GitHub</span></a>
@@ -626,7 +628,7 @@
       <span class="universe-label"><span aria-hidden="true">✳</span> W TWOIM ZASIĘGU</span>
       <div class="universe-links">
         <a href="#projekty"><span class="universe-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 2.5c.9 5.8 2.7 7.6 8.5 8.5-5.8.9-7.6 2.7-8.5 8.5-.9-5.8-2.7-7.6-8.5-8.5C9.3 10.1 11.1 8.3 12 2.5Z"/></svg></span><span><b>Projekty</b><small>Odkryj, co tworzę</small></span><span class="universe-arrow" aria-hidden="true">↗</span></a>
-        <a href="spolecznosc"><span class="universe-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="9" cy="8" r="3"/><path d="M3.5 19v-1.2a5.5 5.5 0 0 1 11 0V19M15 5.3a3 3 0 0 1 0 5.4M17 13a4.7 4.7 0 0 1 3.5 4.5V19"/></svg></span><span><b>Społeczność</b><small>Dołącz do rozmowy</small></span><span class="universe-arrow" aria-hidden="true">↗</span></a>
+        <a href="rejchat"><span class="universe-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="9" cy="8" r="3"/><path d="M3.5 19v-1.2a5.5 5.5 0 0 1 11 0V19M15 5.3a3 3 0 0 1 0 5.4M17 13a4.7 4.7 0 0 1 3.5 4.5V19"/></svg></span><span><b>RejChat</b><small>Rozmowy i wpisy</small></span><span class="universe-arrow" aria-hidden="true">↗</span></a>
         <a href="rejfile"><span class="universe-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 6.5h6l2 2H20v9.5H4z"/><path d="M11 15l5-5M12 10h4v4"/></svg></span><span><b>RejFile</b><small>Podziel się plikiem</small></span><span class="universe-arrow" aria-hidden="true">↗</span></a>
       </div>
     </nav>
@@ -645,8 +647,8 @@
       <section class="comm-cta" aria-label="Społeczność — zachęta">
         <div class="board-cta-inner comm-cta-inner">
           <span class="board-cta-icon" aria-hidden="true">👥</span>
-          <p class="board-cta-text">Dołącz do <strong>Społeczności</strong> — wystarczy nazwa i 4-cyfrowy PIN. Zobaczysz, <strong>kto jest teraz online</strong>, przeczytasz agentowe aktualności, a własne wpisy ozdobisz <strong>zdjęciami i filmami</strong>.</p>
-          <a class="btn btn-ghost btn-sm" href="spolecznosc">Dołącz
+          <p class="board-cta-text">Dołącz do <strong>RejChat</strong> — wystarczy nazwa i 4-cyfrowy PIN. Zobaczysz, <strong>kto jest teraz online</strong>, przeczytasz agentowe aktualności, a własne wpisy ozdobisz <strong>zdjęciami i filmami</strong>.</p>
+          <a class="btn btn-ghost btn-sm" href="rejchat">Dołącz
             <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg>
           </a>
         </div>
@@ -1093,7 +1095,7 @@
       <p class="footer-links">
         <a href="https://github.com/rejson59" target="_blank" rel="noopener noreferrer">GitHub</a>
         <span aria-hidden="true">·</span>
-        <a href="spolecznosc">Społeczność</a>
+        <a href="rejchat">RejChat</a>
         <span aria-hidden="true">·</span>
         <a href="rejfile">RejFile — przesyłanie plików</a>
         <a href="tablica-pomyslow">Tablica pomysłów i błędów</a>
@@ -1105,11 +1107,11 @@
   </footer>
 
   <script defer src="js/projects-data.js"></script>
-  <script defer src="js/view-tracker.js?v=4"></script>
+  <script defer src="js/view-tracker.js?v=5"></script>
   <script defer src="js/error-reporter.js?v=1"></script>
   <script defer src="js/media-capture.js?v=1"></script>
   <script defer src="js/app.js?v=2026-10-30-portal-5"></script>
-  <script defer src="js/premium.js?v=4"></script>
+  <script defer src="js/premium.js?v=5"></script>
   <script defer src="rejson-widgets/widget.js?v=7"></script>
 </body>
 </html>

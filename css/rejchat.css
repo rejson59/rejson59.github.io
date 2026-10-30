@@ -1,0 +1,91 @@
+/* RejChat: lekkie, dostępne akcenty i własna przestrzeń profilu. */
+.rj-profile-nav-replaced { display:none !important; }
+.rj-header-profile { display:inline-flex; flex:none; align-items:center; justify-content:center; width:44px; height:44px; padding:3px; border-radius:50%; border:1px solid #8fe9db77; background:#172d39; box-shadow:0 0 0 4px #6aded413,0 5px 20px #0003; text-decoration:none; }
+.rj-header-profile img { width:100%; height:100%; display:block; object-fit:cover; border-radius:50%; }
+.rj-header-profile:hover { box-shadow:0 0 0 5px #6aded433,0 5px 20px #0003; }
+.rj-header-profile:focus-visible,.profile-shell :focus-visible,.rejchat-tabs button:focus-visible { outline:2px solid #60d8c7; outline-offset:4px; }
+[data-profile-color="mint"] { --profile-color:#83dfc9; } [data-profile-color="blue"] { --profile-color:#a0cdff; }
+[data-profile-color="violet"] { --profile-color:#d5bcff; } [data-profile-color="rose"] { --profile-color:#ffaecd; }
+[data-profile-color="amber"] { --profile-color:#f7d18b; } [data-profile-color="slate"] { --profile-color:#d1ddeb; }
+html[data-theme="light"] [data-profile-color="mint"] { --profile-color:#08735c; }
+html[data-theme="light"] [data-profile-color="blue"] { --profile-color:#175c9f; }
+html[data-theme="light"] [data-profile-color="violet"] { --profile-color:#7443a8; }
+html[data-theme="light"] [data-profile-color="rose"] { --profile-color:#ac3467; }
+html[data-theme="light"] [data-profile-color="amber"] { --profile-color:#86540a; }
+html[data-theme="light"] [data-profile-color="slate"] { --profile-color:#46556a; }
+a[data-profile-name],#profile-name { color:var(--profile-color,inherit); }
+a[data-profile-name] { font-weight:700; text-decoration:none; }
+a[data-profile-name]:hover { text-decoration:underline; }
+.comm-avatar { overflow:hidden; }
+.comm-avatar img[data-profile-img] { width:100%; height:100%; object-fit:cover; display:block; }
+.rj-community .comm-main { width:100%; box-sizing:border-box; padding-top:48px; }
+.rejchat-title-dot { color:var(--accent-strong); }
+.rejchat-tabs .ui-icon { width:16px; height:16px; vertical-align:-.18em; margin-right:4px; }
+.rj-community .comm-hero { max-width:900px; margin-bottom:27px; }
+.rejchat-brow { color:var(--accent-strong); font-size:11px; font-weight:800; letter-spacing:.18em; }
+.rejchat-tabs { display:flex; gap:8px; padding:5px; margin:0 0 22px; width:max-content; max-width:100%; border:1px solid var(--border); background:var(--input-bg); border-radius:999px; }
+.rejchat-tabs button { border:0; background:transparent; color:var(--muted); border-radius:999px; font:inherit; font-size:14px; font-weight:700; padding:10px 23px; cursor:pointer; }
+.rejchat-tabs button[aria-selected="true"] { background:var(--bg-elev); color:var(--text); box-shadow:0 4px 16px #0002; }
+.rj-community .comm-layout { grid-template-columns:minmax(0,1fr) minmax(240px,.38fr); }
+.rj-community .comm-chat { margin:0; padding:24px; }
+.rj-community .comm-chat-list { min-height:260px; height:min(46vh,470px); max-height:470px; padding:12px 6px; }
+.rj-community .comm-chat-form { padding-top:14px; border-top:1px solid var(--border); }
+.rejchat-search { display:block; width:100%; margin:16px 0 4px; }
+.rejchat-search input { width:100%; }
+.rejchat-search-hint { margin:5px 2px 0; color:var(--muted); font-size:11px; }
+.rj-community .chat-bubble { padding:11px 14px; border-radius:16px; }
+.rj-community .chat-text { font-size:14px; }
+.rejchat-online-note { color:var(--muted); font-size:12px; line-height:1.6; margin:14px 0 0; }
+.profile-skip { position:absolute; left:12px; top:-100px; z-index:100; background:var(--bg-elev); color:var(--text); padding:10px; }
+.profile-skip:focus { top:12px; }
+.profile-nav { display:flex; align-items:center; gap:20px; margin-left:auto; }
+.profile-nav a,.profile-back,.profile-actions a,.profile-footer a { color:var(--accent-strong); text-decoration:none; }
+.profile-shell { width:min(850px,calc(100% - 40px)); margin:0 auto; padding:54px 0 100px; }
+.profile-back { font-size:13px; font-weight:700; }
+.profile-eyebrow,.profile-kicker { color:var(--accent-strong); letter-spacing:.16em; font-size:10px; font-weight:800; }
+.profile-eyebrow { margin:42px 0 15px; }
+.profile-status { padding:24px; border:1px solid var(--border); border-radius:20px; background:var(--card); }
+.profile-card-view,.profile-editor { overflow:hidden; border:1px solid var(--liquid-border,var(--border)); background:var(--liquid-surface,var(--card)); border-radius:30px; box-shadow:var(--liquid-shadow,0 20px 70px #0002); }
+.profile-cover { min-height:120px; padding:24px; display:flex; align-items:flex-start; justify-content:space-between; color:#d9fff9; font-size:10px; font-weight:800; letter-spacing:.18em; background:radial-gradient(circle at 76% 35%,#a7a4ff88,transparent 23%),radial-gradient(circle at 25% 90%,#77f4cd77,transparent 36%),linear-gradient(125deg,#1a5360,#26355c 55%,#704b80); }
+.profile-cover span:last-child { font-size:28px; }
+.profile-card-content { display:flex; gap:22px; padding:0 30px 25px; align-items:flex-start; }
+.profile-hero-avatar { width:106px; height:106px; margin-top:-46px; border-radius:30px; border:5px solid var(--card); box-shadow:0 10px 30px #0003; flex:none; }
+.profile-card-content h1 { margin:5px 0 8px; font-size:clamp(28px,5vw,42px); letter-spacing:-.04em; overflow-wrap:anywhere; }
+.profile-kicker { margin:22px 0 0; }
+.profile-bio { color:var(--muted); margin:0; white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.65; }
+.profile-actions { display:flex; gap:18px; padding:18px 30px; border-top:1px solid var(--border); font-size:13px; font-weight:700; }
+.profile-editor { margin-top:22px; padding:30px; }
+.profile-editor-head { display:flex; justify-content:space-between; gap:20px; }
+.profile-editor-head > span { font-size:40px; color:var(--accent-strong); }
+.profile-editor-head .profile-kicker { margin:0; }
+.profile-editor-head h2 { margin:8px 0; font-size:24px; }
+.profile-editor-head p:not(.profile-kicker),.profile-note,.profile-footer { color:var(--muted); line-height:1.6; font-size:13px; }
+.profile-editor fieldset { margin:26px 0 0; padding:0; border:0; }
+.profile-editor legend,.profile-label { font-weight:700; font-size:14px; margin-bottom:12px; }
+.avatar-options,.color-options { display:flex; flex-wrap:wrap; gap:10px; }
+.avatar-option,.color-option { cursor:pointer; position:relative; }
+.avatar-option input,.color-option input { position:absolute; opacity:0; }
+.avatar-option img { display:block; width:64px; height:64px; border-radius:20px; border:3px solid transparent; }
+.avatar-option span { display:block; margin-top:5px; text-align:center; font-size:11px; color:var(--muted); }
+.avatar-option input:checked + img { border-color:var(--accent-strong); box-shadow:0 0 0 3px #65d8bb35; }
+.avatar-option input:focus-visible + img,.color-option input:focus-visible + span { outline:2px solid var(--accent-strong); outline-offset:3px; }
+.color-option span { display:block; padding:8px 13px; border:1px solid var(--border); border-radius:999px; color:var(--profile-color); font-size:12px; font-weight:750; }
+.color-option input:checked + span { border-color:var(--profile-color); background:var(--input-bg); }
+.profile-label { display:flex; justify-content:space-between; gap:10px; margin-top:27px; }
+.profile-label span { font-weight:400; color:var(--muted); font-size:12px; }
+.profile-editor textarea { width:100%; resize:vertical; border:1px solid var(--border); border-radius:16px; background:var(--input-bg); color:var(--text); padding:14px; font:inherit; box-sizing:border-box; }
+.profile-editor button[type="submit"] { border:0; border-radius:999px; background:#97ead5; color:#10382f; padding:12px 21px; font:inherit; font-weight:800; cursor:pointer; }
+.profile-editor button:disabled { opacity:.6; cursor:wait; }
+#profile-result { font-size:13px; color:var(--accent-strong); }
+.profile-footer { margin:24px 3px; }
+@media(max-width:760px) {
+  .rj-community .comm-layout { grid-template-columns:minmax(0,1fr); }
+  .rj-community .comm-chat { padding:18px; }
+  .rj-community .comm-chat-list { min-height:240px; }
+  .profile-shell { padding-top:38px; }
+  .profile-card-content { padding:0 20px 22px; gap:15px; }
+  .profile-hero-avatar { width:80px; height:80px; border-radius:23px; }
+  .profile-editor { padding:22px; }
+  .profile-nav { gap:10px; font-size:12px; }
+  .rj-header-profile { width:40px; height:40px; }
+}

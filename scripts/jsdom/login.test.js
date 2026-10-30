@@ -74,13 +74,13 @@ function create(initial, handler) {
   const handlers = {};
   const self = { location: {origin: 'https://rejson59.github.io'}, addEventListener: (name, cb) => { handlers[name] = cb; } };
   vm.runInNewContext(fs.readFileSync(path.join(root, 'sw.js'), 'utf8'), {self, URL, Promise, fetch: () => { throw Error('unexpected fetch'); }});
-  for (const route of ['/logowanie', '/logowanie.html', '/partnerstwo', '/partnerstwo.html']) {
+  for (const route of ['/logowanie', '/logowanie.html', '/partnerstwo', '/partnerstwo.html', '/rejchat', '/rejchat.html', '/profil', '/profil.html']) {
     let touched = false;
     handlers.fetch({request:{method:'GET', mode:'navigate', destination:'document', url:'https://rejson59.github.io' + route}, waitUntil:() => {touched = true;}, respondWith:() => {touched = true;}});
     assert.equal(touched, false, route + ' bez wstrzykiwania ani wejścia projektu');
   }
   assert.ok(!html.includes('view-tracker.js'));
   assert.match(fs.readFileSync(path.join(root, 'index.html'),'utf8'), /href="logowanie"/);
-  assert.match(fs.readFileSync(path.join(root, 'spolecznosc.html'),'utf8'), /href="logowanie"/);
+  assert.match(fs.readFileSync(path.join(root, 'rejchat.html'),'utf8'), /href="logowanie"/);
   console.log('Ekran konta: wszystkie testy OK');
 })().catch(err => {console.error(err); process.exitCode=1;});

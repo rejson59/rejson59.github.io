@@ -33,7 +33,7 @@
     });
   }
   function report(message) { error.textContent = message || ""; error.hidden = !message; }
-  function signedIn(username) { $("account-username").textContent = username; show("account-user"); }
+  function signedIn(username) { $("account-username").textContent = username; show("account-user"); window.dispatchEvent(new Event("rj:session-change")); }
   function verify() {
     var seq = ++generation, session = stored();
     if (!session) { show("account-guest"); return; }
@@ -88,7 +88,7 @@
   function forget() {
     ++generation;
     try { localStorage.removeItem(SESSION); } catch (e) { report("Nie udało się usunąć sesji z przeglądarki."); }
-    pin.value = ""; show("account-guest");
+    pin.value = ""; show("account-guest"); window.dispatchEvent(new Event("rj:session-change"));
   }
   $("account-logout").addEventListener("click", forget);
   $("account-forget").addEventListener("click", forget);

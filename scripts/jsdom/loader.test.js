@@ -369,6 +369,9 @@ function mk(html, evalBoot, evalLoader) {
       check("monotoniczny", cycle.every((v, i) => i === 0 || v >= cycle[i - 1] - 0.0001));
       check("nigdy > 100%", cycle.every((v) => v <= 1.0001));
       check("nakładka schowana", hiddenAt > -1);
+      // Zdejmowanie z układu następuje 600 ms po rozpoczęciu zanikania,
+      // które przy opóźnionych zasobach może zacząć się tuż przed końcem próbki.
+      if (hiddenAt > -1 && ov.style.display !== "none") await wait(750);
       check("nakładka zdjęta z układu", ov.style.display === "none", "display=" + (ov.style.display || "brak"));
       check("pasek pełny przed schowaniem", hiddenAt > -1 && seen[hiddenAt].v > 0.98);
       check("loader.js załadowany", !!(w.RJLoader && w.RJLoader.scan));

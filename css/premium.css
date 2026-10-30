@@ -405,3 +405,20 @@ html[data-theme="light"] .rj-premium {
   color: #d6fbff;
 }
 
+
+/* Podgląd prawdziwych korzyści konta, bez zasłaniania treści strony. */
+.rj-profile-teaser { display:flex; align-items:center; gap:14px; padding:14px 16px; margin:18px 0 4px; border:1px solid #b4f9e63b; border-radius:18px; background:linear-gradient(115deg,#36c5b51a,#aa88ff1a); }
+.rj-profile-teaser__avatars { display:flex; padding-left:5px; flex:none; }
+.rj-profile-teaser__avatars img { width:39px; height:39px; border-radius:50%; border:2px solid #111929; margin-left:-5px; }
+.rj-profile-teaser strong,.rj-profile-teaser small { display:block; }
+.rj-profile-teaser strong { color:#f2fff9; font-size:13px; }
+.rj-profile-teaser small { color:#aab9c9; font-size:11px; margin-top:3px; }
+.rj-premium__list { grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.rj-premium__list li { border:1px solid #ffffff12; border-radius:14px; padding:10px; font-size:12px; }
+.rj-premium__list li::before { display:none; }
+.rj-perk-icon { font-size:17px; line-height:1.3; flex:none; }
+@media(max-width:560px) { .rj-premium__list { grid-template-columns:1fr; } }
+
+.rj-premium.is-locked .rj-club-title { color:#f2f7ff; }
+.rj-premium__list strong { color:#e8efff; }
+.rj-premium .rj-perk-icon { color:#94e8dc; margin-top:2px; width:18px; height:18px; }
