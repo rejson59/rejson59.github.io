@@ -18,11 +18,16 @@
   var previous = null;
   var KEY = "rj_portal_arrival_v1";
   var FLIGHT_MS = 4200;
-  // Samodzielne wejście do portalu też może przygotować znany globalny SW.
+  // Przy pierwszej wizycie instalacja SW może skończyć się po locie. Bez
+  // aktywnego workera dokument projektu nie dostanie animacji wyjścia.
+  var workerPending = null;
+  var workerSettled = false;
   if ("serviceWorker" in navigator && (location.protocol === "https:" || location.hostname === "localhost" || location.hostname === "127.0.0.1")) {
     try {
-      navigator.serviceWorker.register("/sw.js?v=2", { scope: "/", updateViaCache: "none" }).catch(function () {});
-    } catch (e) { /* SW nie może blokować portalu */ }
+      workerPending = navigator.serviceWorker.register("/sw.js?v=2", { scope: "/", updateViaCache: "none" })
+        .then(function () { return navigator.serviceWorker.ready; })
+        .then(function () { workerSettled = true; }, function () { workerSettled = true; });
+    } catch (e) { workerSettled = true; /* SW nie może blokować portalu */ }
   }
 
   // Animacja startuje od razu. Odwiedzający nadal może ją wyłączyć.
@@ -78,11 +83,21 @@
     var url = new URL(target);
     var reduced = !motionEnabled;
     function navigate() {
-      try {
-        if (!reduced && url.origin === location.origin) sessionStorage.setItem(KEY, JSON.stringify({ path: url.pathname, at: Date.now(), motionOverride: true }));
-        else sessionStorage.removeItem(KEY);
-      } catch (e) { /* brak storage nie blokuje przejścia */ }
-      location.assign(url.href);
+      var done = false;
+      function finish() {
+        if (done || !travelling) return;
+        done = true;
+        try {
+          if (!reduced && url.origin === location.origin) sessionStorage.setItem(KEY, JSON.stringify({ path: url.pathname, at: Date.now(), motionOverride: true }));
+          else sessionStorage.removeItem(KEY);
+        } catch (e) { /* brak storage nie blokuje przejścia */ }
+        location.assign(url.href);
+      }
+      if (reduced || url.origin !== location.origin || !workerPending || workerSettled) { finish(); return; }
+      // Krótkie, ograniczone oczekiwanie tylko po ukończonym locie. W razie
+      // odmowy lub awarii nadal otwieramy projekt, bez blokowania nawigacji.
+      var timeout = setTimeout(finish, 5000);
+      workerPending.then(function () { clearTimeout(timeout); finish(); });
     }
     if (reduced) { navigate(); return; }
     var bounds = door.getBoundingClientRect();

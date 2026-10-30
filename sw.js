@@ -103,7 +103,7 @@ self.addEventListener("fetch", function (event) {
               // z prawdziwego wejścia przez portal. Nigdy nie dotyczy iframe.
               var portalHead = /^\/[A-Za-z0-9._-]+\//.test(url.pathname) &&
                 /<\/head\s*>/i.test(html) && html.indexOf("portal-arrival.js") === -1
-                ? '<link rel="stylesheet" href="/css/portal.css?v=10" data-rj-portal-style><script src="/js/portal-arrival.js?v=8"></script>' : "";
+                ? '<link rel="stylesheet" href="/css/portal.css?v=11" data-rj-portal-style><script src="/js/portal-arrival.js?v=9"></script>' : "";
               if (!inject && !portalHead) {
                 return new Response(html, {
                   status: res.status,
