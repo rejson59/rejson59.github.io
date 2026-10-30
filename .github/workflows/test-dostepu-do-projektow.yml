@@ -1,0 +1,62 @@
+name: Test dostępu do projektów
+on:
+  workflow_dispatch:
+    inputs:
+      repozytorium:
+        description: Nazwa jednego publicznego repozytorium wybranego podczas instalowania aplikacji
+        required: true
+        type: string
+        default: RejStream
+permissions:
+  contents: read
+jobs:
+  test:
+    if: github.repository == 'rejson59/rejson59.github.io' && github.ref == 'refs/heads/main' && github.actor == github.repository_owner && github.triggering_actor == github.repository_owner
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Sprawdź nazwę i publiczną widoczność projektu
+        id: projekt
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ inputs.repozytorium }}
+        run: |
+          set -euo pipefail
+          if [[ ! "$REPO" =~ ^[A-Za-z0-9][A-Za-z0-9_.-]{0,99}$ ]] || [[ "${REPO,,}" == "rejson59.github.io" ]]; then
+            echo 'Podaj nazwę innego publicznego projektu, np. RejStream.' >&2
+            exit 1
+          fi
+          name=$(gh api "repos/rejson59/$REPO" --jq 'select(.private == false and .archived == false and .owner.login == "rejson59") | .name')
+          if [[ -z "$name" ]]; then
+            echo 'Projekt musi być publiczny, niearchiwalny i należeć do rejson59.' >&2
+            exit 1
+          fi
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+      - name: Sprawdź aplikację i wymagane uprawnienia
+        id: dostep
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2
+        with:
+          app-id: ${{ vars.PROJECT_BRIDGE_APP_ID }}
+          private-key: ${{ secrets.PROJECT_BRIDGE_APP_PRIVATE_KEY }}
+          owner: rejson59
+          repositories: ${{ steps.projekt.outputs.name }}
+          permission-contents: write
+          permission-pull-requests: write
+      - name: Sprawdź połączenie bez zmian w projekcie
+        shell: bash
+        env:
+          GH_TOKEN: ${{ steps.dostep.outputs.token }}
+          REPO: ${{ steps.projekt.outputs.name }}
+        run: |
+          set -euo pipefail
+          access=$(gh api "repos/rejson59/$REPO" --jq 'select(.private == false and .permissions.push == true) | .full_name')
+          if [[ -z "$access" ]]; then
+            echo 'Aplikacja nie potwierdziła dostępu do projektu.' >&2
+            exit 1
+          fi
+          {
+            echo '## Połączenie działa'
+            echo "Aplikacja uzyskała dostęp do publicznego projektu $access z wymaganymi uprawnieniami."
+            echo 'To był tylko test odczytu: nie utworzono gałęzi ani PR-a i nic nie zmieniono w projekcie.'
+          } >> "$GITHUB_STEP_SUMMARY"
