@@ -1,12 +1,5 @@
 name: RejFile live test
 on:
-  pull_request:
-    types: [opened]
-    paths:
-      - 'rejfile.html'
-      - 'js/rejfile.js'
-      - 'supabase/functions/rejfile/**'
-      - '.github/workflows/rejfile-live-test.yml'
   workflow_dispatch:
 permissions:
   contents: read
