@@ -2,7 +2,7 @@
 
 To narzędzie pozwala przygotować zmiany w tym czacie, a następnie **właścicielowi** jednym ręcznym uruchomieniem utworzyć osobne propozycje (pull requesty) w swoich projektach. Nie scala ich. Ten czat nadal pracuje tylko w gałęzi sesji bieżącego repozytorium; to GitHub, po osobnej decyzji właściciela, wykonuje akcję w innych projektach.
 
-**Obecnie plan jest pusty.** Żaden inny projekt nie został zmieniony. Narzędzie przetestowano bez sieci, na imitacji GitHuba; pierwsze prawdziwe użycie wymaga konfiguracji poniżej i jeszcze nie zostało sprawdzone.
+**Aktualny plan i paczki** znajdują się w `koordynator/plan.json` i `koordynator/paczki/`. Narzędzie było już użyte do utworzenia osobnych PR-ów; ich scalenie zawsze pozostaje decyzją właściciela.
 
 ## Jednorazowe przygotowanie przez właściciela
 
