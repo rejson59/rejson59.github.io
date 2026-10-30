@@ -27,7 +27,7 @@
   if (motionOverride) root.setAttribute("data-motion-override", "");
   root.setAttribute("role", "status");
   root.setAttribute("aria-live", "polite");
-  root.innerHTML = '<div class="rj-arrival-vignette rj-arrival-wide" aria-hidden="true"></div><div class="rj-arrival-vignette rj-arrival-medium" aria-hidden="true"></div><div class="rj-arrival-vignette rj-arrival-small" aria-hidden="true"></div><div class="rj-arrival-ring" aria-hidden="true"></div><div class="rj-arrival-veil" aria-hidden="true"></div><div class="rj-portal-vortex" aria-hidden="true"></div><div class="rj-portal-arrival-caption">Ładowanie projektu…</div>';
+  root.innerHTML = '<div class="rj-arrival-vignette rj-arrival-wide" aria-hidden="true"></div><div class="rj-arrival-vignette rj-arrival-medium" aria-hidden="true"></div><div class="rj-arrival-vignette rj-arrival-small" aria-hidden="true"></div><div class="rj-arrival-ring" aria-hidden="true"></div><div class="rj-arrival-echo rj-arrival-echo--one" aria-hidden="true"></div><div class="rj-arrival-echo rj-arrival-echo--two" aria-hidden="true"></div><div class="rj-arrival-rays" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="rj-arrival-veil" aria-hidden="true"></div><div class="rj-portal-vortex" aria-hidden="true"></div><div class="rj-portal-arrival-caption">Ładowanie projektu…</div>';
   document.documentElement.appendChild(root);
   var started = false;
   function remove() { if (root.parentNode) root.parentNode.removeChild(root); }
