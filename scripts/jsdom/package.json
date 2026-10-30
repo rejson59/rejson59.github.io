@@ -6,6 +6,7 @@
     "test": "node loader.test.js && node tilt.test.js && node portal.test.js"
   },
   "devDependencies": {
-    "jsdom": "^24.1.3"
+    "jsdom": "^24.1.3",
+    "playwright-core": "^1.56.0"
   }
 }
