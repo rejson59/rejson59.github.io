@@ -77,6 +77,30 @@ const server=http.createServer((req,res)=>{
       assert.equal(result.columns,width<=760?1:2,`${width}: kolumny`);
     }
     await context.close();
-    console.log('PASS: logowanie w czacie, Escape, opóźniona odpowiedź nazwy, sesja, zakładki i układ');
+    const fresh=await browser.newContext({viewport:{width:375,height:850}});
+    let registration=null;
+    await fresh.route('**/*',async route=>{
+      const url=route.request().url();
+      if(url.startsWith(origin+'/')) return route.continue();
+      if(!url.includes('/rest/v1/rpc/')) return route.abort();
+      const fn=url.split('/').pop(),body=route.request().postDataJSON()||{};
+      let data=[];
+      if(fn==='community_username_status') data={valid:true,taken:false};
+      if(fn==='community_register') {registration=body;data={username:body.p_username,token:'abcdef0123456789abcdef0123456789'};}
+      return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(data)}).catch(()=>{});
+    });
+    const np=await fresh.newPage(); await np.goto(origin+'/rejchat.html',{waitUntil:'domcontentloaded'});
+    await np.evaluate(()=>document.querySelector('#rj-page-loader')?.remove());
+    await np.locator('#chat-join').click();
+    await np.locator('#auth-username').fill('NowyUzytkownik');
+    await np.waitForFunction(()=>document.querySelector('#name-status').textContent.includes('nazwa wolna'));
+    await np.locator('#auth-pin').fill('1234');
+    assert.equal(await np.locator('#auth-submit').isDisabled(),true,'nowe konto nie dopuszcza krótkiego PIN-u');
+    await np.locator('#auth-pin').fill('Dobre hasło jest długie');
+    await np.locator('#auth-submit').click();
+    await np.locator('#chat-form').waitFor({state:'visible'});
+    assert.deepEqual(registration,{p_username:'NowyUzytkownik',p_pin:'Dobre hasło jest długie'});
+    await fresh.close();
+    console.log('PASS: logowanie i rejestracja hasłem w czacie, Escape, sesja, zakładki i układ');
   } finally {if(oldResponse)oldResponse();await browser.close();server.close();}
 })().catch(e=>{console.error(e);server.close();process.exitCode=1;});

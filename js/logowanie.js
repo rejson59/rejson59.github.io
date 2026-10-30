@@ -149,6 +149,19 @@
       }).catch(function (err) { if (seq === generation) result.textContent = err.message || "Nie udało się zapisać hasła."; })
       .finally(function () { button.disabled = false; });
   });
+  $("revoke-other-sessions").addEventListener("click", function () {
+    var session = stored(), button = this, status = $("revoke-status"), seq = generation;
+    if (!session) { status.textContent = "Zaloguj się ponownie."; return; }
+    if (!window.confirm("Wylogować wszystkie pozostałe urządzenia? Na tym urządzeniu pozostaniesz zalogowany.")) return;
+    button.disabled = true; status.textContent = "Wylogowuję inne urządzenia…";
+    rpc("community_revoke_other_sessions", {p_token:session.token}).then(function (data) {
+      var still = stored();
+      if (seq !== generation || !still || still.token !== session.token) return;
+      if (!data || data.ok !== true) throw new Error("Nie udało się wylogować urządzeń.");
+      status.textContent = "Pozostałe sesje zostały wylogowane. To urządzenie pozostaje zalogowane.";
+    }).catch(function (err) { if (seq === generation) status.textContent = err.message || "Nie udało się wylogować urządzeń."; })
+      .finally(function () { button.disabled = false; });
+  });
   function forget() {
     ++generation;
     try { localStorage.removeItem(SESSION); } catch (e) { report("Nie udało się usunąć sesji z przeglądarki."); }

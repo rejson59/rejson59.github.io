@@ -147,3 +147,18 @@ revoke all on function public.community_password_status(text) from public;
 revoke all on function public.community_set_password(text,text,text) from public;
 grant execute on function public.community_password_status(text) to anon, authenticated;
 grant execute on function public.community_set_password(text,text,text) to anon, authenticated;
+
+-- Dobrowolne zamknięcie innych sesji, bieżąca pozostaje ważna.
+create or replace function public.community_revoke_other_sessions(p_token text)
+returns jsonb language plpgsql security definer set search_path = public, extensions as $$
+declare v_session record; v_removed integer;
+begin
+  select * into v_session from public.community_session_user(p_token);
+  delete from public.community_sessions
+   where user_id = v_session.user_id
+     and token_hash <> encode(extensions.digest('rejson_comm_sess_v1:' || trim(p_token), 'sha256'), 'hex');
+  get diagnostics v_removed = row_count;
+  return jsonb_build_object('ok', true, 'removed', v_removed);
+end $$;
+revoke all on function public.community_revoke_other_sessions(text) from public;
+grant execute on function public.community_revoke_other_sessions(text) to anon, authenticated;

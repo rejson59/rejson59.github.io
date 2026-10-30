@@ -107,6 +107,10 @@ const server = http.createServer((req, res) => {
     assert.equal(await page.locator('#nav-more a[href="partnerstwo"]').isVisible(),true);
     await page.keyboard.press('Escape');
     assert.equal(await page.locator('#nav-more').evaluate(el => el.open),false);
+    assert.equal(await page.locator('#menu-toggle').getAttribute('aria-expanded'),'true');
+    assert.equal(await page.locator('#nav-more summary').evaluate(el=>document.activeElement===el),true);
+    await page.keyboard.press('Escape');
+    assert.equal(await page.locator('#menu-toggle').getAttribute('aria-expanded'),'false');
     await visit('/rejchat.html');
     assert.equal(await page.locator('#panel-chat').isVisible(), true);
     await page.locator('#posts-tab').click();

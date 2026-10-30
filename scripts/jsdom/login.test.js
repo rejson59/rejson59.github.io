@@ -67,6 +67,10 @@ function create(initial, handler, opts = {}) {
   assert.deepEqual(update.calls.find(c => c.name === 'community_set_password').payload,{p_token:token,p_current_secret:'1234',p_new_password:'nowe bezpieczne hasło'});
   assert.equal(update.d.getElementById('new-password').value,'');
   assert.match(update.d.getElementById('password-result').textContent,/Hasło zapisane/);
+  update.w.confirm = () => true;
+  update.d.getElementById('revoke-other-sessions').click(); await tick();
+  assert.deepEqual(update.calls.find(c => c.name === 'community_revoke_other_sessions').payload,{p_token:token});
+  assert.match(update.d.getElementById('revoke-status').textContent,/pozostaje zalogowane/);
   update.close();
   for (const value of [
     {path:'//evil.example/',at:Date.now()},

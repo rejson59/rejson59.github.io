@@ -40,3 +40,6 @@
 .account-password .comm-label { display:block; margin-top:14px; }
 .account-password .comm-input { width:100%; box-sizing:border-box; }
 .account-password button { margin-top:8px; }
+
+.account-revoke { display:block; margin-top:12px; padding:9px 0; border:0; background:transparent; color:var(--accent-strong); font:inherit; font-size:13px; text-decoration:underline; cursor:pointer; }
+.account-revoke:focus-visible { outline:2px solid var(--accent-strong); outline-offset:3px; }
