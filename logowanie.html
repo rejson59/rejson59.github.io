@@ -9,8 +9,8 @@
   <script>try { var theme = localStorage.getItem('theme'); if (theme === 'light' || theme === 'dark') document.documentElement.dataset.theme = theme; } catch (e) {}</script>
   <link rel="stylesheet" href="css/style.css?v=2026-10-27-1">
   <link rel="stylesheet" href="css/community.css?v=2026-10-25">
-  <link rel="stylesheet" href="css/logowanie.css?v=1">
-  <script defer src="js/logowanie.js?v=4"></script>
+  <link rel="stylesheet" href="css/logowanie.css?v=2">
+  <script defer src="js/logowanie.js?v=5"></script>
   <link rel="stylesheet" href="/css/liquid.css?v=2026-10-30-2">
   <link rel="stylesheet" href="/css/rejchat.css?v=1">
   <script defer src="/js/rejchat-profiles.js?v=1"></script>
@@ -50,7 +50,7 @@
           <div id="account-loading" role="status">Sprawdzam sesję…</div>
           <div id="account-guest" hidden>
             <h2 id="account-heading">Witaj z powrotem 👋</h2>
-            <p class="comm-auth-sub">Korzystasz z dotychczasowego konta społeczności: nazwa i 4-cyfrowy PIN.</p>
+            <p class="comm-auth-sub">Zaloguj się nazwą i hasłem. Jeśli masz starsze konto, możesz użyć swojego PIN-u i ustawić hasło po zalogowaniu.</p>
             <div class="account-modes" role="group" aria-label="Wybierz logowanie lub rejestrację">
               <button type="button" id="mode-login" class="account-mode is-active" aria-pressed="true">Zaloguj się</button>
               <button type="button" id="mode-register" class="account-mode" aria-pressed="false">Utwórz konto</button>
@@ -58,9 +58,9 @@
             <form id="account-form">
               <label class="comm-label" for="account-name">Nazwa użytkownika</label>
               <input class="comm-input" id="account-name" name="username" autocomplete="username" minlength="3" maxlength="24" required placeholder="Twoja nazwa">
-              <label class="comm-label" for="account-pin">PIN (4 cyfry)</label>
-              <input class="comm-input" id="account-pin" name="pin" type="password" inputmode="numeric" autocomplete="current-password" pattern="[0-9]{4}" maxlength="4" required placeholder="••••" aria-describedby="account-pin-note">
-              <p class="account-note" id="account-pin-note">To obecny sposób logowania, nie nowe hasło. Bez e-maila nie ma odzyskiwania zapomnianego PIN-u. Mocniejsze hasło jest planowane, ale nie jest jeszcze dostępne.</p>
+              <label class="comm-label" for="account-pin" id="account-secret-label">Hasło lub dotychczasowy PIN</label>
+              <input class="comm-input" id="account-pin" name="pin" type="password" autocomplete="current-password" maxlength="72" required placeholder="Twoje hasło lub PIN" aria-describedby="account-pin-note">
+              <p class="account-note" id="account-pin-note">Hasło do nowego konta powinno mieć co najmniej 10 znaków. Bez e-maila nie ma automatycznego odzyskiwania dostępu — zapisz hasło w bezpiecznym miejscu.</p>
               <p id="account-error" class="comm-error" role="alert" hidden></p>
               <button class="btn btn-primary comm-auth-btn" id="account-submit" type="submit">Zaloguj się</button>
             </form>
@@ -73,6 +73,25 @@
             <a class="btn btn-primary account-link" href="rejchat">Przejdź do RejChat →</a>
             <a class="account-text-link" href="profil">Otwórz i dostosuj profil ↗</a>
             <a class="account-text-link" href="RejStream/">Otwórz RejStream ↗</a>
+            <section class="account-password" aria-labelledby="password-heading">
+              <h3 id="password-heading">Zabezpieczenie konta</h3>
+              <p id="password-status" class="account-note" role="status">Sprawdzam sposób logowania…</p>
+              <details id="password-details">
+                <summary>Ustaw lub zmień hasło</summary>
+                <p class="account-note">Po ustawieniu hasła stary PIN przestanie działać. Nie wylogowujemy pozostałych urządzeń. W RejStream użyj najpierw tej strony konta, ponieważ jego własny formularz nadal przyjmuje tylko PIN.</p>
+                <form id="password-form">
+                  <label class="comm-label" for="current-secret">Obecny PIN lub hasło</label>
+                  <input class="comm-input" id="current-secret" type="password" autocomplete="current-password" maxlength="72" required>
+                  <label class="comm-label" for="new-password">Nowe hasło</label>
+                  <input class="comm-input" id="new-password" type="password" autocomplete="new-password" minlength="10" maxlength="72" required>
+                  <label class="comm-label" for="confirm-password">Powtórz nowe hasło</label>
+                  <input class="comm-input" id="confirm-password" type="password" autocomplete="new-password" minlength="10" maxlength="72" required>
+                  <p class="account-note">Co najmniej 10 znaków; maksymalnie 72 bajty. Nie ma automatycznego odzyskiwania hasła.</p>
+                  <p id="password-result" class="account-note" role="status" aria-live="polite"></p>
+                  <button class="btn btn-primary" id="password-submit" type="submit">Zapisz hasło</button>
+                </form>
+              </details>
+            </section>
             <button class="account-logout" id="account-logout" type="button">Wyloguj na tym urządzeniu</button>
           </div>
           <div id="account-unavailable" hidden>

@@ -17,4 +17,12 @@
     if (event.key === 'Escape' && button.getAttribute('aria-expanded') === 'true') { setOpen(false); button.focus(); }
   });
   window.addEventListener('resize', function () { if (window.innerWidth > 760) setOpen(false); });
+  var more = document.getElementById('nav-more');
+  if (more) {
+    document.addEventListener('click', function (event) { if (!more.contains(event.target) || event.target.closest('.nav-more-panel a')) more.open = false; });
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && more.open) { more.open = false; more.querySelector('summary').focus(); }
+    });
+    window.addEventListener('resize', function () { more.open = false; });
+  }
 })();

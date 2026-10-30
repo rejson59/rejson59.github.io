@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>RejChat — rozmowy i wpisy</title>
-  <meta name="description" content="RejChat — czat, wpisy i dyskusje o projektach Rejson59. Przeglądanie stron i projektów nie wymaga konta; zaloguj się nazwą i 4-cyfrowym PIN-em, aby pisać.">
+  <meta name="description" content="RejChat — czat, wpisy i dyskusje o projektach Rejson59. Przeglądanie stron i projektów nie wymaga konta; zaloguj się, aby pisać.">
   <link rel="canonical" href="https://rejson59.github.io/rejchat">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#0b0e13">
@@ -613,8 +613,8 @@
         <section class="comm-auth" id="login-card" hidden aria-label="Logowanie lub rejestracja">
           <div class="comm-auth-inner">
             <h2 id="chat-auth-title">Dołącz do rozmowy</h2>
-            <p class="comm-auth-sub">Wpisz nazwę i PIN, aby dołączyć. Z tym samym kontem możesz zalogować się na innym urządzeniu i odzyskać swój profil.</p>
-            <p class="comm-auth-sub">To obecny czterocyfrowy PIN, nie nowe hasło. Nie ma jeszcze odzyskiwania zapomnianego PIN-u.</p>
+            <p class="comm-auth-sub">Wpisz nazwę i hasło, aby dołączyć. Starsze konta mogą użyć PIN-u. Z tym samym kontem możesz zalogować się na innym urządzeniu i odzyskać swój profil.</p>
+            <p class="comm-auth-sub">Nowe konto wymaga hasła (minimum 10 znaków). Zapamiętaj je — automatyczne odzyskiwanie nie jest dostępne.</p>
 
             <form id="auth-form" novalidate>
               <label class="comm-label" for="auth-username">Nazwa użytkownika</label>
@@ -622,9 +622,9 @@
                      maxlength="24" placeholder="np. Kuba_Craft" spellcheck="false" autocapitalize="off">
               <p class="comm-name-status" id="name-status" aria-live="polite">3–24 znaki: litery, cyfry oraz _ . -</p>
 
-              <label class="comm-label" for="auth-pin">PIN (4 cyfry)</label>
-              <input class="comm-input comm-pin" id="auth-pin" name="pin" type="password" inputmode="numeric"
-                     autocomplete="current-password" maxlength="4" pattern="[0-9]{4}" placeholder="••••">
+              <label class="comm-label" for="auth-pin">Hasło lub dotychczasowy PIN</label>
+              <input class="comm-input" id="auth-pin" name="pin" type="password"
+                     autocomplete="current-password" maxlength="72" placeholder="Twoje hasło lub PIN">
 
               <p class="comm-error" id="auth-error" hidden></p>
 
@@ -645,9 +645,9 @@
     </div>
   </footer>
 
-  <script defer src="js/view-tracker.js?v=5"></script>
+  <script defer src="js/view-tracker.js?v=6"></script>
   <script defer src="/js/rejchat-profiles.js?v=1"></script>
-  <script defer src="js/community.js?v=2026-10-30-rejchat-2"></script>
+  <script defer src="js/community.js?v=2026-10-30-rejchat-3"></script>
   <script defer src="/js/rejchat.js?v=2"></script>
 </body>
 </html>

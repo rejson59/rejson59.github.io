@@ -93,7 +93,7 @@ self.addEventListener("fetch", function (event) {
               var safeSlug = slug.replace(/[^A-Za-z0-9._-]/g, "");
               var inject = "";
               if (html.indexOf("view-tracker.js") === -1) {
-                inject += '\n<script src="/js/view-tracker.js?v=5" defer></script>';
+                inject += '\n<script src="/js/view-tracker.js?v=6" defer></script>';
               }
               // Sam komentarz z przykładem nie oznacza, że skrypt widżetu istnieje.
               var scriptHtml = html.replace(/<!--[\s\S]*?-->/g, "");

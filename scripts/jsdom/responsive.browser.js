@@ -92,7 +92,21 @@ const server = http.createServer((req, res) => {
         assert(!(Math.min(a.right,b.right)-Math.max(a.left,b.left)>1 && Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)>1), `${width}: nakładające się elementy ${a.name} i ${b.name}`);
       }
     }
+    await page.setViewportSize({width:1440,height:850});
+    await page.locator('#nav-more summary').click();
+    assert.equal(await page.locator('#nav-more').evaluate(el => el.open),true);
+    for (const href of ['partnerstwo','widzety','https://github.com/rejson59']) assert.equal(await page.locator('#nav-more a[href="'+href+'"]').isVisible(),true);
+    await page.keyboard.press('Escape');
+    assert.equal(await page.locator('#nav-more').evaluate(el => el.open),false);
+    await page.locator('#nav-more summary').click();
+    await page.locator('h1').click();
+    assert.equal(await page.locator('#nav-more').evaluate(el => el.open),false);
     await page.setViewportSize({width:375,height:850});
+    await page.locator('#menu-toggle').click();
+    await page.locator('#nav-more summary').click();
+    assert.equal(await page.locator('#nav-more a[href="partnerstwo"]').isVisible(),true);
+    await page.keyboard.press('Escape');
+    assert.equal(await page.locator('#nav-more').evaluate(el => el.open),false);
     await visit('/rejchat.html');
     assert.equal(await page.locator('#panel-chat').isVisible(), true);
     await page.locator('#posts-tab').click();

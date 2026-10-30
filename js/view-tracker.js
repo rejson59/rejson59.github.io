@@ -1569,7 +1569,7 @@
       card.innerHTML =
         '<button class="jn-x" aria-label="Zamknij na czas wizyty">✕</button>' +
         "<h4>✨ Twój profil. Twoje rozmowy.</h4>" +
-        '<p>Wybierz awatar, dodaj bio i dołącz do rozmów w RejChat. Konto jest darmowe: nick i PIN, bez e-maila.</p>' +
+        '<p>Wybierz awatar, dodaj bio i dołącz do rozmów w RejChat. Konto jest darmowe: nick i hasło, bez e-maila.</p>' +
         '<div class="jn-actions">' +
           '<a class="jn-go" href="https://rejson59.github.io/logowanie">Załóż darmowe konto</a>' +
         "</div>";

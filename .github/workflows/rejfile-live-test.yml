@@ -1,6 +1,15 @@
 name: RejFile live test
 on:
   workflow_dispatch:
+    inputs:
+      suite:
+        description: "Zestaw testów"
+        type: choice
+        options: [rejfile, account]
+        default: rejfile
+      test_username:
+        description: "Unikalna nazwa testowa (tylko zestaw account)"
+        required: false
 permissions:
   contents: read
 jobs:
@@ -13,4 +22,10 @@ jobs:
         with:
           node-version: 22
       - name: Test transferu 100 MiB i cofnięcia
+        if: inputs.suite == 'rejfile'
         run: node scripts/rejfile-integration.mjs
+      - name: Test konta i ograniczenia prób
+        if: inputs.suite == 'account'
+        env:
+          TEST_USERNAME: ${{ inputs.test_username }}
+        run: node scripts/account-live-test.mjs

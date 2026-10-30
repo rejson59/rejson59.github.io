@@ -476,7 +476,7 @@
         '<div class="rj-premium__inner">' +
           '<p class="rj-premium__head"><span class="rj-premium__dot"></span> Rejson59 · Premium</p>' +
           '<h2 class="rj-club-title">Premium jest u mnie za darmo — wystarczy się zalogować :)</h2>' +
-          '<p class="rj-club-lead">Własny profil, rozmowy i projekty bliżej Ciebie. Konto jest bezpłatne: wystarczy nick i 4-cyfrowy PIN, bez e-maila.</p>' +
+          '<p class="rj-club-lead">Własny profil, rozmowy i projekty bliżej Ciebie. Konto jest bezpłatne: wystarczy nick i hasło, bez e-maila.</p>' +
           '<div class="rj-profile-teaser" aria-label="Przykładowe awatary profilu"><span class="rj-profile-teaser__avatars"><img src="/assets/avatars/cat.svg" alt=""><img src="/assets/avatars/planet.svg" alt=""><img src="/assets/avatars/fox.svg" alt=""></span><span><strong>Twój profil, Twój styl</strong><small>Awatar · kolor nicka · publiczne bio</small></span></div>' +
           '<ul class="rj-premium__list">' +
             perks.map(function (p) {

@@ -1,5 +1,5 @@
 /*!
- * Portal społeczności — logowanie (nazwa + 4-cyfrowy PIN), wpisy i komentarze.
+ * Portal społeczności — logowanie, wpisy i komentarze.
  * Sesja przechowywana w localStorage pod kluczem rejson_community_session_v1
  * (ten sam klucz odczytuje js/view-tracker.js przy pingach obecności).
  */
@@ -281,7 +281,9 @@
     var btn = document.getElementById("auth-submit");
     var pinEl = document.getElementById("auth-pin");
     if (!btn || !pinEl) return;
-    var pinOk = /^[0-9]{4}$/.test(pinEl.value || "");
+    var secret = pinEl.value || "";
+    var bytes = new TextEncoder().encode(secret).length;
+    var pinOk = nameStatus.taken ? secret.length > 0 && bytes <= 72 : Array.from(secret).length >= 10 && bytes <= 72;
     var nameInput = document.getElementById("auth-username");
     var nameOk = nameStatus.checked && nameStatus.valid && nameInput && nameStatus.name === nameInput.value.trim();
     btn.disabled = authBusy || !(pinOk && nameOk);
@@ -333,9 +335,9 @@
           if (!nameStatus.valid) {
             setNameStatus("✕ ta nazwa jest niedostępna", "bad");
           } else if (nameStatus.taken) {
-            setNameStatus("🔒 nazwa zajęta — wpisz swój PIN, aby się zalogować", "taken");
+            setNameStatus("🔒 nazwa zajęta — wpisz hasło lub dotychczasowy PIN", "taken");
           } else {
-            setNameStatus("✓ nazwa wolna — wymyśl PIN i dołącz do społeczności", "good");
+            setNameStatus("✓ nazwa wolna — wymyśl hasło i dołącz do społeczności", "good");
           }
           refreshAuthSubmit();
         })
@@ -356,8 +358,9 @@
     if (!nameEl || !pinEl || !btn) return;
 
     var name = nameEl.value.trim();
-    var pin = pinEl.value.trim();
-    if (authBusy || !nameStatus.checked || !nameStatus.valid || nameStatus.name !== name || !/^[0-9]{4}$/.test(pin)) return;
+    var pin = pinEl.value;
+    var byteLength = new TextEncoder().encode(pin).length;
+    if (authBusy || !nameStatus.checked || !nameStatus.valid || nameStatus.name !== name || byteLength > 72 || (nameStatus.taken ? !pin.length : Array.from(pin).length < 10)) return;
 
     setAuthError(null);
     authBusy = true;
@@ -500,7 +503,7 @@
   function commentFormHTML(postId) {
     if (!session) {
       return (
-        '<p class="comments-login-hint">Aby skomentować, zaloguj się nazwą i PIN-em powyżej.</p>'
+        '<p class="comments-login-hint">Aby skomentować, zaloguj się na swoje konto.</p>'
       );
     }
     return (
@@ -1516,7 +1519,6 @@
     var pinInput = document.getElementById("auth-pin");
     if (pinInput) {
       pinInput.addEventListener("input", function () {
-        pinInput.value = (pinInput.value || "").replace(/[^0-9]/g, "").slice(0, 4);
         refreshAuthSubmit();
       });
     }
