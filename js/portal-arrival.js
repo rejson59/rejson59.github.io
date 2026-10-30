@@ -27,7 +27,7 @@
   if (motionOverride) root.setAttribute("data-motion-override", "");
   root.setAttribute("role", "status");
   root.setAttribute("aria-live", "polite");
-  root.innerHTML = '<div class="rj-arrival-ring" aria-hidden="true"></div><div class="rj-arrival-vignette" aria-hidden="true"></div><div class="rj-arrival-veil" aria-hidden="true"></div><div class="rj-portal-vortex" aria-hidden="true"></div><div class="rj-portal-arrival-caption">Ładowanie projektu…</div>';
+  root.innerHTML = '<div class="rj-arrival-vignette rj-arrival-wide" aria-hidden="true"></div><div class="rj-arrival-vignette rj-arrival-medium" aria-hidden="true"></div><div class="rj-arrival-vignette rj-arrival-small" aria-hidden="true"></div><div class="rj-arrival-ring" aria-hidden="true"></div><div class="rj-arrival-veil" aria-hidden="true"></div><div class="rj-portal-vortex" aria-hidden="true"></div><div class="rj-portal-arrival-caption">Ładowanie projektu…</div>';
   document.documentElement.appendChild(root);
   var started = false;
   function remove() { if (root.parentNode) root.parentNode.removeChild(root); }
@@ -35,9 +35,9 @@
     if (started) return;
     started = true;
     root.classList.add("is-playing");
-    setTimeout(remove, 3000); // awaryjne sprzątanie po animacji
+    setTimeout(remove, 4000); // awaryjne sprzątanie po animacji
   }
-  root.addEventListener("animationend", function (event) { if (event.target === root) remove(); });
+  root.addEventListener("animationend", function (event) { if (event.target === root && event.animationName === "rj-arrival-finished") remove(); });
   if (document.readyState === "complete") reveal();
   else window.addEventListener("load", reveal, { once: true });
   setTimeout(reveal, 12000); // nieskończone ładowanie nie może blokować projektu

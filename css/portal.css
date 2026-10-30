@@ -34,21 +34,28 @@
 @keyframes rj-vortex-in { 0%{transform:scale(.08);opacity:.3} 35%{transform:scale(.72);opacity:1} 76%{transform:scale(1.6);opacity:1} 100%{transform:scale(8);opacity:1} }
 @keyframes rj-star-rush { 0%{transform:scale(.5);opacity:0} 30%{opacity:.8} 100%{transform:scale(3.2);opacity:0} }
 @keyframes rj-portal-caption { 0%{opacity:0;transform:translateY(8px)} 25%,65%{opacity:1;transform:none} 90%,100%{opacity:0} }
-/* Łagodne wyjście: nieruchoma, miękka winieta i ciemna zasłona zanikają
-   osobno. Animujemy wyłącznie opacity — bez dużej maski, ostrych paneli
-   i bez ingerencji w style samej strony projektu. */
+/* Trzy nieruchome, miękkie winiety odsłaniają coraz większy obszar.
+   Zmieniamy tylko opacity gotowych warstw i transform obręczy: bez
+   animowania gradientów, maski ani układu strony projektu. */
 #rj-portal-arrival { display:grid; place-items:center; background:#010307; }
 #rj-portal-arrival .rj-arrival-vignette,
 #rj-portal-arrival .rj-arrival-veil { position:absolute; inset:0; pointer-events:none; }
-#rj-portal-arrival .rj-arrival-vignette { background:radial-gradient(ellipse at center, transparent 0%, rgba(1,3,7,.08) 12%, rgba(1,3,7,.62) 44%, #010307 78%); }
+#rj-portal-arrival .rj-arrival-wide { background:radial-gradient(ellipse at center, transparent 0%, transparent 46%, #010307 95%); }
+#rj-portal-arrival .rj-arrival-medium { background:radial-gradient(ellipse at center, transparent 0%, transparent 19%, #010307 57%); }
+#rj-portal-arrival .rj-arrival-small { background:radial-gradient(ellipse at center, transparent 0%, transparent 5%, #010307 29%); }
 #rj-portal-arrival .rj-arrival-veil { background:#010307; }
-#rj-portal-arrival .rj-arrival-ring { position:absolute; left:50%; top:50%; width:clamp(150px,28vmin,280px); aspect-ratio:1; border:1px solid #91e8df; border-radius:50%; opacity:0; pointer-events:none; }
-#rj-portal-arrival .rj-arrival-ring::before { content:""; position:absolute; inset:7%; border:1px solid #a0bdf2; border-radius:50%; opacity:.5; }
-#rj-portal-arrival.is-playing .rj-arrival-ring { animation:rj-arrival-ring 2.1s ease-out both; }
-#rj-portal-arrival.is-playing { background:transparent; animation:rj-arrival-finished 2.1s linear both; }
-#rj-portal-arrival.is-playing .rj-arrival-veil { animation:rj-veil-reveal 2.1s ease-out both; }
-#rj-portal-arrival.is-playing .rj-arrival-vignette { animation:rj-vignette-reveal 2.1s ease-in-out both; }
-#rj-portal-arrival .rj-portal-vortex { width:min(40vw,260px); animation:rj-arrival-breathe 2.8s ease-in-out infinite alternate; background:radial-gradient(circle,#010307 0%,#020c10 20%,#0b2d32 43%,transparent 70%); box-shadow:none; opacity:.6; }
+#rj-portal-arrival .rj-arrival-ring { position:absolute; left:50%; top:50%; width:clamp(150px,28vmin,280px); aspect-ratio:1; border:1px solid #78e1d8; border-radius:50%; opacity:0; pointer-events:none; }
+#rj-portal-arrival .rj-arrival-ring::before { content:""; position:absolute; inset:7%; border:1px solid #a0bdf2; border-radius:50%; opacity:.8; }
+#rj-portal-arrival .rj-arrival-ring::after { content:""; position:absolute; inset:-5%; border:2px solid transparent; border-left-color:#59bcb5; border-right-color:#728fd0; border-radius:50%; transform:rotate(-32deg); opacity:.7; }
+/* !important jest celowe: niektóre projekty wyłączają globalnie animation
+   przy reduced motion. Wpływ ograniczamy wyłącznie do nakładki portalu. */
+#rj-portal-arrival.is-playing { background:transparent; animation:rj-arrival-finished 2.8s linear both !important; }
+#rj-portal-arrival.is-playing .rj-arrival-veil { animation:rj-veil-reveal 2.8s ease-out both !important; }
+#rj-portal-arrival.is-playing .rj-arrival-small { animation:rj-small-reveal 2.8s ease-in-out both !important; }
+#rj-portal-arrival.is-playing .rj-arrival-medium { animation:rj-medium-reveal 2.8s ease-in-out both !important; }
+#rj-portal-arrival.is-playing .rj-arrival-wide { animation:rj-wide-reveal 2.8s ease-in-out both !important; }
+#rj-portal-arrival.is-playing .rj-arrival-ring { animation:rj-arrival-ring 2.8s ease-out both !important; }
+#rj-portal-arrival .rj-portal-vortex { width:min(40vw,260px); animation:rj-arrival-breathe 2.8s ease-in-out infinite alternate !important; background:radial-gradient(circle,#010307 0%,#020c10 20%,#0b2d32 43%,transparent 70%); box-shadow:none; opacity:.6; }
 #rj-portal-arrival .rj-portal-vortex::before, #rj-portal-arrival .rj-portal-vortex::after { display:block; border:1px solid #55b7ae55; box-shadow:none; animation:none; }
 #rj-portal-arrival .rj-portal-vortex::before { inset:10%; }
 #rj-portal-arrival .rj-portal-vortex::after { inset:20%; border-color:#4f80a144; }
@@ -56,20 +63,15 @@
 .rj-portal-arrival-caption { position:absolute; bottom:14%; color:#95b6b6; font:600 13px/1.5 system-ui,sans-serif; letter-spacing:.08em; text-align:center; }
 #rj-portal-arrival.is-playing .rj-portal-arrival-caption { display:none; }
 @keyframes rj-arrival-breathe { from { transform:scale(.92); opacity:.35; } to { transform:scale(1.04); opacity:.6; } }
-@keyframes rj-arrival-ring { 0% { transform:translate(-50%,-50%) scale(.48); opacity:0; } 25% { opacity:.38; } 100% { transform:translate(-50%,-50%) scale(3); opacity:0; } }
-@keyframes rj-veil-reveal { 0% { opacity:1; } 55%,100% { opacity:0; } }
-@keyframes rj-vignette-reveal { 0%,35% { opacity:1; } 100% { opacity:0; } }
-/* Animacja korzenia dostarcza zdarzenie sprzątające; po jej zakończeniu
-   obie zasłony są już przezroczyste, więc awaryjny timeout nie zasłania treści. */
+@keyframes rj-arrival-ring { 0% { transform:translate(-50%,-50%) scale(.45); opacity:0; } 20% { opacity:.8; } 60% { opacity:.6; } 100% { transform:translate(-50%,-50%) scale(3.4); opacity:0; } }
+@keyframes rj-veil-reveal { 0%,5% { opacity:1; } 24%,100% { opacity:0; } }
+@keyframes rj-small-reveal { 0%,25% { opacity:1; } 58%,100% { opacity:0; } }
+@keyframes rj-medium-reveal { 0%,39% { opacity:1; } 80%,100% { opacity:0; } }
+@keyframes rj-wide-reveal { 0%,55% { opacity:1; } 100% { opacity:0; } }
+/* Zdarzenie korzenia sprząta nakładkę dopiero po zakończeniu całego wyjścia. */
 @keyframes rj-arrival-finished { from,to { opacity:1; } }
 @media (prefers-reduced-motion:reduce) {
   .btn.btn-portal::before,.btn.btn-portal::after { animation:none !important; }
   .btn.btn-portal,.btn.btn-portal:hover { transition:none; transform:none; }
   #rj-portal-flight,#rj-portal-arrival:not([data-motion-override]) { display:none !important; }
-  /* Strona portalu domyślnie włącza animację, chyba że odwiedzający ją wyłączy. */
-  #rj-portal-arrival[data-motion-override] .rj-portal-vortex { animation-duration:2.8s !important; }
-  #rj-portal-arrival[data-motion-override].is-playing { animation-duration:2.1s !important; }
-  #rj-portal-arrival[data-motion-override].is-playing .rj-arrival-veil,
-  #rj-portal-arrival[data-motion-override].is-playing .rj-arrival-vignette,
-  #rj-portal-arrival[data-motion-override].is-playing .rj-arrival-ring { animation-duration:2.1s !important; }
 }
