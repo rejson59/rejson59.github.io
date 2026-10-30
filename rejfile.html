@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="pl" data-theme="dark">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="RejFile — przesyłaj pliki linkiem lub do użytkowników społeczności.">
+  <meta name="referrer" content="no-referrer"><meta name="robots" content="noindex,nofollow">
+  <title>RejFile — wyślij coś dalej</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/rejfile.css?v=1">
+  <script defer src="js/rejfile.js?v=1"></script>
+</head>
+<body>
+  <a href="#main" class="skip">Przejdź do treści</a>
+  <header class="topbar"><a class="brand" href="./"><span class="brand-mark">R<span>.</span></span><span>rejson59<span class="brand-sub"> / RejFile</span></span></a><nav aria-label="Nawigacja"><a href="./">Strona główna</a><a href="spolecznosc">Społeczność</a><a href="logowanie" id="account-link">Konto ↗</a></nav></header>
+  <main class="shell" id="main">
+    <noscript>RejFile wymaga JavaScriptu, aby przesyłać i pobierać pliki.</noscript>
+    <div class="hero"><div class="hero-copy"><div class="eyebrow"><span></span> REJFILE · PRZESTRZEŃ NA PLIKI</div><h1>Wyślij coś<br><em>dalej.</em></h1><p>Plik, link i gotowe. Udostępnij go komuś konkretnemu albo wyślij prywatny link.</p><div class="facts"><span>✦ &nbsp;DO 100 MB</span><span>◷ &nbsp;3 DNI</span><span>↗ &nbsp;BEZ E-MAILA</span></div></div><div class="hero-art" aria-hidden="true"><div class="art-orbit orbit-a"></div><div class="art-orbit orbit-b"></div><div class="art-card card-back"></div><div class="art-card card-front"><span class="file-symbol">↗</span><div class="art-lines"><i></i><i></i><i></i></div></div><span class="art-spark s1">✳</span><span class="art-spark s2">✦</span></div></div>
+    <div class="workspace"><section class="upload card" aria-labelledby="upload-title"><div class="section-head"><div><div class="kicker">01 / NOWA PRZESYŁKA</div><h2 id="upload-title">Wybierz plik</h2><p>Mały dokument czy większy projekt — wybór należy do Ciebie.</p></div><span class="step">↗</span></div>
+      <form id="upload-form"><label class="dropzone" id="dropzone" for="file-input"><span class="drop-icon">↑</span><strong id="file-label">Przeciągnij plik tutaj</strong><span id="file-help">lub <b>wybierz z urządzenia</b></span><small>Dowolny plik · maksymalnie 100 MB</small><input type="file" id="file-input" aria-describedby="file-help"></label>
+      <fieldset class="share-options"><legend>Jak chcesz udostępnić?</legend><label class="choice"><input type="radio" name="mode" value="link" checked><span><b>↗ &nbsp; Link</b><small>Dla każdego, komu go wyślesz</small></span></label><label class="choice"><input type="radio" name="mode" value="account"><span><b>◉ &nbsp; Konto</b><small>Dla użytkownika społeczności</small></span></label></fieldset>
+      <div id="recipient-wrap" hidden><label for="recipient">Nazwa odbiorcy w społeczności</label><input id="recipient" maxlength="24" autocomplete="off" placeholder="np. nazwa_użytkownika"><small>Odbiorca znajdzie plik w swojej skrzynce RejFile.</small></div>
+      <div class="progress" id="progress-wrap" hidden><div class="progress-top"><span id="progress-label">Przygotowuję…</span><strong id="progress-percent">0%</strong></div><progress id="progress" aria-label="Postęp przesyłania" max="100" value="0"></progress></div>
+      <p id="error" class="message error" role="alert" hidden></p><button class="primary" id="send" type="submit">Prześlij plik <span>↗</span></button><p class="fine">Plik wygasa po 3 dniach. Nie udostępniaj treści nielegalnych ani plików poufnych. <a href="#zasady">Jak to działa?</a></p></form>
+      <div id="success" class="success" hidden role="status"><div class="success-icon">✓</div><h3>Plik jest gotowy!</h3><p id="success-text"></p><div id="link-wrap" hidden><label for="share-link">Link do udostępnienia</label><div class="copy-row"><input id="share-link" readonly><button type="button" id="copy-link">Kopiuj</button></div><small>Link daje dostęp każdemu, kto go zna. Przekaż go tylko zaufanym osobom.</small></div><button type="button" class="secondary" id="another">Wyślij kolejny plik ↗</button></div>
+    </section>
+    <aside class="side"><section class="card inbox" aria-labelledby="inbox-title"><div class="kicker">02 / TWOJA SKRZYNKA</div><h2 id="inbox-title">Pliki dla Ciebie <span>↘</span></h2><p id="inbox-status">Sprawdzam konto…</p><div id="inbox-list" class="file-list"></div><a href="logowanie" id="login" class="secondary" hidden>Zaloguj się do społeczności ↗</a><button type="button" class="text-button" id="refresh" hidden>Odśwież skrzynkę ↻</button></section>
+      <section class="card sent"><div class="kicker">03 / TWOJE PRZESYŁKI</div><h2>Wysłane z tej przeglądarki</h2><p>Tu znajdziesz linki i opcję cofnięcia dostępu. Nie czyść danych przeglądarki, jeśli chcesz nimi zarządzać.</p><div id="sent-list" class="file-list"><p>Nie ma tu jeszcze żadnych przesyłek.</p></div></section>
+      <section class="safety" id="zasady"><strong>✳ &nbsp; Kilka ważnych rzeczy</strong><p>Pliki znikają z dostępu po 3 dniach. Każdy z linkiem może je pobrać. Konto społeczności nadal używa 4-cyfrowego PIN-u — nie wysyłaj poufnych danych.</p><p>RejFile korzysta ze wspólnego miejsca (do 400 MiB); liczba przesyłek i transfer są ograniczone. Pliki nie są skanowane antywirusowo ani szyfrowane end-to-end; administrator usługi może mieć do nich dostęp. Po cofnięciu dostęp do wcześniej wystawionego adresu pobierania może utrzymać się do minuty.</p></section></aside></div>
+    <section id="download-panel" class="card download-panel" hidden aria-labelledby="download-title"><div class="kicker">PLIK DLA CIEBIE</div><h2 id="download-title">Odbierz plik</h2><p id="download-meta">Sprawdzam plik…</p><p id="download-error" class="message error" role="alert" hidden></p><button type="button" id="download" class="primary" hidden>Pobierz plik <span>↓</span></button><div id="download-progress" class="progress" hidden><div class="progress-top"><span>Pobieranie…</span><strong id="download-percent">0%</strong></div><progress id="download-bar" aria-label="Postęp pobierania" max="100" value="0"></progress></div></section>
+  </main><footer><span>REJSON59 &nbsp;✦&nbsp; REJFILE</span><span>Pliki na chwilę, pomysły na dłużej.</span></footer>
+</body></html>

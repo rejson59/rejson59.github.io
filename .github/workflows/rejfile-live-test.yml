@@ -1,0 +1,23 @@
+name: RejFile live test
+on:
+  pull_request:
+    types: [opened]
+    paths:
+      - 'rejfile.html'
+      - 'js/rejfile.js'
+      - 'supabase/functions/rejfile/**'
+      - '.github/workflows/rejfile-live-test.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  transfer:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Test transferu 100 MiB i cofnięcia
+        run: node scripts/rejfile-integration.mjs

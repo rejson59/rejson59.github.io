@@ -282,7 +282,7 @@ function arrival(marker, opts = {}) {
   const response = await request('https://rejson59.github.io/Test/'); const body = await response.text();
   assert.equal(response.headers.get('content-security-policy'), "default-src 'self'");
   assert.ok(body.indexOf('Content-Security-Policy') < body.indexOf('portal-arrival.js')); assert.match(body,/view-tracker\.js/); assert.match(body,/rejson-widgets\/widget\.js/);
-  for (const url of ['https://rejson59.github.io/portal/', 'https://rejson59.github.io/portal/RejStream', 'https://rejson59.github.io/partnerstwo', 'https://another.example/Test/']) assert.equal(await request(url), undefined);
+  for (const url of ['https://rejson59.github.io/portal/', 'https://rejson59.github.io/portal/RejStream', 'https://rejson59.github.io/partnerstwo', 'https://rejson59.github.io/rejfile', 'https://rejson59.github.io/rejfile.html', 'https://another.example/Test/']) assert.equal(await request(url), undefined);
   assert.equal(await request('https://rejson59.github.io/Test/', 'iframe'), undefined);
   assert.match(read('404.html'), /location\.replace\("\/portal\/\?projekt=/);
   console.log('PASS: linki w nowej karcie, portal, animacja, powrót, redukcja ruchu, adresy, ładowanie celu i SW');
