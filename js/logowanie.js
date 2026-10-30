@@ -5,6 +5,30 @@
   // Publiczny klucz anon jest taki sam jak w kliencie społeczności.
   var KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6YnF6ZmltdHJvaXhubGR6amVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1OTYzOTEsImV4cCI6MjEwODE3MjM5MX0.oeZWOaNd6p3wZBZQQu3QWjRHlrkxV_BFQRNSN-6YntE";
   var SESSION = "rejson_community_session_v1";
+  var RETURN = "rejson_account_return_v1";
+  function projectReturn() {
+    if (new URLSearchParams(location.search).get("powrot") !== "1") return null;
+    try {
+      var item = JSON.parse(sessionStorage.getItem(RETURN) || "null");
+      if (!item || typeof item.path !== "string" || item.path.length > 4096 || typeof item.at !== "number" || Date.now() - item.at < 0 || Date.now() - item.at > 30 * 60 * 1000) return null;
+      if (item.path.charAt(0) !== "/" || item.path.charAt(1) === "/" || item.path.indexOf("\\") !== -1) return null;
+      var dest = new window.URL(item.path, location.origin);
+      if (dest.origin !== location.origin || /^\/(?:logowanie|portal)(?:[./]|$)/i.test(dest.pathname) || dest.pathname === "/") return null;
+      return dest.pathname + dest.search + dest.hash;
+    } catch (e) { return null; }
+  }
+  function returnToProject() {
+    var dest = projectReturn();
+    if (!dest) return;
+    try { sessionStorage.removeItem(RETURN); } catch (e) {}
+    location.assign(dest);
+  }
+  var returnLink = document.getElementById("account-return");
+  var returnPath = projectReturn();
+  if (returnLink && returnPath) {
+    returnLink.href = returnPath; returnLink.hidden = false;
+    returnLink.addEventListener("click", function () { try { sessionStorage.removeItem(RETURN); } catch (e) {} });
+  }
   var mode = "login", generation = 0;
   var $ = function (id) { return document.getElementById(id); };
   var form = $("account-form"), name = $("account-name"), pin = $("account-pin"), error = $("account-error"), submit = $("account-submit");
@@ -82,6 +106,7 @@
         catch (e) { throw new Error("Nie można zapisać sesji w tej przeglądarce."); }
         pin.value = "";
         signedIn(data.username);
+        returnToProject();
       }).catch(function (err) { if (seq === generation) report(err.message || "Nie udało się zalogować."); })
       .finally(function () { submit.disabled = false; });
   });

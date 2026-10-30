@@ -9,10 +9,11 @@ const html = fs.readFileSync(path.join(root, 'logowanie.html'), 'utf8');
 const js = fs.readFileSync(path.join(root, 'js/logowanie.js'), 'utf8');
 const key = 'rejson_community_session_v1';
 const tick = () => new Promise(resolve => setTimeout(resolve, 5));
-function create(initial, handler) {
-  const dom = new JSDOM(html, {runScripts: 'outside-only', url:'https://rejson59.github.io/logowanie'});
+function create(initial, handler, opts = {}) {
+  const dom = new JSDOM(html, {runScripts: 'outside-only', url:'https://rejson59.github.io/logowanie' + (opts.search || '')});
   const w = dom.window, d = w.document;
   if (initial) w.localStorage.setItem(key, JSON.stringify(initial));
+  if (opts.returnValue) w.sessionStorage.setItem('rejson_account_return_v1', JSON.stringify(opts.returnValue));
   const calls = [];
   w.fetch = async (url, options) => {
     const name = url.split('/').pop();
@@ -50,6 +51,19 @@ function create(initial, handler) {
   t.d.getElementById('account-form').dispatchEvent(new t.w.Event('submit',{bubbles:true,cancelable:true})); await tick();
   assert.equal(t.calls[1].name, 'community_register');
   t.close();
+  for (const value of [
+    {path:'//evil.example/',at:Date.now()},
+    {path:'/\\evil.example/',at:Date.now()},
+    {path:'https://evil.example/',at:Date.now()},
+    {path:'/Test/',at:Date.now()-31*60*1000},
+    {path:'/portal/Other',at:Date.now()},
+    {path:'/logowanie',at:Date.now()},
+  ]) {
+    const x = create(null, async () => ({data:{username:null}}), {search:'?powrot=1',returnValue:value});
+    assert.equal(x.d.getElementById('account-return').hidden, true); x.close();
+  }
+  const validReturn = create(null, async () => ({data:{username:null}}), {search:'?powrot=1',returnValue:{path:'/Project/?mode=1#here',at:Date.now()}});
+  assert.equal(validReturn.d.getElementById('account-return').href, 'https://rejson59.github.io/Project/?mode=1#here'); validReturn.close();
   const saved = {token,username:'Alice'};
   const ok = create(saved, async () => ({data:{username:'Canonical'}})); await tick();
   assert.equal(ok.d.getElementById('account-username').textContent, 'Canonical');

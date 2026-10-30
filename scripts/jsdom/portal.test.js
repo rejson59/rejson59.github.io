@@ -270,6 +270,10 @@ function arrival(marker, opts = {}) {
     // Kanoniczne przekierowanie /projekt/ → /projekt/index.html zachowuje wyjście.
     const t = arrival({ path:'/Test/', at:Date.now() }, { url:'/Test/index.html' }); assert.ok(t.doc.querySelector('#rj-portal-arrival')); t.dom.window.close();
   }
+  {
+    const t = arrival({ path:'/Test/', at:Date.now() }, { url:'/Test/start/index.html' }); assert.ok(t.doc.querySelector('#rj-portal-arrival')); t.dom.window.close();
+    const other = arrival({ path:'/Test/page', at:Date.now() }, { url:'/Test/other' }); assert.equal(other.doc.querySelector('#rj-portal-arrival'), null); other.dom.window.close();
+  }
   for (const [marker, options] of [[null, {}], ['{broken', {}], [{path:'/Other/', at:Date.now()}, {}], [{path:'/Test/', at:Date.now()-61000}, {}], [{path:'/Test/', at:Date.now()+10000}, {}], [{path:'/Test/', at:Date.now()}, {noStyle:true}], [{path:'/Test/', at:Date.now()}, {reduced:true}]]) {
     const t = arrival(marker, options); assert.equal(t.doc.querySelector('#rj-portal-arrival'), null); t.dom.window.close();
   }
@@ -288,13 +292,20 @@ function arrival(marker, opts = {}) {
   async function request(url, dest = 'document') { let result; const e = { request:{method:'GET',mode:'navigate',destination:dest,url}, waitUntil(){}, respondWith(p){result=p;} }; listeners.fetch(e); return result && await result; }
   const response = await request('https://rejson59.github.io/Test/'); const body = await response.text();
   assert.equal(response.headers.get('content-security-policy'), "default-src 'self'");
-  assert.ok(body.indexOf('Content-Security-Policy') < body.indexOf('portal-arrival.js')); assert.match(body,/view-tracker\.js/); assert.match(body,/rejson-widgets\/widget\.js/);
+  assert.ok(body.indexOf('Content-Security-Policy') < body.indexOf('portal-arrival.js')); assert.match(body,/view-tracker\.js/); assert.match(body,/rejson-widgets\/widget\.js/); assert.match(body,/rejson-account\.js/);
+  source = `<html><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'"><script src="/slow.js"></script></head><body></body></html>`;
+  const early = await (await request('https://rejson59.github.io/Test/')).text();
+  assert.ok(early.indexOf('Content-Security-Policy') < early.indexOf('portal-arrival.js'));
+  assert.ok(early.indexOf('portal-arrival.js') < early.indexOf('/slow.js'));
+  source = '<html><head><script src="/slow.js"></script></head><body></body></html>';
+  const noMeta = await (await request('https://rejson59.github.io/Test/')).text();
+  assert.ok(noMeta.indexOf('portal-arrival.js') < noMeta.indexOf('/slow.js'));
   source = '<html><head></head><body><!-- przykładowy rejson-widgets/widget.js --></body></html>';
   const commented = await (await request('https://rejson59.github.io/Example/')).text();
-  assert.match(commented, /<script src="\/rejson-widgets\/widget\.js\?v=7"/);
+  assert.match(commented, /<script src="\/rejson-widgets\/widget\.js\?v=8"/);
   source = '<html><head></head><body><script defer data-project="Test" src="https://rejson59.github.io/rejson-widgets/widget.js?v=4"></script></body></html>';
   const existing = await (await request('https://rejson59.github.io/Example/')).text();
-  assert.match(existing, /widget\.js\?v=7/); assert.equal((existing.match(/<script[^>]+rejson-widgets\/widget\.js/g) || []).length, 1);
+  assert.match(existing, /widget\.js\?v=8/); assert.equal((existing.match(/<script[^>]+rejson-widgets\/widget\.js/g) || []).length, 1);
   assert.match(existing, /data-project="Test"/);
   source = source.replace('?v=4','?v=99');
   const future = await (await request('https://rejson59.github.io/Example/')).text();

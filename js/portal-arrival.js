@@ -10,9 +10,16 @@
     sessionStorage.removeItem(KEY); // znacznik jest jednorazowy, także po odświeżeniu
   } catch (e) { return; }
   function path(p) { return String(p || "").replace(/\/index\.html?$/i, "").replace(/\/+$/, "") || "/"; }
+  function sameDestination(expected, actual) {
+    var from = path(expected), to = path(actual);
+    if (from === to) return true;
+    // Kanoniczny adres główny projektu może przekierować do jego podstrony.
+    // Nie akceptujemy innego projektu ani przekierowania z dowolnej podstrony.
+    return /^\/[A-Za-z0-9._-]+$/.test(from) && to.indexOf(from + "/") === 0;
+  }
   if (typeof marker.path !== "string" || typeof marker.at !== "number" ||
       Date.now() - marker.at < 0 || Date.now() - marker.at > 60000 ||
-      path(marker.path) !== path(location.pathname)) return;
+      !sameDestination(marker.path, location.pathname)) return;
   // Strona portalu przekazuje informację, czy animacja jest włączona.
   var motionOverride = marker.motionOverride === true;
   if (!motionOverride && window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;

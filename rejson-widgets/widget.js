@@ -572,6 +572,9 @@
     ".rj-seg button.is-active { color: var(--rj-ink); font-weight: 600; }",
 
     ".rj-actions-right { display: flex; align-items: center; gap: 4px; }",
+    ".rj-account { border: 1px solid var(--rj-line); border-radius: 999px; background: var(--rj-fill); color: var(--rj-ink); font: 600 11px/1 system-ui,sans-serif; padding: 7px 8px; cursor: pointer; white-space: nowrap; }",
+    ".rj-account:hover { background: var(--rj-fill-hover); }",
+    ".rj-account[hidden] { display:none; }",
     ".rj-ghost-icon {",
     "  width: 28px;",
     "  height: 28px;",
@@ -883,6 +886,7 @@
     '        <button type="button" data-type="idea">Pomysł</button>' +
     "      </div>" +
     '      <div class="rj-actions-right">' +
+    '        <button type="button" class="rj-account" hidden title="Zaloguj się przez rejson59.github.io" aria-label="Konto — zaloguj się przez rejson59.github.io">Konto</button>' +
     '        <button type="button" class="rj-ghost-icon rj-btn-board" title="Tablica pomysłów" aria-label="Tablica pomysłów">' +
     SVG_BOARD +
     "</button>" +
@@ -904,6 +908,10 @@
   var segPill = shadow.querySelector(".rj-seg-pill");
   var segButtons = Array.prototype.slice.call(shadow.querySelectorAll(".rj-seg button"));
   var boardBtn = shadow.querySelector(".rj-btn-board");
+  var accountBtn = shadow.querySelector(".rj-account");
+  function accountReady() { accountBtn.hidden = !window.RejsonAccount; }
+  window.addEventListener("rj:account-ready", accountReady);
+  accountReady();
   var closeBtn = shadow.querySelector(".rj-btn-close");
   var slotEl = shadow.querySelector(".rj-slot");
   var collapseBtn = shadow.querySelector(".rj-collapse");
@@ -1807,6 +1815,9 @@
   });
 
   closeBtn.addEventListener("click", closeMorph);
+  accountBtn.addEventListener("click", function () {
+    if (window.RejsonAccount) window.RejsonAccount.open();
+  });
 
   boardBtn.addEventListener("click", function () {
     state.view = state.view === "board" ? "form" : "board";
@@ -2106,6 +2117,7 @@
         hostEl.style.removeProperty("--papla-ty");
         hostEl.style.transform = "none";
       } catch (e) {}
+      window.removeEventListener("rj:account-ready", accountReady);
       window.removeEventListener("keydown", onShortcutKey);
       document.removeEventListener("pointerlockchange", onPointerLockChange);
       window.removeEventListener("resize", onWindowResize);

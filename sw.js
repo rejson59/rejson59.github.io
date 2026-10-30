@@ -98,21 +98,37 @@ self.addEventListener("fetch", function (event) {
               // Sam komentarz z przykładem nie oznacza, że skrypt widżetu istnieje.
               var scriptHtml = html.replace(/<!--[\s\S]*?-->/g, "");
               var hasWidgetScript = /<script\b[^>]*\bsrc\s*=\s*(["'])[^"']*rejson-widgets\/widget\.js(?:\?[^"']*)?\1/i.test(scriptHtml);
+              if (!/<script\b[^>]*\bsrc\s*=\s*(["'])[^"']*\/js\/rejson-account\.js(?:\?[^"']*)?\1/i.test(scriptHtml)) {
+                inject += '\n<script src="/js/rejson-account.js?v=1" defer></script>';
+              }
               if (!hasWidgetScript) {
-                inject += '\n<script src="/rejson-widgets/widget.js?v=7" data-project="' + safeSlug + '" defer></script>';
+                inject += '\n<script src="/rejson-widgets/widget.js?v=8" data-project="' + safeSlug + '" defer></script>';
               }
               // Efekt wyjścia tylko na dokumentach projektów pod /projekt/.
               // Skrypt działa wyłącznie, jeśli ta karta ma jednorazowy znacznik
               // z prawdziwego wejścia przez portal. Nigdy nie dotyczy iframe.
               var portalHead = /^\/[A-Za-z0-9._-]+\//.test(url.pathname) &&
-                /<\/head\s*>/i.test(html) && html.indexOf("portal-arrival.js") === -1
-                ? '<link rel="stylesheet" href="/css/portal.css?v=11" data-rj-portal-style><script src="/js/portal-arrival.js?v=9"></script>' : "";
-              // Znane wpisane na sztywno stare wersje wspólnego widżetu też
-              // dostają aktualny adres; nie zmieniamy innych parametrów skryptu.
-              var upgradedHtml = html.replace(/(<script\b[^>]*\bsrc\s*=\s*["'](?:https:\/\/rejson59\.github\.io)?\/rejson-widgets\/widget\.js)(?:\?v=[0-6])?(["'])/gi, "$1?v=7$2");
-              var updatedHtml = portalHead
-                ? upgradedHtml.replace(/<\/head\s*>/i, function (head) { return portalHead + head; })
-                : upgradedHtml;
+                /<head\b[^>]*>/i.test(html) && /<\/head\s*>/i.test(html) && !/<script\b[^>]*\bsrc\s*=\s*(["'])[^"']*portal-arrival\.js(?:\?[^"']*)?\1/i.test(scriptHtml)
+                ? '<link rel="stylesheet" href="/css/portal.css?v=11" data-rj-portal-style><script src="/js/portal-arrival.js?v=10"></script>' : "";
+              // Zachowujemy politykę CSP projektu, ale wstawiamy wyjście przed
+              // blokującymi skryptami, o ile jest już za wszystkimi meta CSP.
+              var upgradedHtml = html.replace(/(<script\b[^>]*\bsrc\s*=\s*["'](?:https:\/\/rejson59\.github\.io)?\/rejson-widgets\/widget\.js)(?:\?v=[0-7])?(["'])/gi, "$1?v=8$2");
+              var updatedHtml = upgradedHtml;
+              if (portalHead) {
+                var headStart = /<head\b[^>]*>/i.exec(updatedHtml);
+                var headEnd = /<\/head\s*>/i.exec(updatedHtml);
+                if (headStart && headEnd && headStart.index < headEnd.index) {
+                  var insertAt = headStart.index + headStart[0].length;
+                  var rawHead = updatedHtml.slice(insertAt, headEnd.index);
+                  // Usunięcie komentarzy bez zmiany indeksów: nie udają polityki CSP.
+                  var scanHead = rawHead.replace(/<!--[\s\S]*?-->/g, function (comment) { return " ".repeat(comment.length); });
+                  var metas = /<meta\b[^>]*>/gi, meta;
+                  while ((meta = metas.exec(scanHead))) {
+                    if (/\bhttp-equiv\s*=\s*(["'])?content-security-policy\1?/i.test(meta[0])) insertAt = headStart.index + headStart[0].length + meta.index + meta[0].length;
+                  }
+                  updatedHtml = updatedHtml.slice(0, insertAt) + portalHead + updatedHtml.slice(insertAt);
+                }
+              }
               updatedHtml = /<\/body>/i.test(updatedHtml)
                 ? updatedHtml.replace(/<\/body>/i, inject + "\n</body>")
                 : updatedHtml + inject;
