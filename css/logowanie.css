@@ -33,3 +33,13 @@
   .account-card .comm-auth-inner { padding: 24px 20px; }
   .account-benefits { padding: 8px 4px; }
 }
+.account-password { margin-top:24px; padding:18px; border:1px solid var(--border); border-radius:18px; background:var(--input-bg); }
+.account-password h3 { margin:0; font-size:15px; }
+.account-password summary { cursor:pointer; color:var(--accent-strong); font-weight:700; padding:10px 0; }
+.account-password summary:focus-visible { outline:2px solid var(--accent-strong); outline-offset:3px; }
+.account-password .comm-label { display:block; margin-top:14px; }
+.account-password .comm-input { width:100%; box-sizing:border-box; }
+.account-password button { margin-top:8px; }
+
+.account-revoke { display:block; margin-top:12px; padding:9px 0; border:0; background:transparent; color:var(--accent-strong); font:inherit; font-size:13px; text-decoration:underline; cursor:pointer; }
+.account-revoke:focus-visible { outline:2px solid var(--accent-strong); outline-offset:3px; }

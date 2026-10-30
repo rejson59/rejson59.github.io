@@ -57,7 +57,21 @@
     });
   }
   function report(message) { error.textContent = message || ""; error.hidden = !message; }
-  function signedIn(username) { $("account-username").textContent = username; show("account-user"); window.dispatchEvent(new Event("rj:session-change")); }
+  function loadPasswordStatus() {
+    var session = stored();
+    if (!session) return;
+    $("password-status").textContent = "Sprawdzam sposób logowania…";
+    rpc("community_password_status", {p_token:session.token}).then(function (data) {
+      var current = stored();
+      if (!current || current.token !== session.token) return;
+      if (!data || typeof data.has_password !== "boolean") throw new Error("Nie udało się sprawdzić zabezpieczenia.");
+      $("password-status").textContent = data.has_password ? "Konto ma ustawione hasło." : "Twoje konto nadal używa PIN-u. Możesz ustawić hasło poniżej.";
+    }).catch(function () {
+      var current = stored();
+      if (current && current.token === session.token) $("password-status").textContent = "Nie udało się sprawdzić zabezpieczenia. Spróbuj później.";
+    });
+  }
+  function signedIn(username) { $("account-username").textContent = username; show("account-user"); loadPasswordStatus(); window.dispatchEvent(new Event("rj:session-change")); }
   function verify() {
     var seq = ++generation, session = stored();
     if (!session) { show("account-guest"); return; }
@@ -85,6 +99,8 @@
     $("mode-register").setAttribute("aria-pressed", String(next === "register"));
     submit.textContent = next === "login" ? "Zaloguj się" : "Utwórz konto";
     pin.autocomplete = next === "login" ? "current-password" : "new-password";
+    $("account-secret-label").textContent = next === "login" ? "Hasło lub dotychczasowy PIN" : "Hasło";
+    pin.placeholder = next === "login" ? "Twoje hasło lub PIN" : "Co najmniej 10 znaków";
     report("");
   }
   $("mode-login").addEventListener("click", function () { setMode("login"); });
@@ -92,8 +108,9 @@
   form.addEventListener("submit", function (event) {
     event.preventDefault();
     var username = name.value.trim(), value = pin.value;
-    if (!/^[A-Za-z0-9][A-Za-z0-9_.-]{2,23}$/.test(username) || !/^[0-9]{4}$/.test(value)) {
-      report("Nazwa: 3–24 znaki (litery, cyfry, _ . -); PIN: dokładnie 4 cyfry.");
+    var byteLength = new TextEncoder().encode(value).length;
+    if (!/^[A-Za-z0-9][A-Za-z0-9_.-]{2,23}$/.test(username) || byteLength > 72 || (mode === "login" ? !value.length : Array.from(value).length < 10)) {
+      report("Nazwa: 3–24 znaki; nowe hasło: co najmniej 10 znaków i maksymalnie 72 bajty.");
       return;
     }
     var seq = ++generation;
@@ -109,6 +126,41 @@
         returnToProject();
       }).catch(function (err) { if (seq === generation) report(err.message || "Nie udało się zalogować."); })
       .finally(function () { submit.disabled = false; });
+  });
+  $("password-form").addEventListener("submit", function (event) {
+    event.preventDefault();
+    var session = stored(), current = $("current-secret"), next = $("new-password"), confirm = $("confirm-password");
+    var result = $("password-result"), button = $("password-submit");
+    if (!session) { result.textContent = "Zaloguj się ponownie."; return; }
+    if (!current.value || Array.from(next.value).length < 10 || new TextEncoder().encode(next.value).length > 72) {
+      result.textContent = "Wpisz obecny PIN lub hasło i nowe hasło: co najmniej 10 znaków, maksymalnie 72 bajty."; return;
+    }
+    if (next.value !== confirm.value) { result.textContent = "Nowe hasła nie są takie same."; return; }
+    var seq = generation;
+    button.disabled = true; result.textContent = "Zapisuję…";
+    rpc("community_set_password", {p_token:session.token, p_current_secret:current.value, p_new_password:next.value})
+      .then(function (data) {
+        var still = stored();
+        if (seq !== generation || !still || still.token !== session.token) return;
+        if (!data || data.ok !== true) throw new Error("Nie udało się zapisać hasła.");
+        current.value = ""; next.value = ""; confirm.value = "";
+        result.textContent = "Hasło zapisane. Użyj go przy następnym logowaniu.";
+        loadPasswordStatus();
+      }).catch(function (err) { if (seq === generation) result.textContent = err.message || "Nie udało się zapisać hasła."; })
+      .finally(function () { button.disabled = false; });
+  });
+  $("revoke-other-sessions").addEventListener("click", function () {
+    var session = stored(), button = this, status = $("revoke-status"), seq = generation;
+    if (!session) { status.textContent = "Zaloguj się ponownie."; return; }
+    if (!window.confirm("Wylogować wszystkie pozostałe urządzenia? Na tym urządzeniu pozostaniesz zalogowany.")) return;
+    button.disabled = true; status.textContent = "Wylogowuję inne urządzenia…";
+    rpc("community_revoke_other_sessions", {p_token:session.token}).then(function (data) {
+      var still = stored();
+      if (seq !== generation || !still || still.token !== session.token) return;
+      if (!data || data.ok !== true) throw new Error("Nie udało się wylogować urządzeń.");
+      status.textContent = "Pozostałe sesje zostały wylogowane. To urządzenie pozostaje zalogowane.";
+    }).catch(function (err) { if (seq === generation) status.textContent = err.message || "Nie udało się wylogować urządzeń."; })
+      .finally(function () { button.disabled = false; });
   });
   function forget() {
     ++generation;

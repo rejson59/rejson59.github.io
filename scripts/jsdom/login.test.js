@@ -12,6 +12,7 @@ const tick = () => new Promise(resolve => setTimeout(resolve, 5));
 function create(initial, handler, opts = {}) {
   const dom = new JSDOM(html, {runScripts: 'outside-only', url:'https://rejson59.github.io/logowanie' + (opts.search || '')});
   const w = dom.window, d = w.document;
+  w.TextEncoder = TextEncoder;
   if (initial) w.localStorage.setItem(key, JSON.stringify(initial));
   if (opts.returnValue) w.sessionStorage.setItem('rejson_account_return_v1', JSON.stringify(opts.returnValue));
   const calls = [];
@@ -47,10 +48,30 @@ function create(initial, handler, opts = {}) {
   assert.equal(t.w.localStorage.getItem(key), null);
   t.d.getElementById('mode-register').click();
   assert.equal(t.d.getElementById('mode-register').getAttribute('aria-pressed'), 'true');
-  pin.value='1234';
+  pin.value='MojeBezpieczneHaslo';
   t.d.getElementById('account-form').dispatchEvent(new t.w.Event('submit',{bubbles:true,cancelable:true})); await tick();
-  assert.equal(t.calls[1].name, 'community_register');
+  assert.equal(t.calls.find(c => c.name === 'community_register').name, 'community_register');
+  assert.equal(t.calls.find(c => c.name === 'community_register').payload.p_pin, 'MojeBezpieczneHaslo');
   t.close();
+  const update = create({token,username:'Alice'}, async (fn) => fn === 'community_whoami' ? {data:{username:'Alice'}} : fn === 'community_password_status' ? {data:{has_password:false}} : {data:{ok:true}});
+  await tick();
+  assert.match(update.d.getElementById('password-status').textContent,/PIN/);
+  update.d.getElementById('current-secret').value = '1234';
+  update.d.getElementById('new-password').value = 'nowe bezpieczne hasło';
+  update.d.getElementById('confirm-password').value = 'inne hasło';
+  update.d.getElementById('password-form').dispatchEvent(new update.w.Event('submit',{bubbles:true,cancelable:true}));
+  assert.match(update.d.getElementById('password-result').textContent,/nie są takie same/);
+  assert.equal(update.calls.some(c => c.name === 'community_set_password'),false);
+  update.d.getElementById('confirm-password').value = 'nowe bezpieczne hasło';
+  update.d.getElementById('password-form').dispatchEvent(new update.w.Event('submit',{bubbles:true,cancelable:true})); await tick();
+  assert.deepEqual(update.calls.find(c => c.name === 'community_set_password').payload,{p_token:token,p_current_secret:'1234',p_new_password:'nowe bezpieczne hasło'});
+  assert.equal(update.d.getElementById('new-password').value,'');
+  assert.match(update.d.getElementById('password-result').textContent,/Hasło zapisane/);
+  update.w.confirm = () => true;
+  update.d.getElementById('revoke-other-sessions').click(); await tick();
+  assert.deepEqual(update.calls.find(c => c.name === 'community_revoke_other_sessions').payload,{p_token:token});
+  assert.match(update.d.getElementById('revoke-status').textContent,/pozostaje zalogowane/);
+  update.close();
   for (const value of [
     {path:'//evil.example/',at:Date.now()},
     {path:'/\\evil.example/',at:Date.now()},

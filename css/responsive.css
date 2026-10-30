@@ -86,3 +86,30 @@
 @media (prefers-reduced-motion:reduce) {
   .rj-home .rj-premium__sheen { animation:rj-premium-sheen 14s cubic-bezier(.45,.05,.35,1) infinite !important; }
 }
+
+/* Nowy topbar: krótsze ścieżki, spokojna nawigacja i menu bez duplikatów. */
+.rj-home .site-header { background:color-mix(in srgb,var(--bg) 87%,transparent); border-bottom:1px solid var(--liquid-border); box-shadow:0 8px 30px #0002; }
+.rj-home .header-inner { min-height:72px; }
+.rj-home .brand { letter-spacing:-.03em; }
+.rj-home .brand-mark { padding:5px; width:36px; height:36px; border:1px solid var(--liquid-border); border-radius:13px; background:var(--liquid-raised); box-shadow:inset 0 1px 0 var(--liquid-glint); }
+.rj-home .site-nav { padding:5px; border:1px solid var(--liquid-border); border-radius:999px; background:color-mix(in srgb,var(--bg-elev) 70%,transparent); }
+.rj-home .site-nav > a { font-size:13px; font-weight:700; }
+.rj-home .site-nav > a:hover { color:var(--accent-strong); }
+.rj-home .metric-badge,.rj-home .metric-more-toggle,.rj-home .mobile-account,.rj-home .hamburger-btn { box-shadow:inset 0 1px 0 var(--liquid-glint); }
+.rj-home .nav-more { position:relative; }
+.rj-home .nav-more > summary { list-style:none; display:flex; align-items:center; gap:7px; cursor:pointer; padding:9px 11px; color:var(--muted); border-radius:999px; font-size:13px; font-weight:700; }
+.rj-home .nav-more > summary::-webkit-details-marker { display:none; }
+.rj-home .nav-more > summary:hover,.rj-home .nav-more[open] > summary { color:var(--text); background:var(--liquid-raised); }
+.rj-home .nav-more summary:focus-visible { outline:2px solid var(--accent-strong); outline-offset:3px; }
+.rj-home .nav-more-panel { position:absolute; z-index:100; right:0; top:calc(100% + 14px); width:230px; display:grid; gap:4px; padding:12px; border:1px solid var(--liquid-border); border-radius:20px; background:var(--card); box-shadow:0 18px 50px #0005; }
+.rj-home .nav-more-panel a { display:flex; justify-content:flex-start; min-height:42px; gap:10px; }
+.rj-home .nav-more-label { color:var(--faint); font-size:10px; font-weight:800; letter-spacing:.12em; padding:6px 10px; }
+@media(max-width:1200px) {
+  .rj-home .site-nav { padding:12px; border-radius:22px; }
+  .rj-home .nav-more > summary { min-height:42px; padding:8px 12px; }
+  .rj-home .nav-more-panel { position:static; width:auto; margin:4px 0; box-shadow:none; background:var(--bg-elev); }
+}
+@media(max-width:760px) {
+  .rj-home .header-inner { min-height:64px; }
+  .rj-home .brand-mark { width:30px; height:30px; padding:4px; border-radius:11px; }
+}
