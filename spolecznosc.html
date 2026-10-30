@@ -240,8 +240,10 @@
   <script defer src="js/loader.js?v=12"></script>
   <noscript><link rel="stylesheet" href="css/loader.css?v=10"></noscript>
   <script defer src="js/error-reporter.js?v=1"></script>
-  </head>
-<body class="community-page">
+  <script defer src="/js/liquid-nav.js?v=1"></script>
+  <link rel="stylesheet" href="/css/liquid.css?v=2026-10-30-1">
+</head>
+<body class="rj-community community-page">
   <div id="rj-page-loader" aria-hidden="true">
     <div class="rj-loader-box">
       <div class="rj-dough"><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span></div>
@@ -491,6 +493,7 @@
             <span class="theme-toggle-label">Zmień motyw (jasny / ciemny)</span>
           </button>
         </nav>
+        <button class="hamburger-btn" id="liquid-menu-toggle" type="button" aria-label="Otwórz menu" aria-controls="site-nav" aria-expanded="false"><span aria-hidden="true">☰</span></button>
       </div>
     </div>
   </header>
@@ -505,104 +508,110 @@
       pod własną nazwą. <a href="logowanie">Otwórz stronę konta →</a></p>
     </section>
 
-    <!-- ============ LOGOWANIE / REJESTRACJA ============ -->
-    <section class="comm-auth" id="login-card" hidden aria-label="Logowanie lub rejestracja">
-      <div class="comm-auth-inner">
-        <h2>Dołącz do społeczności</h2>
-        <p class="comm-auth-sub">Wpisz nazwę użytkownika — powiemy Ci od razu, czy jest wolna.
-          Jeśli jest wolna: wymyślisz PIN. Jeśli zajęta: zalogujesz się swoim PIN-em.</p>
+    <div class="comm-layout">
+      <div class="comm-primary">
+        <!-- ============ LOGOWANIE / REJESTRACJA ============ -->
+        <section class="comm-auth" id="login-card" hidden aria-label="Logowanie lub rejestracja">
+          <div class="comm-auth-inner">
+            <h2>Dołącz do społeczności</h2>
+            <p class="comm-auth-sub">Wpisz nazwę użytkownika — powiemy Ci od razu, czy jest wolna.
+              Jeśli jest wolna: wymyślisz PIN. Jeśli zajęta: zalogujesz się swoim PIN-em.</p>
 
-        <form id="auth-form" novalidate>
-          <label class="comm-label" for="auth-username">Nazwa użytkownika</label>
-          <input class="comm-input" id="auth-username" name="username" type="text" autocomplete="username"
-                 maxlength="24" placeholder="np. Kuba_Craft" spellcheck="false" autocapitalize="off">
-          <p class="comm-name-status" id="name-status" aria-live="polite">3–24 znaki: litery, cyfry oraz _ . -</p>
+            <form id="auth-form" novalidate>
+              <label class="comm-label" for="auth-username">Nazwa użytkownika</label>
+              <input class="comm-input" id="auth-username" name="username" type="text" autocomplete="username"
+                     maxlength="24" placeholder="np. Kuba_Craft" spellcheck="false" autocapitalize="off">
+              <p class="comm-name-status" id="name-status" aria-live="polite">3–24 znaki: litery, cyfry oraz _ . -</p>
 
-          <label class="comm-label" for="auth-pin">PIN (4 cyfry)</label>
-          <input class="comm-input comm-pin" id="auth-pin" name="pin" type="password" inputmode="numeric"
-                 autocomplete="current-password" maxlength="4" pattern="[0-9]{4}" placeholder="••••">
+              <label class="comm-label" for="auth-pin">PIN (4 cyfry)</label>
+              <input class="comm-input comm-pin" id="auth-pin" name="pin" type="password" inputmode="numeric"
+                     autocomplete="current-password" maxlength="4" pattern="[0-9]{4}" placeholder="••••">
 
-          <p class="comm-error" id="auth-error" hidden></p>
+              <p class="comm-error" id="auth-error" hidden></p>
 
-          <button class="btn btn-primary comm-auth-btn" id="auth-submit" type="submit" disabled>Zaloguj / utwórz konto</button>
-        </form>
-      </div>
-    </section>
+              <button class="btn btn-primary comm-auth-btn" id="auth-submit" type="submit" disabled>Zaloguj / utwórz konto</button>
+            </form>
+          </div>
+        </section>
 
-    <!-- ============ KOMPONOWANIE WPISU (po zalogowaniu) ============ -->
-    <section class="comm-composer glass-card" id="composer-card" hidden aria-label="Nowy wpis">
-      <div class="comm-user-row">
-        <span class="comm-user-chip" id="user-chip">
-          <span class="comm-avatar" id="user-avatar">?</span>
-          <span id="user-name">—</span>
-        </span>
-        <button class="btn btn-ghost btn-sm" id="logout-btn" type="button">Wyloguj</button>
-      </div>
-      <textarea class="comm-textarea" id="post-content" rows="3" maxlength="2000"
-                placeholder="Napisz coś do społeczności: opinia o projekcie, propozycja, pytanie…"></textarea>
-      <input type="file" id="post-media-input" accept="image/png,image/jpeg,image/webp,image/gif,video/mp4,video/webm" multiple hidden>
-      <div class="comm-media-preview" id="post-media-preview" hidden></div>
-      <div class="comm-tags" id="post-tags" hidden>
-        <span class="comm-tags-label">Otaguj projekt (opcjonalnie):</span>
-        <div class="comm-tags-chips" id="post-tags-chips"></div>
-      </div>
-      <div class="comm-composer-foot">
-        <button class="comm-pill-btn comm-attach-btn" id="post-attach" type="button"
-                title="Dodaj zdjęcie (JPG / PNG / WebP / GIF do 6 MB) albo film (MP4 / WebM do 12 MB) — maks. 4 załączniki">
-          📎 Zdjęcie / film
-        </button>
-        <span class="comm-counter mono" id="post-counter">0 / 2000</span>
-        <button class="btn btn-primary btn-sm" id="post-submit" type="button" disabled>Opublikuj wpis</button>
-      </div>
-    </section>
+        <!-- ============ KOMPONOWANIE WPISU (po zalogowaniu) ============ -->
+        <section class="comm-composer glass-card" id="composer-card" hidden aria-label="Nowy wpis">
+          <div class="comm-user-row">
+            <span class="comm-user-chip" id="user-chip">
+              <span class="comm-avatar" id="user-avatar">?</span>
+              <span id="user-name">—</span>
+            </span>
+            <button class="btn btn-ghost btn-sm" id="logout-btn" type="button">Wyloguj</button>
+          </div>
+          <textarea class="comm-textarea" id="post-content" rows="3" maxlength="2000"
+                    placeholder="Napisz coś do społeczności: opinia o projekcie, propozycja, pytanie…"></textarea>
+          <input type="file" id="post-media-input" accept="image/png,image/jpeg,image/webp,image/gif,video/mp4,video/webm" multiple hidden>
+          <div class="comm-media-preview" id="post-media-preview" hidden></div>
+          <div class="comm-tags" id="post-tags" hidden>
+            <span class="comm-tags-label">Otaguj projekt (opcjonalnie):</span>
+            <div class="comm-tags-chips" id="post-tags-chips"></div>
+          </div>
+          <div class="comm-composer-foot">
+            <button class="comm-pill-btn comm-attach-btn" id="post-attach" type="button"
+                    title="Dodaj zdjęcie (JPG / PNG / WebP / GIF do 6 MB) albo film (MP4 / WebM do 12 MB) — maks. 4 załączniki">
+              📎 Zdjęcie / film
+            </button>
+            <span class="comm-counter mono" id="post-counter">0 / 2000</span>
+            <button class="btn btn-primary btn-sm" id="post-submit" type="button" disabled>Opublikuj wpis</button>
+          </div>
+        </section>
 
-    <!-- ============ KTO JEST TERAZ ONLINE ============ -->
-    <section class="comm-online-card glass-card" aria-label="Zalogowani użytkownicy online">
-      <h2><span class="comm-online-dot" aria-hidden="true"></span> Zalogowani teraz online</h2>
-      <div class="comm-online" id="comm-online">
-        <span class="comm-online-empty">Ładowanie…</span>
-      </div>
-    </section>
+        <!-- ============ LISTA WPISÓW ============ -->
+        <section class="comm-feed" aria-label="Wpisy społeczności">
+          <div class="comm-feed-head">
+            <h2>Wpisy społeczności</h2>
+            <button class="btn btn-ghost btn-sm" id="feed-refresh" type="button">Odśwież</button>
+          </div>
+          <div class="comm-tags comm-tags-filter" id="feed-tags" hidden>
+            <button type="button" class="comm-tags-toggle" id="feed-tags-toggle" aria-expanded="false" aria-controls="feed-tags-body">
+              🏷 <span id="feed-tags-title">Filtry projektów</span>
+              <span class="comm-tags-caret" aria-hidden="true">▾</span>
+            </button>
+            <div class="comm-tags-body" id="feed-tags-body" hidden>
+              <span class="comm-tags-label">Filtruj po projekcie:</span>
+              <div class="comm-tags-chips" id="feed-tags-chips"></div>
+            </div>
+          </div>
+          <div id="posts-feed">
+            <p class="comm-feed-empty" id="feed-empty">Ładowanie wpisów…</p>
+          </div>
+          <p class="comm-feed-note">Wpisy odświeżają się automatycznie co 12 sekund.</p>
+        </section>
 
-    <!-- ============ CZAT NA ŻYWO ============ -->
-    <section class="comm-chat glass-card" aria-label="Czat społeczności na żywo">
-      <header class="comm-chat-head">
-        <h2><span class="comm-chat-dot" aria-hidden="true"></span> Czat społeczności <span class="comm-chat-sub">na żywo</span></h2>
-        <span class="comm-chat-hint">odświeża się co 5 s</span>
-      </header>
-      <div class="comm-chat-list" id="chat-list" aria-live="polite">
-        <p class="comm-chat-empty">Ładowanie czatu…</p>
       </div>
-      <form class="comm-chat-form" id="chat-form" hidden>
-        <input class="comm-input" id="chat-input" type="text" maxlength="280" autocomplete="off"
-               placeholder="Napisz coś…" aria-label="Wiadomość na czat">
-        <button class="btn btn-primary btn-sm" id="chat-send" type="submit" disabled>Wyślij</button>
-      </form>
-      <p class="comm-chat-note" id="chat-note">Zaloguj się nazwą i PIN-em, aby pisać na czacie — czytanie nie wymaga konta.</p>
-    </section>
+      <aside class="comm-sidebar" aria-label="Społeczność na żywo">
+        <!-- ============ KTO JEST TERAZ ONLINE ============ -->
+        <section class="comm-online-card glass-card" aria-label="Zalogowani użytkownicy online">
+          <h2><span class="comm-online-dot" aria-hidden="true"></span> Zalogowani teraz online</h2>
+          <div class="comm-online" id="comm-online">
+            <span class="comm-online-empty">Ładowanie…</span>
+          </div>
+        </section>
 
-    <!-- ============ LISTA WPISÓW ============ -->
-    <section class="comm-feed" aria-label="Wpisy społeczności">
-      <div class="comm-feed-head">
-        <h2>Wpisy społeczności</h2>
-        <button class="btn btn-ghost btn-sm" id="feed-refresh" type="button">Odśwież</button>
-      </div>
-      <div class="comm-tags comm-tags-filter" id="feed-tags" hidden>
-        <button type="button" class="comm-tags-toggle" id="feed-tags-toggle" aria-expanded="false" aria-controls="feed-tags-body">
-          🏷 <span id="feed-tags-title">Filtry projektów</span>
-          <span class="comm-tags-caret" aria-hidden="true">▾</span>
-        </button>
-        <div class="comm-tags-body" id="feed-tags-body" hidden>
-          <span class="comm-tags-label">Filtruj po projekcie:</span>
-          <div class="comm-tags-chips" id="feed-tags-chips"></div>
-        </div>
-      </div>
-      <div id="posts-feed">
-        <p class="comm-feed-empty" id="feed-empty">Ładowanie wpisów…</p>
-      </div>
-      <p class="comm-feed-note">Wpisy odświeżają się automatycznie co 12 sekund.</p>
-    </section>
+        <!-- ============ CZAT NA ŻYWO ============ -->
+        <section class="comm-chat glass-card" aria-label="Czat społeczności na żywo">
+          <header class="comm-chat-head">
+            <h2><span class="comm-chat-dot" aria-hidden="true"></span> Czat społeczności <span class="comm-chat-sub">na żywo</span></h2>
+            <span class="comm-chat-hint">odświeża się co 5 s</span>
+          </header>
+          <div class="comm-chat-list" id="chat-list" aria-live="polite">
+            <p class="comm-chat-empty">Ładowanie czatu…</p>
+          </div>
+          <form class="comm-chat-form" id="chat-form" hidden>
+            <input class="comm-input" id="chat-input" type="text" maxlength="280" autocomplete="off"
+                   placeholder="Napisz coś…" aria-label="Wiadomość na czat">
+            <button class="btn btn-primary btn-sm" id="chat-send" type="submit" disabled>Wyślij</button>
+          </form>
+          <p class="comm-chat-note" id="chat-note">Zaloguj się nazwą i PIN-em, aby pisać na czacie — czytanie nie wymaga konta.</p>
+        </section>
 
+      </aside>
+    </div>
   </main>
 
   <footer class="site-footer">

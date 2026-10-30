@@ -26,7 +26,7 @@ const LOADER_FAST = LOADER
   .replace("}, 1200);", "}, 60);")
   .replace("[700, 1800, 4000].forEach", "[].forEach");
 
-const bodyStart = HTML.indexOf("<body>");
+const bodyStart = HTML.search(/<body(?:\s[^>]*)?>/i);
 const bootStart = HTML.indexOf("<!-- Loader startuje NATYCHMIAST");
 const bootEnd = HTML.indexOf("</script>", bootStart) + 9;
 const overlayHtml = HTML.slice(bodyStart, bootStart);
