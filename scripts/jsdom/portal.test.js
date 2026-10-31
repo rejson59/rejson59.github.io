@@ -52,14 +52,14 @@ function arrival(marker, opts = {}) {
     assert.equal(portal.querySelector('canvas'), null);
     assert.equal(portal.querySelector('script[src*="portal-webgl"]'), null);
     assert.equal(portal.querySelector('script[src*="portal-scene"]'), null);
-    assert.ok(portal.querySelector('#portal-door .orb-core .core-rift'));
-    assert.equal(portal.querySelectorAll('#portal-door .orb-world .orbit').length, 4);
-    assert.equal(portal.querySelectorAll('#portal-door .orb-world .orbit-flare').length, 2);
-    assert.match(css, /animation:orbit-one 8s linear infinite/);
-    assert.equal(portal.querySelectorAll('#portal-door .orb-world .shard').length, 4);
-    assert.equal(portal.querySelectorAll('#portal-door .orb-world .shard i').length, 12);
-    assert.match(css, /transform-style:\s*preserve-3d/);
-    assert.match(css, /translateZ\(/);
+    assert.equal(portal.querySelector('#portal-door .gate-art').getAttribute('src'), '/assets/portal-rift.svg');
+    assert.equal(portal.querySelectorAll('#portal-door .gate-energy').length, 2);
+    assert.equal(portal.querySelectorAll('#portal-door .gate-particles i').length, 10);
+    assert.equal(portal.querySelectorAll('.scene-atmosphere i').length, 3);
+    assert.match(css, /@keyframes gate-drift/);
+    assert.match(css, /@keyframes scene-meteor/);
+    assert.match(css, /translateZ\(/); // przestrzenny tunel w trakcie lotu
+    assert.match(read('assets/portal-rift.svg'), /#01040b/); // ciemne wnętrze
     assert.ok(portal.body.classList.contains('motion-override'));
     assert.ok(portal.querySelector('#flight .flight-darkness'));
     assert.equal(portal.querySelectorAll('#flight .tunnel-ring').length, 7);
@@ -85,7 +85,7 @@ function arrival(marker, opts = {}) {
     assert.match(css, /@keyframes flight-darkness/);
     assert.doesNotMatch(css, /portal-world\.jpg|cursor:\s*wait/);
     assert.match(css, /prefers-reduced-motion:\s*reduce/);
-    assert.match(css, /animation:\s*orbit-one/);
+    assert.match(css, /animation:gate-energy-one/);
   }
   {
     const t = room('RejStream');
@@ -104,7 +104,7 @@ function arrival(marker, opts = {}) {
     assert.equal(t.doc.getElementById('flight').style.getPropertyValue('--travel-x'), (t.w.innerWidth / 2 - 550) + 'px');
     assert.equal(t.doc.getElementById('flight').style.getPropertyValue('--travel-y'), (t.w.innerHeight / 2 - 250) + 'px');
     assert.ok(t.doc.getElementById('flight').classList.contains('is-active'));
-    assert.ok(t.doc.querySelector('#flight-mouth.has-source .flight-source .orb-core .core-rift'));
+    assert.ok(t.doc.querySelector('#flight-mouth.has-source .flight-source .gate-art'));
     assert.equal(t.w.sessionStorage.getItem(KEY), null); // czekamy na całą animację
     t.frame(0); t.frame(4100); assert.equal(t.w.sessionStorage.getItem(KEY), null);
     t.frame(4200); assert.equal(JSON.parse(t.w.sessionStorage.getItem(KEY)).path, '/RejStream/');

@@ -36,11 +36,11 @@ const server = http.createServer((req, res) => {
           darkness:styles(document.querySelector('.flight-darkness')), rail:styles(rail), ring:styles(ring), sourceVisibility:getComputedStyle(source).visibility };
       }
       return { first:at(300), middle:at(1700), later:at(2300), end:at(4200),
-        orbitAnimation:getComputedStyle(source.querySelector('.orbit-one')).animationName,
-        originalPaused:getComputedStyle(document.querySelector('#portal-door .orbit-one')).animationPlayState,
-        sourceOrbitPlayState:getComputedStyle(source.querySelector('.orbit-one')).animationPlayState };
+        orbitAnimation:getComputedStyle(source.querySelector('.gate-energy--one')).animationName,
+        originalPaused:getComputedStyle(document.querySelector('#portal-door .gate-energy--one')).animationPlayState,
+        sourceOrbitPlayState:getComputedStyle(source.querySelector('.gate-energy--one')).animationPlayState };
     });
-    assert.equal(result.orbitAnimation, 'orbit-one'); // rzeczywista animowana brama
+    assert.equal(result.orbitAnimation, 'gate-energy-one'); // rzeczywista animowana brama
     assert.equal(result.originalPaused, 'paused');
     assert.notEqual(result.first.mouth.transform, result.middle.mouth.transform);
     assert.ok(result.middle.tunnel.opacity > result.first.tunnel.opacity);
