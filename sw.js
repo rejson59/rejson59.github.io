@@ -110,7 +110,7 @@ self.addEventListener("fetch", function (event) {
                 inject += '\n<link rel="stylesheet" href="/css/mobile-ads.css?v=3"><script src="/js/mobile-ads.js?v=3" defer></script>';
               }
               if (!hasWidgetScript) {
-                inject += '\n<script src="/rejson-widgets/widget.js?v=10" data-project="' + safeSlug + '" defer></script>';
+                inject += '\n<script src="/rejson-widgets/widget.js?v=11" data-project="' + safeSlug + '" defer></script>';
               }
               // Efekt wyjścia tylko na dokumentach projektów pod /projekt/.
               // Skrypt działa wyłącznie, jeśli ta karta ma jednorazowy znacznik
@@ -120,7 +120,7 @@ self.addEventListener("fetch", function (event) {
                 ? '<link rel="stylesheet" href="/css/portal.css?v=17" data-rj-portal-style><script src="/js/portal-arrival.js?v=16"></script>' : "";
               // Zachowujemy politykę CSP projektu, ale wstawiamy wyjście przed
               // blokującymi skryptami, o ile jest już za wszystkimi meta CSP.
-              var upgradedHtml = html.replace(/(<script\b[^>]*\bsrc\s*=\s*["'](?:https:\/\/rejson59\.github\.io)?\/rejson-widgets\/widget\.js)(?:\?v=(?:[0-9]))?(["'])/gi, "$1?v=10$2");
+              var upgradedHtml = html.replace(/(<script\b[^>]*\bsrc\s*=\s*["'](?:https:\/\/rejson59\.github\.io)?\/rejson-widgets\/widget\.js)(?:\?v=(?:[0-9]|10))?(["'])/gi, "$1?v=11$2");
               upgradedHtml = upgradedHtml.replace(/(<script\b[^>]*\bsrc\s*=\s*["'](?:https:\/\/rejson59\.github\.io)?\/js\/mobile-ads\.js)(?:\?v=[12])?(["'])/gi, "$1?v=3$2");
               upgradedHtml = upgradedHtml.replace(/(<link\b[^>]*\bhref\s*=\s*["'](?:https:\/\/rejson59\.github\.io)?\/css\/mobile-ads\.css)(?:\?v=[12])?(["'])/gi, "$1?v=3$2");
               upgradedHtml = upgradedHtml.replace(/(<script\b[^>]*\bsrc\s*=\s*["'](?:https:\/\/rejson59\.github\.io)?\/js\/media-capture\.js)(?:\?v=[0-1])?(["'])/gi, "$1?v=2$2");

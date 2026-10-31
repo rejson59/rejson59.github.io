@@ -469,27 +469,27 @@
     ".rj-collapse {",
     "  position: fixed;",
     "  z-index: 2147483002;",
-    "  width: 22px;",
-    "  height: 22px;",
+    "  width: 28px;",
+    "  height: 28px;",
     "  border-radius: 999px;",
-    "  border: 1px solid var(--rj-line);",
-    "  background: var(--rj-glass);",
-    "  backdrop-filter: blur(16px) saturate(160%);",
-    "  -webkit-backdrop-filter: blur(16px) saturate(160%);",
-    "  color: var(--rj-ink);",
-    "  font: 700 12px/1 'Inter', system-ui, sans-serif;",
+    "  border: 1px solid rgba(184, 213, 255, 0.5);",
+    "  background: #1b2739;",
+    "  color: #ffffff;",
+    "  font: 700 17px/1 system-ui, sans-serif;",
     "  display: grid;",
     "  place-items: center;",
     "  padding: 0;",
     "  cursor: pointer;",
-    "  opacity: 0.7;",
+    "  opacity: 1;",
     "  pointer-events: auto;",
     "  box-shadow: 0 6px 18px -6px rgba(0, 0, 0, 0.5);",
     "  transition: opacity 0.16s ease, transform 0.16s ease;",
     "  touch-action: manipulation;",
     "}",
-    ".rj-collapse:hover { opacity: 1; transform: scale(1.14); }",
-    ".rj-collapse.is-hidden { opacity: 0; pointer-events: none !important; }",
+    ":host([data-theme='light']) .rj-collapse { background: #fff; color: #17243a; border-color: #8293aa; }",
+    ".rj-collapse:hover { transform: scale(1.08); }",
+    ".rj-collapse:focus-visible { outline: 2px solid #74b5ff; outline-offset: 2px; }",
+    ".rj-collapse.is-hidden { opacity: 0; visibility: hidden; pointer-events: none !important; }",
 
     ".rj-dot {",
     "  width: 8px;",
@@ -920,27 +920,42 @@
   var slotEl = shadow.querySelector(".rj-slot");
   var collapseBtn = shadow.querySelector(".rj-collapse");
 
-  /* Ustawia/zmienia mały przycisk zwijania pigułki (poza zasięgiem clipów
-     glassa — jest rodzeństwem powierzchni, pozycjonowanym na sztywno). */
+  /* Przycisk jest rodzeństwem szkła (nie podlega jego overflow:hidden).
+     Pozycję liczymy także po zmianie rozmiaru i układu — nie tylko w czasie morfingu. */
   function positionCollapseBtn() {
     if (!collapseBtn) return;
     var hidden = state.open || state.dragging || state.pointerLocked;
     collapseBtn.classList.toggle("is-hidden", hidden);
     if (hidden) return;
     var rect = vesselEl.getBoundingClientRect();
-    if (!rect.width || !rect.height) return;
+    if (!rect.width || !rect.height) { collapseBtn.classList.add("is-hidden"); return; }
     var isEdge = state.mode === "edge";
-    var cx = rect.left + rect.width / 2;
-    if (!isEdge) cx = rect.right - 14; /* pigułka: przy górnym prawym rogu */
-    collapseBtn.style.left = Math.round(cx - 11) + "px";
-    var above = rect.top >= 46;
-    collapseBtn.style.top = Math.round(above ? rect.top - 30 : rect.bottom + 8) + "px";
+    var size = 28, margin = 4;
+    var onRight = state.corner.indexOf("right") !== -1;
+    var cx = isEdge ? (onRight ? rect.right - size / 2 : rect.left + size / 2) : rect.right - size / 2;
+    var x = Math.max(margin, Math.min(window.innerWidth - size - margin, cx - size / 2));
+    /* Górne rogi: poniżej pigułki, aby nie wejść w wycięcie ekranu. */
+    var y = state.corner.indexOf("top") !== -1 ? rect.bottom + 6 : rect.top - size - 6;
+    y = Math.max(margin, Math.min(window.innerHeight - size - margin, y));
+    /* Przy pełnym ekranie przodkiem może być transformowany kontener. */
+    var origin = hostEl.getBoundingClientRect();
+    collapseBtn.style.left = Math.round(x - origin.left) + "px";
+    collapseBtn.style.top = Math.round(y - origin.top) + "px";
     collapseBtn.textContent = isEdge ? "+" : "–";
     var tt = isEdge
       ? "Przywróć pigułkę na ekran"
       : "Schowaj pigułkę do uchwytu przy krawędzi ekranu";
     collapseBtn.setAttribute("title", tt);
     collapseBtn.setAttribute("aria-label", tt);
+  }
+
+  var collapsePositionFrame = 0;
+  function scheduleCollapsePosition() {
+    if (collapsePositionFrame) return;
+    collapsePositionFrame = requestAnimationFrame(function () {
+      collapsePositionFrame = 0;
+      positionCollapseBtn();
+    });
   }
 
   function updateErrorDot() {
@@ -1998,10 +2013,16 @@
   }
   function onWindowResize() {
     if (state.open) kickMorphSpring();
+    scheduleCollapsePosition();
   }
   window.addEventListener("keydown", onShortcutKey);
   document.addEventListener("pointerlockchange", onPointerLockChange);
   window.addEventListener("resize", onWindowResize);
+  window.addEventListener("scroll", scheduleCollapsePosition, { passive: true });
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", scheduleCollapsePosition);
+    window.visualViewport.addEventListener("scroll", scheduleCollapsePosition);
+  }
 
   /* Po załadowaniu panelu papli: usuń ewentualny niechciany obrót/przesunięcie warstwy
      (transform „none" + wyzerowane zmienne --papla-*). */
@@ -2067,6 +2088,8 @@
         state.resolvedTheme = next;
         hostEl.setAttribute("data-theme", next);
       }
+      /* Klasa/styl strony może przestawić pigułkę np. nad reklamy mobilne. */
+      scheduleCollapsePosition();
     });
     themeObserver.observe(document.documentElement, {
       attributes: true,
@@ -2127,6 +2150,12 @@
       window.removeEventListener("keydown", onShortcutKey);
       document.removeEventListener("pointerlockchange", onPointerLockChange);
       window.removeEventListener("resize", onWindowResize);
+      window.removeEventListener("scroll", scheduleCollapsePosition);
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener("resize", scheduleCollapsePosition);
+        window.visualViewport.removeEventListener("scroll", scheduleCollapsePosition);
+      }
+      if (collapsePositionFrame) { cancelAnimationFrame(collapsePositionFrame); collapsePositionFrame = 0; }
       if (morph.raf) { cancelAnimationFrame(morph.raf); morph.raf = 0; }
       if (hostEl.parentNode) hostEl.parentNode.removeChild(hostEl);
     },
