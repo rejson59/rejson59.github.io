@@ -26,7 +26,7 @@ const external=new dom.window.MouseEvent('click',{bubbles:true,cancelable:true,b
 dom.window.open=()=>null;const blocked=new dom.window.MouseEvent('click',{bubbles:true,cancelable:true,button:0});dom.window.document.querySelector('a').dispatchEvent(blocked);assert.equal(blocked.defaultPrevented,false);dom.window.close();
 
 function arrival(marker, url='/Project/', sheet=true) {
- const d=new JSDOM('<!doctype html><html><head><link data-rj-portal-style href="/css/portal.css?v=16"></head><body></body></html>',{url:'https://rejson59.github.io'+url,runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:new VirtualConsole()});
+ const d=new JSDOM('<!doctype html><html><head><link data-rj-portal-style href="/css/portal.css?v=17"></head><body></body></html>',{url:'https://rejson59.github.io'+url,runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:new VirtualConsole()});
  const w=d.window; w.matchMedia=()=>({matches:false}); w.requestAnimationFrame=()=>1;
  const computed=w.getComputedStyle.bind(w);w.getComputedStyle=el=>el.id==='rj-arrival-css-check'?{position:'fixed',zIndex:'2147483645'}:computed(el);
  if(sheet) Object.defineProperty(w.document.querySelector('link'),'sheet',{value:{}});
@@ -35,7 +35,7 @@ function arrival(marker, url='/Project/', sheet=true) {
 let w=arrival({path:'/Project/',at:Date.now(),name:'<b>Test</b>',motionOverride:true});
 assert.ok(w.document.querySelector('#rj-portal-arrival .rj-arrival-rocket'));
 assert.equal(w.document.querySelector('.rj-arrival-name').textContent,'<b>Test</b>');assert.equal(w.document.querySelector('.rj-arrival-name b'),null);
-assert.equal(w.document.querySelectorAll('.rj-arrival-puffs i').length,3);assert.equal(w.sessionStorage.getItem('rj_rocket_overlay_v2'),null);w.close();
+assert.equal(w.document.querySelectorAll('.rj-arrival-puffs i').length,3);assert.equal(w.document.querySelector('.rj-arrival-route'),null);assert.equal(w.sessionStorage.getItem('rj_rocket_overlay_v2'),null);w.close();
 for(const marker of ['not json',{path:'/Other/',at:Date.now()},{path:'/Project/',at:Date.now()-61000}]) { w=arrival(marker);assert.equal(w.document.querySelector('#rj-portal-arrival'),null);w.close(); }
 w=arrival({path:'/Project/',at:Date.now()},'/Project/',false);assert.equal(w.document.querySelector('#rj-portal-arrival'),null);w.close();
 console.log('PASS: bezpośrednie linki, prywatny znacznik karty, bezpieczne fallbacki i nakładka projektu');
