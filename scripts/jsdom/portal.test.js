@@ -49,18 +49,13 @@ function arrival(marker, opts = {}) {
   {
     const portal = new JSDOM(read('portal/index.html')).window.document;
     const css = read('css/portal-room.css');
-    assert.equal(portal.querySelector('canvas'), null);
-    assert.equal(portal.querySelector('script[src*="portal-webgl"]'), null);
-    assert.equal(portal.querySelector('script[src*="portal-scene"]'), null);
+    assert.ok(portal.querySelector('#three-scene'));
+    assert.equal(portal.querySelector('script[src*="portal-three.js"]').type, 'module');
+    assert.match(read('js/portal-three.js'), /WebGLRenderer/);
+    assert.match(read('js/portal-three.js'), /InstancedMesh/);
     assert.ok(portal.querySelector('#portal-door .gate-structure .gate-void'));
     assert.equal(portal.querySelectorAll('#portal-door .gate-stardust i').length, 8);
-    assert.equal(portal.querySelectorAll('.pathway .step').length, 8);
-    assert.ok(portal.querySelector('#scene-camera'));
-    assert.ok(portal.querySelector('.flying-creature svg'));
     assert.equal(portal.querySelectorAll('#portal-door .gate-energy').length, 2);
-    assert.match(css, /perspective:900px/);
-    assert.match(css, /@keyframes step-float/);
-    assert.match(css, /@keyframes camera-approach/);
     assert.match(css, /@keyframes gate-streak/);
     assert.match(css, /translateZ\(/); // przestrzenny tunel w trakcie lotu
     assert.ok(portal.body.classList.contains('motion-override'));
@@ -101,7 +96,9 @@ function arrival(marker, opts = {}) {
     assert.equal(t.doc.getElementById('flight').classList.contains('is-active'), false); // bez automatycznej nawigacji
     t.doc.getElementById('portal-door').getBoundingClientRect = () => ({ left:400, top:100, width:300, height:300 });
     const feedback = t.doc.createElement('div'); feedback.id = 'rejson-liquid-widget-root'; feedback.style.setProperty('visibility','visible','important'); t.doc.documentElement.appendChild(feedback);
+    let flightEvents = 0; t.doc.addEventListener('rj-portal-flight', () => flightEvents++);
     t.doc.getElementById('enter').click();
+    assert.equal(flightEvents, 1);
     assert.equal(feedback.style.visibility, 'hidden');
     assert.equal(t.doc.getElementById('flight').style.getPropertyValue('--portal-x'), '550px');
     assert.equal(t.doc.getElementById('flight').style.getPropertyValue('--portal-y'), '250px');
