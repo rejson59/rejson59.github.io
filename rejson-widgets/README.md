@@ -72,10 +72,11 @@ Skrót klawiszowy na każdej stronie: **`Alt + R`**.
 
 Zewnętrzna warstwa widżetu (`#rejson-liquid-widget-root`) działa jak „papla”, która **nigdy nie blokuje kliknięć strony**:
 
-- `pointer-events: none` na całej warstwie — interakcję odzyskuje wyłącznie szklana pigułka (`.rj-vessel`),
+- `pointer-events: none` na całej warstwie — interaktywne pozostają tylko szklana pigułka (`.rj-vessel`) i jej przycisk plus/minus,
 - transformację warstwy sterują zmienne **`--papla-rot` / `--papla-tx` / `--papla-ty`** (domyślnie `0`), a po zamontowaniu panelu widżet **zeruje je i czyści `transform`**, usuwając ewentualny niespodziewany obrót/przesunięcie,
 - pozycjonowanie uwzględnia **strefę bezpieczeństwa** urządzeń z wycięciem ekranu (`env(safe-area-inset-*)`), także w trybie `Edge Dock`,
-- do czyszczenia po sobie służy **`RejsonWidget.destroy()`** — zeruje zmienne `papla`, odpina globalne nasłuchy (`keydown`, `pointerlockchange`, `resize`) i usuwa węzeł z DOM.
+- przycisk plus/minus ma czytelny kontrast i dopasowuje położenie do pigułki po zmianie rozmiaru, układu i obszaru widocznego; znika tylko na czas otwartego formularza, przeciągania lub blokady kursora w grze,
+- do czyszczenia po sobie służy **`RejsonWidget.destroy()`** — zeruje zmienne `papla`, odpina nasłuchy i usuwa węzeł z DOM.
 
 ---
 

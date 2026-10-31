@@ -53,6 +53,8 @@ const server = http.createServer((req,res) => {
       assert.ok(await host.locator('.rj-vessel').isVisible());
       const fullBox = await host.locator('.rj-vessel').boundingBox();
       assert.ok(fullBox && fullBox.x >= 0 && fullBox.y >= 0 && fullBox.x + fullBox.width <= 1000 && fullBox.y + fullBox.height <= 700, 'pigułka widoczna w pełnym ekranie kontenera');
+      const fullControl=await host.locator('.rj-collapse').boundingBox();assert.ok(fullControl&&fullControl.x>=0&&fullControl.x+fullControl.width<=1000&&fullControl.y>=0&&fullControl.y+fullControl.height<=700,'przycisk plus/minus pozostaje na ekranie w fullscreen');
+      assert.ok(Math.abs(fullControl.y+fullControl.height-fullBox.y)<10,'przycisk jest przy pigułce także w fullscreen');
       await p.evaluate(()=>document.exitFullscreen());
       await p.waitForFunction(()=>document.getElementById('rejson-liquid-widget-root').parentNode===document.documentElement);
     }

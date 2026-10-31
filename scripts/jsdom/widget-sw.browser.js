@@ -10,8 +10,8 @@ const requests=[];
 const server=http.createServer((req,res)=>{
   const u=new URL(req.url,'http://localhost'); requests.push(req.url);
   if (u.pathname === '/bootstrap') {res.writeHead(200,{'content-type':'text/html'});return res.end('<!doctype html><html><body>start</body></html>');}
-  if (u.pathname === '/Project/' || u.pathname === '/OldVersion/' || u.pathname === '/Blocked/') {
-    const widget=u.pathname === '/Project/' ? '<!-- przykład rejson-widgets/widget.js -->' : '<script src="/rejson-widgets/widget.js?v=4" data-project="OldVersion"></script>';
+  if (u.pathname === '/Project/' || u.pathname === '/OldVersion/' || u.pathname === '/V10/' || u.pathname === '/Blocked/') {
+    const widget=u.pathname === '/Project/' ? '<!-- przykład rejson-widgets/widget.js -->' : '<script src="/rejson-widgets/widget.js?v=' + (u.pathname === '/V10/' ? '10' : '4') + '" data-project="OldVersion"></script>';
     res.writeHead(200,{'content-type':'text/html','content-security-policy':u.pathname === '/Blocked/' ? "default-src 'self'; style-src 'none'; connect-src 'self'" : "default-src 'self'; connect-src 'self'"});
     return res.end(`<!doctype html><html><head><title>Projekt</title></head><body><main>Projekt</main>${widget}</body></html>`);
   }
@@ -35,14 +35,15 @@ const server=http.createServer((req,res)=>{
     await page.setViewportSize({width:375,height:750});
     assert.equal(await page.locator('#rj-mobile-ads').isVisible(),true,'centralny worker dołącza reklamy na zgodnej stronie projektu');
     assert.ok(requests.some(r=>r.startsWith('/js/mobile-ads.js?v=3')));
-    assert.ok(requests.some(r=>r.startsWith('/rejson-widgets/widget.js?v=10')),'komentarz nie blokuje dodania');
+    assert.ok(requests.some(r=>r.startsWith('/rejson-widgets/widget.js?v=11')),'komentarz nie blokuje dodania');
     requests.length=0;
     await page.goto(origin+'/OldVersion/');
     await page.locator('#rejson-liquid-widget-root').waitFor({state:'attached',timeout:10000});
     assert.equal(await page.evaluate(()=>window.RejsonWidget.getState().config.project),'OldVersion');
-    assert.ok(requests.some(r=>r.startsWith('/rejson-widgets/widget.js?v=10')),'stary jawny adres dostaje aktualną wersję');
+    assert.ok(requests.some(r=>r.startsWith('/rejson-widgets/widget.js?v=11')),'stary jawny adres dostaje aktualną wersję');
     assert.ok(!requests.some(r=>r.startsWith('/rejson-widgets/widget.js?v=4')));
     assert.equal(await page.locator('#rejson-liquid-widget-root').count(),1);
+    requests.length=0;await page.goto(origin+'/V10/');await page.locator('#rejson-liquid-widget-root').waitFor({state:'attached'});assert.ok(requests.some(r=>r.startsWith('/rejson-widgets/widget.js?v=11')),'projekt z v10 otrzymuje poprawkę');assert.ok(!requests.some(r=>r.startsWith('/rejson-widgets/widget.js?v=10')));
     await page.goto(origin+'/Blocked/');await page.waitForLoadState('load');
     assert.equal(await page.locator('#rj-mobile-ads').count(),0,'blokująca CSP nie psuje układu projektu');
     await page.goto(origin+'/bootstrap');await page.evaluate(()=>{const f=document.createElement('iframe');f.id='preview';f.src='/Project/';document.body.appendChild(f)});
