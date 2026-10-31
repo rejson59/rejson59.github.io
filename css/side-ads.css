@@ -3,8 +3,6 @@
 @media (min-width:1200px) {
   body.rj-side-ads-enabled > main, body.rj-side-ads-enabled > main[class], body.rj-side-ads-enabled > footer { width:calc(100% - 320px); margin-left:auto; margin-right:auto; }
   .rj-side-ads { position:fixed; top:90px; z-index:20; display:flex; flex-direction:column; gap:12px; width:140px; max-height:calc(100vh - 105px); overflow-y:auto; scrollbar-width:thin; }
-  .rj-side-ads-close { position:absolute; z-index:1; top:8px; right:8px; width:24px; height:24px; padding:0; border:0; border-radius:50%; background:#ffffff1a; color:#f0f7ff; font:18px/1 system-ui,sans-serif; cursor:pointer; }
-  .rj-side-ads-close:hover { background:#ffffff35; }.rj-side-ads-close:focus-visible { outline:2px solid #a9eedb; outline-offset:2px; }
   .rj-side-ads--left { left:12px; }.rj-side-ads--right { right:12px; }
   .rj-side-ad { box-sizing:border-box; display:flex; flex-direction:column; gap:10px; min-height:188px; padding:16px 13px; border:1px solid #99c8e933; border-radius:16px; color:#eaf8ff; background:#172632; text-decoration:none; font:400 12px/1.42 system-ui,sans-serif; box-shadow:0 12px 26px #0002; transition:transform .2s,border-color .2s; overflow-wrap:anywhere; }
   .rj-side-ad:hover { transform:translateY(-2px); border-color:#9ce7d5; }.rj-side-ad:focus-visible { outline:3px solid #9ce7d5; outline-offset:2px; }
