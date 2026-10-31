@@ -1,10 +1,24 @@
 // Kopia zapasowa listy projektów (fallback, gdyby API GitHuba było niedostępne).
-// Wygenerowano: 2026-10-21 — odśwież: python3 scripts/fetch-repos.py
-window.PROJECTS_GENERATED_AT = "2026-10-21";
+// Wygenerowano: 2026-10-31 — odśwież: python3 scripts/fetch-repos.py
+window.PROJECTS_GENERATED_AT = "2026-10-31";
 window.PROJECTS_FALLBACK = [
   {
+    "name": "RejSearch",
+    "description": "Moja własna wyszukiwarka internetowa!",
+    "html_url": "https://github.com/rejson59/RejSearch",
+    "homepage": null,
+    "has_pages": true,
+    "language": "CSS",
+    "stargazers_count": 0,
+    "forks_count": 0,
+    "topics": [],
+    "created_at": "2026-10-31T20:09:55Z",
+    "updated_at": "2026-10-31T21:53:04Z",
+    "pushed_at": "2026-10-31T21:52:59Z"
+  },
+  {
     "name": "mconline",
-    "description": "Zagraj w moją własną przerobiona wersję minecrafta w przeglądarce",
+    "description": "Zagraj w moją własną przerobiona wersję minecrafta w przeglądarce (wersja beta, może nie działać)",
     "html_url": "https://github.com/rejson59/mconline",
     "homepage": "https://rejson59.github.io/mconline/",
     "has_pages": true,
@@ -13,22 +27,148 @@ window.PROJECTS_FALLBACK = [
     "forks_count": 0,
     "topics": [],
     "created_at": "2026-09-25T16:45:30Z",
-    "updated_at": "2026-10-21T19:34:50Z",
-    "pushed_at": "2026-10-21T19:34:45Z"
+    "updated_at": "2026-10-31T21:15:38Z",
+    "pushed_at": "2026-10-31T21:15:33Z"
   },
   {
-    "name": "rejson-widgets",
-    "description": "Special widgets to my pages",
-    "html_url": "https://github.com/rejson59/rejson-widgets",
+    "name": "ProStudent",
+    "description": "Strona stworzona dla uczniów żeby bardziej ogarniali szkołę i te sprawy",
+    "html_url": "https://github.com/rejson59/ProStudent",
+    "homepage": null,
+    "has_pages": true,
+    "language": "TypeScript",
+    "stargazers_count": 0,
+    "forks_count": 0,
+    "topics": [],
+    "created_at": "2026-10-26T09:43:58Z",
+    "updated_at": "2026-10-31T14:53:30Z",
+    "pushed_at": "2026-10-31T14:53:25Z"
+  },
+  {
+    "name": "RejStream",
+    "description": "Oglądaj seriale i filmy online!",
+    "html_url": "https://github.com/rejson59/RejStream",
+    "homepage": "https://rejson59.github.io/RejStream/",
+    "has_pages": true,
+    "language": "JavaScript",
+    "stargazers_count": 0,
+    "forks_count": 0,
+    "topics": [],
+    "created_at": "2026-10-24T21:42:04Z",
+    "updated_at": "2026-10-30T21:09:27Z",
+    "pushed_at": "2026-10-30T21:09:22Z"
+  },
+  {
+    "name": "mc-launcher",
+    "description": "Zagraj w ORYGINALNEGO Minecrafta w przeglądarce",
+    "html_url": "https://github.com/rejson59/mc-launcher",
+    "homepage": "https://mc-launcher-relay.vercel.app",
+    "has_pages": true,
+    "language": "JavaScript",
+    "stargazers_count": 0,
+    "forks_count": 0,
+    "topics": [],
+    "created_at": "2026-10-28T07:44:49Z",
+    "updated_at": "2026-10-30T16:11:06Z",
+    "pushed_at": "2026-10-30T16:11:01Z"
+  },
+  {
+    "name": "RejFile",
+    "description": "Strona do przesyłania i udostępniania plików",
+    "html_url": "https://github.com/rejson59/RejFile",
     "homepage": null,
     "has_pages": false,
     "language": null,
     "stargazers_count": 0,
     "forks_count": 0,
     "topics": [],
-    "created_at": "2026-10-21T13:21:06Z",
-    "updated_at": "2026-10-21T13:22:07Z",
-    "pushed_at": "2026-10-21T18:22:44Z"
+    "created_at": "2026-10-30T09:47:25Z",
+    "updated_at": "2026-10-30T09:47:31Z",
+    "pushed_at": "2026-10-30T09:47:27Z"
+  },
+  {
+    "name": "Jakuplayer",
+    "description": "Słuchaj muzyki za darmo i bez ograniczeń",
+    "html_url": "https://github.com/rejson59/Jakuplayer",
+    "homepage": null,
+    "has_pages": true,
+    "language": "JavaScript",
+    "stargazers_count": 0,
+    "forks_count": 0,
+    "topics": [],
+    "created_at": "2025-06-29T22:06:48Z",
+    "updated_at": "2026-10-28T16:50:08Z",
+    "pushed_at": "2026-10-28T16:50:03Z"
+  },
+  {
+    "name": "Zayra-ai-asistant",
+    "description": "Moja osobista asystentka Zayra",
+    "html_url": "https://github.com/rejson59/Zayra-ai-asistant",
+    "homepage": null,
+    "has_pages": false,
+    "language": null,
+    "stargazers_count": 0,
+    "forks_count": 0,
+    "topics": [],
+    "created_at": "2026-10-26T16:15:05Z",
+    "updated_at": "2026-10-26T16:15:11Z",
+    "pushed_at": "2026-10-26T19:54:11Z"
+  },
+  {
+    "name": "roblox-online",
+    "description": "Zagraj w roblox w przeglądarce",
+    "html_url": "https://github.com/rejson59/roblox-online",
+    "homepage": null,
+    "has_pages": false,
+    "language": null,
+    "stargazers_count": 0,
+    "forks_count": 0,
+    "topics": [],
+    "created_at": "2026-10-23T11:27:38Z",
+    "updated_at": "2026-10-23T11:27:43Z",
+    "pushed_at": "2026-10-29T15:27:01Z"
+  },
+  {
+    "name": "kompi",
+    "description": "Kompilator online do c++ (i może w przyszłości innych języków)",
+    "html_url": "https://github.com/rejson59/kompi",
+    "homepage": null,
+    "has_pages": true,
+    "language": "TypeScript",
+    "stargazers_count": 0,
+    "forks_count": 0,
+    "topics": [],
+    "created_at": "2026-10-12T19:54:33Z",
+    "updated_at": "2026-10-23T00:05:35Z",
+    "pushed_at": "2026-10-23T00:05:30Z"
+  },
+  {
+    "name": "zaplecze-resellera",
+    "description": "Testowy sklep internetowy",
+    "html_url": "https://github.com/rejson59/zaplecze-resellera",
+    "homepage": "https://zaplecze-resellera.vercel.app",
+    "has_pages": true,
+    "language": null,
+    "stargazers_count": 0,
+    "forks_count": 0,
+    "topics": [],
+    "created_at": "2026-10-18T10:00:55Z",
+    "updated_at": "2026-10-21T21:15:12Z",
+    "pushed_at": "2026-10-28T08:21:59Z"
+  },
+  {
+    "name": "AnimationBuilder",
+    "description": "Jakiś randomowy program do tworzenia filmów którego nawet jeszcze nie przetestowałem xd",
+    "html_url": "https://github.com/rejson59/AnimationBuilder",
+    "homepage": "https://rejson59.github.io/AnimationBuilder/",
+    "has_pages": true,
+    "language": "JavaScript",
+    "stargazers_count": 0,
+    "forks_count": 0,
+    "topics": [],
+    "created_at": "2026-09-17T17:04:09Z",
+    "updated_at": "2026-10-21T20:46:01Z",
+    "pushed_at": "2026-09-17T17:35:06Z"
   },
   {
     "name": "JoyPad",
@@ -42,7 +182,7 @@ window.PROJECTS_FALLBACK = [
     "topics": [],
     "created_at": "2026-09-23T08:18:54Z",
     "updated_at": "2026-10-21T07:15:14Z",
-    "pushed_at": "2026-10-21T18:52:50Z"
+    "pushed_at": "2026-10-23T18:08:01Z"
   },
   {
     "name": "Blessed-Optimizer",
@@ -57,20 +197,6 @@ window.PROJECTS_FALLBACK = [
     "created_at": "2026-10-03T18:48:48Z",
     "updated_at": "2026-10-20T17:03:01Z",
     "pushed_at": "2026-10-08T17:22:22Z"
-  },
-  {
-    "name": "zaplecze-resellera",
-    "description": "Testowy sklep internetowy",
-    "html_url": "https://github.com/rejson59/zaplecze-resellera",
-    "homepage": "https://zaplecze-resellera.vercel.app",
-    "has_pages": true,
-    "language": null,
-    "stargazers_count": 0,
-    "forks_count": 0,
-    "topics": [],
-    "created_at": "2026-10-18T10:00:55Z",
-    "updated_at": "2026-10-20T16:38:27Z",
-    "pushed_at": "2026-10-20T16:50:52Z"
   },
   {
     "name": "zayra-voice",
@@ -113,20 +239,6 @@ window.PROJECTS_FALLBACK = [
     "created_at": "2026-10-13T13:24:41Z",
     "updated_at": "2026-10-13T13:24:47Z",
     "pushed_at": "2026-10-13T15:35:53Z"
-  },
-  {
-    "name": "kompi",
-    "description": "Kompilator online do c++ (i może w przyszłości innych języków)",
-    "html_url": "https://github.com/rejson59/kompi",
-    "homepage": null,
-    "has_pages": true,
-    "language": "TypeScript",
-    "stargazers_count": 0,
-    "forks_count": 0,
-    "topics": [],
-    "created_at": "2026-10-12T19:54:33Z",
-    "updated_at": "2026-10-13T07:49:55Z",
-    "pushed_at": "2026-10-13T07:49:50Z"
   },
   {
     "name": "nimo",
@@ -225,20 +337,6 @@ window.PROJECTS_FALLBACK = [
     "created_at": "2026-09-20T12:36:37Z",
     "updated_at": "2026-09-20T12:36:41Z",
     "pushed_at": "2026-09-20T13:22:17Z"
-  },
-  {
-    "name": "AnimationBuilder",
-    "description": "Najprostszy program do tworzenia animacji i kontentu na YT!",
-    "html_url": "https://github.com/rejson59/AnimationBuilder",
-    "homepage": null,
-    "has_pages": true,
-    "language": "JavaScript",
-    "stargazers_count": 0,
-    "forks_count": 0,
-    "topics": [],
-    "created_at": "2026-09-17T17:04:09Z",
-    "updated_at": "2026-09-17T17:35:11Z",
-    "pushed_at": "2026-09-17T17:35:06Z"
   },
   {
     "name": "OffChat",
@@ -505,19 +603,5 @@ window.PROJECTS_FALLBACK = [
     "created_at": "2025-10-24T04:06:45Z",
     "updated_at": "2025-10-24T04:11:57Z",
     "pushed_at": "2025-10-24T04:11:54Z"
-  },
-  {
-    "name": "Jakuplayer",
-    "description": "Słuchaj muzyki za darmo i bez ograniczeń",
-    "html_url": "https://github.com/rejson59/Jakuplayer",
-    "homepage": null,
-    "has_pages": true,
-    "language": "HTML",
-    "stargazers_count": 0,
-    "forks_count": 0,
-    "topics": [],
-    "created_at": "2025-06-29T22:06:48Z",
-    "updated_at": "2025-06-29T22:39:00Z",
-    "pushed_at": "2025-06-29T22:38:57Z"
   }
 ];
