@@ -58,7 +58,8 @@ function arrival(marker, opts = {}) {
     assert.ok(portal.querySelector('#cosmos-art'));
     assert.ok(portal.querySelector('.cosmic-streams path'));
     assert.equal(portal.querySelectorAll('#portal-door .gate-energy').length, 2);
-    assert.match(css, /portal-horizon\.svg/);
+    assert.equal(portal.querySelectorAll('.depth-plane').length, 3);
+    assert.match(css, /portal-fragments-near\.svg/);
     assert.match(css, /@keyframes star-spark/);
     assert.match(css, /@keyframes gate-streak/);
     assert.match(css, /translateZ\(/); // przestrzenny tunel w trakcie lotu

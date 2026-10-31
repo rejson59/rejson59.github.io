@@ -33,10 +33,28 @@ const server = http.createServer((req, res) => {
     assert.equal(await p.locator('.starfield i').first().evaluate(el => getComputedStyle(el).animationName), 'star-spark');
     await p.mouse.move(100,100); await p.waitForTimeout(650);
     assert.notEqual(await p.locator('#cosmos-art').evaluate(el => el.style.transform), 'translate3d(0px, 0px, 0px)');
+    const planes = await p.locator('.depth-plane').evaluateAll(els => els.map(el => el.style.transform));
+    assert.equal(planes.length, 3);
+    assert.notEqual(planes[0], planes[1]); assert.notEqual(planes[1], planes[2]);
+    assert.equal(await p.locator('.depth-plane--near .depth-float').evaluate(el => getComputedStyle(el).animationName), 'float-near');
+    assert.equal(await p.locator('.depth-particles i').first().evaluate(el => getComputedStyle(el).animationName), 'particle-approach');
+    const motion = await p.locator('.depth-plane--near .depth-float').evaluate(el => {
+      const animation = el.getAnimations()[0]; animation.pause(); animation.currentTime = 0;
+      const first = getComputedStyle(el).transform;
+      animation.currentTime = 10000; const last = getComputedStyle(el).transform;
+      animation.play(); return [first,last];
+    });
+    assert.notEqual(motion[0], motion[1], 'pierwszy plan rzeczywiście się porusza');
+    await p.evaluate(() => { Object.defineProperty(document, 'visibilityState', {configurable:true,value:'hidden'}); document.dispatchEvent(new Event('visibilitychange')); });
+    assert.equal(await p.locator('.depth-plane--near .depth-float').evaluate(el => getComputedStyle(el).animationPlayState), 'paused');
+    await p.evaluate(() => { Object.defineProperty(document, 'visibilityState', {configurable:true,value:'visible'}); document.dispatchEvent(new Event('visibilitychange')); });
     await p.locator('#motion-toggle').click();
     assert.equal(await p.locator('.starfield i').first().evaluate(el => getComputedStyle(el).animationName), 'none');
     assert.equal(await p.locator('#motion-toggle').getAttribute('aria-pressed'), 'false');
     assert.equal(await p.locator('#cosmos-art').evaluate(el => el.style.transform), 'translate3d(0px, 0px, 0px)');
+    assert.equal(await p.locator('.depth-plane--near').evaluate(el => el.style.transform), 'translate3d(0px, 0px, 0px)');
+    assert.equal(await p.locator('.depth-plane--near .depth-float').evaluate(el => getComputedStyle(el).animationName), 'none');
+    assert.equal(await p.locator('.depth-particles i').first().evaluate(el => getComputedStyle(el).animationName), 'none');
     await p.mouse.move(1200,100); await p.waitForTimeout(100);
     assert.equal(await p.locator('#cosmos-art').evaluate(el => el.style.transform), 'translate3d(0px, 0px, 0px)');
     console.log('PASS: geometria, interakcje, paralaksa i wyłączenie ruchu');
