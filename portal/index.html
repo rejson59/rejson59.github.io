@@ -7,9 +7,10 @@
   <meta name="robots" content="noindex">
   <title>Portal do projektu — Rejson59</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/css/portal-room.css?v=16">
+  <link rel="stylesheet" href="/css/portal-room.css?v=17">
   <script defer src="/js/projects-data.js"></script>
-  <script defer src="/js/portal-room.js?v=14"></script>
+  <script defer src="/js/portal-room.js?v=15"></script>
+  <script type="module" src="/js/portal-three.js?v=1"></script>
   <link rel="stylesheet" href="/css/liquid.css?v=2026-10-30-2">
   <link rel="stylesheet" href="/css/rejchat.css?v=1">
   <script defer src="/js/rejchat-profiles.js?v=1"></script>
@@ -24,25 +25,11 @@
   </header>
   <main class="room" id="room">
     <div class="scene-atmosphere" aria-hidden="true">
-      <div class="world-sky" id="world-sky"><div class="sun-glow"></div><div class="sun-disc"></div><div class="cloud cloud--one"></div><div class="cloud cloud--two"></div><div class="distant-mist"></div></div>
-      <div class="world-sea"><div class="sea-reflection"></div></div>
-      <div class="flying-creature"><svg viewBox="0 0 320 100" aria-hidden="true"><path class="wing wing--left" d="M158 44 Q111 35 29 8 Q60 45 119 59 Q143 63 158 51Z"/><path class="wing wing--right" d="M162 44 Q209 35 291 8 Q260 45 201 59 Q177 63 162 51Z"/><path d="M153 46 Q160 30 167 46 L162 62 Q170 78 189 91 Q167 86 160 72 Q153 86 131 91 Q150 78 158 62Z" fill="#f9e7cf"/></svg></div>
-      <div class="depth-perspective"><div class="scene-camera" id="scene-camera">
-        <div class="floating-island floating-island--left"><i></i><b></b></div>
-        <div class="floating-island floating-island--right"><i></i><b></b></div>
-        <div class="pathway">
-          <div class="step"><span class="step-top"></span><span class="step-front"></span></div>
-          <div class="step"><span class="step-top"></span><span class="step-front"></span></div>
-          <div class="step"><span class="step-top"></span><span class="step-front"></span></div>
-          <div class="step"><span class="step-top"></span><span class="step-front"></span></div>
-          <div class="step"><span class="step-top"></span><span class="step-front"></span></div>
-          <div class="step"><span class="step-top"></span><span class="step-front"></span></div>
-          <div class="step"><span class="step-top"></span><span class="step-front"></span></div>
-          <div class="step"><span class="step-top"></span><span class="step-front"></span></div>
-        </div>
-      </div></div>
-      <div class="atmosphere-vignette"></div>
+      <div class="scene-fallback"></div>
+      <div id="three-scene" class="three-scene"></div>
+      <div class="scene-shade"></div>
     </div>
+    <p id="scene-status" class="sr-only" role="status" aria-live="polite"></p>
     <div class="world-frame">
       <button class="portal-door" id="portal-door" type="button" disabled aria-label="Wejdź do portalu">
         <span class="portal-layers" aria-hidden="true">
@@ -51,18 +38,18 @@
             <span class="gate-stardust"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
           </span>
         </span>
-        <span class="door-label" aria-hidden="true"><span>↓</span> WEJDŹ</span>
+        <span class="door-label" aria-hidden="true"><span>↗</span> WEJDŹ</span>
       </button>
     </div>
     <div class="room-content">
       <div class="intro">
-        <div class="eyebrow"><span class="eyebrow-dot"></span> DALEJ ZACZYNA SIĘ</div>
+        <div class="eyebrow"><span class="eyebrow-dot"></span> OTWÓRZ NOWY WYMIAR</div>
         <h1 id="project-name">projektu</h1>
         <p id="project-description">Kiedy zechcesz, wejdź dalej.</p>
       </div>
       <div class="actions" id="actions">
-        <button class="enter-button" id="enter" type="button" disabled><span class="button-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2.5c.7 5.2 2.3 6.8 7.5 7.5-5.2.7-6.8 2.3-7.5 7.5-.7-5.2-2.3-6.8-7.5-7.5 5.2-.7 6.8-2.3 7.5-7.5ZM19.5 15c.3 1.9.9 2.5 2.8 2.8-1.9.3-2.5.9-2.8 2.8-.3-1.9-.9-2.5-2.8-2.8 1.9-.3 2.5-.9 2.8-2.8Z"/></svg></span><span>Wejdź do świata</span><b aria-hidden="true">↗</b></button>
-        <p class="hint"><span aria-hidden="true">✧</span> Twoja podróż zaczyna się tutaj.</p>
+        <button class="enter-button" id="enter" type="button" disabled><span class="button-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2.5c.7 5.2 2.3 6.8 7.5 7.5-5.2.7-6.8 2.3-7.5 7.5-.7-5.2-2.3-6.8-7.5-7.5 5.2-.7 6.8-2.3 7.5-7.5ZM19.5 15c.3 1.9.9 2.5 2.8 2.8-1.9.3-2.5.9-2.8 2.8-.3-1.9-.9-2.5-2.8-2.8 1.9-.3 2.5-.9 2.8-2.8Z"/></svg></span><span>Przekrocz portal</span><b aria-hidden="true">↗</b></button>
+        <p class="hint"><span aria-hidden="true">✧</span> Świat przed Tobą reaguje na ruch.</p>
         <button class="motion-toggle" id="motion-toggle" type="button" aria-pressed="true">Wyłącz animację portalu</button>
         <a class="direct-link" id="direct" hidden>Otwórz projekt bez animacji <span aria-hidden="true">↗</span></a>
         <p class="status" id="status" role="status" aria-live="polite">Przygotowujemy portal...</p>

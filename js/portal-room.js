@@ -18,28 +18,6 @@
   var previous = null;
   var KEY = "rj_portal_arrival_v1";
   var FLIGHT_MS = 4200;
-  var camera = document.getElementById("scene-camera"), sky = document.getElementById("world-sky");
-  var parallaxFrame = 0, parallaxX = 0, parallaxY = 0;
-  function resetCosmos() {
-    if (parallaxFrame) cancelAnimationFrame(parallaxFrame);
-    parallaxFrame = 0; parallaxX = 0; parallaxY = 0;
-    if (camera) camera.style.transform = "translate3d(0,0,0)";
-    if (sky) sky.style.transform = "translate3d(0,0,0)";
-  }
-  // Bez pomiaru klatek i układu; najwyżej jeden zapis na warstwę na klatkę.
-  window.addEventListener("pointermove", function (event) {
-    if (!camera || !motionEnabled || travelling || document.visibilityState === "hidden" || event.pointerType !== "mouse") return;
-    parallaxX = Math.max(-1, Math.min(1, event.clientX / Math.max(1, window.innerWidth) * 2 - 1));
-    parallaxY = Math.max(-1, Math.min(1, event.clientY / Math.max(1, window.innerHeight) * 2 - 1));
-    if (!parallaxFrame) parallaxFrame = requestAnimationFrame(function () {
-      parallaxFrame = 0;
-      if (motionEnabled && !travelling && document.visibilityState !== "hidden") {
-        camera.style.transform = "translate3d(" + (-parallaxX * 20).toFixed(1) + "px," + (-parallaxY * 8).toFixed(1) + "px,0) rotateY(" + (parallaxX * 2).toFixed(2) + "deg)";
-        if (sky) sky.style.transform = "translate3d(" + (-parallaxX * 5).toFixed(1) + "px,0,0) scale(1.02)";
-      }
-    });
-  });
-  window.addEventListener("pointerleave", resetCosmos);
   // Przy pierwszej wizycie instalacja SW może skończyć się po locie. Bez
   // aktywnego workera dokument projektu nie dostanie animacji wyjścia.
   var workerPending = null;
@@ -55,11 +33,11 @@
   // Animacja startuje od razu. Odwiedzający nadal może ją wyłączyć.
   function updateMotionControl() {
     if (!motionToggle) return;
-    if (!motionEnabled) resetCosmos();
     document.body.classList.toggle("motion-override", motionEnabled);
     document.body.classList.toggle("motion-off", !motionEnabled);
     motionToggle.setAttribute("aria-pressed", String(motionEnabled));
     motionToggle.textContent = motionEnabled ? "Wyłącz animację portalu" : "Włącz animację portalu";
+    document.dispatchEvent(new Event("rj-portal-motion"));
   }
   if (motionToggle) motionToggle.addEventListener("click", function () {
     if (travelling) return;
@@ -102,7 +80,6 @@
   function go() {
     if (!target || travelling) return;
     travelling = true;
-    resetCosmos();
     door.disabled = true; button.disabled = true;
     var url = new URL(target);
     var reduced = !motionEnabled;
@@ -147,6 +124,7 @@
     }
     flight.classList.add("is-active");
     document.body.classList.add("is-travelling");
+    document.dispatchEvent(new Event("rj-portal-flight"));
     // Pigułka ma najwyższą warstwę: na czas lotu nie może zasłaniać tunelu.
     var feedback = document.getElementById("rejson-liquid-widget-root");
     if (feedback) feedback.style.setProperty("visibility", "hidden", "important");
@@ -168,13 +146,13 @@
     previous = null;
     flight.classList.toggle("is-paused", document.visibilityState !== "visible");
     document.body.classList.toggle("scene-paused", document.visibilityState === "hidden");
-    if (document.visibilityState === "hidden") resetCosmos();
   });
   window.addEventListener("pageshow", function (event) {
     if (!event.persisted) return;
     if (raf) cancelAnimationFrame(raf);
     travelling = false; flight.classList.remove("is-active");
     document.body.classList.remove("is-travelling");
+    document.dispatchEvent(new Event("rj-portal-reset"));
     var feedback = document.getElementById("rejson-liquid-widget-root");
     if (feedback) feedback.style.setProperty("visibility", "visible", "important");
     var mouth = document.getElementById("flight-mouth");

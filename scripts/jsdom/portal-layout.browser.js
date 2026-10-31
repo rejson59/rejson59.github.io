@@ -37,37 +37,20 @@ const server = http.createServer((req, res) => {
         const r = s => document.querySelector(s).getBoundingClientRect().toJSON();
         return {title:r('.intro'),door:r('.world-frame'),actions:r('.actions'),scroll:document.documentElement.scrollWidth,width:innerWidth};
       });
-      assert(layout.title.bottom <= layout.door.top, `${width}: długa nazwa zasłania wejście`);
-      assert(layout.door.bottom <= layout.actions.top, `${width}: wejście zasłania sterowanie`);
+      const overlaps = (a,b) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
+      assert(!overlaps(layout.title,layout.door), `${width}: długa nazwa zasłania wejście`);
+      assert(!overlaps(layout.door,layout.actions), `${width}: wejście zasłania sterowanie`);
       assert(layout.scroll <= layout.width, `${width}: poziome przewijanie`);
     }
     await p.setViewportSize({width:1440,height:900});
     await p.goto(origin+'/portal/?projekt=RejStream');
-    assert.equal(await p.locator('.step').first().evaluate(el => getComputedStyle(el).animationName), 'step-float');
-    const perspective = await p.evaluate(() => {
-      const r = s => document.querySelector(s).getBoundingClientRect();
-      return {far:r('.step:first-child').width, near:r('.step:last-child').width, style:getComputedStyle(document.querySelector('.step')).transform};
-    });
-    assert(perspective.near > perspective.far * 2, 'rzeczywista perspektywa zmniejsza dalekie stopnie');
-    assert.match(perspective.style, /matrix3d/);
-    const motion = await p.locator('.step').last().evaluate(el => {
-      const animation = el.getAnimations()[0]; animation.pause(); animation.currentTime = 0;
-      const first = getComputedStyle(el).transform;
-      animation.currentTime = 6000; const last = getComputedStyle(el).transform;
-      animation.play(); return [first,last];
-    });
-    assert.notEqual(motion[0], motion[1], 'stopnie rzeczywiście się poruszają');
-    await p.mouse.move(100,100); await p.waitForTimeout(650);
-    assert.notEqual(await p.locator('#scene-camera').evaluate(el => el.style.transform), 'translate3d(0px, 0px, 0px)');
-    await p.evaluate(() => { Object.defineProperty(document, 'visibilityState', {configurable:true,value:'hidden'}); document.dispatchEvent(new Event('visibilitychange')); });
-    assert.equal(await p.locator('.step').first().evaluate(el => getComputedStyle(el).animationPlayState), 'paused');
-    await p.evaluate(() => { Object.defineProperty(document, 'visibilityState', {configurable:true,value:'visible'}); document.dispatchEvent(new Event('visibilitychange')); });
+    // Brak WebGL nie blokuje ani wejścia, ani wyłączenia animacji.
+    await p.waitForFunction(() => document.body.classList.contains('three-fallback'));
+    assert.equal(await p.locator('#portal-door').isEnabled(), true);
+    assert.match(await p.locator('#scene-status').textContent(), /niedostępna/);
     await p.locator('#motion-toggle').click();
     assert.equal(await p.locator('#motion-toggle').getAttribute('aria-pressed'), 'false');
-    assert.equal(await p.locator('.step').first().evaluate(el => getComputedStyle(el).animationName), 'none');
-    assert.equal(await p.locator('#scene-camera').evaluate(el => el.style.transform), 'translate3d(0px, 0px, 0px)');
-    await p.mouse.move(1200,100); await p.waitForTimeout(100);
-    assert.equal(await p.locator('#scene-camera').evaluate(el => el.style.transform), 'translate3d(0px, 0px, 0px)');
-    console.log('PASS: geometria, interakcje, paralaksa i wyłączenie ruchu');
+    assert.equal(await p.locator('.gate-energy').first().evaluate(el => getComputedStyle(el).animationName), 'none');
+    console.log('PASS: geometria, fallback bez WebGL i wyłączenie ruchu');
   } finally { await browser.close(); server.close(); }
 })().catch(e => { console.error(e); server.close(); process.exitCode=1; });
