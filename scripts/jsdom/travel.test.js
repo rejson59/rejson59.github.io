@@ -8,7 +8,7 @@ const read = f => fs.readFileSync(path.join(root, f), 'utf8');
 const home = new JSDOM(read('index.html')).window.document;
 const links = [...home.querySelectorAll('.showcase-item a[data-journey]')];
 assert.equal(links.length,15);
-for (const a of links) { assert.match(a.getAttribute('href'),/^\/podroz\/\?projekt=[\w.-]+&v=2$/); assert.equal(a.target,'_blank'); assert.match(a.rel,/noopener/); assert.match(a.rel,/noreferrer/); }
+for (const a of links) { assert.match(a.getAttribute('href'),/^\/podroz\/\?projekt=[\w.-]+&v=3$/); assert.equal(a.target,'_blank'); assert.match(a.rel,/noopener/); assert.match(a.rel,/noreferrer/); }
 assert.equal(home.querySelectorAll('[data-tilt]').length >= 5,true);
 assert.match(read('js/app.js'),/card-preview.*journeyUrl\(p.name\)/);
 assert.match(read('js/app.js'),/btn-live btn-journey btn-sm.*journeyUrl\(p.name\)/);
@@ -17,6 +17,14 @@ assert.match(read('404.html'),/location.replace\("\/podroz\/\?projekt=/);
 assert.match(read('js/portal-legacy.js'),/location.replace\('\/podroz\/\?projekt=/);
 assert.match(read('sw.js'),/\(\?:portal\|podroz\)/);
 assert.doesNotMatch(read('podroz/index.html'),/portal|three\.js/i);
+const tripHtml = new JSDOM(read('podroz/index.html')).window.document;
+assert.equal(tripHtml.querySelectorAll('.rocket-puffs i').length,3,'trzy sprężyste kulki w śladzie rakiety');
+assert.match(tripHtml.querySelector('.rocket').getAttribute('src'), /travel-rocket\.svg\?v=2$/);
+for (const color of ['#b9d3ff','#6aa6ff','#3f6fbe']) { assert.ok(read('css/loader.css').includes(color), 'kolor loadera '+color); assert.ok(read('assets/travel-rocket.svg').includes(color), 'ten sam kolor rakiety '+color); }
+assert.match(read('css/travel.css'),/rocket-thrust 1\.15s/);
+assert.match(read('css/travel.css'),/puff-bounce 1\.15s/);
+assert.match(read('js/travel.js'),/DURATION = 7500/);
+
 
 function travel(name, cached) {
   const dom = new JSDOM(read('podroz/index.html'), {url:'https://rejson59.github.io/podroz/?projekt='+encodeURIComponent(name),runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:new VirtualConsole()});

@@ -34,7 +34,7 @@
   if (motionOverride) root.setAttribute("data-motion-override", "");
   root.setAttribute("role", "status");
   root.setAttribute("aria-live", "polite");
-  root.innerHTML = '<div class="rj-arrival-stars" aria-hidden="true"></div><div class="rj-arrival-map" aria-hidden="true"><svg class="rj-arrival-route" viewBox="0 0 1000 400" preserveAspectRatio="none"><path d="M145 295 C380 310 490 90 855 110"/></svg><div class="rj-arrival-home"></div><div class="rj-arrival-planet"></div><img class="rj-arrival-rocket" src="/assets/travel-rocket.svg" alt=""></div><div class="rj-arrival-caption">Otwieramy projekt…</div>';
+  root.innerHTML = '<div class="rj-arrival-stars" aria-hidden="true"></div><div class="rj-arrival-map" aria-hidden="true"><svg class="rj-arrival-route" viewBox="0 0 1000 400" preserveAspectRatio="none"><path d="M145 295 C380 310 490 90 855 110"/></svg><div class="rj-arrival-home"></div><div class="rj-arrival-planet"></div><div class="rj-arrival-rocket-wrap"><div class="rj-arrival-puffs"><i></i><i></i><i></i></div><img class="rj-arrival-rocket" src="/assets/travel-rocket.svg?v=2" alt=""></div></div><div class="rj-arrival-caption">Otwieramy projekt…</div>';
   document.documentElement.appendChild(root);
   var started = false;
   var removed = false;

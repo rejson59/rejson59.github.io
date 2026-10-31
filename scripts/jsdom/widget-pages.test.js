@@ -87,8 +87,8 @@ async function main() {
   assert.equal((html.match(/src="\/js\/media-capture\.js\?v=2"/g)||[]).length,1);
   pageHtml='<html><head><link rel="stylesheet" href="/css/portal.css?v=12" data-rj-portal-style><script src="/js/portal-arrival.js?v=11"></script></head><body></body></html>';
   res=await response(); html=await res.text();
-  assert.equal((html.match(/src="\/js\/portal-arrival\.js\?v=12"/g)||[]).length,1);
-  assert.equal((html.match(/href="\/css\/portal\.css\?v=13"/g)||[]).length,1);
+  assert.equal((html.match(/src="\/js\/portal-arrival\.js\?v=13"/g)||[]).length,1);
+  assert.equal((html.match(/href="\/css\/portal\.css\?v=14"/g)||[]).length,1);
   let handled=false; listeners.fetch({request:{method:'GET',mode:'navigate',destination:'document',url:'https://rejson59.github.io/podroz/?projekt=Test'},waitUntil(){handled=true;},respondWith(){handled=true;}});
   assert.equal(handled,false,'przejściowa podróż nie jest rejestrowana jako projekt');
   console.log('PASS: service worker dodaje/aktualizuje skrypty bez duplikatu i nie osłabia CSP');

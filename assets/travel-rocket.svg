@@ -1,13 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 150">
- <defs>
-  <linearGradient id="hull" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff"/><stop offset=".55" stop-color="#e5f4fa"/><stop offset="1" stop-color="#9fb9d1"/></linearGradient>
-  <linearGradient id="flame" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff7c5"/><stop offset=".45" stop-color="#ffbb70"/><stop offset="1" stop-color="#ff5f65" stop-opacity="0"/></linearGradient>
-  <linearGradient id="window" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#8af5f4"/><stop offset="1" stop-color="#5275bd"/></linearGradient>
- </defs>
- <path d="M39 105 Q37 125 50 148 Q63 125 61 105Z" fill="url(#flame)"/>
- <path d="M32 75 Q16 79 15 104 L32 98 M68 75 Q84 79 85 104 L68 98" fill="#ec7980" stroke="#9f536a" stroke-width="2" stroke-linejoin="round"/>
- <path d="M50 7 C69 22 74 49 68 100 Q50 108 32 100 C26 49 31 22 50 7Z" fill="url(#hull)" stroke="#f6ffff" stroke-width="1.5"/>
- <path d="M38 24 Q50 7 50 7 Q57 13 62 24 Q50 28 38 24Z" fill="#f58a87"/>
- <circle cx="50" cy="51" r="11" fill="#405e88"/><circle cx="50" cy="51" r="8" fill="url(#window)"/><path d="M46 47 Q49 44 53 46" fill="none" stroke="#e5ffff" stroke-width="2" stroke-linecap="round"/>
- <path d="M35 96 Q50 101 65 96" fill="none" stroke="#adc9da" stroke-width="2"/>
+  <defs>
+    <!-- Ten sam błękit i miękkie światło co kulki w loaderze. -->
+    <radialGradient id="body" cx="32%" cy="28%" r="74%"><stop stop-color="#b9d3ff"/><stop offset=".55" stop-color="#6aa6ff"/><stop offset="1" stop-color="#3f6fbe"/></radialGradient>
+    <radialGradient id="fin" cx="32%" cy="28%" r="78%"><stop stop-color="#d9cfff"/><stop offset=".55" stop-color="#a98bff"/><stop offset="1" stop-color="#6856ac"/></radialGradient>
+    <radialGradient id="glass" cx="32%" cy="28%" r="75%"><stop stop-color="#eafffa"/><stop offset=".55" stop-color="#8be8d2"/><stop offset="1" stop-color="#3e9b9f"/></radialGradient>
+    <radialGradient id="puff" cx="32%" cy="28%" r="75%"><stop stop-color="#f2efff"/><stop offset=".55" stop-color="#b8b6ff"/><stop offset="1" stop-color="#6aa6ff" stop-opacity=".35"/></radialGradient>
+  </defs>
+  <!-- Okrągłe, miękkie kształty bez ostrych krawędzi: jak sprężysta kulka. -->
+  <ellipse cx="50" cy="116" rx="14" ry="19" fill="url(#puff)"/>
+  <path d="M29 70 C17 69 11 80 12 95 C12 104 18 107 24 102 L34 94Z" fill="url(#fin)"/>
+  <path d="M71 70 C83 69 89 80 88 95 C88 104 82 107 76 102 L66 94Z" fill="url(#fin)"/>
+  <path d="M50 9 C66 9 75 31 75 56 C75 72 72 89 70 99 C68 110 60 115 50 115 C40 115 32 110 30 99 C28 89 25 72 25 56 C25 31 34 9 50 9Z" fill="url(#body)"/>
+  <path d="M28 61 C29 35 37 20 44 17" fill="none" stroke="#fff" stroke-opacity=".42" stroke-width="4" stroke-linecap="round"/>
+  <ellipse cx="50" cy="54" rx="13" ry="13" fill="#295995" fill-opacity=".54"/>
+  <ellipse cx="50" cy="52" rx="10" ry="10" fill="url(#glass)"/>
+  <ellipse cx="46" cy="47" rx="3.6" ry="2" transform="rotate(-35 46 47)" fill="#fff" fill-opacity=".85"/>
+  <path d="M35 99 Q50 105 65 99" fill="none" stroke="#224c91" stroke-opacity=".32" stroke-width="3" stroke-linecap="round"/>
 </svg>

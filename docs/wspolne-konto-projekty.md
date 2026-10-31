@@ -44,8 +44,8 @@ Kliknięcie projektu otwiera nową kartę z automatyczną podróżą. Sam lot i 
 Dodatkowa zasłona oczekiwania już po rozpoczęciu ładowania strony projektu nie jest gwarantowana przy innym originie, restrykcyjnej CSP ani w projekcie z własnym service workerem o węższym zakresie. Sam lot przed przejściem nie zależy od tych mechanizmów. Nie zastępuj jego workera — może obsługiwać offline/PWA. W takich projektach na wspólnej domenie można dodać w `<head>`, po meta CSP i przed blokującymi skryptami:
 
 ```html
-<link rel="stylesheet" href="/css/portal.css?v=13" data-rj-portal-style>
-<script src="/js/portal-arrival.js?v=12"></script>
+<link rel="stylesheet" href="/css/portal.css?v=14" data-rj-portal-style>
+<script src="/js/portal-arrival.js?v=13"></script>
 ```
 
 Nazwy ścieżek pozostają dla zgodności, lecz animacja przedstawia rakietę, nie portal. Bez poprawnego znacznika skrypt nic nie wyświetla. Na obcej domenie nie jest dostępny znacznik `sessionStorage` strony głównej; projekt otworzy się bez zasłony oczekiwania.

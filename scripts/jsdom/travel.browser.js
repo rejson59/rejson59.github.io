@@ -35,8 +35,14 @@ const server=http.createServer(async(req,res)=>{
     const featured=home.locator('.showcase-item .btn-journey').first(); await featured.waitFor({state:'visible'});
     const [tab]=await Promise.all([home.waitForEvent('popup'),featured.click()]);
     const flightStart = Date.now();
-    await tab.waitForURL('**/podroz/?projekt=RejStream&v=2');
+    await tab.waitForURL('**/podroz/?projekt=RejStream&v=3');
     assert.equal(await tab.locator('#project-name').textContent(),'RejStream');
+    assert.equal(await tab.locator('.rocket-puffs i').count(),3);
+    assert.ok(await tab.locator('.rocket').evaluate(e=>e.complete && e.naturalWidth>0),'grafika rakiety jest załadowana');
+    const jelly = await tab.locator('.rocket').evaluate(e=>{const a=e.getAnimations()[0]; a.pause(); a.currentTime=100; const x=getComputedStyle(e).transform; a.currentTime=700; const y=getComputedStyle(e).transform; a.play(); return [x,y];});
+    assert.notEqual(jelly[0],jelly[1],'rakieta sprężyście odkształca się jak kulki loadera');
+    assert.equal(await tab.locator('.rocket-puffs i').first().evaluate(e=>getComputedStyle(e).animationName),'puff-bounce');
+
     assert.equal(await home.locator('.showcase-item').count(),5);
     const x1=await tab.locator('.rocket-motion').evaluate(e=>getComputedStyle(e).transform);
     await tab.waitForTimeout(600); const x2=await tab.locator('.rocket-motion').evaluate(e=>getComputedStyle(e).transform);
@@ -48,8 +54,8 @@ const server=http.createServer(async(req,res)=>{
     console.log('PASS: prawdziwa nowa karta, ruch rakiety i automatyczne przejście bez drugiego kliknięcia');
 
     await home.locator('#grid .btn-journey').first().waitFor({state:'attached'});
-    const dynamic=home.locator('#grid .btn-journey').first(); assert.equal(await dynamic.getAttribute('href'),'/podroz/?projekt=Test&v=2');
-    const [dynamicTab]=await Promise.all([home.waitForEvent('popup'),dynamic.click()]); await dynamicTab.waitForURL('**/podroz/?projekt=Test&v=2');
+    const dynamic=home.locator('#grid .btn-journey').first(); assert.equal(await dynamic.getAttribute('href'),'/podroz/?projekt=Test&v=3');
+    const [dynamicTab]=await Promise.all([home.waitForEvent('popup'),dynamic.click()]); await dynamicTab.waitForURL('**/podroz/?projekt=Test&v=3');
     await dynamicTab.waitForURL('**/Test/',{timeout:16000}); assert.equal(await dynamicTab.locator('#destination').textContent(),'Cel');
     console.log('PASS: dynamiczna karta otwiera właściwy projekt w nowej karcie');
     await c.close();
@@ -68,9 +74,9 @@ const server=http.createServer(async(req,res)=>{
     await rp.waitForTimeout(6000); assert.equal(new URL(rp.url()).pathname,'/podroz/','nie przerywamy wolniejszego lotu');
     await rp.waitForURL('**/Test/',{timeout:16000}); assert.ok(Date.now()-reducedStart>=9500);
     const old=await reduced.newPage(); await old.goto(origin+'/portal/?projekt=Test');
-    await old.waitForURL('**/podroz/?projekt=Test&v=2'); await old.locator('#skip').click(); await old.waitForURL('**/Test/',{timeout:16000});
+    await old.waitForURL('**/podroz/?projekt=Test&v=3'); await old.locator('#skip').click(); await old.waitForURL('**/Test/',{timeout:16000});
     const oldPath=await reduced.newPage(); await oldPath.goto(origin+'/portal/Test');
-    await oldPath.waitForURL('**/podroz/?projekt=Test&v=2'); await oldPath.locator('#skip').click(); await oldPath.waitForURL('**/Test/',{timeout:16000});
+    await oldPath.waitForURL('**/podroz/?projekt=Test&v=3'); await oldPath.locator('#skip').click(); await oldPath.waitForURL('**/Test/',{timeout:16000});
     assert.equal(await oldPath.locator('#rj-portal-arrival').count(),0);
     const noTarget=await reduced.newPage(); await noTarget.goto(origin+'/podroz/?projekt='+encodeURIComponent('https://evil.example')+'&url=https://evil.example');
     assert.match(await noTarget.locator('#travel-status').textContent(),/Nie znaleziono/); assert.equal(await noTarget.locator('#skip').isDisabled(),true);
@@ -81,6 +87,7 @@ const server=http.createServer(async(req,res)=>{
     const lp=await limited.newPage(); const limitedStart=Date.now(); await lp.goto(origin+'/podroz/?projekt=Test');
     await lp.locator('#reduce-motion').click(); assert.equal(await lp.locator('#reduce-motion').getAttribute('aria-pressed'),'true');
     assert.equal(await lp.locator('.rocket-motion').evaluate(e=>getComputedStyle(e).animationPlayState),'paused');
+    assert.equal(await lp.locator('.rocket-puffs i').first().evaluate(e=>getComputedStyle(e).animationName),'none','ograniczenie ruchu zatrzymuje również kulki');
     await lp.waitForURL('**/Test/',{timeout:16000}); assert.ok(Date.now()-limitedStart>=7000,'ograniczenie ruchu nie pomija czasu podróży');
     const lp2=await limited.newPage(); await lp2.goto(origin+'/podroz/?projekt=Test');
     assert.equal(await lp2.locator('#reduce-motion').getAttribute('aria-pressed'),'true','wybór jest zapamiętany');
@@ -129,7 +136,7 @@ const server=http.createServer(async(req,res)=>{
     await isolated.close();
     console.log('PASS: podróż i automatyczne wejście bez zmian projektu, nawet z jego własnym workerem');
 
-    const slow=await browser.newContext({viewport:{width:1440,height:900}});
+    const slow=await browser.newContext({viewport:{width:1440,height:900},reducedMotion:'reduce'});
     await slow.addInitScript(()=>{try{localStorage.setItem('rejson_repos_cache_v2',JSON.stringify({data:[{name:'Slow',homepage:location.origin+'/Slow/'}]}));}catch(e){}});
     const p=await slow.newPage(); await p.goto(origin+'/podroz/?projekt=Slow',{waitUntil:'domcontentloaded'});
     await navigationRequest; // Po pełnym locie wybrano cel, ale serwer nie wysłał jeszcze dokumentu.
@@ -138,6 +145,8 @@ const server=http.createServer(async(req,res)=>{
     await p.waitForSelector('#rj-portal-arrival .rj-arrival-rocket',{timeout:16000});
     assert.equal(await p.locator('#rj-portal-arrival.is-playing').count(),0,'zasłona pozostaje do załadowania zasobów');
     const idle=await p.locator('.rj-arrival-rocket').evaluate(e=>getComputedStyle(e).animationName); assert.equal(idle,'rj-rocket-idle');
+    assert.equal(await p.locator('.rj-arrival-puffs i').count(),3);
+    assert.equal(await p.locator('.rj-arrival-puffs i').first().evaluate(e=>getComputedStyle(e).animationName),'rj-arrival-puff');
     releaseImage(); await p.locator('#rj-portal-arrival').waitFor({state:'detached',timeout:16000});
     assert.equal(await p.locator('#destination').textContent(),'Cel');
     await p.reload({waitUntil:'load'}); assert.equal(await p.locator('#rj-portal-arrival').count(),0,'znacznik jest jednorazowy');
