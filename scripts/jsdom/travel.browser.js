@@ -11,6 +11,10 @@ const server=http.createServer(async(req,res)=>{
   if(p==='/nested-image'){await nestedGate; res.writeHead(404);return res.end();}
   if(p==='/Nested/') { const sample=fs.readFileSync(path.join(root,'koordynator/paczki/rakieta-20261031/mconline/index.html'),'utf8'); const bootstrap=sample.match(/<script>([\s\S]*?)<\/script>/)[1].replace('https://rejson59.github.io', 'http://127.0.0.1:'+server.address().port); res.writeHead(200,{'content-type':'text/html'}); return res.end('<!doctype html><html><head><script>'+bootstrap+'</script></head><body><main id="destination">Projekt</main><img src="/nested-image"></body></html>'); }
   if(p==='/Test/') {res.writeHead(200,{'content-type':'text/html'});return res.end('<!doctype html><html><head></head><body><main id="destination">Cel</main></body></html>');}
+  // Niezmieniony projekt z własnym workerem o węższym zakresie, bez naszego bootstrapa.
+  if(p==='/Isolated/worker.js') {res.writeHead(200,{'content-type':'text/javascript'});return res.end("self.addEventListener('install',e=>self.skipWaiting());self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));self.addEventListener('fetch',e=>e.respondWith(fetch(e.request)));");}
+  if(p==='/Isolated/setup') {res.writeHead(200,{'content-type':'text/html'});return res.end('<!doctype html><html><body>setup</body></html>');}
+  if(p==='/Isolated/') {res.writeHead(200,{'content-type':'text/html'});return res.end('<!doctype html><html><head></head><body><main id="destination">Oryginalny projekt</main></body></html>');}
   if(p==='/project.css'){res.writeHead(200,{'content-type':'text/css'});return res.end('@media (prefers-reduced-motion:reduce) { * { animation:none !important } }');}
   if(p==='/js/view-tracker.js'||p==='/js/rejson-account.js'||p==='/js/media-capture.js'||p==='/rejson-widgets/widget.js'){res.writeHead(200,{'content-type':'text/javascript'});return res.end('');}
   let rel=p==='/'?'/index.html':p==='/podroz/'?'/podroz/index.html':p==='/portal/'?'/portal/index.html':p.startsWith('/portal/')?'/404.html':p;
@@ -74,6 +78,21 @@ const server=http.createServer(async(req,res)=>{
     assert.equal(await np.locator('#rj-portal-arrival.is-playing').count(),0);
     releaseNested(); await np.locator('#rj-portal-arrival').waitFor({state:'detached',timeout:10000}); await nested.close();
     console.log('PASS: bootstrap projektu pokazuje rakietę również bez globalnego SW');
+
+    // Przenoszenie nie wymaga skryptu, PR ani zmiany istniejącego workera projektu.
+    const isolated=await browser.newContext({viewport:{width:1440,height:900}});
+    await isolated.addInitScript(()=>{try{localStorage.setItem('rejson_repos_cache_v2',JSON.stringify({data:[{name:'Isolated',homepage:location.origin+'/Isolated/'}]}));}catch(e){}});
+    const ip=await isolated.newPage(); await ip.goto(origin+'/Isolated/setup');
+    await ip.evaluate(async()=>{await navigator.serviceWorker.register('/Isolated/worker.js',{scope:'/Isolated/'}); await navigator.serviceWorker.ready;});
+    await ip.goto(origin+'/podroz/?projekt=Isolated');
+    assert.equal(await ip.locator('#project-name').textContent(),'Isolated');
+    assert.equal(await ip.locator('.rocket-motion').evaluate(e=>getComputedStyle(e).animationName),'rocket-journey');
+    await ip.waitForURL('**/Isolated/',{timeout:10000});
+    assert.equal(await ip.locator('#destination').textContent(),'Oryginalny projekt');
+    assert.equal(await ip.evaluate(()=>new URL(navigator.serviceWorker.controller.scriptURL).pathname),'/Isolated/worker.js');
+    assert.equal(await ip.locator('#rj-portal-arrival').count(),0,'osobny worker bez bootstrapa nie otrzymuje zasłony');
+    await isolated.close();
+    console.log('PASS: podróż i automatyczne wejście bez zmian projektu, nawet z jego własnym workerem');
 
     const slow=await browser.newContext({viewport:{width:1440,height:900}});
     await slow.addInitScript(()=>{try{localStorage.setItem('rejson_repos_cache_v2',JSON.stringify({data:[{name:'Slow',homepage:location.origin+'/Slow/'}]}));}catch(e){}});

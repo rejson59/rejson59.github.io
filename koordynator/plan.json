@@ -1,41 +1,4 @@
 {
   "wersja": 1,
-  "stan": "gotowy",
-  "id": "rakieta-20261031",
-  "tytul": "Podróż rakietą podczas ładowania projektu",
-  "opis": "## Zmiana\n- Dostosowanie istniejącego wczesnego bootstrapa do nowego, jednorazowego znacznika podróży rakietą. Nie ma już portalu ani dodatkowego kliknięcia.\n- Bez zmian danych, kont, offline lub service workera projektu. Każdy PR jest osobny i wymaga ręcznego zatwierdzenia.\n\n## Testy i ograniczenia\n- Test bootstrapa uruchomiony osobno dla obu projektów. Efekt oczekiwania zależy od wspólnej domeny oraz CSP i nie jest gwarantowany na innych originach. W razie niedostępności animacji projekt uruchamia się normalnie.",
-  "projekty": [
-    {
-      "repozytorium": "mconline",
-      "podstawa": "8af8c4ff30f98c82205c223d96b0cf9aacff0b93",
-      "pliki": [
-        {
-          "sciezka": "index.html",
-          "zrodlo": "koordynator/paczki/rakieta-20261031/mconline/index.html",
-          "sha256": "0e87da0d68fae45abd7e3fe8f9a45058242353ae68f6a5114e5d9bbc49250076"
-        },
-        {
-          "sciezka": "scripts/portal-bootstrap.test.mjs",
-          "zrodlo": "koordynator/paczki/rakieta-20261031/mconline/scripts/portal-bootstrap.test.mjs",
-          "sha256": "ff4889fbc6cf9442789f8a9855988293a19017275ab9593a7109216f92a40cc4"
-        }
-      ]
-    },
-    {
-      "repozytorium": "ProStudent",
-      "podstawa": "6649f7b47316d49751db7447d13554da3aad7262",
-      "pliki": [
-        {
-          "sciezka": "index.html",
-          "zrodlo": "koordynator/paczki/rakieta-20261031/ProStudent/index.html",
-          "sha256": "8ff43c298529dafc6a4460c4ed38ae52d0c38173eb0cae92430fa894a859f57c"
-        },
-        {
-          "sciezka": "scripts/portal-bootstrap.test.mjs",
-          "zrodlo": "koordynator/paczki/rakieta-20261031/ProStudent/scripts/portal-bootstrap.test.mjs",
-          "sha256": "ff4889fbc6cf9442789f8a9855988293a19017275ab9593a7109216f92a40cc4"
-        }
-      ]
-    }
-  ]
+  "stan": "brak"
 }
