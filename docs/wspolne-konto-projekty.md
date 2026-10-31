@@ -46,8 +46,8 @@ Nie można wstrzyknąć efektu do innego originu ani ominąć CSP. Projektowy se
 W dokumencie projektu o tym samym originie można dodać w `<head>` po ewentualnej polityce CSP i przed skryptami blokującymi:
 
 ```html
-<link rel="stylesheet" href="/css/portal.css?v=11" data-rj-portal-style>
-<script src="/js/portal-arrival.js?v=10"></script>
+<link rel="stylesheet" href="/css/portal.css?v=12" data-rj-portal-style>
+<script src="/js/portal-arrival.js?v=11"></script>
 ```
 
 Skrypt bez jednorazowego znacznika z portalu niczego nie wyświetli. Nie należy dodawać tych odwołań na obcej domenie i obiecywać działania — tam znacznik `sessionStorage` nie jest dostępny.

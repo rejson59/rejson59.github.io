@@ -130,12 +130,12 @@ footer { position: relative; z-index: 3; display: flex; justify-content: space-b
 .tunnel-ring { position: absolute; left: 50%; top: 50%; width: min(80vw, 80vh); aspect-ratio: 1; border: 3px solid #8df5ff; border-bottom-color:#8df5ff55; border-radius: 50%; animation: tunnel-rush 1.75s linear infinite; }
 .tunnel-ring::before { content:""; position:absolute; inset:3%; border:1px solid #9affee99; border-left-color:transparent; border-bottom-color:transparent; border-radius:50%; transform:rotate(-28deg); }
 .tunnel-ring::after { content:""; position:absolute; left:50%; top:-5px; width:8px; height:8px; border-radius:50%; background:#cafff4; }
-.tunnel-ring:nth-child(2) { animation-delay: -.25s; border-color: #bdb4ff; }
-.tunnel-ring:nth-child(3) { animation-delay: -.5s; }
-.tunnel-ring:nth-child(4) { animation-delay: -.75s; border-color: #bdb4ff; }
-.tunnel-ring:nth-child(5) { animation-delay: -1s; }
-.tunnel-ring:nth-child(6) { animation-delay: -1.25s; border-color: #bdb4ff; }
-.tunnel-ring:nth-child(7) { animation-delay: -1.5s; }
+.tunnel-ring:nth-child(4) { animation-delay: -.25s; border-color: #bdb4ff; }
+.tunnel-ring:nth-child(5) { animation-delay: -.5s; }
+.tunnel-ring:nth-child(6) { animation-delay: -.75s; border-color: #bdb4ff; }
+.tunnel-ring:nth-child(7) { animation-delay: -1s; }
+.tunnel-ring:nth-child(8) { animation-delay: -1.25s; border-color: #bdb4ff; }
+.tunnel-ring:nth-child(9) { animation-delay: -1.5s; }
 .flight-streaks { position: absolute; inset: 0; width: 100%; height: 100%; color: #9aefff; stroke-width: 1.2; opacity: 0; animation: streaks-fly 4.2s ease both; }
 .flight-darkness { position: absolute; inset: 0; background: #010307; animation: flight-darkness 4.2s ease-in both; }
 .flight p { position: absolute; left: 0; right: 0; bottom: 12%; padding: 0 20px; text-align: center; font-size: 11px; letter-spacing: .25em; font-weight: 700; color: #eaffff; text-shadow: 0 2px 12px #00191e; animation: flight-caption 4.2s ease both; }
@@ -168,3 +168,18 @@ footer { position: relative; z-index: 3; display: flex; justify-content: space-b
 body.motion-off *, body.motion-off *::before, body.motion-off *::after { animation: none !important; transition: none !important; }
 @media (prefers-reduced-motion: reduce) { body:not(.motion-override) *, body:not(.motion-override) *::before, body:not(.motion-override) *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
 .flight.is-paused *, .flight.is-paused { animation-play-state: paused !important; }
+
+/* Kosmiczny wir: czarna głębia, poruszające się pasma energii i gwiezdny pył.
+   Oddzielne płaskie warstwy nie skalują rozmytych cieni podczas lotu. */
+.orb-world { transform: rotateX(-5deg) rotateY(-9deg); }
+.orb-core { left: 17%; top: 17%; width: 66%; height: 66%; background: radial-gradient(circle,#010208 0%,#060b1e 32%,#12335c 61%,#749be8 83%,transparent 100%); }
+.core-abyss { inset: 26%; z-index: 2; background: radial-gradient(circle,#000 24%,#01030c 69%,transparent 100%); }
+.core-rift { display:none !important; }
+.core-spiral { inset: 0; border-radius: 50%; background: repeating-conic-gradient(from 0deg, #4bd9ff00 0deg, #6194eb78 13deg, #d5c5ffad 22deg, #60dedb33 32deg, #090e3200 46deg); mask-image: radial-gradient(circle,transparent 0%,#000 38%,#000 74%,transparent 99%); -webkit-mask-image: radial-gradient(circle,transparent 0%,#000 38%,#000 74%,transparent 99%); animation: cosmic-spin 8s linear infinite; }
+.core-spiral i { position:absolute; display:block; inset:8%; border-radius:50%; border:2px solid transparent; border-left-color:#c9faff; border-right-color:#a38aff; transform:rotate(-35deg); }
+.core-spiral i + i { inset:18%; border-color:transparent #72d9f8 transparent #d1baff; transform:rotate(35deg); }
+@keyframes cosmic-spin { to { transform:rotate(360deg); } }
+/* Dopóki przeglądarka czeka na dokument, nie gaś tunelu do czerni. */
+@keyframes flight-darkness { 0%,72% { opacity:0; } 100% { opacity:.24; } }
+@keyframes flight-tunnel-visible { 0%,25% { opacity:0; } 43%,100% { opacity:1; } }
+@keyframes flight-caption { 0%,15% { opacity:0; } 28%,100% { opacity:1; } }

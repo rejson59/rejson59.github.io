@@ -34,6 +34,15 @@ const server = http.createServer((req, res) => {
     const cover = page.locator('#rj-portal-arrival');
     assert.equal(await cover.count(), 1);
     assert.equal(await cover.evaluate(el => el.classList.contains('is-playing')), false); // czeka na obraz
+    assert.equal(await cover.locator('.rj-wait-flight i').count(), 7);
+    assert.equal(await cover.locator('.rj-wait-flight i').first().evaluate(el=>getComputedStyle(el).animationName), 'rj-wait-rush');
+    const movement = await cover.locator('.rj-wait-flight i').first().evaluate(el=>{const a=el.getAnimations()[0]; a.pause(); a.currentTime=350;const x=getComputedStyle(el).transform;a.currentTime=950;const y=getComputedStyle(el).transform;a.play();return [x,y];});
+    assert.notEqual(movement[0], movement[1], 'tunel porusza się podczas oczekiwania');
+    await cover.evaluate(el=>el.classList.add('is-paused'));
+    assert.equal(await cover.locator('.rj-wait-flight i').first().evaluate(el=>getComputedStyle(el).animationPlayState),'paused');
+    await cover.evaluate(el=>el.classList.add('is-playing'));
+    assert.equal(await cover.locator('.rj-wait-flight').evaluate(el=>getComputedStyle(el).animationPlayState),'paused');
+    await cover.evaluate(el=>el.classList.remove('is-paused','is-playing'));
     await page.waitForFunction(() => document.querySelector('#rj-portal-arrival.is-playing'));
     const result = await cover.evaluate(el => {
       const selectors = [null,'.rj-arrival-veil','.rj-arrival-small','.rj-arrival-medium','.rj-arrival-wide','.rj-arrival-ring','.rj-arrival-echo--one','.rj-arrival-echo--two','.rj-arrival-rays i','.rj-arrival-rays i:nth-child(2)'];

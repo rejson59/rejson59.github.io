@@ -112,7 +112,7 @@ self.addEventListener("fetch", function (event) {
               // z prawdziwego wejścia przez portal. Nigdy nie dotyczy iframe.
               var portalHead = /^\/[A-Za-z0-9._-]+\//.test(url.pathname) &&
                 /<head\b[^>]*>/i.test(html) && /<\/head\s*>/i.test(html) && !/<script\b[^>]*\bsrc\s*=\s*(["'])[^"']*portal-arrival\.js(?:\?[^"']*)?\1/i.test(scriptHtml)
-                ? '<link rel="stylesheet" href="/css/portal.css?v=11" data-rj-portal-style><script src="/js/portal-arrival.js?v=10"></script>' : "";
+                ? '<link rel="stylesheet" href="/css/portal.css?v=12" data-rj-portal-style><script src="/js/portal-arrival.js?v=11"></script>' : "";
               // Zachowujemy politykę CSP projektu, ale wstawiamy wyjście przed
               // blokującymi skryptami, o ile jest już za wszystkimi meta CSP.
               var upgradedHtml = html.replace(/(<script\b[^>]*\bsrc\s*=\s*["'](?:https:\/\/rejson59\.github\.io)?\/rejson-widgets\/widget\.js)(?:\?v=[0-8])?(["'])/gi, "$1?v=9$2");

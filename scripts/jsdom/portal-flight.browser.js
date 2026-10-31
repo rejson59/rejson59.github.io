@@ -48,7 +48,8 @@ const server = http.createServer((req, res) => {
     assert.notEqual(result.middle.ring.transform, result.later.ring.transform);
     assert.equal(result.first.sourceVisibility, 'visible');
     assert.equal(result.end.sourceVisibility, 'hidden');
-    assert.ok(result.end.darkness.opacity > .99); // bez białego błysku
+    assert.ok(result.end.darkness.opacity > .2 && result.end.darkness.opacity < .3); // tunel trwa także podczas oczekiwania
+    assert.ok(result.end.tunnel.opacity > .99);
     await page.evaluate(() => { Object.defineProperty(document, 'visibilityState', { configurable:true, value:'hidden' }); document.dispatchEvent(new Event('visibilitychange')); });
     assert.equal(await page.locator('.tunnel-rails i').first().evaluate(el => getComputedStyle(el).animationPlayState), 'paused');
     await page.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pageshow', {persisted:true})));

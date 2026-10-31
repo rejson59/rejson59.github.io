@@ -228,6 +228,7 @@ function arrival(marker, opts = {}) {
   {
     const t = arrival({ path:'/Test', at:Date.now() });
     const cover = t.doc.querySelector('#rj-portal-arrival'); assert.ok(cover); assert.equal(cover.className, ''); assert.ok(cover.querySelector('.rj-arrival-veil')); assert.equal(cover.querySelectorAll('.rj-arrival-vignette').length, 3); assert.ok(cover.querySelector('.rj-arrival-ring')); assert.equal(cover.querySelectorAll('.rj-arrival-echo').length, 2); assert.equal(cover.querySelectorAll('.rj-arrival-rays i').length, 8); assert.equal(cover.querySelector('.rj-arrival-panel'), null);
+    assert.equal(cover.querySelectorAll('.rj-wait-flight i').length, 7); assert.match(cover.textContent, /projekt się ładuje/i);
     assert.equal(t.w.sessionStorage.getItem(KEY), null); assert.equal(t.timers[0].delay, 12000);
     t.w.dispatchEvent(new t.w.Event('load')); assert.ok(cover.classList.contains('is-playing'));
     // Animacje elementów wewnętrznych nie mogą zdjąć zasłony przed czasem.

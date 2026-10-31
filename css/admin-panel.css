@@ -1367,3 +1367,40 @@ body { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
   /* zakładki na całą szerokość ekranu, bez marginesów karty */
   .adm-tabs { margin-inline: -14px; border-radius: 12px; scroll-padding-inline: 12px; }
 }
+
+/* Prosty pulpit: ten sam zestaw narzędzi, czytelny punkt startowy. */
+.rj-admin .admin-welcome { display:flex; align-items:center; justify-content:space-between; gap:20px; padding:12px 0 2px; }
+.rj-admin .admin-welcome h1 { margin:8px 0 3px; font:700 clamp(28px,3vw,40px)/1.1 "Space Grotesk",sans-serif; letter-spacing:-.04em; }
+.rj-admin .admin-welcome p { color:var(--muted); margin:0; font-size:13px; }
+.rj-admin .admin-kicker { color:var(--accent-strong); font-size:10px; font-weight:800; letter-spacing:.15em; }
+.rj-admin .admin-welcome-badge { padding:10px 14px; border:1px solid var(--border); border-radius:999px; color:var(--muted); font-size:10px; font-weight:800; letter-spacing:.13em; white-space:nowrap; }
+.rj-admin .admin-welcome-badge span { color:var(--accent-strong); }
+.rj-admin .adm-tabs { position:relative; top:auto; z-index:1; justify-content:flex-start; flex-wrap:nowrap; width:100%; overflow-x:auto; margin:24px 0 25px; border-radius:18px; }
+.rj-admin .adm-tab { flex:none; padding:10px 14px; }
+.rj-admin .admin-overview { padding-bottom:28px; }
+.rj-admin .overview-heading { display:flex; align-items:center; justify-content:space-between; gap:18px; margin:8px 0 18px; }
+.rj-admin .overview-heading h2 { margin:7px 0; font:700 clamp(21px,2.2vw,29px)/1.2 "Space Grotesk",sans-serif; letter-spacing:-.035em; }
+.rj-admin .overview-heading p { margin:0; color:var(--muted); font-size:13px; line-height:1.55; }
+.rj-admin .overview-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+.rj-admin .overview-stat { display:flex; flex-direction:column; gap:9px; min-width:0; padding:20px; border:1px solid var(--border); border-radius:20px; background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 9%,var(--card)),var(--card) 78%); box-shadow:var(--liquid-shadow); }
+.rj-admin .overview-stat > span { color:var(--accent-strong); font-size:10px; letter-spacing:.1em; font-weight:800; }
+.rj-admin .overview-stat strong { font:700 30px/1 "Space Grotesk",sans-serif; font-variant-numeric:tabular-nums; }
+.rj-admin .overview-stat small { color:var(--muted); font-size:12px; }
+.rj-admin .overview-status { color:var(--muted); font-size:12px; margin:10px 2px 0; }
+.rj-admin .overview-heading--actions { margin-top:36px; }
+.rj-admin .overview-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; }
+.rj-admin .overview-tile { display:flex; align-items:center; gap:14px; min-width:0; padding:19px; border:1px solid var(--border); border-radius:20px; background:var(--card); color:var(--text); text-align:left; cursor:pointer; transition:transform .2s,border-color .2s,box-shadow .2s; }
+.rj-admin .overview-tile:hover { transform:translateY(-3px); border-color:var(--accent); box-shadow:var(--liquid-shadow); }
+.rj-admin .overview-tile:focus-visible { outline:2px solid var(--accent); outline-offset:3px; }
+.rj-admin .overview-icon { display:grid; place-items:center; flex:none; width:44px; height:44px; border:1px solid var(--border); border-radius:14px; background:color-mix(in srgb,var(--accent) 10%,var(--bg-elev)); font-size:19px; }
+.rj-admin .overview-tile > span:nth-child(2) { display:flex; flex:1; flex-direction:column; gap:5px; min-width:0; }
+.rj-admin .overview-tile strong { font-size:14px; }
+.rj-admin .overview-tile small { color:var(--muted); font-size:12px; line-height:1.4; }
+.rj-admin .overview-tile b { color:var(--accent-strong); font-size:17px; }
+@media (max-width:800px) { .rj-admin .overview-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:560px) { .rj-admin .admin-welcome-badge { display:none; } .rj-admin .overview-stats { grid-template-columns:1fr; } .rj-admin .overview-grid { grid-template-columns:1fr; } }
+@media (prefers-reduced-motion:reduce) { .rj-admin .overview-tile { transition:none; } }
+
+/* liquid.css ustawia top dla dawnych przyklejonych zakładek. */
+body.rj-admin .adm-tabs { top:auto; }
+.rj-admin .overview-svg { width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; color:var(--accent-strong); }

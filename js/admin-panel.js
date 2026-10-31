@@ -223,6 +223,7 @@
 
   /* ---------- Zakładki ---------- */
   var TAB_IDS = {
+    overview: "tab-overview",
     activity: "tab-activity",
     submissions: "tab-submissions",
     partnership: "tab-partnership",
@@ -241,6 +242,7 @@
             var active = btns[j] === btn;
             btns[j].classList.toggle("is-active", active);
             btns[j].setAttribute("aria-selected", active ? "true" : "false");
+            btns[j].tabIndex = active ? 0 : -1;
           }
           Object.keys(TAB_IDS).forEach(function (key) {
             var el = $(TAB_IDS[key]);
@@ -253,6 +255,23 @@
         });
       })(btns[i]);
     }
+    // Skróty nie omijają zwykłej obsługi sekcji (ładowania i uprawnień).
+    document.querySelectorAll("[data-open-tab]").forEach(function (shortcut) {
+      shortcut.addEventListener("click", function () {
+        var name = shortcut.getAttribute("data-open-tab");
+        var target = $("tab-btn-" + name);
+        if (target) { target.click(); target.focus(); }
+      });
+    });
+    btns.forEach(function (btn, index) {
+      btn.setAttribute("aria-controls", TAB_IDS[btn.getAttribute("data-tab")]);
+      btn.tabIndex = btn.classList.contains("is-active") ? 0 : -1;
+      btn.addEventListener("keydown", function (event) {
+        var next = event.key === "Home" ? 0 : event.key === "End" ? btns.length - 1 : event.key === "ArrowRight" ? (index + 1) % btns.length : event.key === "ArrowLeft" ? (index + btns.length - 1) % btns.length : -1;
+        if (next < 0) return;
+        event.preventDefault(); btns[next].click(); btns[next].focus();
+      });
+    });
   }
 
   /* ---------- Logowanie ---------- */
@@ -699,6 +718,12 @@
   function render(data) {
     if (!data || typeof data !== "object") return;
     var totals = data.totals || {};
+    [["overview-online", totals.online_total], ["overview-today", totals.views_today_total], ["overview-total", totals.views_total]].forEach(function (entry) {
+      var el = $(entry[0]);
+      if (el) el.textContent = entry[1] != null && Number.isFinite(Number(entry[1])) ? fmt(entry[1]) : "—";
+    });
+    var overviewStatus = $("overview-status");
+    if (overviewStatus) overviewStatus.textContent = "Dane aktywności odświeżają się automatycznie.";
     var multi = data.multi || {};
     var projects = Array.isArray(data.projects) ? data.projects : [];
 
@@ -987,6 +1012,8 @@
           showAuth();
           return null;
         }
+        var overviewStatus = $("overview-status");
+        if (overviewStatus) overviewStatus.textContent = "Nie udało się odświeżyć aktywności. Spróbuj ponownie.";
         stampUpdated();
         return null;
       });
