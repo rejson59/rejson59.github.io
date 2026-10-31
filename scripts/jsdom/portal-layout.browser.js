@@ -28,35 +28,46 @@ const server = http.createServer((req, res) => {
       await p.locator('#enter').scrollIntoViewIfNeeded();
       assert(await p.locator('#enter').isVisible());
     }
+    // Długie nazwy i opisy nie mogą zasłonić wejścia ani sterowania.
+    const longName = 'A'.repeat(100);
+    await p.addInitScript(name => localStorage.setItem('rejson_repos_cache_v2', JSON.stringify({data:[{name, homepage:location.origin+'/Test/', description:'Opis '.repeat(30)}]})), longName);
+    for (const [width,height] of [[320,568],[375,667],[1440,900]]) {
+      await p.setViewportSize({width,height}); await p.goto(origin+'/portal/?projekt='+longName);
+      const layout = await p.evaluate(() => {
+        const r = s => document.querySelector(s).getBoundingClientRect().toJSON();
+        return {title:r('.intro'),door:r('.world-frame'),actions:r('.actions'),scroll:document.documentElement.scrollWidth,width:innerWidth};
+      });
+      assert(layout.title.bottom <= layout.door.top, `${width}: długa nazwa zasłania wejście`);
+      assert(layout.door.bottom <= layout.actions.top, `${width}: wejście zasłania sterowanie`);
+      assert(layout.scroll <= layout.width, `${width}: poziome przewijanie`);
+    }
     await p.setViewportSize({width:1440,height:900});
     await p.goto(origin+'/portal/?projekt=RejStream');
-    assert.equal(await p.locator('.starfield i').first().evaluate(el => getComputedStyle(el).animationName), 'star-spark');
-    await p.mouse.move(100,100); await p.waitForTimeout(650);
-    assert.notEqual(await p.locator('#cosmos-art').evaluate(el => el.style.transform), 'translate3d(0px, 0px, 0px)');
-    const planes = await p.locator('.depth-plane').evaluateAll(els => els.map(el => el.style.transform));
-    assert.equal(planes.length, 3);
-    assert.notEqual(planes[0], planes[1]); assert.notEqual(planes[1], planes[2]);
-    assert.equal(await p.locator('.depth-plane--near .depth-float').evaluate(el => getComputedStyle(el).animationName), 'float-near');
-    assert.equal(await p.locator('.depth-particles i').first().evaluate(el => getComputedStyle(el).animationName), 'particle-approach');
-    const motion = await p.locator('.depth-plane--near .depth-float').evaluate(el => {
+    assert.equal(await p.locator('.step').first().evaluate(el => getComputedStyle(el).animationName), 'step-float');
+    const perspective = await p.evaluate(() => {
+      const r = s => document.querySelector(s).getBoundingClientRect();
+      return {far:r('.step:first-child').width, near:r('.step:last-child').width, style:getComputedStyle(document.querySelector('.step')).transform};
+    });
+    assert(perspective.near > perspective.far * 2, 'rzeczywista perspektywa zmniejsza dalekie stopnie');
+    assert.match(perspective.style, /matrix3d/);
+    const motion = await p.locator('.step').last().evaluate(el => {
       const animation = el.getAnimations()[0]; animation.pause(); animation.currentTime = 0;
       const first = getComputedStyle(el).transform;
-      animation.currentTime = 10000; const last = getComputedStyle(el).transform;
+      animation.currentTime = 6000; const last = getComputedStyle(el).transform;
       animation.play(); return [first,last];
     });
-    assert.notEqual(motion[0], motion[1], 'pierwszy plan rzeczywiście się porusza');
+    assert.notEqual(motion[0], motion[1], 'stopnie rzeczywiście się poruszają');
+    await p.mouse.move(100,100); await p.waitForTimeout(650);
+    assert.notEqual(await p.locator('#scene-camera').evaluate(el => el.style.transform), 'translate3d(0px, 0px, 0px)');
     await p.evaluate(() => { Object.defineProperty(document, 'visibilityState', {configurable:true,value:'hidden'}); document.dispatchEvent(new Event('visibilitychange')); });
-    assert.equal(await p.locator('.depth-plane--near .depth-float').evaluate(el => getComputedStyle(el).animationPlayState), 'paused');
+    assert.equal(await p.locator('.step').first().evaluate(el => getComputedStyle(el).animationPlayState), 'paused');
     await p.evaluate(() => { Object.defineProperty(document, 'visibilityState', {configurable:true,value:'visible'}); document.dispatchEvent(new Event('visibilitychange')); });
     await p.locator('#motion-toggle').click();
-    assert.equal(await p.locator('.starfield i').first().evaluate(el => getComputedStyle(el).animationName), 'none');
     assert.equal(await p.locator('#motion-toggle').getAttribute('aria-pressed'), 'false');
-    assert.equal(await p.locator('#cosmos-art').evaluate(el => el.style.transform), 'translate3d(0px, 0px, 0px)');
-    assert.equal(await p.locator('.depth-plane--near').evaluate(el => el.style.transform), 'translate3d(0px, 0px, 0px)');
-    assert.equal(await p.locator('.depth-plane--near .depth-float').evaluate(el => getComputedStyle(el).animationName), 'none');
-    assert.equal(await p.locator('.depth-particles i').first().evaluate(el => getComputedStyle(el).animationName), 'none');
+    assert.equal(await p.locator('.step').first().evaluate(el => getComputedStyle(el).animationName), 'none');
+    assert.equal(await p.locator('#scene-camera').evaluate(el => el.style.transform), 'translate3d(0px, 0px, 0px)');
     await p.mouse.move(1200,100); await p.waitForTimeout(100);
-    assert.equal(await p.locator('#cosmos-art').evaluate(el => el.style.transform), 'translate3d(0px, 0px, 0px)');
+    assert.equal(await p.locator('#scene-camera').evaluate(el => el.style.transform), 'translate3d(0px, 0px, 0px)');
     console.log('PASS: geometria, interakcje, paralaksa i wyłączenie ruchu');
   } finally { await browser.close(); server.close(); }
 })().catch(e => { console.error(e); server.close(); process.exitCode=1; });

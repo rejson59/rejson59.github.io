@@ -7,9 +7,9 @@
   <meta name="robots" content="noindex">
   <title>Portal do projektu — Rejson59</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/css/portal-room.css?v=15">
+  <link rel="stylesheet" href="/css/portal-room.css?v=16">
   <script defer src="/js/projects-data.js"></script>
-  <script defer src="/js/portal-room.js?v=13"></script>
+  <script defer src="/js/portal-room.js?v=14"></script>
   <link rel="stylesheet" href="/css/liquid.css?v=2026-10-30-2">
   <link rel="stylesheet" href="/css/rejchat.css?v=1">
   <script defer src="/js/rejchat-profiles.js?v=1"></script>
@@ -24,28 +24,24 @@
   </header>
   <main class="room" id="room">
     <div class="scene-atmosphere" aria-hidden="true">
-      <div class="cosmos-art" id="cosmos-art"></div>
-      <svg class="depth-beams" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-        <defs>
-          <linearGradient id="beam-cyan" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#99e8f4" stop-opacity=".43"/><stop offset="1" stop-color="#71cbe3" stop-opacity="0"/></linearGradient>
-          <linearGradient id="beam-amber" x1="1" y1="0" x2="0" y2="1"><stop stop-color="#ffb59f" stop-opacity=".34"/><stop offset="1" stop-color="#ffb8ad" stop-opacity="0"/></linearGradient>
-        </defs>
-        <path d="M-150 70 Q300 130 735 400 Q260 265 -150 220Z" fill="url(#beam-cyan)"/>
-        <path d="M1660 -90 Q1290 115 868 401 Q1300 218 1660 130Z" fill="url(#beam-amber)"/>
-        <path d="M1660 840 Q1210 660 872 502 Q1240 730 1660 990Z" fill="url(#beam-cyan)"/>
-        <path d="M-100 1000 Q420 695 730 505 Q390 755 -100 1130Z" fill="url(#beam-amber)"/>
-        <g fill="none" stroke="#c5efff" stroke-width="1.3" opacity=".35"><path d="M-100 65 Q300 130 735 400"/><path d="M1660 -90 Q1290 115 868 401"/><path d="M1660 840 Q1210 660 872 502"/><path d="M-100 1000 Q420 695 730 505"/></g>
-      </svg>
-      <svg class="cosmic-streams" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-        <path d="M800 450L-120 -180 M800 450L-160 200 M800 450L-160 930 M800 450L300 1100 M800 450L970 1100 M800 450L1760 960 M800 450L1770 270 M800 450L1380 -150 M800 450L740 -180"/>
-        <path d="M800 450L40 40 M800 450L180 900 M800 450L1510 900 M800 450L1500 50"/>
-      </svg>
-      <div class="depth-plane depth-plane--far" data-depth="1"><div class="depth-float"></div></div>
-      <div class="depth-plane depth-plane--mid" data-depth="2"><div class="depth-float"></div></div>
-      <div class="depth-plane depth-plane--near" data-depth="3"><div class="depth-float"></div></div>
-      <div class="depth-particles"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-      <div class="starfield starfield--far"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
-      <div class="starfield starfield--near"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="world-sky" id="world-sky"><div class="sun-glow"></div><div class="sun-disc"></div><div class="cloud cloud--one"></div><div class="cloud cloud--two"></div><div class="distant-mist"></div></div>
+      <div class="world-sea"><div class="sea-reflection"></div></div>
+      <div class="flying-creature"><svg viewBox="0 0 320 100" aria-hidden="true"><path class="wing wing--left" d="M158 44 Q111 35 29 8 Q60 45 119 59 Q143 63 158 51Z"/><path class="wing wing--right" d="M162 44 Q209 35 291 8 Q260 45 201 59 Q177 63 162 51Z"/><path d="M153 46 Q160 30 167 46 L162 62 Q170 78 189 91 Q167 86 160 72 Q153 86 131 91 Q150 78 158 62Z" fill="#f9e7cf"/></svg></div>
+      <div class="depth-perspective"><div class="scene-camera" id="scene-camera">
+        <div class="floating-island floating-island--left"><i></i><b></b></div>
+        <div class="floating-island floating-island--right"><i></i><b></b></div>
+        <div class="pathway">
+          <div class="step"><span class="step-top"></span><span class="step-front"></span></div>
+          <div class="step"><span class="step-top"></span><span class="step-front"></span></div>
+          <div class="step"><span class="step-top"></span><span class="step-front"></span></div>
+          <div class="step"><span class="step-top"></span><span class="step-front"></span></div>
+          <div class="step"><span class="step-top"></span><span class="step-front"></span></div>
+          <div class="step"><span class="step-top"></span><span class="step-front"></span></div>
+          <div class="step"><span class="step-top"></span><span class="step-front"></span></div>
+          <div class="step"><span class="step-top"></span><span class="step-front"></span></div>
+        </div>
+      </div></div>
+      <div class="atmosphere-vignette"></div>
     </div>
     <div class="world-frame">
       <button class="portal-door" id="portal-door" type="button" disabled aria-label="Wejdź do portalu">
@@ -55,18 +51,18 @@
             <span class="gate-stardust"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
           </span>
         </span>
-        <span class="door-label" aria-hidden="true"><span>↗</span> WEJDŹ DO ŚRODKA</span>
+        <span class="door-label" aria-hidden="true"><span>↓</span> WEJDŹ</span>
       </button>
     </div>
     <div class="room-content">
       <div class="intro">
-        <div class="eyebrow"><span class="eyebrow-dot"></span> NA KRAWĘDZI ŚWIATÓW</div>
+        <div class="eyebrow"><span class="eyebrow-dot"></span> DALEJ ZACZYNA SIĘ</div>
         <h1 id="project-name">projektu</h1>
         <p id="project-description">Kiedy zechcesz, wejdź dalej.</p>
       </div>
       <div class="actions" id="actions">
-        <button class="enter-button" id="enter" type="button" disabled><span class="button-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2.5c.7 5.2 2.3 6.8 7.5 7.5-5.2.7-6.8 2.3-7.5 7.5-.7-5.2-2.3-6.8-7.5-7.5 5.2-.7 6.8-2.3 7.5-7.5ZM19.5 15c.3 1.9.9 2.5 2.8 2.8-1.9.3-2.5.9-2.8 2.8-.3-1.9-.9-2.5-2.8-2.8 1.9-.3 2.5-.9 2.8-2.8Z"/></svg></span><span>Przekrocz granicę</span><b aria-hidden="true">↗</b></button>
-        <p class="hint"><span aria-hidden="true">✧</span> Kliknij przycisk lub ciemny środek.</p>
+        <button class="enter-button" id="enter" type="button" disabled><span class="button-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 2.5c.7 5.2 2.3 6.8 7.5 7.5-5.2.7-6.8 2.3-7.5 7.5-.7-5.2-2.3-6.8-7.5-7.5 5.2-.7 6.8-2.3 7.5-7.5ZM19.5 15c.3 1.9.9 2.5 2.8 2.8-1.9.3-2.5.9-2.8 2.8-.3-1.9-.9-2.5-2.8-2.8 1.9-.3 2.5-.9 2.8-2.8Z"/></svg></span><span>Wejdź do świata</span><b aria-hidden="true">↗</b></button>
+        <p class="hint"><span aria-hidden="true">✧</span> Twoja podróż zaczyna się tutaj.</p>
         <button class="motion-toggle" id="motion-toggle" type="button" aria-pressed="true">Wyłącz animację portalu</button>
         <a class="direct-link" id="direct" hidden>Otwórz projekt bez animacji <span aria-hidden="true">↗</span></a>
         <p class="status" id="status" role="status" aria-live="polite">Przygotowujemy portal...</p>
@@ -74,7 +70,7 @@
     </div>
     <noscript><p class="noscript">Portal wymaga JavaScriptu. <a href="/">Wróć do projektów</a>.</p></noscript>
   </main>
-  <footer><span>REJSON59 <i>✦</i> UNIWERSUM PROJEKTÓW</span><span>ODKRYWAJ BEZ GRANIC <i>↗</i></span></footer>
+  <footer><span>REJSON59 <i>✦</i> PRZESTRZEŃ PROJEKTÓW</span><span>ODWAŻ SIĘ ODKRYWAĆ <i>↗</i></span></footer>
   <div class="flight" id="flight" aria-hidden="true">
     <div class="flight-space"></div>
     <div class="flight-mouth" id="flight-mouth"><span class="flight-mouth-fallback"></span></div>
