@@ -13,7 +13,7 @@
       if (!item || typeof item.path !== "string" || item.path.length > 4096 || typeof item.at !== "number" || Date.now() - item.at < 0 || Date.now() - item.at > 30 * 60 * 1000) return null;
       if (item.path.charAt(0) !== "/" || item.path.charAt(1) === "/" || item.path.indexOf("\\") !== -1) return null;
       var dest = new window.URL(item.path, location.origin);
-      if (dest.origin !== location.origin || /^\/(?:logowanie|portal)(?:[./]|$)/i.test(dest.pathname) || dest.pathname === "/") return null;
+      if (dest.origin !== location.origin || /^\/(?:logowanie|portal|podroz)(?:[./]|$)/i.test(dest.pathname) || dest.pathname === "/") return null;
       return dest.pathname + dest.search + dest.hash;
     } catch (e) { return null; }
   }

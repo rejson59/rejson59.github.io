@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1027">
+  <meta name="robots" content="noindex">
+  <title>Podróż do projektu — Rejson59</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/css/travel.css?v=1">
+  <script defer src="/js/projects-data.js"></script>
+  <script defer src="/js/travel.js?v=1"></script>
+</head>
+<body class="travel-page">
+  <div class="stars" aria-hidden="true"></div>
+  <header class="travel-header"><a href="/" class="brand"><span class="brand-mark">R</span> rejson59<span class="brand-dot">.</span></a><span>MAŁA PODRÓŻ, WIELKIE ODKRYCIA <span aria-hidden="true">✦</span></span></header>
+  <main class="journey">
+    <div class="heading"><p class="eyebrow"><span aria-hidden="true">✦</span> KIERUNEK</p><h1 id="project-name">Twój projekt</h1><p id="travel-status" role="status" aria-live="polite">Przygotowujemy podróż…</p></div>
+    <div class="map" aria-hidden="true">
+      <svg class="route" viewBox="0 0 1000 400" preserveAspectRatio="none"><path d="M145 295 C380 310 490 90 855 110"/></svg>
+      <div class="planet planet--home"><span></span></div>
+      <div class="planet planet--destination"><span></span></div>
+      <div class="map-label map-label--home">STĄD</div><div class="map-label map-label--destination">TWÓJ CEL</div>
+      <div class="rocket-motion"><div class="rocket-float"><img class="rocket" src="/assets/travel-rocket.svg" alt=""></div></div>
+      <i class="spark spark--one">✦</i><i class="spark spark--two">✧</i><i class="spark spark--three">✦</i><i class="spark spark--four">✧</i>
+    </div>
+    <div class="journey-controls">
+      <div class="progress" aria-hidden="true"><span></span></div>
+      <div class="control-row"><span class="caption">W DRODZE DO NOWEGO MIEJSCA</span><button id="skip" type="button" disabled>Pomiń animację <span aria-hidden="true">↗</span></button></div>
+      <a id="direct" hidden>Otwórz projekt bezpośrednio ↗</a>
+      <a class="back" href="/">Wróć do projektów</a>
+    </div>
+    <noscript><p>Podróż wymaga JavaScriptu. <a href="/">Wróć do projektów</a>.</p></noscript>
+  </main>
+</body>
+</html>

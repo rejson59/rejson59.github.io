@@ -78,6 +78,7 @@ function create(initial, handler, opts = {}) {
     {path:'https://evil.example/',at:Date.now()},
     {path:'/Test/',at:Date.now()-31*60*1000},
     {path:'/portal/Other',at:Date.now()},
+    {path:'/podroz/?projekt=Other',at:Date.now()},
     {path:'/logowanie',at:Date.now()},
   ]) {
     const x = create(null, async () => ({data:{username:null}}), {search:'?powrot=1',returnValue:value});

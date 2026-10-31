@@ -22,7 +22,7 @@ const server = http.createServer((req,res) => {
   const browser = await chromium.launch({executablePath:process.env.CHROME_BIN,headless:true,args:['--no-sandbox','--disable-webgl']});
   try {
     const origin = `http://127.0.0.1:${server.address().port}`;
-    for (const route of ['/','/404.html','/admin.html','/logowanie.html','/partnerstwo.html','/profil.html','/rejchat.html','/rejfile.html','/tablica-pomyslow.html','/widzety.html','/portal/index.html?projekt=RejStream','/rejson-widgets/index.html']) {
+    for (const route of ['/','/404.html','/admin.html','/logowanie.html','/partnerstwo.html','/profil.html','/rejchat.html','/rejfile.html','/tablica-pomyslow.html','/widzety.html','/rejson-widgets/index.html']) {
       const context = await browser.newContext({viewport:{width:1280,height:720},serviceWorkers:'block'});
       try {
         await context.route('**/*', r => r.request().url().startsWith(origin+'/') ? r.continue() : r.abort());

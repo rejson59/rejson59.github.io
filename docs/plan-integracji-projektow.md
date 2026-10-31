@@ -20,7 +20,7 @@ Stan: 30 października 2026. To **plan i rejestr pracy**, nie deklaracja, że pr
 
    **Poprawki portalu i offline — scalone i wdrożone:** mconline [#72](https://github.com/rejson59/mconline/pull/72) i ProStudent [#22](https://github.com/rejson59/ProStudent/pull/22), CI oraz GitHub Pages zakończone sukcesem. Dotyczyły wyjścia z portalu i ograniczenia cache/SW Plecaka, nie kont.
 4. **RejChat — częściowy publiczny czat i profile.** Do zrobienia: zaproszenia i znajomi, prywatne wiadomości, grupy, blokady oraz prawdziwe powiadomienia; potem głos i wideo z uwzględnieniem sygnalizacji, NAT/TURN, uprawnień i kosztów. Bez RLS/RPC i testów izolacji nie przedstawiać prywatności jako gotowej.
-5. **Pozostałe projekty — audyt kolejno.** Ustalić w każdym origin, sposób uruchamiania, istniejące konta i dane, sieć, SW/CSP, zasadność wspólnego konta i przejść portalowych. Osobno przygotować plan oraz testy, bez automatycznego łączenia danych.
+5. **Pozostałe projekty — audyt kolejno.** Ustalić w każdym origin, sposób uruchamiania, istniejące konta i dane, sieć, SW/CSP, zasadność wspólnego konta i podróży rakietą. Osobno przygotować plan oraz testy, bez automatycznego łączenia danych.
 
 ## Publiczne repozytoria do przeglądu
 

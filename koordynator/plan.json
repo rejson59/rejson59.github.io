@@ -1,39 +1,39 @@
 {
   "wersja": 1,
   "stan": "gotowy",
-  "id": "portal-tunel-20261031",
-  "tytul": "Tunel portalu podczas ładowania projektu",
-  "opis": "## Zmiana\n- Aktualizacja wczesnego bootstrapa portalu do nowego tunelu oczekiwania i animacji wyjścia. Projekt nadal uruchamia się bez portalu, a skrypt wczytuje się wyłącznie po wejściu z portalu na wspólnej domenie.\n- Nie zmieniamy danych, kont ani mechanizmu offline projektów. PR-y powstają osobno i nie są automatycznie scalane.\n\n## Testy i ograniczenia\n- Test bootstrapu w obu projektach uruchomiony z Node; pełne testy aplikacji nie są zastępowane.\n- Po opublikowaniu strony centralnej uruchom workflow, sprawdź i zaakceptuj osobne PR-y. Efekt wyjścia nie jest gwarantowany dla innych originów, polityk CSP i projektów bez kompatybilnego bootstrapa.",
+  "id": "rakieta-20261031",
+  "tytul": "Podróż rakietą podczas ładowania projektu",
+  "opis": "## Zmiana\n- Dostosowanie istniejącego wczesnego bootstrapa do nowego, jednorazowego znacznika podróży rakietą. Nie ma już portalu ani dodatkowego kliknięcia.\n- Bez zmian danych, kont, offline lub service workera projektu. Każdy PR jest osobny i wymaga ręcznego zatwierdzenia.\n\n## Testy i ograniczenia\n- Test bootstrapa uruchomiony osobno dla obu projektów. Efekt oczekiwania zależy od wspólnej domeny oraz CSP i nie jest gwarantowany na innych originach. W razie niedostępności animacji projekt uruchamia się normalnie.",
   "projekty": [
     {
       "repozytorium": "mconline",
-      "podstawa": "863423e24425626a963460572f0f14f12466732d",
+      "podstawa": "8af8c4ff30f98c82205c223d96b0cf9aacff0b93",
       "pliki": [
         {
           "sciezka": "index.html",
-          "zrodlo": "koordynator/paczki/portal-tunel-20261031/mconline/index.html",
-          "sha256": "9b4860f8f9e84e6d01a85b98f5907988e9476e85d18d99551bf8996493d626bb"
+          "zrodlo": "koordynator/paczki/rakieta-20261031/mconline/index.html",
+          "sha256": "0e87da0d68fae45abd7e3fe8f9a45058242353ae68f6a5114e5d9bbc49250076"
         },
         {
           "sciezka": "scripts/portal-bootstrap.test.mjs",
-          "zrodlo": "koordynator/paczki/portal-tunel-20261031/mconline/scripts/portal-bootstrap.test.mjs",
-          "sha256": "2d35f0ad7520705d7f53ed2884ce468ef4a00b9acb141a7ac84ec4ed5c77a466"
+          "zrodlo": "koordynator/paczki/rakieta-20261031/mconline/scripts/portal-bootstrap.test.mjs",
+          "sha256": "ff4889fbc6cf9442789f8a9855988293a19017275ab9593a7109216f92a40cc4"
         }
       ]
     },
     {
       "repozytorium": "ProStudent",
-      "podstawa": "dbab0f388b90ef0b4c267a6648459a2152fc464f",
+      "podstawa": "6649f7b47316d49751db7447d13554da3aad7262",
       "pliki": [
         {
           "sciezka": "index.html",
-          "zrodlo": "koordynator/paczki/portal-tunel-20261031/ProStudent/index.html",
-          "sha256": "f9825d4270806bada034738edcca2036565554339fc25f9169a35b817184f86d"
+          "zrodlo": "koordynator/paczki/rakieta-20261031/ProStudent/index.html",
+          "sha256": "8ff43c298529dafc6a4460c4ed38ae52d0c38173eb0cae92430fa894a859f57c"
         },
         {
           "sciezka": "scripts/portal-bootstrap.test.mjs",
-          "zrodlo": "koordynator/paczki/portal-tunel-20261031/ProStudent/scripts/portal-bootstrap.test.mjs",
-          "sha256": "2d35f0ad7520705d7f53ed2884ce468ef4a00b9acb141a7ac84ec4ed5c77a466"
+          "zrodlo": "koordynator/paczki/rakieta-20261031/ProStudent/scripts/portal-bootstrap.test.mjs",
+          "sha256": "ff4889fbc6cf9442789f8a9855988293a19017275ab9593a7109216f92a40cc4"
         }
       ]
     }
