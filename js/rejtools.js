@@ -7,6 +7,39 @@
     document.documentElement.dataset.theme = theme;
     try { localStorage.setItem('theme', theme); } catch (_) {}
   });
+  var filter = 'all';
+  var cards = Array.prototype.slice.call(document.querySelectorAll('[data-tool-category]'));
+  function normalize(value) { return value.toLocaleLowerCase('pl').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/ł/g, 'l'); }
+  function filterTools() {
+    var query = normalize($('tools-search').value.trim());
+    var shown = 0;
+    cards.forEach(function (card) {
+      var searchable = normalize(card.dataset.toolSearch + ' ' + (card.querySelector('.tool-title') || card).textContent);
+      var visible = (filter === 'all' || card.dataset.toolCategory === filter) && (!query || searchable.indexOf(query) !== -1);
+      card.hidden = !visible;
+      if (visible) shown++;
+    });
+    $('tools-results').textContent = shown ? 'Dostępne pozycje: ' + shown : 'Nic nie znaleziono — spróbuj innego hasła lub kategorii.';
+  }
+  $('tools-search').addEventListener('input', filterTools);
+  document.querySelectorAll('[data-tool-filter]').forEach(function (button) {
+    button.addEventListener('click', function () {
+      filter = button.dataset.toolFilter;
+      document.querySelectorAll('[data-tool-filter]').forEach(function (item) {
+        var active = item === button; item.classList.toggle('is-active', active); item.setAttribute('aria-pressed', active ? 'true' : 'false');
+      });
+      filterTools();
+    });
+  });
+  function openHash() {
+    var id; try { id = decodeURIComponent(location.hash.slice(1)); } catch (_) { return; }
+    var item = document.getElementById(id);
+    if (item && item.matches('details.tool')) {
+      if (item.hidden) { filter = 'all'; $('tools-search').value = ''; document.querySelectorAll('[data-tool-filter]').forEach(function (button) { var on = button.dataset.toolFilter === 'all'; button.classList.toggle('is-active', on); button.setAttribute('aria-pressed', on ? 'true' : 'false'); }); filterTools(); }
+      item.open = true;
+    }
+  }
+  filterTools(); openHash(); window.addEventListener('hashchange', openHash);
   var text = $('text-input');
   function countText() {
     var value = text.value;
