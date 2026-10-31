@@ -524,12 +524,43 @@
     '</div>';
   }
 
+  /* Mały baner zostaje na miejscu; pełna karta otwiera się tylko na życzenie. */
+  function setupCompactClub() {
+    var section = document.querySelector(".rj-club");
+    var open = document.getElementById("rj-account-mini-open");
+    var close = document.getElementById("rj-account-details-close");
+    if (!section || !open || !close) return;
+    if (!section.classList.contains("rj-club--compact")) {
+      function setOpen(value) {
+        section.classList.toggle("is-open", value);
+        open.setAttribute("aria-expanded", value ? "true" : "false");
+      }
+      open.addEventListener("click", function () {
+        var expanded = open.getAttribute("aria-expanded") !== "true";
+        setOpen(expanded);
+        if (expanded) close.focus();
+      });
+      close.addEventListener("click", function () { setOpen(false); open.focus(); });
+      document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape" && section.classList.contains("is-open")) {
+          setOpen(false); open.focus();
+        }
+      });
+      section.classList.add("rj-club--compact");
+    }
+    var s = session();
+    document.getElementById("rj-account-mini-title").textContent = s ? "Cześć, " + s.username + "!" : "Twoje miejsce u Rejsona";
+    document.getElementById("rj-account-mini-description").textContent = s ? "Twoje zgłoszenia i obserwowane projekty pod ręką." : "Profil, zgłoszenia i obserwowane projekty w jednym miejscu.";
+    document.getElementById("rj-account-mini-link").textContent = s ? "Przejdź do konta ↗" : "Załóż konto lub zaloguj się ↗";
+  }
+
   function paintClub() {
     var host = document.getElementById("rj-club");
     if (!host) return;
     // Stary znacznik odłożenia nie ukrywa już stałego baneru.
     host.hidden = false;
     host.innerHTML = clubHTML();
+    setupCompactClub();
 
     host.querySelectorAll("[data-follow]").forEach(function (btn) {
       btn.addEventListener("click", function () {

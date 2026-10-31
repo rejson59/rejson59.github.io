@@ -61,12 +61,12 @@ const server = http.createServer((req, res) => {
     assert.equal(await toggle.isVisible(),false);
     let geometry = await page.locator('.showcase-grid').evaluate(el => getComputedStyle(el).gridTemplateColumns.split(' ').length);
     assert.equal(geometry,2,'tablet: dwa słupki projektów');
-    assert.equal(await page.locator('.rj-premium').isVisible(),true);
+    assert.equal(await page.locator('#rj-club .rj-premium').isVisible(),true);
     assert.equal(await page.locator('.partner-home').isVisible(),true);
-    assert.equal(await page.locator('.rj-premium__glow').evaluate(el => getComputedStyle(el).animationName),'rj-premium-sweep');
-    assert.equal(await page.locator('.rj-premium__sheen').evaluate(el => getComputedStyle(el).animationName),'rj-premium-sheen');
+    assert.equal(await page.locator('#rj-club .rj-premium__glow').evaluate(el => getComputedStyle(el).animationName),'rj-premium-sweep');
+    assert.equal(await page.locator('#rj-club .rj-premium__sheen').evaluate(el => getComputedStyle(el).animationName),'rj-premium-sheen');
     await page.emulateMedia({reducedMotion:'reduce'});
-    assert.equal(await page.locator('.rj-premium__sheen').evaluate(el => getComputedStyle(el).animationName),'rj-premium-sheen');
+    assert.equal(await page.locator('#rj-club .rj-premium__sheen').evaluate(el => getComputedStyle(el).animationName),'rj-premium-sheen');
     await page.emulateMedia({reducedMotion:'no-preference'});
     for (const width of [320,375,560,640,760,1024]) {
       await page.setViewportSize({width,height:850});
