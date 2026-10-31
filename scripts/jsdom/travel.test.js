@@ -16,10 +16,10 @@ assert.match(read('sw.js'),/\(\?:portal\|podroz\)/);
 for(const color of ['#b9d3ff','#6aa6ff','#3f6fbe']) { assert.ok(read('css/loader.css').includes(color)); assert.ok(read('assets/travel-rocket.svg').includes(color)); }
 
 const dom=new JSDOM('<article data-repo="Test"><a data-journey href="/Test/" target="_blank" rel="noopener noreferrer"><span>Test</span></a></article><article data-repo="External"><a id="external" data-journey href="https://example.org/" target="_blank">Zewnątrz</a></article>',{url:'https://rejson59.github.io/',runScripts:'outside-only',virtualConsole:new VirtualConsole()});
-let calls=0, store={}, dest='', child={sessionStorage:{setItem:(k,v)=>store[k]=v},document:dom.window.document.implementation.createHTMLDocument(''),opener:{},location:{replace:(v)=>dest=v}};
+let calls=0, store={private:'secret'}, dest='', child={sessionStorage:{clear:()=>{store={};},setItem:(k,v)=>store[k]=v},document:dom.window.document.implementation.createHTMLDocument(''),opener:{},location:{replace:(v)=>dest=v}};
 dom.window.open=()=>{calls++;return child;};dom.window.eval(read('js/rocket-open.js'));
 const e=new dom.window.MouseEvent('click',{bubbles:true,cancelable:true,button:0});dom.window.document.querySelector('span').dispatchEvent(e);
-assert.equal(e.defaultPrevented,true);assert.equal(calls,1);assert.equal(dest,'https://rejson59.github.io/Test/');assert.equal(child.opener,null);
+assert.equal(e.defaultPrevented,true);assert.equal(store.private,undefined);assert.equal(calls,1);assert.equal(dest,'https://rejson59.github.io/Test/');assert.equal(child.opener,null);
 assert.deepEqual(JSON.parse(store.rj_rocket_overlay_v2).path,'/Test/');assert.equal(JSON.parse(store.rj_rocket_overlay_v2).name,'Test');assert.equal(JSON.parse(store.rj_portal_arrival_v1).at,0);
 const modified=new dom.window.MouseEvent('click',{bubbles:true,cancelable:true,button:0,ctrlKey:true});dom.window.document.querySelector('a').dispatchEvent(modified);assert.equal(modified.defaultPrevented,false);assert.equal(calls,1);
 const external=new dom.window.MouseEvent('click',{bubbles:true,cancelable:true,button:0});dom.window.document.querySelector('#external').dispatchEvent(external);assert.equal(external.defaultPrevented,false);assert.equal(calls,1);

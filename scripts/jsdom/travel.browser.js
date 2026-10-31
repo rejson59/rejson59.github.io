@@ -41,11 +41,11 @@ const server=http.createServer(async(req,res)=>{
  }
  try {
   const c=await browser.newContext({viewport:{width:1440,height:900},reducedMotion:'reduce'}); await configure(c,[repo('Test')]);
-  const home=await homepage(c), tab=await openProject(home,'Test');
+  const home=await homepage(c);await home.evaluate(()=>sessionStorage.setItem('private-test','secret'));const tab=await openProject(home,'Test');
   await tab.waitForSelector('#rj-portal-arrival .rj-arrival-rocket',{timeout:10000});const started=Date.now();
   assert.equal(new URL(tab.url()).pathname,'/Test/','adres od początku jest adresem projektu');
   assert.equal(await tab.locator('#destination').textContent(),'/Test/');assert.equal(await tab.evaluate(()=>window.projectStarted),true,'projekt uruchamia się pod nakładką');
-  assert.equal(await tab.evaluate(()=>window.opener),null);assert.equal(await tab.evaluate(()=>sessionStorage.getItem('rj_rocket_overlay_v2')),null);
+  assert.equal(await tab.evaluate(()=>window.opener),null);assert.equal(await tab.evaluate(()=>sessionStorage.getItem('rj_rocket_overlay_v2')),null);assert.equal(await tab.evaluate(()=>sessionStorage.getItem('private-test')),null,'karta nie otrzymuje kopii danych sesji');assert.equal(await home.evaluate(()=>sessionStorage.getItem('private-test')),'secret');
   assert.equal(await home.evaluate(()=>sessionStorage.getItem('rj_rocket_overlay_v2')),null,'znacznik nie pozostaje na stronie głównej');
   assert.equal(await tab.locator('.rj-arrival-name').textContent(),'Test');assert.equal(await tab.locator('.rj-arrival-puffs i').count(),3);
   assert.equal(await tab.locator('.rj-arrival-motion').evaluate(e=>getComputedStyle(e).animationName),'rj-arrival-flight');

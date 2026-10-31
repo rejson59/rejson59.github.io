@@ -14,6 +14,9 @@
     if (!tab) return; // Blokada wyskakujących okien: zachowaj zwykły link.
     event.preventDefault();
     try {
+      // about:blank dziedziczy kopię sessionStorage z otwierającej karty.
+      // Nie przekazuj jej danych sesji projektu ani konta.
+      tab.sessionStorage.clear();
       var card = link.closest('[data-repo]');
       var name = card ? (card.getAttribute('data-repo') || '').slice(0, 100) : '';
       tab.sessionStorage.setItem('rj_rocket_overlay_v2', JSON.stringify({path:url.pathname, at:Date.now(), name:name, motionOverride:true}));
