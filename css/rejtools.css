@@ -38,3 +38,4 @@
 .tool-more .tool-icon { grid-row:1 / span 3; }.tool-more .tool-type,.tool-more h2,.tool-more p { grid-column:2; }.tool-more h2 { font-size:16px; }.tool-more b { grid-column:3; grid-row:1 / span 3; }
 @media(max-width:760px) { .tools-hero { padding-block:38px 30px; }.tools-intro { margin-bottom:14px; }.tools-toolbar { margin-top:18px; }.tools-search { max-width:none; }.tool-summary { padding:15px; }.tool-content { padding:0 15px 18px; }.tool-more { padding:16px; grid-template-columns:45px 1fr; }.tool-more b { grid-column:2; grid-row:auto; } }
 .rj-tools [hidden] { display:none !important; }
+.qr-preview { display:block; width:min(280px,100%); height:auto; background:white; margin-top:16px; border:10px solid white; border-radius:12px; image-rendering:pixelated; }

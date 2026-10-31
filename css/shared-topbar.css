@@ -1,0 +1,41 @@
+/* Ta sama nawigacja i oprawa co na stronie głównej, niezależnie od arkusza podstrony. */
+.rj-shared-header { --bar-bg:#0d121b; --bar-text:#edf2fa; --bar-muted:#a5afc1; --bar-border:#384251; --bar-panel:#151c29; position:sticky!important; top:0; z-index:50; width:100%; background:var(--bar-bg)!important; border-bottom:1px solid var(--bar-border)!important; box-shadow:0 8px 30px #0002; font-family:system-ui,sans-serif; color:var(--bar-text); }
+[data-theme=light] .rj-shared-header { --bar-bg:#f6f8fc; --bar-text:#18253a; --bar-muted:#52617a; --bar-border:#ccd5e4; --bar-panel:#fff; }
+.rj-shared-header .rj-shared-inner { width:min(100% - 48px,1340px); max-width:1340px; min-height:72px!important; height:auto!important; padding:0!important; margin:auto; display:flex; justify-content:space-between; align-items:center; gap:12px; position:relative; }
+.rj-shared-header .brand { display:inline-flex; align-items:center; gap:10px; min-width:0; color:var(--bar-text); text-decoration:none; font:700 17px/1.2 system-ui,sans-serif; letter-spacing:-.03em; white-space:nowrap; }
+.rj-shared-header .brand-mark { display:block; box-sizing:border-box; flex:none; width:36px; height:36px; padding:5px; border:1px solid var(--bar-border); border-radius:13px; background:var(--bar-panel); }
+.rj-shared-header .brand-text { overflow:hidden; text-overflow:ellipsis; }.rj-shared-header .brand-suffix { color:var(--bar-muted); font-weight:500; }
+.rj-shared-header .header-right { display:flex; align-items:center; gap:12px; flex:none; }
+.rj-shared-header .site-nav { display:flex; position:static; align-items:center; gap:4px; padding:5px; margin:0; border:1px solid var(--bar-border); border-radius:999px; background:var(--bar-panel); font:700 13px/1.3 system-ui,sans-serif; }
+.rj-shared-header .site-nav a,.rj-shared-header .nav-more > summary { display:flex; align-items:center; gap:7px; padding:9px 11px; border-radius:999px; color:var(--bar-muted); text-decoration:none; white-space:nowrap; }
+.rj-shared-header .site-nav a:hover,.rj-shared-header .nav-more > summary:hover { background:#7f9dbe20; color:var(--bar-text); }
+.rj-shared-header .site-nav a::after { display:none; }.rj-shared-header .ui-icon { width:16px; height:16px; flex:none; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+.rj-shared-header .nav-more { position:relative; }.rj-shared-header .nav-more > summary { cursor:pointer; list-style:none; }.rj-shared-header .nav-more > summary::-webkit-details-marker { display:none; }
+.rj-shared-header .nav-more-panel { position:absolute; top:calc(100% + 14px); right:0; width:230px; z-index:100; display:grid; gap:4px; padding:12px; border:1px solid var(--bar-border); border-radius:20px; background:var(--bar-panel); box-shadow:0 18px 50px #0005; }
+.rj-shared-header .nav-more-panel a { min-height:42px; justify-content:flex-start; }.rj-shared-header .nav-more-label { color:var(--bar-muted); font-size:10px; letter-spacing:.12em; padding:6px 10px; }
+.rj-shared-header .theme-toggle,.rj-shared-header .hamburger-btn,.rj-shared-header .mobile-account { width:36px; height:36px; padding:0; align-items:center; justify-content:center; border:1px solid var(--bar-border); border-radius:999px; color:var(--bar-muted); background:var(--bar-panel); cursor:pointer; }
+.rj-shared-header .theme-toggle { display:inline-flex; }.rj-shared-header .theme-toggle .icon { width:18px; height:18px; }.rj-shared-header .theme-toggle-label { display:none; }
+[data-theme=dark] .rj-shared-header .icon-sun,[data-theme=light] .rj-shared-header .icon-moon { display:block; }[data-theme=light] .rj-shared-header .icon-sun,[data-theme=dark] .rj-shared-header .icon-moon { display:none; }
+.rj-shared-header .hamburger-btn,.rj-shared-header .mobile-account { display:none; }.rj-shared-header .hamburger-btn { flex-direction:column; gap:4px; }.rj-shared-header .hamburger-bar { display:block; width:15px; height:2px; border-radius:2px; background:currentColor; }
+.rj-shared-header :is(a,button,summary):focus-visible { outline:2px solid #80baff; outline-offset:3px; }
+.rj-shared-context { width:min(100% - 48px,1340px); margin:12px auto 0; color:var(--text); display:flex; justify-content:flex-end; }.rj-shared-context [hidden] { display:none!important; }
+@media(max-width:1200px) {
+ .rj-shared-header .rj-shared-inner { min-height:64px!important; width:calc(100% - 32px); }
+ .rj-shared-header .brand-mark { width:30px; height:30px; padding:4px; border-radius:11px; }
+ .rj-shared-header .brand { font-size:15px; }
+ .rj-shared-header .site-nav { display:none; position:absolute; right:0; top:calc(100% - 2px); width:min(300px,calc(100vw - 32px)); max-height:calc(100vh - 80px); overflow:auto; padding:12px; border-radius:22px; flex-direction:column; align-items:stretch; box-shadow:0 18px 50px #0007; }
+ .rj-shared-header .site-nav.is-open { display:flex; }.rj-shared-header .site-nav a,.rj-shared-header .nav-more > summary { min-height:42px; justify-content:flex-start; }
+ .rj-shared-header .nav-more-panel { position:static; width:auto; margin:4px 0; box-shadow:none; }
+ .rj-shared-header .theme-toggle { width:100%; height:42px; justify-content:flex-start; padding:0 11px; }.rj-shared-header .theme-toggle-label { display:inline; }
+ .rj-shared-header .hamburger-btn,.rj-shared-header .mobile-account { display:inline-flex; }
+}
+@media(max-width:480px) { .rj-shared-header .brand-suffix { display:none; }.rj-shared-context { width:calc(100% - 32px); } }
+/* RejFile ma własny arkusz: jasny motyw obejmuje również jego formularz. */
+[data-theme=light] body.rj-files { --bg:#eef3f8; --panel:#fff; --line:#ccd7e1; --text:#1b2936; --muted:#516173; --accent:#167a70; background:radial-gradient(ellipse at 75% 0%,#d5e7f5,transparent 38%),var(--bg); }
+[data-theme=light] .rj-files :is(.card,.safety) { background:#fff; border-color:#ccd7e1; color:#1b2936; }
+[data-theme=light] .rj-files :is(.hero-copy>p,.section-head p,.side p,.download-panel p,.safety p,.fine,.file-item small) { color:#526273; }
+[data-theme=light] .rj-files :is(.dropzone,.choice span,.facts span) { background:#e8f4ef; border-color:#a9cfc0; color:#20473b; }
+[data-theme=light] .rj-files :is(.dropzone span:not(.drop-icon),.dropzone small,.choice small) { color:#526b62; }
+[data-theme=light] .rj-files :is(#recipient,#share-link) { background:#f6f9fc; border-color:#aab9ca; color:#1b2936; }
+[data-theme=light] .rj-files .secondary { background:#e7f2ed; color:#195f4c; border-color:#a7c9b9; }
+[data-theme=light] .rj-files .text-button { color:#176552; }

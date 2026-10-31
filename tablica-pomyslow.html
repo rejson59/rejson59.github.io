@@ -246,6 +246,9 @@
   <script defer src="/js/side-ads.js?v=5"></script>
   <link rel="stylesheet" href="/css/mobile-ads.css?v=5">
   <script defer src="/js/mobile-ads.js?v=5"></script>
+  <link rel="stylesheet" href="/css/shared-topbar.css?v=1">
+  <script defer src="/js/shared-topbar.js?v=1"></script>
+  <noscript><style>@media(max-width:1200px){.rj-shared-header .site-nav{display:flex!important;position:static!important;flex-wrap:wrap}.rj-shared-header .hamburger-btn{display:none!important}.rj-shared-inner{flex-wrap:wrap}}</style></noscript>
 </head>
 <body class="rj-board">
   <div id="rj-page-loader" aria-hidden="true">
@@ -478,29 +481,31 @@
 
   <div class="studio-backdrop" aria-hidden="true"></div>
 
-  <header class="site-header">
-    <div class="container header-inner">
-      <a class="brand" href="./" aria-label="rejson59.github.io — wróć na stronę główną">
-        <img class="brand-mark" src="favicon.svg" alt="" width="32" height="32">
-        <span>rejson59<span class="brand-suffix"> / tablica-pomyslow</span></span>
-      </a>
-
-      <nav class="header-nav">
-        <span class="board-live-badge" id="board-live-badge" title="Dane odświeżane na żywo z chmury">
+  <header class="site-header rj-shared-header"><div class="header-inner rj-shared-inner">
+      <a class="brand" href="/" aria-label="rejson59.github.io — strona główna"><img class="brand-mark" src="/favicon.svg" alt="" width="30" height="30"><span class="brand-text">rejson59<span class="brand-suffix">.github.io</span></span></a>
+      <div class="header-right"><a href="/logowanie" class="mobile-account" aria-label="Konto / logowanie" title="Konto / logowanie"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#account"></use></svg></a><nav id="shared-nav" class="site-nav" aria-label="Nawigacja główna">
+          <a href="/logowanie" class="nav-icon-link" title="Konto / logowanie" aria-label="Konto / logowanie"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#account"></use></svg><span class="nav-label">Konto</span></a>
+          <a href="/rejfile" class="nav-icon-link" title="RejFile" aria-label="RejFile"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#file"></use></svg><span class="nav-label">RejFile</span></a>
+          <a href="/rejchat" class="nav-icon-link" title="RejChat" aria-label="RejChat"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#people"></use></svg><span class="nav-label">RejChat</span></a>
+          <a href="/tablica-pomyslow" class="nav-icon-link" title="Tablica pomysłów" aria-label="Tablica pomysłów"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#board"></use></svg><span class="nav-label">Pomysły</span></a>
+          <details class="nav-more" id="nav-more">
+            <summary>Więcej <span aria-hidden="true">⌄</span></summary>
+            <div class="nav-more-panel">
+              <span class="nav-more-label">ODKRYJ WIĘCEJ</span>
+              <a href="/rejtools" class="nav-icon-link" title="RejTools" aria-label="RejTools"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#widget"></use></svg><span class="nav-label">RejTools</span></a>
+              <a href="/uslugi" class="nav-icon-link" title="Tworzenie stron" aria-label="Tworzenie stron"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#partner"></use></svg><span class="nav-label">Tworzenie stron</span></a>
+              <a href="/partnerstwo" class="nav-icon-link" title="Partnerstwo" aria-label="Partnerstwo"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#partner"></use></svg><span class="nav-label">Partnerstwo</span></a>
+              <a href="/widzety" class="nav-icon-link" title="Widżety" aria-label="Widżety"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#widget"></use></svg><span class="nav-label">Widżety</span></a>
+              <a href="https://github.com/rejson59" target="_blank" rel="noopener noreferrer" class="nav-icon-link" title="Profil na GitHubie" aria-label="Profil na GitHubie"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#github"></use></svg><span class="nav-label">GitHub</span></a>
+            </div>
+          </details>
+          <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Przełącz motyw jasny/ciemny"><svg class="icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg><svg class="icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><span class="theme-toggle-label">Zmień motyw</span></button>
+        </nav><button class="hamburger-btn" id="shared-menu" type="button" aria-label="Otwórz menu" aria-controls="shared-nav" aria-expanded="false" data-shared-menu><span class="hamburger-bar" aria-hidden="true"></span><span class="hamburger-bar" aria-hidden="true"></span><span class="hamburger-bar" aria-hidden="true"></span></button></div>
+    </div></header>
+  <div class="rj-shared-context"><span class="board-live-badge" id="board-live-badge" title="Dane odświeżane na żywo z chmury">
           <span class="board-live-dot" aria-hidden="true"></span>
           <span class="mono" id="board-live-label">Łączenie…</span>
-        </span>
-        <a class="btn btn-glass btn-sm nav-icon-link nav-icon-only" href="./" title="Strona główna" aria-label="Strona główna"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#home"></use></svg><span class="nav-label">Strona główna</span></a>
-        <a class="btn btn-glass btn-sm nav-icon-link" href="widzety" title="Widżety" aria-label="Widżety"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#widget"></use></svg><span class="nav-label">Widżety</span></a>
-        <a class="btn btn-glass btn-sm nav-icon-link nav-icon-only" href="logowanie" title="Konto / logowanie" aria-label="Konto / logowanie"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#account"></use></svg><span class="nav-label">Konto</span></a>
-        <a class="btn btn-glass btn-sm nav-icon-link" href="admin" title="Panel admina" aria-label="Panel admina"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#admin"></use></svg><span class="nav-label">Panel</span></a>
-        <button id="theme-toggle" class="theme-btn" type="button" aria-label="Przełącz motyw jasny/ciemny">
-          <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
-          <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
-        </button>
-      </nav>
-    </div>
-  </header>
+        </span></div>
 
   <main class="container board-main">
 
