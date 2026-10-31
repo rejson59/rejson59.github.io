@@ -122,3 +122,22 @@
   .btn.btn-portal,.btn.btn-portal:hover { transition:none; transform:none; }
   #rj-portal-flight,#rj-portal-arrival:not([data-motion-override]) { display:none !important; }
 }
+
+/* Ten sam tunel trwa również po otrzymaniu dokumentu, dopóki strona się ładuje. */
+#rj-portal-arrival .rj-wait-flight { position:absolute; inset:0; overflow:hidden; background:radial-gradient(ellipse at center,#010307 0%,#071724 22%,#102d3a 55%,#03090f 95%); pointer-events:none; }
+#rj-portal-arrival .rj-wait-rays { position:absolute; inset:0; background:repeating-conic-gradient(from 0deg at 50% 50%,transparent 0deg,#5de2ce22 8deg,transparent 16deg,#638cff1c 24deg); opacity:.7; }
+#rj-portal-arrival .rj-wait-flight i { position:absolute; display:block; left:50%; top:50%; width:min(80vw,80vh); aspect-ratio:1; border:2px solid #8df5ff; border-bottom-color:#8df5ff55; border-radius:50%; animation:rj-wait-rush 1.75s linear infinite !important; }
+#rj-portal-arrival .rj-wait-flight i:nth-of-type(even) { border-color:#bdb4ff99; }
+#rj-portal-arrival .rj-wait-flight i:nth-of-type(2) { animation-delay:-.25s !important; }
+#rj-portal-arrival .rj-wait-flight i:nth-of-type(3) { animation-delay:-.5s !important; }
+#rj-portal-arrival .rj-wait-flight i:nth-of-type(4) { animation-delay:-.75s !important; }
+#rj-portal-arrival .rj-wait-flight i:nth-of-type(5) { animation-delay:-1s !important; }
+#rj-portal-arrival .rj-wait-flight i:nth-of-type(6) { animation-delay:-1.25s !important; }
+#rj-portal-arrival .rj-wait-flight i:nth-of-type(7) { animation-delay:-1.5s !important; }
+#rj-portal-arrival .rj-wait-flight span { position:absolute; left:50%; top:50%; width:16vmin; aspect-ratio:1; border-radius:50%; transform:translate(-50%,-50%); background:radial-gradient(circle,#010307 25%,#03121b 60%,transparent 75%); }
+#rj-portal-arrival.is-playing .rj-wait-flight { animation:rj-wait-disappear .85s ease-out both !important; }
+@keyframes rj-wait-rush { 0% { transform:translate(-50%,-50%) scale(.16); opacity:0; } 15% { opacity:.7; } 75% { opacity:.8; } 100% { transform:translate(-50%,-50%) scale(2); opacity:0; } }
+@keyframes rj-wait-disappear { to { opacity:0; } }
+/* shorthand animacji tunelu nie może nadpisać pauzy nieaktywnej karty. */
+#rj-portal-arrival.is-paused .rj-wait-flight i { animation-play-state:paused !important; }
+#rj-portal-arrival.is-paused .rj-wait-flight { animation-play-state:paused !important; }

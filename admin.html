@@ -24,7 +24,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="rejson-widgets/css/studio.css?v=3">
   <link rel="stylesheet" href="rejson-widgets/css/admin.css?v=2026-10-26">
-  <link rel="stylesheet" href="css/admin-panel.css?v=2026-10-28">
+  <link rel="stylesheet" href="css/admin-panel.css?v=2026-10-31-overview">
   <link rel="stylesheet" href="css/admin-partner.css?v=1">
   <link rel="stylesheet" href="/css/liquid.css?v=2026-10-30-2">
   <link rel="stylesheet" href="/css/rejchat.css?v=1">
@@ -62,7 +62,7 @@
         <span>Supabase Auth · tylko właściciel</span>
       </div>
       <h1><svg class="page-mark" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#admin"></use></svg>Główny Panel Admina</h1>
-      <p class="auth-sub">Zaloguj się swoim e-mailem i hasłem administratora. W środku czeka <strong>szczegółowa aktywność na żywo</strong> — odwiedzający z trwałym identyfikatorem przeglądarki, ich ścieżki krok po kroku, każde kliknięcie — a także pełne <strong>zgłoszenia</strong> i zarządzanie <strong>Społecznością</strong>.</p>
+      <p class="auth-sub">Zaloguj się na konto administratora, aby zarządzać zgłoszeniami, społecznością i kontami oraz sprawdzić aktywność strony.</p>
 
       <div class="auth-error" id="panel-auth-error" hidden style="margin-bottom:12px"></div>
 
@@ -87,17 +87,38 @@
   <!-- ============ GŁÓWNY PANEL (zakładki) ============ -->
   <main data-rj-private class="container admin-main" id="panel-dash" hidden>
 
+    <header class="admin-welcome"><div><span class="admin-kicker">CENTRUM ZARZĄDZANIA</span><h1>Panel admina</h1><p>Wszystko, czego potrzebujesz, w jednym miejscu.</p></div><span class="admin-welcome-badge">REJSON59 <span aria-hidden="true">✦</span></span></header>
     <nav class="adm-tabs" role="tablist" aria-label="Sekcje panelu admina">
-      <button type="button" class="adm-tab is-active" id="tab-btn-activity" data-tab="activity" role="tab" aria-selected="true">📊 Aktywność <span class="adm-tab-note">na żywo</span></button>
-      <button type="button" class="adm-tab" id="tab-btn-partnership" data-tab="partnership" role="tab" aria-selected="false">🤝 Partnerstwo</button>
-      <button type="button" class="adm-tab" id="tab-btn-submissions" data-tab="submissions" role="tab" aria-selected="false">🗂 Zgłoszenia</button>
-      <button type="button" class="adm-tab" id="tab-btn-community" data-tab="community" role="tab" aria-selected="false">👥 Społeczność</button>
-      <button type="button" class="adm-tab" id="tab-btn-visitors" data-tab="visitors" role="tab" aria-selected="false">👤 Identyfikatory <span class="adm-tab-note">profile</span></button>
-      <button type="button" class="adm-tab" id="tab-btn-errors" data-tab="errors" role="tab" aria-selected="false">🐞 Błędy <span class="adm-tab-note" id="errors-tab-note">auto</span></button>
+      <button type="button" class="adm-tab is-active" id="tab-btn-overview" data-tab="overview" role="tab" aria-selected="true">✦ Przegląd</button>
+      <button type="button" class="adm-tab" id="tab-btn-activity" data-tab="activity" role="tab" aria-selected="false">Aktywność <span class="adm-tab-note">na żywo</span></button>
+      <button type="button" class="adm-tab" id="tab-btn-partnership" data-tab="partnership" role="tab" aria-selected="false">Partnerstwo</button>
+      <button type="button" class="adm-tab" id="tab-btn-submissions" data-tab="submissions" role="tab" aria-selected="false">Zgłoszenia</button>
+      <button type="button" class="adm-tab" id="tab-btn-community" data-tab="community" role="tab" aria-selected="false">Społeczność</button>
+      <button type="button" class="adm-tab" id="tab-btn-visitors" data-tab="visitors" role="tab" aria-selected="false">Identyfikatory <span class="adm-tab-note">profile</span></button>
+      <button type="button" class="adm-tab" id="tab-btn-errors" data-tab="errors" role="tab" aria-selected="false">Błędy <span class="adm-tab-note" id="errors-tab-note">auto</span></button>
     </nav>
 
+    <section id="tab-overview" class="admin-overview" role="tabpanel" aria-labelledby="tab-btn-overview">
+      <div class="overview-heading"><div><span class="admin-kicker">TWÓJ PRZEGLĄD</span><h2>Witaj w centrum dowodzenia</h2><p>Sprawdź, co dzieje się na stronie, albo przejdź od razu do wybranej sekcji.</p></div><button class="adm-refresh overview-refresh" type="button" data-refresh="activity" aria-label="Odśwież aktywność">⟳</button></div>
+      <div class="overview-stats" aria-label="Podsumowanie aktywności">
+        <div class="overview-stat"><span>◉ &nbsp; ONLINE TERAZ</span><strong id="overview-online">—</strong><small>osoby w ostatnich 90 sekundach</small></div>
+        <div class="overview-stat"><span>↗ &nbsp; KLIKNIĘCIA DZIŚ</span><strong id="overview-today">—</strong><small>strona i projekty</small></div>
+        <div class="overview-stat"><span>✳ &nbsp; WEJŚCIA ŁĄCZNIE</span><strong id="overview-total">—</strong><small>od początku liczenia</small></div>
+      </div>
+      <p id="overview-status" class="overview-status" role="status">Pobieranie danych aktywności…</p>
+      <div class="overview-heading overview-heading--actions"><div><span class="admin-kicker">SZYBKIE PRZEJŚCIA</span><h2>Co chcesz zrobić?</h2></div></div>
+      <div class="overview-grid">
+        <button type="button" class="overview-tile" data-open-tab="submissions"><span class="overview-icon"><svg aria-hidden="true" class="overview-svg"><use href="/assets/ui-icons.svg#board"></use></svg></span><span><strong>Zgłoszenia</strong><small>Pomysły, problemy i odpowiedzi</small></span><b aria-hidden="true">↗</b></button>
+        <button type="button" class="overview-tile" data-open-tab="errors"><span class="overview-icon"><svg aria-hidden="true" class="overview-svg"><use href="/assets/ui-icons.svg#file"></use></svg></span><span><strong>Błędy</strong><small>Raporty i załączniki</small></span><b aria-hidden="true">↗</b></button>
+        <button type="button" class="overview-tile" data-open-tab="partnership"><span class="overview-icon"><svg aria-hidden="true" class="overview-svg"><use href="/assets/ui-icons.svg#partner"></use></svg></span><span><strong>Partnerstwo</strong><small>Wiadomości z formularza</small></span><b aria-hidden="true">↗</b></button>
+        <button type="button" class="overview-tile" data-open-tab="community"><span class="overview-icon"><svg aria-hidden="true" class="overview-svg"><use href="/assets/ui-icons.svg#people"></use></svg></span><span><strong>Społeczność</strong><small>Konta, wpisy i moderacja</small></span><b aria-hidden="true">↗</b></button>
+        <button type="button" class="overview-tile" data-open-tab="activity"><span class="overview-icon"><svg aria-hidden="true" class="overview-svg"><use href="/assets/ui-icons.svg#portal"></use></svg></span><span><strong>Aktywność</strong><small>Ruch i statystyki projektów</small></span><b aria-hidden="true">↗</b></button>
+        <button type="button" class="overview-tile" data-open-tab="visitors"><span class="overview-icon"><svg aria-hidden="true" class="overview-svg"><use href="/assets/ui-icons.svg#account"></use></svg></span><span><strong>Identyfikatory</strong><small>Profile odwiedzających</small></span><b aria-hidden="true">↗</b></button>
+      </div>
+    </section>
+
     <!-- ============ ZAKŁADKA: AKTYWNOŚĆ SZCZEGÓŁOWA ============ -->
-    <section id="tab-activity" role="tabpanel" aria-label="Aktywność szczegółowa">
+    <section id="tab-activity" role="tabpanel" aria-label="Aktywność szczegółowa" hidden>
 
       <div class="adm-kpis">
         <div class="adm-kpi adm-kpi--live">
@@ -156,7 +177,7 @@
           <span class="adm-card-ico" aria-hidden="true">👤</span>
           <div class="adm-card-titles">
             <h2>Odwiedzający na żywo</h2>
-            <p class="adm-card-sub">Każdy ma trwały identyfikator <span class="mono">#1234</span> (przeżywa wyczyszczenie danych). Widać otwarte strony, ścieżkę kroków i każde kliknięcie tej osoby.</p>
+            <p class="adm-card-sub">Sprawdź aktualnie otwarte strony i dostępną aktywność odwiedzających.</p>
           </div>
           <span class="adm-live-chip"><span class="adm-live-dot" aria-hidden="true"></span>odświeżanie co 8 s</span>
           <button type="button" class="adm-refresh" data-refresh="activity" title="Odśwież teraz" aria-label="Odśwież teraz"><span class="adm-refresh-ico" aria-hidden="true">⟳</span></button>
@@ -569,7 +590,7 @@
   <script src="js/error-reporter.js?v=1" defer></script>
   <script src="js/admin-errors.js?v=1"></script>
   <script src="js/admin-partner.js?v=1"></script>
-  <script src="js/admin-panel.js?v=2026-10-29"></script>
+  <script src="js/admin-panel.js?v=2026-10-31-overview"></script>
   <script defer src="/js/media-capture.js?v=2"></script>
   <script defer src="/rejson-widgets/widget.js?v=9" data-project="rejson59.github.io"></script>
 </body>
