@@ -80,7 +80,7 @@ const entries = [
   assert.equal(button().disabled, true, 'nie kopiujemy niekompletnej listy');
   assert.match(d.getElementById('inspector-panel').textContent, /Nie udało się pobrać wszystkich/);
   assert.match(d.getElementById('admin-toast').textContent, /Błąd odczytu chmury/);
-  assert.match(page, /rejson-widgets\/js\/admin\.js\?v=2/);
+  assert.match(page, /rejson-widgets\/js\/admin\.js\?v=3/);
   dom.window.close();
   console.log('Test promptu projektowego: wszystkie asercje OK');
 })().catch(err => { console.error(err); process.exitCode = 1; });

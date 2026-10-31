@@ -23,15 +23,17 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="rejson-widgets/css/studio.css?v=3">
-  <link rel="stylesheet" href="rejson-widgets/css/admin.css?v=2026-10-26">
+  <link rel="stylesheet" href="rejson-widgets/css/admin.css?v=2026-10-31">
   <link rel="stylesheet" href="css/admin-panel.css?v=2026-10-31-overview">
   <link rel="stylesheet" href="css/admin-partner.css?v=1">
   <link rel="stylesheet" href="/css/liquid.css?v=2026-10-30-2">
   <link rel="stylesheet" href="/css/rejchat.css?v=1">
   <script defer src="/js/rejchat-profiles.js?v=1"></script>
   <link rel="stylesheet" href="/css/responsive.css?v=1">
-  <link rel="stylesheet" href="/css/mobile-ads.css?v=2">
-  <script defer src="/js/mobile-ads.js?v=2"></script>
+  <link rel="stylesheet" href="/css/mobile-ads.css?v=3">
+  <script defer src="/js/mobile-ads.js?v=3"></script>
+  <link rel="stylesheet" href="/css/side-ads.css?v=3">
+  <script defer src="/js/side-ads.js?v=3"></script>
 </head>
 <body class="rj-admin">
 
@@ -533,6 +535,14 @@
           </div>
         </div>
 
+        <div class="bulk-toolbar glass-card" id="bulk-toolbar" aria-label="Akcje dla zaznaczonych zgłoszeń">
+          <label><input type="checkbox" id="bulk-select-visible"> Zaznacz widoczne</label>
+          <span id="bulk-count" aria-live="polite">Zaznaczono: 0</span>
+          <label for="bulk-status">Status:</label>
+          <select id="bulk-status" class="ctrl-select"><option value="under_review">Rozważane</option><option value="planned">Planowane</option><option value="in_progress">W trakcie</option><option value="completed">Wdrożone</option><option value="closed">Zamknięte</option><option value="new">Nowe</option></select>
+          <button type="button" class="btn btn-glass btn-sm" id="bulk-apply" disabled>Zmień status</button>
+          <button type="button" class="btn btn-glass btn-sm" id="bulk-delete" disabled>Usuń zaznaczone</button>
+        </div>
         <div class="workspace-split">
           <div class="feed-list" id="submissions-feed"></div>
           <aside class="glass-card inspector-card" id="inspector-panel"></aside>
@@ -587,14 +597,14 @@
   <div class="toast-banner" id="admin-toast" hidden></div>
 
   <script src="rejson-widgets/js/supabase-config.js"></script>
-  <script src="rejson-widgets/js/admin.js?v=2"></script>
-  <script src="js/view-tracker.js?v=6" defer></script>
+  <script src="rejson-widgets/js/admin.js?v=3"></script>
+  <script src="js/view-tracker.js?v=7" defer></script>
   <script src="js/error-reporter.js?v=1" defer></script>
   <script src="js/admin-errors.js?v=1"></script>
   <script src="js/admin-partner.js?v=1"></script>
   <script src="js/admin-panel.js?v=2026-10-31-overview"></script>
   <script defer src="/js/media-capture.js?v=2"></script>
   <script defer src="/rejson-widgets/widget.js?v=10" data-project="rejson59.github.io"></script>
-  <noscript><div class="rj-mobile-ads-spacer" aria-hidden="true"></div><aside id="rj-mobile-ads" aria-label="Mini reklamy i promocje"><span class="rj-mobile-ads-label">mini reklamy<br>i promocje :)<small>Przesuń →</small></span><div class="rj-mobile-ads-items" aria-label="Promocje, przewiń aby zobaczyć kolejne"><a class="rj-mobile-ad rj-mobile-ad--house" href="/rejfile"><span>↗ RejFile · wyślij plik</span></a><a class="rj-mobile-ad rj-mobile-ad--offer" href="/partnerstwo#propozycja"><span>✦ Twoja reklama tutaj</span></a></div></aside></noscript>
+  <noscript><div class="rj-mobile-ads-spacer" aria-hidden="true"></div><aside id="rj-mobile-ads" aria-label="Mini reklamy i promocje"><span class="rj-mobile-ads-label">mini reklamy i promocje :)</span><div class="rj-mobile-ads-items"><a class="rj-mobile-ad rj-mobile-ad--house" href="/rejfile"><span>↗ RejFile · wyślij plik</span></a><a class="rj-mobile-ad rj-mobile-ad--offer" href="/partnerstwo#propozycja"><span>✦ Twoja reklama tutaj</span></a></div></aside></noscript>
 </body>
 </html>
