@@ -53,11 +53,13 @@ function arrival(marker, opts = {}) {
     assert.equal(portal.querySelector('script[src*="portal-webgl"]'), null);
     assert.equal(portal.querySelector('script[src*="portal-scene"]'), null);
     assert.ok(portal.querySelector('#portal-door .gate-structure .gate-void'));
-    assert.equal(portal.querySelectorAll('#portal-door .depth-slice').length, 4);
-    assert.equal(portal.querySelectorAll('#portal-door .gate-dust i').length, 8);
+    assert.equal(portal.querySelectorAll('#portal-door .gate-stardust i').length, 8);
+    assert.equal(portal.querySelectorAll('.starfield i').length, 16);
+    assert.ok(portal.querySelector('#cosmos-art'));
+    assert.ok(portal.querySelector('.cosmic-streams path'));
     assert.equal(portal.querySelectorAll('#portal-door .gate-energy').length, 2);
-    assert.ok(portal.querySelector('.chamber-floor'));
-    assert.match(css, /@keyframes depth-pass/);
+    assert.match(css, /portal-horizon\.svg/);
+    assert.match(css, /@keyframes star-spark/);
     assert.match(css, /@keyframes gate-streak/);
     assert.match(css, /translateZ\(/); // przestrzenny tunel w trakcie lotu
     assert.ok(portal.body.classList.contains('motion-override'));
@@ -91,6 +93,7 @@ function arrival(marker, opts = {}) {
     const t = room('RejStream');
     assert.equal(t.w.location.pathname, '/portal/RejStream');
     assert.equal(t.doc.getElementById('project-name').textContent, 'RejStream');
+    assert.match(t.doc.getElementById('project-description').textContent, /Seriale i animacje/);
     assert.equal(t.doc.body.dataset.aura, 'rose');
     assert.equal(t.doc.getElementById('direct').href, 'https://rejson59.github.io/RejStream/');
     assert.equal(t.doc.getElementById('enter').disabled, false);
@@ -114,6 +117,12 @@ function arrival(marker, opts = {}) {
     assert.equal(feedback.style.visibility, 'visible');
     assert.equal(t.doc.getElementById('enter').disabled, false); assert.equal(t.w.sessionStorage.getItem(KEY), null);
     assert.equal(t.doc.querySelector('#flight-mouth .flight-source'), null);
+    t.dom.window.close();
+  }
+  {
+    const t = room('Test', { fallback:[{ name:'Test', homepage:'https://rejson59.github.io/Test/', description:'<img src=x onerror=alert(1)>' }] });
+    assert.equal(t.doc.getElementById('project-description').textContent, '<img src=x onerror=alert(1)>');
+    assert.equal(t.doc.getElementById('project-description').querySelector('img'), null);
     t.dom.window.close();
   }
   {

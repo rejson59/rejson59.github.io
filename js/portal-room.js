@@ -18,6 +18,23 @@
   var previous = null;
   var KEY = "rj_portal_arrival_v1";
   var FLIGHT_MS = 4200;
+  var cosmos = document.getElementById("cosmos-art"), parallaxFrame = 0, parallaxX = 0, parallaxY = 0;
+  function resetCosmos() {
+    if (parallaxFrame) cancelAnimationFrame(parallaxFrame);
+    parallaxFrame = 0; parallaxX = 0; parallaxY = 0;
+    if (cosmos) cosmos.style.transform = "translate3d(0,0,0)";
+  }
+  // Tylko jeden zapis transformu na klatkę, bez pomiaru czasu ani layoutu.
+  window.addEventListener("pointermove", function (event) {
+    if (!cosmos || !motionEnabled || travelling || document.visibilityState === "hidden" || event.pointerType !== "mouse") return;
+    parallaxX = Math.max(-12, Math.min(12, (event.clientX / Math.max(1, window.innerWidth) - .5) * -24));
+    parallaxY = Math.max(-8, Math.min(8, (event.clientY / Math.max(1, window.innerHeight) - .5) * -16));
+    if (!parallaxFrame) parallaxFrame = requestAnimationFrame(function () {
+      parallaxFrame = 0;
+      if (motionEnabled && !travelling && document.visibilityState !== "hidden") cosmos.style.transform = "translate3d(" + parallaxX.toFixed(1) + "px," + parallaxY.toFixed(1) + "px,0)";
+    });
+  });
+  window.addEventListener("pointerleave", resetCosmos);
   // Przy pierwszej wizycie instalacja SW może skończyć się po locie. Bez
   // aktywnego workera dokument projektu nie dostanie animacji wyjścia.
   var workerPending = null;
@@ -33,6 +50,7 @@
   // Animacja startuje od razu. Odwiedzający nadal może ją wyłączyć.
   function updateMotionControl() {
     if (!motionToggle) return;
+    if (!motionEnabled) resetCosmos();
     document.body.classList.toggle("motion-override", motionEnabled);
     document.body.classList.toggle("motion-off", !motionEnabled);
     motionToggle.setAttribute("aria-pressed", String(motionEnabled));
@@ -79,6 +97,7 @@
   function go() {
     if (!target || travelling) return;
     travelling = true;
+    resetCosmos();
     door.disabled = true; button.disabled = true;
     var url = new URL(target);
     var reduced = !motionEnabled;
@@ -143,6 +162,8 @@
   document.addEventListener("visibilitychange", function () {
     previous = null;
     flight.classList.toggle("is-paused", document.visibilityState !== "visible");
+    document.body.classList.toggle("scene-paused", document.visibilityState === "hidden");
+    if (document.visibilityState === "hidden") resetCosmos();
   });
   window.addEventListener("pageshow", function (event) {
     if (!event.persisted) return;
@@ -175,7 +196,13 @@
   var cached = null;
   try { var stored = JSON.parse(localStorage.getItem("rejson_repos_cache_v2") || "null"); cached = find(stored && stored.data); } catch (e) { /* użyj kopii */ }
   var featuredUrl = Object.prototype.hasOwnProperty.call(featured, name) ? featured[name] : null;
-  setTarget(featuredUrl || liveUrl(cached) || liveUrl(find(window.PROJECTS_FALLBACK)));
+  var fallback = find(window.PROJECTS_FALLBACK);
+  var featuredDescriptions = { RejStream: "Seriale i animacje w przeglądarce.", Jakuplayer: "Prosty odtwarzacz w przeglądarce.", JoyPad: "Zamień komputer i telefon w bezprzewodową konsolę." };
+  var description = (cached && typeof cached.description === "string" && cached.description) ||
+    (fallback && typeof fallback.description === "string" && fallback.description) || (Object.prototype.hasOwnProperty.call(featuredDescriptions, name) && featuredDescriptions[name]) || "Odkryj projekt, gdy zechcesz.";
+  var descriptionNode = document.getElementById("project-description");
+  if (descriptionNode) descriptionNode.textContent = String(description).replace(/[\u0000-\u001f\u007f]/g, " ").trim().slice(0, 160);
+  setTarget(featuredUrl || liveUrl(cached) || liveUrl(fallback));
   if (!target) {
     // Repo dodane niedawno może nie być jeszcze w lokalnej kopii listy.
     var lookupTimer = setTimeout(function () {
