@@ -422,3 +422,29 @@ html[data-theme="light"] .rj-premium {
 .rj-premium.is-locked .rj-club-title { color:#f2f7ff; }
 .rj-premium__list strong { color:#e8efff; }
 .rj-premium .rj-perk-icon { color:#94e8dc; margin-top:2px; width:18px; height:18px; }
+
+/* Zwięzłe konto po lewej na desktopie; pełne szczegóły otwierane na życzenie.
+   Klasa jest dodawana dopiero przez JS, więc bez niego zostaje karta w treści. */
+.rj-account-mini, .rj-account-details-bar { display:none; }
+@media (min-width:1200px) {
+  .rj-home .rj-club.rj-club--compact {
+    position:fixed; top:90px; left:12px; z-index:25; width:184px;
+    max-height:calc(100vh - 110px); padding:0; margin:0; overflow:visible;
+  }
+  .rj-club--compact .rj-account-mini { display:block; max-height:calc(100vh - 110px); overflow:auto; border-radius:17px; scrollbar-width:thin; }
+  .rj-account-mini-card { border-radius:17px; }
+  .rj-account-mini-card .rj-premium__inner { display:flex; flex-direction:column; align-items:flex-start; gap:9px; padding:14px 12px; border-radius:14px; font:400 11px/1.45 system-ui,sans-serif; }
+  .rj-account-mini-icon { display:grid; place-items:center; width:36px; height:36px; border:1px solid #9ce7e944; border-radius:12px; background:#53e9dc1a; color:#a7f6e7; }
+  .rj-account-mini-icon svg { display:block; width:21px; height:21px; }
+  .rj-account-mini-label { margin:0; color:#8ff4e5; font-size:9px; font-weight:800; letter-spacing:.09em; }
+  .rj-account-mini-card strong { color:#f4faff; font-size:15px; line-height:1.25; overflow-wrap:anywhere; }
+  .rj-account-mini-card p:not(.rj-account-mini-label) { margin:0; color:#bac9d7; overflow-wrap:anywhere; }
+  .rj-account-mini-card button { width:100%; padding:9px 7px; border:0; border-radius:9px; background:linear-gradient(120deg,#8df0df,#b6b4ff); color:#101c28; font:700 11px/1.25 system-ui,sans-serif; cursor:pointer; }
+  .rj-account-mini-card a { color:#a9eedb; text-decoration:none; font-weight:700; }
+  .rj-account-mini-card a:hover { text-decoration:underline; }
+  .rj-account-mini-card button:focus-visible, .rj-account-mini-card a:focus-visible, .rj-account-details-bar button:focus-visible { outline:2px solid #9ce7d5; outline-offset:3px; }
+  .rj-club--compact .rj-account-details { display:none; position:fixed; top:90px; left:210px; width:min(650px,calc(100vw - 430px)); max-height:calc(100vh - 110px); overflow:auto; border-radius:18px; background:#101621; box-shadow:0 20px 60px #000a; }
+  .rj-club--compact.is-open .rj-account-details { display:block; }
+  .rj-club--compact .rj-account-details-bar { position:sticky; top:0; z-index:5; display:flex; justify-content:flex-end; padding:9px; background:#101621; }
+  .rj-account-details-bar button { padding:7px 10px; border:1px solid #536379; border-radius:8px; background:#1c2737; color:#edf8ff; cursor:pointer; font:600 12px system-ui,sans-serif; }
+}
