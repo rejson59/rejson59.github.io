@@ -68,7 +68,7 @@
   });
   document.querySelectorAll('[data-copy]').forEach(function (button) {
     button.addEventListener('click', async function () {
-      var input = $(button.dataset.copy), status = $(button.dataset.copy === 'text-input' ? 'text-status' : button.dataset.copy === 'json-input' ? 'json-status' : button.dataset.copy === 'password-output' ? 'password-status' : 'hash-status');
+      var input = $(button.dataset.copy), status = $(button.dataset.copy === 'text-input' ? 'text-status' : button.dataset.copy === 'json-input' ? 'json-status' : button.dataset.copy === 'password-output' ? 'password-status' : button.dataset.copy === 'encode-output' ? 'encode-status' : 'hash-status');
       if (!input.value) { status.textContent = 'Najpierw przygotuj zawartość do skopiowania.'; return; }
       try { await navigator.clipboard.writeText(input.value); status.textContent = 'Skopiowano!'; }
       catch (_) { input.focus(); input.select(); status.textContent = 'Nie udało się skopiować automatycznie. Zaznaczony tekst możesz skopiować ręcznie.'; }

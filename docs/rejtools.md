@@ -30,3 +30,19 @@ npm test
 ```
 
 Test używa małego, syntetycznego `fixtures/rejtools-sample.webm` (kolorowa klatka i ton). Przeglądarka nie łączy się z backendem; lokalny serwer testowy obsługuje typ MIME WebAssembly.
+
+## Nowe narzędzia PDF i pozostałe dodatki
+
+- **PDF**: łączenie do 20 dokumentów w kolejności wybrania, wybieranie i zmiana kolejności stron przez podanie np. `3, 1-2`, obrót wybranych stron oraz obrazy PNG/JPEG do PDF (jedna strona A4 na obraz). Limity: 50 MiB łącznie, do 1000 stron i 20 plików. Nie obsługujemy zabezpieczonych hasłem dokumentów; modyfikacja może unieważnić podpisy cyfrowe i nie zawsze zachowuje formularze, zakładki lub inne dodatkowe dane. Wybór stron można wykorzystać do usunięcia niepotrzebnych stron.
+- **Kody QR**: lokalne generowanie PNG z linku lub tekstu, łącznie z polskimi znakami. **Kodowanie tekstu**: Base64 UTF-8 oraz kodowanie komponentu URL; nie jest to szyfrowanie.
+- Kalkulator procentów, przelicznik jednostek długości, masy i temperatury, różnica między datami oraz kryptograficzne losowanie liczb i identyfikatorów UUID v4.
+- Dodatkowe biblioteki pobierane są z tej samej witryny tylko przy pierwszym użyciu danego narzędzia: [pdf-lib](../vendor/pdf-lib/README.md), [qrcode-generator](../vendor/qrcode/README.md). Dane plików i tekstu nie są wysyłane przez narzędzia na serwer. Liczniki i widżet pozostają odrębnymi elementami strony.
+
+Dodatkowe testy (z katalogu `scripts/jsdom` po `npm install`):
+
+```sh
+CHROME_BIN=/ścieżka/do/chromium node rejtools-extra.browser.js
+CHROME_BIN=/ścieżka/do/chromium node shared-topbar.browser.js
+```
+
+Test PDF faktycznie generuje, łączy i odczytuje dokumenty, sprawdza kolejność oraz obroty; kod QR jest dekodowany z wygenerowanego obrazu.

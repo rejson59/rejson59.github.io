@@ -1,0 +1,1 @@
+PDF-Lib 1.17.1 (MIT), browser ESM distribution from https://github.com/Hopding/pdf-lib/releases/tag/v1.17.1 and https://registry.npmjs.org/pdf-lib/-/pdf-lib-1.17.1.tgz. See LICENSE.md. Third-party notices are embedded in the bundled distribution.
