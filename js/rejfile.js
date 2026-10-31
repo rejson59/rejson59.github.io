@@ -4,7 +4,7 @@
   var BASE = 'https://hzbqzfimtroixnldzjeq.supabase.co';
   var KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFub24iLCJpYXQiOjE3OTI1OTYzOTEsImV4cCI6MjEwODE3MjM5MX0.oeZWOaNd6p3wZBZQQu3QWjRHlrkxV_BFQRNSN-6YntE';
   var LIMIT = 104857600, CHUNK = 10485760;
-  var SESSION = 'rejson_community_session_v1', HISTORY = 'rejfile_sent_v1';
+  var SESSION = 'rejson_community_session_v1', HISTORY = 'rejfile_sent_v1', CHAT_DRAFT = 'rejfile_chat_draft_v1';
   var $ = function (id) { return document.getElementById(id); };
   var form=$('upload-form'), fileInput=$('file-input'), zone=$('dropzone'), selected=null, token=null, history=[], active=null, busy=false, downloadBusy=false, sessionVersion=0;
   var uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, secret=/^[0-9a-f]{64}$/;
@@ -23,6 +23,18 @@
   }
   function publicUrl(url) { var u=new URL(url); if(u.origin !== BASE || u.pathname.indexOf('/storage/v1/object/')!==0) throw new Error('Nieprawidłowy adres magazynu.'); return u.href; }
   function shareLink(item) { return location.origin+'/rejfile#f='+item.id+'.'+item.share; }
+  // Wyłącznie gotowy link publiczny. Prywatny dostęp na konto nie staje się linkiem.
+  function prepareChat(item) {
+    var expiry=Date.parse(item.expires);
+    if(!validItem(item) || !item.share || item.status!=='ready' || !Number.isFinite(expiry) || expiry<=Date.now()) { window.alert('Ten link nie jest już dostępny.'); return; }
+    try {
+      var raw=sessionStorage.getItem(CHAT_DRAFT), old=null;
+      try { old=JSON.parse(raw||'null'); } catch (_) {}
+      if(old && typeof old.at==='number' && Date.now()-old.at>=0 && Date.now()-old.at<30*60*1000 && old.expires>Date.now() && old.link!==shareLink(item) && !window.confirm('W RejChat czeka już inny link z RejFile. Zastąpić go tym linkiem?')) return;
+      sessionStorage.setItem(CHAT_DRAFT, JSON.stringify({link:shareLink(item), at:Date.now(), expires:expiry}));
+    } catch (_) { window.alert('Nie można przygotować linku w tej karcie. Skopiuj go i wklej w RejChat ręcznie.'); return; }
+    location.assign('/rejchat');
+  }
   function updateFile(file) {
     selected=file || null; $('file-label').textContent=file ? file.name : 'Przeciągnij plik tutaj';
     $('file-help').textContent=file ? human(file.size)+' · kliknij, aby zmienić' : 'lub wybierz z urządzenia';
@@ -61,6 +73,7 @@
         if(!confirm('Cofnąć dostęp do tego pliku?'))return;
         rpc('revoke',{id:item.id,owner:item.owner,session:token}).then(function(){history=history.filter(function(x){return x.id!==item.id;});persist();renderHistory();}).catch(function(e){report($('error'),e.message);});
       },'danger'));
+      if(item.share && item.status==='ready') acts.push(button('Przygotuj w RejChat',function(){prepareChat(item);}));
       row(list,item,(item.status==='ready' ? 'Wygasa: '+when(item.expires) : 'Przesyłanie nieukończone')+(item.recipient?' · dla '+item.recipient:''),acts);
     });
   }
@@ -97,7 +110,7 @@
       var result=await rpc('finish',{id:item.id,owner:item.owner});if(!result.expires_at)throw new Error('Nie udało się potwierdzić przesłania.');
       item.status='ready';item.expires=result.expires_at;persist();renderHistory();form.hidden=true;$('success').hidden=false;
       $('success-text').textContent=mode==='link'?'Wyślij link osobie, której chcesz udostępnić plik. Wygasa: '+when(item.expires)+'.':'Plik czeka w skrzynce użytkownika '+recipient+'. Wygasa: '+when(item.expires)+'.';
-      $('link-wrap').hidden=!item.share;if(item.share)$('share-link').value=shareLink(item);$('copy-link').textContent='Kopiuj';
+      $('link-wrap').hidden=!item.share;if(item.share){$('share-link').value=shareLink(item);$('share-chat').onclick=function(){prepareChat(item);};}$('copy-link').textContent='Kopiuj';
     } catch(err){report($('error'),err.message || 'Nie udało się przesłać pliku.'); if(created)renderHistory();}
     finally {busy=false;$('send').disabled=false;$('progress-wrap').hidden=true;}
   });
