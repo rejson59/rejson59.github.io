@@ -1,4 +1,4 @@
-/* Dwie małe promocje w jednym stałym pasku na telefonach. */
+/* Stały pasek: dwa widoczne kafelki i kolejne dostępne przez przesunięcie. */
 #rj-mobile-ads-check { position:fixed !important; z-index:2147482999 !important; visibility:hidden !important; width:0 !important; height:0 !important; pointer-events:none !important; }
 #rj-mobile-ads,.rj-mobile-ads-spacer { display:none; }
 @media (max-width:1199px) {
@@ -7,8 +7,12 @@
   .rj-mobile-ads-spacer { display:block; height:calc(var(--rj-mobile-ads-height, 76px) + env(safe-area-inset-bottom, 0px)); clear:both; }
   #rj-mobile-ads { position:fixed; box-sizing:border-box; inset:auto 0 0; z-index:99980; display:grid; grid-template-rows:14px 1fr; gap:2px; height:calc(var(--rj-mobile-ads-height, 76px) + env(safe-area-inset-bottom, 0px)); padding:4px max(8px,env(safe-area-inset-right, 0px)) calc(5px + env(safe-area-inset-bottom, 0px)) max(8px,env(safe-area-inset-left, 0px)); border-top:1px solid #93c9da55; background:#101a27; box-shadow:0 -8px 24px #0004; color:#effaff; font:400 12px/1.2 system-ui,sans-serif; }
   #rj-mobile-ads .rj-mobile-ads-label { color:#c3dce4; font:700 10px/14px system-ui,sans-serif; }
-  #rj-mobile-ads .rj-mobile-ads-items { min-width:0; display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:6px; }
-  #rj-mobile-ads .rj-mobile-ad { box-sizing:border-box; display:flex; align-items:center; gap:8px; min-width:0; min-height:44px; padding:4px 8px; border:1px solid #a4d4d326; border-radius:10px; color:#f2fcff; font:700 11px/1.2 system-ui,sans-serif; text-decoration:none; }
+  #rj-mobile-ads .rj-mobile-ads-hint { float:right; color:#9eb8c7; font-weight:400; }
+  #rj-mobile-ads .rj-mobile-ads-items { min-width:0; display:grid; grid-auto-flow:column; grid-auto-columns:calc((100% - 6px) / 2); gap:6px; overflow-x:auto; overscroll-behavior-x:contain; scroll-snap-type:x proximity; scrollbar-width:none; }
+  #rj-mobile-ads .rj-mobile-ads-items::-webkit-scrollbar { display:none; }
+  #rj-mobile-ads .rj-mobile-ads-items:focus-visible { outline:2px solid #a9eedb; outline-offset:-2px; }
+  #rj-mobile-ads .rj-mobile-ad { box-sizing:border-box; display:flex; align-items:center; gap:8px; min-width:0; min-height:44px; scroll-snap-align:start; padding:4px 8px; border:1px solid #a4d4d326; border-radius:10px; color:#f2fcff; font:700 11px/1.2 system-ui,sans-serif; text-decoration:none; }
+  #rj-mobile-ads .rj-mobile-ad--site { background:linear-gradient(115deg,#294a50,#1b2d3a); }
   #rj-mobile-ads .rj-mobile-ad--house { background:linear-gradient(115deg,#264b4b,#192d38); }
   #rj-mobile-ads .rj-mobile-ad--offer { background:linear-gradient(115deg,#343257,#252b41); border-color:#afa5fa55; }
   #rj-mobile-ads .rj-mobile-ad:focus-visible { outline:2px solid #a9eedb; outline-offset:-3px; }

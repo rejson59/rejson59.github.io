@@ -8,7 +8,7 @@ const root = path.resolve(__dirname, '../..');
 const read = p => fs.readFileSync(path.join(root, p), 'utf8');
 const widget = read('rejson-widgets/widget.js');
 const media = read('js/media-capture.js');
-const pages = ['index.html','404.html','admin.html','logowanie.html','partnerstwo.html','uslugi.html','profil.html','rejchat.html','rejfile.html','tablica-pomyslow.html','widzety.html','rejson-widgets/index.html'];
+const pages = ['index.html','404.html','admin.html','logowanie.html','partnerstwo.html','uslugi.html','profil.html','rejchat.html','rejfile.html','tablica-pomyslow.html','widzety.html','rejson-widgets/index.html','rejtools.html'];
 const wait = () => new Promise(resolve => setTimeout(resolve, 30));
 async function main() {
   for (const page of pages) {
@@ -80,7 +80,7 @@ async function main() {
   let res = await response(), html = await res.text();
   assert.equal((html.match(/src="\/rejson-widgets\/widget\.js\?v=12"/g)||[]).length,1);
   assert.equal((html.match(/src="\/js\/media-capture\.js\?v=2"/g)||[]).length,1);
-  assert.equal((html.match(/src="\/js\/mobile-ads\.js\?v=4"/g)||[]).length,1);
+  assert.equal((html.match(/src="\/js\/mobile-ads\.js\?v=5"/g)||[]).length,1);
   assert.equal(res.headers.get('content-security-policy'),"default-src 'self'");
   pageHtml='<html><head></head><body><script src="/js/media-capture.js?v=1"></script><script src="/rejson-widgets/widget.js?v=8"></script></body></html>';
   res=await response(); html=await res.text();
@@ -97,12 +97,16 @@ async function main() {
   assert.equal((html.match(/src="\/rejson-widgets\/widget\.js\?v=12"/g)||[]).length,1,'nie duplikuje bieżącej wersji');
   pageHtml='<html><head><link rel="stylesheet" href="/css/mobile-ads.css?v=1"></head><body><script src="/js/mobile-ads.js?v=1" defer></script></body></html>';
   res=await response(); html=await res.text();
-  assert.equal((html.match(/src="\/js\/mobile-ads\.js\?v=4"/g)||[]).length,1,'aktualizuje skrypt bez duplikatu');
-  assert.equal((html.match(/href="\/css\/mobile-ads\.css\?v=4"/g)||[]).length,1,'aktualizuje arkusz');
+  assert.equal((html.match(/src="\/js\/mobile-ads\.js\?v=5"/g)||[]).length,1,'aktualizuje skrypt bez duplikatu');
+  assert.equal((html.match(/href="\/css\/mobile-ads\.css\?v=5"/g)||[]).length,1,'aktualizuje arkusz');
   pageHtml='<html><head><link rel="stylesheet" href="/css/mobile-ads.css?v=3"></head><body><script src="/js/mobile-ads.js?v=3" defer></script></body></html>';
   res=await response(); html=await res.text();
-  assert.equal((html.match(/src="\/js\/mobile-ads\.js\?v=4"/g)||[]).length,1,'aktualizuje v3');
-  assert.equal((html.match(/href="\/css\/mobile-ads\.css\?v=4"/g)||[]).length,1,'aktualizuje arkusz v3');
+  assert.equal((html.match(/src="\/js\/mobile-ads\.js\?v=5"/g)||[]).length,1,'aktualizuje v3');
+  assert.equal((html.match(/href="\/css\/mobile-ads\.css\?v=5"/g)||[]).length,1,'aktualizuje arkusz v3');
+  pageHtml='<html><head><link rel="stylesheet" href="/css/mobile-ads.css?v=4"></head><body><script src="/js/mobile-ads.js?v=4" defer></script></body></html>';
+  res=await response(); html=await res.text();
+  assert.equal((html.match(/src="\/js\/mobile-ads\.js\?v=5"/g)||[]).length,1,'aktualizuje skrypt v4');
+  assert.equal((html.match(/href="\/css\/mobile-ads\.css\?v=5"/g)||[]).length,1,'aktualizuje arkusz v4');
   pageHtml='<html><head><link rel="stylesheet" href="/css/portal.css?v=12" data-rj-portal-style><script src="/js/portal-arrival.js?v=11"></script></head><body></body></html>';
   res=await response(); html=await res.text();
   assert.equal((html.match(/src="\/js\/portal-arrival\.js\?v=16"/g)||[]).length,1);

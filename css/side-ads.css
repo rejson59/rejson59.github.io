@@ -8,6 +8,8 @@
   .rj-side-ads-title { margin:3px 2px 4px; color:#c3dce4; font:700 11px/1.35 system-ui,sans-serif; }
   .rj-side-ad { box-sizing:border-box; display:flex; flex-direction:column; gap:9px; padding:13px 11px; border:1px solid #99c8e933; border-radius:14px; color:#eaf8ff; background:#172632; text-decoration:none; font:400 11px/1.45 system-ui,sans-serif; overflow-wrap:anywhere; }
   .rj-side-ad:hover { border-color:#9ce7d5; }.rj-side-ad:focus-visible { outline:2px solid #9ce7d5; outline-offset:-2px; }
+  .rj-side-ads-hint { display:block; margin-top:3px; color:#8baabd; font-weight:400; font-size:10px; }
+  .rj-side-ad--site { background:linear-gradient(150deg,#294a50,#1b2e40); }
   .rj-side-ad--chat { background:linear-gradient(150deg,#303650,#1b2231); }
   .rj-side-ad--file { background:linear-gradient(150deg,#294848,#172d32); }
   .rj-side-ad--offer { background:linear-gradient(150deg,#33334c,#202639); border-style:dashed; }

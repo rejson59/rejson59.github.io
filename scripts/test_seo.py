@@ -31,7 +31,7 @@ class SeoTests(unittest.TestCase):
             self.assertNotRegex(p.path.lower(), r'(^|/)(rejfile|admin|logowanie|spolecznosc)(/|$)')
         self.assertIsNone(tree.find('.//s:lastmod', ns), 'Nie dodawaj fikcyjnych dat')
         self.assertRegex((ROOT / 'rejfile.html').read_text(encoding='utf8'), r'name="robots" content="noindex,nofollow"')
-        for file, url in [('index.html', '/'), ('rejchat.html', '/rejchat'), ('tablica-pomyslow.html', '/tablica-pomyslow'), ('uslugi.html', '/uslugi'), ('partnerstwo.html', '/partnerstwo'), ('widzety.html', '/widzety'), ('rejson-widgets/index.html', '/rejson-widgets/')]:
+        for file, url in [('index.html', '/'), ('rejchat.html', '/rejchat'), ('rejtools.html', '/rejtools'), ('tablica-pomyslow.html', '/tablica-pomyslow'), ('uslugi.html', '/uslugi'), ('partnerstwo.html', '/partnerstwo'), ('widzety.html', '/widzety'), ('rejson-widgets/index.html', '/rejson-widgets/')]:
             text = (ROOT / file).read_text(encoding='utf8')
             full_url = 'https://rejson59.github.io' + url
             self.assertIn(full_url, locs)

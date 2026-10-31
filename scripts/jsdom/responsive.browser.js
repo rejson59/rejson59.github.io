@@ -62,7 +62,7 @@ const server = http.createServer((req, res) => {
     let geometry = await page.locator('.showcase-grid').evaluate(el => getComputedStyle(el).gridTemplateColumns.split(' ').length);
     assert.equal(geometry,2,'tablet: dwa słupki projektów');
     assert.equal(await page.locator('#rj-club .rj-premium').isVisible(),true);
-    assert.equal(await page.locator('.partner-home').isVisible(),true);
+    assert.equal(await page.locator('#rj-mobile-ads').isVisible(),true);
     assert.equal(await page.locator('#rj-club .rj-premium__glow').evaluate(el => getComputedStyle(el).animationName),'rj-premium-sweep');
     assert.equal(await page.locator('#rj-club .rj-premium__sheen').evaluate(el => getComputedStyle(el).animationName),'rj-premium-sheen');
     await page.emulateMedia({reducedMotion:'reduce'});
