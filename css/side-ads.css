@@ -1,13 +1,26 @@
-/* Jedna ramka po prawej; zawartość strony ma własną przestrzeń. */
+/* Reklamy po prawej; równe marginesy utrzymują stronę na środku ekranu. */
 .rj-side-ads { display:none; }
 @media (min-width:1200px) {
-  body.rj-side-ads-enabled > main, body.rj-side-ads-enabled > main[class], body.rj-side-ads-enabled > footer { width:calc(100% - 180px); margin-left:0; margin-right:180px; }
-  .rj-side-ads { box-sizing:border-box; position:fixed; top:90px; right:12px; z-index:20; display:flex; flex-direction:column; gap:8px; width:156px; max-height:calc(100vh - 190px); overflow-y:auto; scrollbar-width:thin; padding:9px; border:1px solid #99c8e933; border-radius:16px; background:#111e2a; box-shadow:0 12px 26px #0002; }
+  body.rj-side-ads-enabled > main, body.rj-side-ads-enabled > main[class], body.rj-side-ads-enabled > footer {
+    box-sizing:border-box; width:calc(100% - 420px); margin-left:auto; margin-right:auto;
+  }
+  .rj-side-ads { box-sizing:border-box; position:fixed; top:90px; right:12px; z-index:20; display:flex; flex-direction:column; gap:9px; width:184px; max-height:calc(100vh - 190px); overflow-y:auto; scrollbar-width:thin; padding:10px; border:1px solid #99c8e933; border-radius:18px; background:#111e2a; box-shadow:0 12px 26px #0002; }
   .rj-side-ads-title { margin:3px 2px 4px; color:#c3dce4; font:700 11px/1.35 system-ui,sans-serif; }
-  .rj-side-ad { box-sizing:border-box; display:flex; flex-direction:column; gap:7px; padding:12px 10px; border:1px solid #99c8e933; border-radius:12px; color:#eaf8ff; background:#172632; text-decoration:none; font:400 11px/1.35 system-ui,sans-serif; overflow-wrap:anywhere; }
+  .rj-side-ad { box-sizing:border-box; display:flex; flex-direction:column; gap:9px; padding:13px 11px; border:1px solid #99c8e933; border-radius:14px; color:#eaf8ff; background:#172632; text-decoration:none; font:400 11px/1.45 system-ui,sans-serif; overflow-wrap:anywhere; }
   .rj-side-ad:hover { border-color:#9ce7d5; }.rj-side-ad:focus-visible { outline:2px solid #9ce7d5; outline-offset:-2px; }
   .rj-side-ad--chat { background:linear-gradient(150deg,#303650,#1b2231); }
   .rj-side-ad--file { background:linear-gradient(150deg,#294848,#172d32); }
-  .rj-side-ad--offer { background:#262d40; border-style:dashed; }
-  .rj-side-ad-tag { color:#bed4ed; font-size:9px; font-weight:800; letter-spacing:.06em; }.rj-side-ad strong { color:#f6faff; font-size:15px; line-height:1.15; }.rj-side-ad b { color:#a9eedb; font-size:11px; }
+  .rj-side-ad--offer { background:linear-gradient(150deg,#33334c,#202639); border-style:dashed; }
+  .rj-side-ad-top { display:flex; align-items:center; gap:8px; }
+  .rj-side-ad-icon { display:grid; place-items:center; flex:none; width:36px; height:36px; border:1px solid #dbe9ff2b; border-radius:12px; color:#d0c8ff; background:#d9cfff17; }
+  .rj-side-ad-icon svg { display:block; width:22px; height:22px; }
+  .rj-side-ad--file .rj-side-ad-icon { color:#b5f3dc; background:#a9f0d01c; }
+  .rj-side-ad--offer .rj-side-ad-icon { color:#ffd8a1; background:#ffd8a11a; }
+  .rj-side-ad-tag { color:#bed4ed; font-size:9px; line-height:1.3; font-weight:800; letter-spacing:.04em; }
+  .rj-side-ad strong { color:#f6faff; font-size:15px; line-height:1.2; }
+  .rj-side-ad b { color:#a9eedb; font-size:11px; }
+}
+/* Na węższym desktopie nie ściskamy trzech kolumn w nowej, wyśrodkowanej przestrzeni. */
+@media (min-width:1200px) and (max-width:1350px) {
+  .rj-home.rj-side-ads-enabled .showcase-grid, .rj-home.rj-side-ads-enabled .grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
 }

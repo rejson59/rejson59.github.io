@@ -13,5 +13,8 @@
   #rj-mobile-ads .rj-mobile-ad--offer { background:linear-gradient(115deg,#343257,#252b41); border-color:#afa5fa55; }
   #rj-mobile-ads .rj-mobile-ad:focus-visible { outline:2px solid #a9eedb; outline-offset:-3px; }
   #rj-mobile-ads .rj-mobile-ad span { overflow-wrap:anywhere; }
+  #rj-mobile-ads .rj-mobile-ad-icon { display:grid; place-items:center; flex:none; width:30px; height:30px; border:1px solid #c8f4df33; border-radius:9px; background:#b6f3d51a; color:#baf4db; }
+  #rj-mobile-ads .rj-mobile-ad--offer .rj-mobile-ad-icon { color:#e0d5ff; border-color:#ddd4ff33; background:#ddd4ff1a; }
+  #rj-mobile-ads .rj-mobile-ad-icon svg { display:block; width:19px; height:19px; }
   html.rj-mobile-ads-active #join-nudge { bottom:calc(84px + var(--rj-mobile-ads-height, 76px) + env(safe-area-inset-bottom, 0px)) !important; }
 }
