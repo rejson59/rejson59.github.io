@@ -104,8 +104,13 @@ self.addEventListener("fetch", function (event) {
               if (!/<script\b[^>]*\bsrc\s*=\s*(["'])[^"']*\/js\/media-capture\.js(?:\?[^"']*)?\1/i.test(scriptHtml)) {
                 inject += '\n<script src="/js/media-capture.js?v=2" defer></script>';
               }
+              // Banery mobilne dodajemy centralnie tylko do zgodnych dokumentów
+              // tego originu; nie zmieniamy osobnych workerów projektów.
+              if (!/<script\b[^>]*\bsrc\s*=\s*(["'])[^"']*\/js\/mobile-ads\.js(?:\?[^"']*)?\1/i.test(scriptHtml)) {
+                inject += '\n<link rel="stylesheet" href="/css/mobile-ads.css?v=1"><script src="/js/mobile-ads.js?v=1" defer></script>';
+              }
               if (!hasWidgetScript) {
-                inject += '\n<script src="/rejson-widgets/widget.js?v=9" data-project="' + safeSlug + '" defer></script>';
+                inject += '\n<script src="/rejson-widgets/widget.js?v=10" data-project="' + safeSlug + '" defer></script>';
               }
               // Efekt wyjścia tylko na dokumentach projektów pod /projekt/.
               // Skrypt działa wyłącznie, jeśli ta karta ma jednorazowy znacznik
@@ -115,7 +120,7 @@ self.addEventListener("fetch", function (event) {
                 ? '<link rel="stylesheet" href="/css/portal.css?v=17" data-rj-portal-style><script src="/js/portal-arrival.js?v=16"></script>' : "";
               // Zachowujemy politykę CSP projektu, ale wstawiamy wyjście przed
               // blokującymi skryptami, o ile jest już za wszystkimi meta CSP.
-              var upgradedHtml = html.replace(/(<script\b[^>]*\bsrc\s*=\s*["'](?:https:\/\/rejson59\.github\.io)?\/rejson-widgets\/widget\.js)(?:\?v=[0-8])?(["'])/gi, "$1?v=9$2");
+              var upgradedHtml = html.replace(/(<script\b[^>]*\bsrc\s*=\s*["'](?:https:\/\/rejson59\.github\.io)?\/rejson-widgets\/widget\.js)(?:\?v=(?:[0-9]))?(["'])/gi, "$1?v=10$2");
               upgradedHtml = upgradedHtml.replace(/(<script\b[^>]*\bsrc\s*=\s*["'](?:https:\/\/rejson59\.github\.io)?\/js\/media-capture\.js)(?:\?v=[0-1])?(["'])/gi, "$1?v=2$2");
               // Projekty z własnym bootstrapem dostają nowe wersje bez dublowania.
               upgradedHtml = upgradedHtml.replace(/(<script\b[^>]*\bsrc\s*=\s*["'](?:https:\/\/rejson59\.github\.io)?\/js\/portal-arrival\.js)(?:\?v=[^"']*)?(["'])/gi, "$1?v=16$2");
