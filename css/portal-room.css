@@ -1,76 +1,61 @@
-/* Portal jako pełnoekranowa komnata, nie ilustracja obok opisu.
-   Statyczne światło i poruszające się obrysy są ograniczone do transform/opacity. */
-:root { color-scheme:dark; font-family:Inter,ui-sans-serif,system-ui,sans-serif; color:#edf9fb; background:#03070d; }
+/* Przestrzeń jest portalem: bez ramki, bez osobnej ilustracji i bez WebGL. */
+:root { color-scheme:dark; font-family:Inter,ui-sans-serif,system-ui,sans-serif; color:#f8f9ff; background:#040812; }
 * { box-sizing:border-box; }
-body { --gate-light:#8af5e8; --gate-tint:#778dff; position:relative; isolation:isolate; margin:0; min-height:100svh; overflow-x:hidden; background:#03070d; }
-body::before { content:""; position:fixed; inset:0; z-index:-2; pointer-events:none; background:radial-gradient(ellipse at 50% 44%,#173e4a 0%,#0b202e 20%,#060d18 50%,#02050b 85%); }
-body::after { content:""; position:fixed; inset:0; z-index:-1; pointer-events:none; background:radial-gradient(ellipse at center,transparent 25%,#02050bb3 100%); }
-body[data-aura="violet"] { --gate-light:#c6b7ff; --gate-tint:#6c8cff; }
-body[data-aura="azure"] { --gate-light:#91d9ff; --gate-tint:#7192ff; }
-body[data-aura="rose"] { --gate-light:#ffc1dd; --gate-tint:#b692ff; }
+body { --scene-tint:#aaa4ff; position:relative; isolation:isolate; margin:0; min-height:100svh; background:#040812; overflow-x:hidden; }
+body[data-aura="violet"] { --scene-tint:#bda5ff; } body[data-aura="azure"] { --scene-tint:#9adfff; } body[data-aura="rose"] { --scene-tint:#e0b4ff; }
 a { color:inherit; }
-.portal-header { position:relative; z-index:3; height:72px; padding:0 clamp(24px,5vw,72px); display:flex; align-items:center; gap:20px; border-bottom:1px solid #b4f6f41a; }
+.portal-header { position:absolute; z-index:5; inset:0 0 auto; height:76px; display:flex; align-items:center; gap:20px; padding:0 clamp(24px,5vw,72px); background:linear-gradient(#02040ad9,transparent); }
 .brand { display:flex; align-items:center; gap:10px; text-decoration:none; font-size:14px; font-weight:800; letter-spacing:-.03em; }
-.brand-mark { display:grid; place-items:center; width:32px; height:32px; border:1px solid #9af7e94d; border-radius:10px; background:#102932; color:#d1fff8; font-size:18px; }
-.brand-mark span { display:none; } .brand-dot { color:#85e5e0; }
-.header-label { margin:auto; font-size:10px; font-weight:700; letter-spacing:.2em; color:#a9c2c9; }
-.header-star { color:#91e9e1; margin-right:8px; }
-.portal-account,.home-link { color:#cadfe2; }
-.portal-account:focus-visible,.home-link:focus-visible,.portal-door:focus-visible,.enter-button:focus-visible,.motion-toggle:focus-visible,.direct-link:focus-visible { outline:2px solid #a8fff4; outline-offset:5px; }
-.room { position:relative; min-height:calc(100svh - 116px); display:grid; grid-template-areas:"intro" "world" "actions"; grid-template-rows:auto minmax(280px,1fr) auto; justify-items:center; align-items:center; overflow:hidden; padding:25px 20px 20px; }
-.scene-atmosphere { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
-.chamber-wall { position:absolute; top:-10%; bottom:-10%; width:34%; background:linear-gradient(90deg,#02050c,#0a1a25 60%,#102a34); opacity:.82; }
-.chamber-wall--left { left:0; clip-path:polygon(0 0,58% 0,100% 50%,58% 100%,0 100%); border-right:1px solid #9ee8df28; }
-.chamber-wall--right { right:0; transform:scaleX(-1); clip-path:polygon(0 0,58% 0,100% 50%,58% 100%,0 100%); border-right:1px solid #9ee8df28; }
-.chamber-ceiling { position:absolute; inset:0 5% 50%; clip-path:polygon(0 0,100% 0,67% 100%,33% 100%); background:linear-gradient(#030810,#11273280,transparent); }
-.chamber-floor { position:absolute; inset:50% -20% 0; transform-origin:50% 0; transform:perspective(400px) rotateX(58deg); background:repeating-linear-gradient(90deg,transparent 0,transparent 8%,#9cebe51c 8.1%,transparent 8.2%),repeating-linear-gradient(0deg,transparent 0,transparent 13%,#9cebe51a 13.2%,transparent 13.4%); opacity:.62; }
-.chamber-beam { position:absolute; left:50%; top:50%; width:65vw; height:1px; background:linear-gradient(90deg,transparent,#a2fff5,#a2fff500); opacity:.18; transform-origin:left center; }
-.chamber-beam--one { transform:rotate(-22deg); }.chamber-beam--two { transform:rotate(202deg); }
-.room-content { display:contents; }
-.intro { grid-area:intro; position:relative; z-index:2; text-align:center; pointer-events:none; }
-.eyebrow { display:flex; align-items:center; justify-content:center; gap:9px; font-size:10px; font-weight:800; letter-spacing:.23em; color:#9be6df; }
-.eyebrow-dot { width:6px; height:6px; border-radius:50%; background:#92fff0; box-shadow:0 0 12px #85fff0; }
-h1 { margin:10px 0 5px; font:600 clamp(32px,4.3vw,56px)/1.02 Inter,system-ui,sans-serif; letter-spacing:-.055em; overflow-wrap:anywhere; }
-.intro p { margin:0; color:#a6bdc2; font-size:13px; line-height:1.5; }
-.world-frame { grid-area:world; position:relative; z-index:2; width:min(46vw,48svh,430px); height:min(53svh,490px); min-height:260px; display:grid; place-items:center; }
-.world-frame::before { content:""; position:absolute; left:-25%; right:-25%; bottom:-8%; height:24%; border-radius:50%; background:radial-gradient(ellipse,#83fff84a 0%,#298c8830 30%,transparent 72%); pointer-events:none; }
-.world-frame::after { content:""; position:absolute; left:-16%; right:-16%; bottom:0; height:1px; background:linear-gradient(90deg,transparent,#a5fffbaa,transparent); pointer-events:none; }
+.brand-mark { display:grid; place-items:center; width:32px; height:32px; border:1px solid #e3e1ff61; border-radius:10px; background:#12152bcc; color:#f4efff; font-size:18px; }
+.brand-mark span { display:none; } .brand-dot { color:#c8bcff; }
+.header-label { margin:auto; font-size:10px; font-weight:700; letter-spacing:.2em; color:#c1cae5; }.header-star { color:#c1b3ff; margin-right:8px; }
+.portal-account,.home-link { color:#dce5ff; }
+.portal-account:focus-visible,.home-link:focus-visible,.portal-door:focus-visible,.enter-button:focus-visible,.motion-toggle:focus-visible,.direct-link:focus-visible { outline:2px solid #eee7ff; outline-offset:5px; }
+.room { position:relative; min-height:100svh; overflow:hidden; display:flex; align-items:flex-end; padding:120px clamp(24px,7vw,104px) 115px; }
+.scene-atmosphere { position:absolute; inset:0; overflow:hidden; pointer-events:none; background:#050916; }
+.cosmos-art { position:absolute; inset:-4%; background:url('/assets/portal-horizon.svg') center / cover no-repeat; transform:translate3d(0,0,0); transition:transform .5s ease-out; }
+.scene-atmosphere::after { content:""; position:absolute; inset:0; background:linear-gradient(90deg,#030612dc 0%,#030612b3 24%,transparent 63%),linear-gradient(0deg,#02040cdb 0%,transparent 34%,#02040c50 100%); }
+.cosmic-streams { position:absolute; inset:0; width:100%; height:100%; color:#ffd6d2; opacity:.28; pointer-events:none; }
+.cosmic-streams path { fill:none; stroke:currentColor; stroke-width:1.3; stroke-linecap:round; stroke-dasharray:5 90 2 150; animation:stream-travel 15s linear infinite; }
+.cosmic-streams path:nth-child(2) { animation-duration:20s; animation-direction:reverse; opacity:.65; }
+.cosmic-streams path:nth-child(3) { animation-duration:24s; opacity:.45; }
+.starfield { position:absolute; inset:0; pointer-events:none; }
+.starfield i { position:absolute; width:3px; height:3px; border-radius:50%; background:#eff7ff; box-shadow:0 0 8px 2px #a79fffaa; animation:star-spark 4s ease-in-out infinite alternate; }
+.starfield i:nth-child(1) {left:12%;top:22%;animation-delay:-1s} .starfield i:nth-child(2) {left:32%;top:18%;animation-delay:-2.5s} .starfield i:nth-child(3) {left:82%;top:19%;animation-delay:-3s} .starfield i:nth-child(4) {left:91%;top:43%;animation-delay:-.8s} .starfield i:nth-child(5) {left:72%;top:68%;animation-delay:-1.7s} .starfield i:nth-child(6) {left:59%;top:13%;animation-delay:-2.7s} .starfield i:nth-child(7) {left:21%;top:58%;animation-delay:-.4s} .starfield i:nth-child(8) {left:85%;top:79%;animation-delay:-3.5s}
+.starfield--near { animation:star-drift 15s ease-in-out infinite alternate; }.starfield--near i { width:4px; height:4px; }.starfield--near i:nth-child(1) {left:23%;top:32%} .starfield--near i:nth-child(2) {left:46%;top:16%} .starfield--near i:nth-child(3) {left:77%;top:34%} .starfield--near i:nth-child(4) {left:91%;top:61%} .starfield--near i:nth-child(5) {left:57%;top:74%} .starfield--near i:nth-child(6) {left:14%;top:77%} .starfield--near i:nth-child(7) {left:66%;top:21%} .starfield--near i:nth-child(8) {left:38%;top:70%}
+.world-frame { position:absolute; z-index:2; left:50%; top:48%; width:clamp(135px,14vw,205px); height:clamp(330px,58vh,540px); transform:translate(-50%,-50%); }
 .portal-door { position:relative; width:100%; height:100%; padding:0; border:0; background:transparent; cursor:pointer; color:#fff; }
-.portal-door:disabled { cursor:default; }
-.portal-layers { position:absolute; inset:0; display:block; animation:portal-unfold 1s ease-out both; }
-.gate-aura { position:absolute; inset:-16% -28%; pointer-events:none; background:radial-gradient(ellipse,color-mix(in srgb,var(--gate-light) 28%,transparent) 0%,color-mix(in srgb,var(--gate-light) 19%,transparent) 24%,color-mix(in srgb,var(--gate-tint) 11%,transparent) 44%,transparent 70%); animation:gate-breathe 5s ease-in-out infinite alternate; }
-.gate-structure { position:absolute; inset:2% 4%; display:block; overflow:hidden; clip-path:polygon(17% 0,83% 0,100% 15%,100% 85%,83% 100%,17% 100%,0 85%,0 15%); background:#07131d; border:1px solid #c2fffa; box-shadow:inset 0 0 0 2px #c0ffff44; }
-.gate-structure::before { content:""; position:absolute; inset:0; clip-path:polygon(17% 0,83% 0,100% 15%,100% 85%,83% 100%,17% 100%,0 85%,0 15%); background:linear-gradient(130deg,#a1eee8,#19373f 20%,#07121b 47%,#344f69 74%,#93dcd4); }
-.gate-void { position:absolute; inset:3%; clip-path:polygon(17% 0,83% 0,100% 15%,100% 85%,83% 100%,17% 100%,0 85%,0 15%); background:radial-gradient(ellipse at 50% 51%,#010306 0%,#02080e 28%,#09212b 58%,#1a5962 88%,#97f4e8 100%); }
-.gate-rays { position:absolute; inset:3%; background:repeating-conic-gradient(from 5deg at 50% 50%,transparent 0deg,#64edf00e 5deg,transparent 10deg,#a2b0ff0c 16deg,transparent 23deg); clip-path:polygon(17% 0,83% 0,100% 15%,100% 85%,83% 100%,17% 100%,0 85%,0 15%); }
-.gate-dust { position:absolute; inset:4%; overflow:hidden; }
-.gate-dust i { position:absolute; left:50%; top:50%; width:2px; height:22%; transform-origin:50% 0; background:linear-gradient(transparent,#a2fff8 45%,transparent); opacity:0; animation:gate-streak 3.2s linear infinite; }
-.gate-dust i:nth-child(1) { --angle:18deg; animation-delay:0s; } .gate-dust i:nth-child(2) { --angle:62deg; animation-delay:-.4s; }
-.gate-dust i:nth-child(3) { --angle:108deg; animation-delay:-.8s; } .gate-dust i:nth-child(4) { --angle:154deg; animation-delay:-1.2s; }
-.gate-dust i:nth-child(5) { --angle:197deg; animation-delay:-1.6s; } .gate-dust i:nth-child(6) { --angle:244deg; animation-delay:-2s; }
-.gate-dust i:nth-child(7) { --angle:289deg; animation-delay:-2.4s; } .gate-dust i:nth-child(8) { --angle:334deg; animation-delay:-2.8s; }
-.gate-horizon { position:absolute; left:20%; right:20%; top:49%; height:1px; background:linear-gradient(90deg,transparent,#8bfffbd9,transparent); box-shadow:0 0 14px #7cf4ee; opacity:.75; }
-.depth-slice { position:absolute; inset:8%; display:block; border:1px solid #9ffbf3; clip-path:polygon(16% 0,84% 0,100% 16%,100% 84%,84% 100%,16% 100%,0 84%,0 16%); opacity:0; animation:depth-pass 5.6s linear infinite; }
-.depth-slice--two { animation-delay:-1.4s; }.depth-slice--three { animation-delay:-2.8s; }.depth-slice--four { animation-delay:-4.2s; }
-.gate-energy { position:absolute; top:10%; bottom:10%; width:1px; background:linear-gradient(transparent,#bafff7,transparent); opacity:.6; animation:gate-energy-one 3.5s ease-in-out infinite alternate; }
-.gate-energy--one { left:7%; }.gate-energy--two { right:7%; animation-delay:-1.75s; }
-.door-label { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; opacity:0; font-size:10px; font-weight:800; letter-spacing:.18em; text-shadow:0 2px 12px #000,0 0 15px #000; transition:opacity .25s; }
-.door-label span { font-size:22px; }.portal-door:hover .door-label,.portal-door:focus-visible .door-label { opacity:1; }
-.portal-door:not(:disabled):hover .gate-structure,.portal-door:focus-visible .gate-structure { border-color:#fff; }
-.actions { grid-area:actions; position:relative; z-index:2; display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:8px 18px; width:min(600px,100%); text-align:center; }
-.enter-button { display:inline-flex; align-items:center; justify-content:center; gap:12px; min-height:52px; max-width:100%; padding:0 18px 0 13px; border:1px solid #c5fff8; border-radius:12px; color:#041c21; cursor:pointer; font:750 13px/1.3 system-ui,sans-serif; background:linear-gradient(110deg,#d8fff9,#84e5db); box-shadow:0 8px 30px #57e9dc33; transition:transform .2s,box-shadow .2s; }
-.enter-button:not(:disabled):hover { transform:translateY(-2px); box-shadow:0 12px 38px #5ee9de66; }.enter-button:disabled { opacity:.65; cursor:default; }
-.button-icon { display:grid; place-items:center; width:30px; height:30px; flex:none; border-radius:8px; color:#bafff3; background:#092c33; }.enter-button b { font-size:17px; font-weight:500; }
-.hint { flex-basis:100%; margin:5px 0 0; color:#9eb6ba; font-size:11px; }.hint span { color:#8ee3d9; }
-.motion-toggle { padding:0; border:0; background:none; color:#b3d9d8; font:inherit; font-size:11px; text-decoration:underline; text-underline-offset:4px; cursor:pointer; }
-.direct-link { color:#b3d9d8; font-size:11px; text-decoration:underline; text-underline-offset:4px; }.direct-link[hidden],.motion-toggle[hidden] { display:none; }
-.status { flex-basis:100%; margin:0; color:#b5e7e3; font-size:12px; }.status:empty { display:none; }.noscript { position:relative; z-index:3; }
-footer { position:relative; z-index:3; display:flex; justify-content:space-between; gap:15px; padding:14px clamp(24px,5vw,72px); color:#78959d; font-size:9px; font-weight:700; letter-spacing:.18em; }footer i { font-style:normal; color:#80d9d4; }
-@keyframes portal-unfold { from { opacity:.5; transform:scale(.96); } to { opacity:1; transform:scale(1); } }
-@keyframes gate-breathe { from { opacity:.55; transform:scale(.97); } to { opacity:1; transform:scale(1.03); } }
-@keyframes depth-pass { 0% { transform:scale(.22); opacity:0; } 20% { opacity:.38; } 75% { opacity:.52; } 100% { transform:scale(1.1); opacity:0; } }
-@keyframes gate-streak { 0% { transform:rotate(var(--angle)) translateY(5px) scaleY(.15); opacity:0; } 25% { opacity:.65; } 100% { transform:rotate(var(--angle)) translateY(190px) scaleY(1); opacity:0; } }
-@keyframes gate-energy-one { from { opacity:.25; } to { opacity:.9; } }
+.portal-door:disabled { cursor:default; }.portal-layers { position:absolute; inset:0; display:block; }
+.gate-structure { position:absolute; inset:0; display:block; overflow:hidden; clip-path:polygon(49% 0,61% 24%,57% 31%,79% 49%,62% 56%,67% 70%,48% 100%,36% 73%,40% 59%,20% 48%,39% 34%,38% 23%); background:linear-gradient(145deg,#e9ccce,#9eabdd 43%,#f2a6ae 66%,#ffdfba); }
+.gate-void { position:absolute; inset:5px; clip-path:polygon(49% 0,61% 24%,57% 31%,79% 49%,62% 56%,67% 70%,48% 100%,36% 73%,40% 59%,20% 48%,39% 34%,38% 23%); background:#01020a; }
+.portal-layers { filter:drop-shadow(0 0 15px #ffc7d7aa); }
+.gate-energy { position:absolute; inset:25% 10%; border:1px solid transparent; border-top-color:#ded3ff77; border-radius:50%; animation:gate-energy-one 9s linear infinite; }
+.gate-energy--two { inset:32% 20%; border-top-color:#99d8ff66; animation-duration:12s; animation-direction:reverse; }
+.gate-stardust { position:absolute; inset:0; overflow:hidden; }
+.gate-stardust i { position:absolute; left:50%; top:50%; width:2px; height:22%; transform-origin:50% 0; background:linear-gradient(transparent,#d7eaff,transparent); opacity:0; animation:gate-streak 3.4s linear infinite; }
+.gate-stardust i:nth-child(1){--angle:18deg;animation-delay:0s}.gate-stardust i:nth-child(2){--angle:62deg;animation-delay:-.4s}.gate-stardust i:nth-child(3){--angle:108deg;animation-delay:-.8s}.gate-stardust i:nth-child(4){--angle:154deg;animation-delay:-1.2s}.gate-stardust i:nth-child(5){--angle:197deg;animation-delay:-1.6s}.gate-stardust i:nth-child(6){--angle:244deg;animation-delay:-2s}.gate-stardust i:nth-child(7){--angle:289deg;animation-delay:-2.4s}.gate-stardust i:nth-child(8){--angle:334deg;animation-delay:-2.8s}
+.door-label { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; opacity:0; font-size:10px; font-weight:800; letter-spacing:.17em; text-shadow:0 2px 12px #000; transition:opacity .25s; }
+.door-label span { font-size:23px; }.portal-door:hover .door-label,.portal-door:focus-visible .door-label { opacity:1; }
+.room-content { position:relative; z-index:3; width:min(500px,35vw); pointer-events:none; }
+.intro,.actions { pointer-events:auto; }
+.eyebrow { display:flex; align-items:center; gap:10px; font-size:10px; font-weight:800; letter-spacing:.23em; color:#d2caff; }
+.eyebrow-dot { width:7px; height:7px; border-radius:50%; background:#e8ddff; box-shadow:0 0 14px #c0aaff; }
+h1 { margin:18px 0 12px; font:650 clamp(45px,6vw,84px)/1 Inter,system-ui,sans-serif; letter-spacing:-.055em; overflow-wrap:anywhere; text-shadow:0 4px 35px #01030b; }
+.intro p { margin:0; color:#c6cfe3; font-size:15px; line-height:1.7; max-width:38ch; }
+.actions { display:flex; flex-wrap:wrap; align-items:center; gap:12px 16px; margin-top:30px; }
+.enter-button { display:inline-flex; align-items:center; gap:14px; min-height:56px; max-width:100%; padding:0 19px 0 13px; border:1px solid #eeeaff; border-radius:14px; color:#15132a; cursor:pointer; font:750 13px/1.3 system-ui,sans-serif; background:linear-gradient(110deg,#f5f2ff,#c3bcff); box-shadow:0 12px 35px #7365c74f; transition:transform .2s,box-shadow .2s; }
+.enter-button:not(:disabled):hover { transform:translateY(-3px); box-shadow:0 15px 42px #a598ef66; }.enter-button:disabled { opacity:.65; cursor:default; }
+.button-icon { display:grid; place-items:center; width:32px; height:32px; flex:none; border-radius:9px; color:#e3dcff; background:#27213f; }.enter-button b { font-size:17px; font-weight:500; }
+.hint { flex-basis:100%; margin:4px 0 0; color:#bec6dd; font-size:11px; }.hint span { color:#cfbcff; }
+.motion-toggle { padding:0; border:0; background:none; color:#ccd2e5; font:inherit; font-size:11px; text-decoration:underline; text-underline-offset:4px; cursor:pointer; }
+.direct-link { color:#ccd2e5; font-size:11px; text-decoration:underline; text-underline-offset:4px; }.direct-link[hidden],.motion-toggle[hidden] { display:none; }
+.status { flex-basis:100%; margin:0; color:#d9cfff; font-size:12px; }.status:empty { display:none; }.noscript { position:relative; z-index:3; }
+footer { position:absolute; z-index:3; bottom:0; left:0; right:0; display:flex; justify-content:space-between; gap:15px; padding:18px clamp(24px,5vw,72px); color:#b0bad5; font-size:9px; font-weight:700; letter-spacing:.18em; }footer i { font-style:normal; color:#c7b6ff; }
+@keyframes stream-travel { to { stroke-dashoffset:-260; } }
+@keyframes star-spark { from { opacity:.25; transform:scale(.7); } to { opacity:1; transform:scale(1.4); } }
+@keyframes star-drift { from { transform:translate3d(-6px,5px,0); } to { transform:translate3d(9px,-8px,0); } }
+@keyframes gate-energy-one { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
+@keyframes gate-streak { 0% { transform:rotate(var(--angle)) translateY(5px) scaleY(.15); opacity:0; } 25% { opacity:.65; } 100% { transform:rotate(var(--angle)) translateY(130px) scaleY(1); opacity:0; } }
 
 /* Lot zachowuje tę samą bramę i kontynuuje się w tunelu. */
 .flight { display: none; position: fixed; z-index: 20; inset: 0; overflow: hidden; pointer-events: none; }
@@ -118,21 +103,27 @@ footer { position:relative; z-index:3; display:flex; justify-content:space-betwe
 @keyframes flight-caption { 0%,15% { opacity: 0; } 28%,70% { opacity: 1; } 90%,100% { opacity: 0; } }
 .portal-header, .room-content, footer, .portal-door { transition: opacity .6s ease; }
 .is-travelling .portal-header, .is-travelling .intro, .is-travelling .actions, .is-travelling footer, .is-travelling .portal-door { opacity: 0; visibility: hidden; transition: opacity .6s ease, visibility 0s .6s; }
-/* Po rozpoczęciu podróży wir w tle nie musi nadal być przeliczany. */
+/* Scena w tle nie musi być animowana podczas lotu. */
 .is-travelling .portal-door .portal-layers, .is-travelling .portal-door .portal-layers * { animation-play-state: paused; }
 
-/* Nie gaś tunelu podczas oczekiwania na dokument. */
+
+/* Ciemny tunel pozostaje widoczny, gdy dokument projektu się ładuje. */
 @keyframes flight-darkness { 0%,72% { opacity:0; } 100% { opacity:.24; } }
 @keyframes flight-tunnel-visible { 0%,25% { opacity:0; } 43%,100% { opacity:1; } }
 @keyframes flight-caption { 0%,15% { opacity:0; } 28%,100% { opacity:1; } }
-@media (max-width:700px) {
- .portal-header { height:62px; padding:0 20px; }.header-label { font-size:8px; letter-spacing:.12em; }
- .room { min-height:calc(100svh - 102px); padding:20px 18px 18px; grid-template-rows:auto minmax(260px,1fr) auto; }
- .world-frame { width:min(70vw,46svh,380px); height:min(47svh,430px); }
- .chamber-wall { width:24%; }.intro p { font-size:12px; }
- footer { padding:12px 20px; font-size:8px; letter-spacing:.12em; } footer span:last-child { display:none; }
+.flight-space { background:linear-gradient(#03050a33,#03050a33),url('/assets/portal-horizon.svg') center / cover no-repeat; }
+@media (max-width:900px) {
+ .portal-header { height:62px; padding:0 20px; }.header-label { display:none; }.brand { margin-right:auto; }
+ .room { min-height:max(100svh,740px); padding:100px 24px 90px; align-items:flex-end; }
+ .scene-atmosphere::after { background:linear-gradient(0deg,#02040df2 0%,#02040dc7 28%,transparent 67%,#02040c55 100%); }
+ .room-content { width:min(500px,100%); }.intro p { font-size:13px; }.actions { margin-top:20px; }
+ .world-frame { top:31%; width:min(36vw,155px); height:min(42vh,300px); }
+ footer { padding:13px 24px; font-size:8px; letter-spacing:.12em; } footer span:last-child { display:none; }
 }
 body.motion-off *,body.motion-off *::before,body.motion-off *::after { animation:none !important; transition:none !important; }
 @media (prefers-reduced-motion:reduce) { body:not(.motion-override) *,body:not(.motion-override) *::before,body:not(.motion-override) *::after { animation:none !important; transition:none !important; scroll-behavior:auto !important; } }
 .flight.is-paused *,.flight.is-paused { animation-play-state:paused !important; }
-@media (max-width:420px) { .portal-header .header-label { display:none; } .portal-header .brand { margin-right:auto; } }
+/* Tło nie zużywa zasobów, gdy karta jest ukryta lub trwa lot. */
+.scene-paused .scene-atmosphere *, .is-travelling .scene-atmosphere * { animation-play-state:paused !important; }
+
+.flight-source.portal-layers { filter:none; }
