@@ -173,7 +173,7 @@
     return meta;
   }
 
-  function journeyUrl(name) { return "/podroz/?projekt=" + encodeURIComponent(name); }
+  function journeyUrl(name) { return "/podroz/?projekt=" + encodeURIComponent(name) + "&v=2"; }
 
   function actionsHTML(p) {
     var liveBtn = p.liveUrl

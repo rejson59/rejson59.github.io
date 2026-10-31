@@ -8,7 +8,7 @@ const read = f => fs.readFileSync(path.join(root, f), 'utf8');
 const home = new JSDOM(read('index.html')).window.document;
 const links = [...home.querySelectorAll('.showcase-item a[data-journey]')];
 assert.equal(links.length,15);
-for (const a of links) { assert.match(a.getAttribute('href'),/^\/podroz\/\?projekt=[\w.-]+$/); assert.equal(a.target,'_blank'); assert.match(a.rel,/noopener/); assert.match(a.rel,/noreferrer/); }
+for (const a of links) { assert.match(a.getAttribute('href'),/^\/podroz\/\?projekt=[\w.-]+&v=2$/); assert.equal(a.target,'_blank'); assert.match(a.rel,/noopener/); assert.match(a.rel,/noreferrer/); }
 assert.equal(home.querySelectorAll('[data-tilt]').length >= 5,true);
 assert.match(read('js/app.js'),/card-preview.*journeyUrl\(p.name\)/);
 assert.match(read('js/app.js'),/btn-live btn-journey btn-sm.*journeyUrl\(p.name\)/);
