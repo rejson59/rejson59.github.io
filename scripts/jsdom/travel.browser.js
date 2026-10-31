@@ -50,19 +50,24 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(await tab.locator('.rj-arrival-name').textContent(),'Test');assert.equal(await tab.locator('.rj-arrival-puffs i').count(),3);
   assert.equal(await tab.locator('.rj-arrival-motion').evaluate(e=>getComputedStyle(e).animationName),'rj-arrival-flight');
   assert.equal(await tab.locator('.rj-arrival-puffs i').first().evaluate(e=>getComputedStyle(e).animationName),'rj-arrival-puff');
-  const first=await tab.locator('.rj-arrival-motion').evaluate(e=>getComputedStyle(e).transform);await tab.waitForTimeout(2000);
-  assert.notEqual(await tab.locator('.rj-arrival-motion').evaluate(e=>getComputedStyle(e).transform),first);
+  assert.equal(await tab.locator('.rj-arrival-elevation').evaluate(e=>getComputedStyle(e).animationName),'rj-arrival-climb');
+  const samples=await tab.evaluate(async()=>{const el=document.querySelector('.rj-arrival-rocket-wrap');const x=[];for(let i=0;i<12;i++){x.push(el.getBoundingClientRect().x);await new Promise(r=>setTimeout(r,220));}return x;});
+  for(let i=1;i<samples.length;i++) assert.ok(samples[i]>samples[i-1], 'rakieta płynnie porusza się także między dawnymi etapami lotu');
+  await tab.waitForTimeout(Math.max(0, 3100 - (Date.now() - started)));
   assert.equal(await tab.locator('#rj-portal-arrival').count(),1,'nakładka nie znika po sekundzie');
+  assert.equal(await tab.locator('#rj-portal-arrival.is-playing').count(),0,'pozostaje widoczna przez co najmniej 3 sekundy');
   assert.equal(await tab.evaluate(()=>{const b=document.querySelector('#project-button').getBoundingClientRect();return document.elementFromPoint(b.left+b.width/2,b.top+b.height/2).closest('#rj-portal-arrival')!==null;}),true,'nie klika się strony pod nakładką');
   if(process.env.SCREENSHOT_OUT) await tab.screenshot({path:process.env.SCREENSHOT_OUT});
-  await tab.locator('#rj-portal-arrival').waitFor({state:'detached',timeout:15000});assert.ok(Date.now()-started>=6500);
+  await tab.locator('#rj-portal-arrival').waitFor({state:'detached',timeout:15000});assert.ok(Date.now()-started>=3000);
   assert.equal(new URL(tab.url()).pathname,'/Test/');await tab.reload({waitUntil:'load'});assert.equal(await tab.locator('#rj-portal-arrival').count(),0,'jednorazowy znacznik');
   console.log('PASS: nowa karta ma prawdziwy adres projektu, projekt ładuje się pod pełnym lotem i odsłania po animacji');await c.close();
 
   const slow=await browser.newContext({viewport:{width:1440,height:900},reducedMotion:'reduce'});await configure(slow,[repo('Slow')]);const sh=await homepage(slow), st=await openProject(sh,'Slow');
-  await st.waitForSelector('#rj-portal-arrival .rj-arrival-rocket');await st.waitForTimeout(8500);
+  await st.waitForSelector('#rj-portal-arrival .rj-arrival-rocket');await st.waitForTimeout(6000);
   assert.equal(await st.locator('#rj-portal-arrival.is-playing').count(),0,'wolny zasób utrzymuje nakładkę po locie');
   assert.match(await st.locator('.rj-arrival-caption').textContent(),/ładujemy/);
+  const progress=await st.locator('.rj-arrival-progress span').evaluate(e=>new DOMMatrix(getComputedStyle(e).transform).a);assert.ok(progress>0.89&&progress<0.91,'pasek nie pokazuje 100%, dopóki projekt się ładuje');
+  assert.equal(await st.locator('.rj-arrival-rocket').evaluate(e=>getComputedStyle(e).animationName),'rj-rocket-idle','rakieta ożywa również podczas oczekiwania');
   releaseImage();await st.locator('#rj-portal-arrival').waitFor({state:'detached',timeout:8000});assert.equal(await st.locator('#destination').textContent(),'/Slow/');
   console.log('PASS: pełny lot i oczekiwanie na wolne zasoby przy CSP i ograniczonym ruchu systemu');await slow.close();
 
@@ -87,8 +92,11 @@ const server=http.createServer(async(req,res)=>{
   console.log('PASS: blokująca CSP pozostawia projekt dostępny');await blocked.close();
 
   const timeout=await browser.newContext();await configure(timeout,[repo('Timeout')]);const th=await homepage(timeout),tt=await openProject(th,'Timeout');
-  await tt.waitForSelector('#rj-portal-arrival');await tt.locator('#rj-portal-arrival').waitFor({state:'detached',timeout:16000});
-  assert.equal(await tt.locator('#destination').textContent(),'/Timeout/');console.log('PASS: limit oczekiwania nie blokuje projektu na zawsze');await timeout.close();
+  await tt.waitForSelector('#rj-portal-arrival');await tt.waitForTimeout(13000);
+  assert.equal(await tt.locator('#rj-portal-arrival.is-playing').count(),0,'wolny lub zawieszony zasób nie udaje załadowania strony');
+  assert.match(await tt.locator('.rj-arrival-caption').textContent(),/trwa dłużej/);
+  await tt.locator('.rj-arrival-skip').click();await tt.locator('#rj-portal-arrival').waitFor({state:'detached',timeout:5000});
+  assert.equal(await tt.locator('#destination').textContent(),'/Timeout/');console.log('PASS: bardzo długie ładowanie czeka, pominięcie umożliwia wejście do projektu');await timeout.close();
 
   const paused=await browser.newContext();await configure(paused,[repo('Test')]);const ph=await homepage(paused);
   await paused.addInitScript(()=>{if(location.pathname==='/Test/'){let state='hidden';Object.defineProperty(document,'visibilityState',{get:()=>state,configurable:true});window.__visible=()=>{state='visible';document.dispatchEvent(new Event('visibilitychange'));};}});
