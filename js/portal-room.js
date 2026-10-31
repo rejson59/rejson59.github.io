@@ -18,20 +18,27 @@
   var previous = null;
   var KEY = "rj_portal_arrival_v1";
   var FLIGHT_MS = 4200;
-  var cosmos = document.getElementById("cosmos-art"), parallaxFrame = 0, parallaxX = 0, parallaxY = 0;
+  var cosmos = document.getElementById("cosmos-art"), planes = document.querySelectorAll(".depth-plane"), parallaxFrame = 0, parallaxX = 0, parallaxY = 0;
   function resetCosmos() {
     if (parallaxFrame) cancelAnimationFrame(parallaxFrame);
     parallaxFrame = 0; parallaxX = 0; parallaxY = 0;
     if (cosmos) cosmos.style.transform = "translate3d(0,0,0)";
+    planes.forEach(function (plane) { plane.style.transform = "translate3d(0,0,0)"; });
   }
-  // Tylko jeden zapis transformu na klatkę, bez pomiaru czasu ani layoutu.
+  // Maksymalnie jeden zapis na plan na klatkę, bez pomiaru czasu ani layoutu.
   window.addEventListener("pointermove", function (event) {
     if (!cosmos || !motionEnabled || travelling || document.visibilityState === "hidden" || event.pointerType !== "mouse") return;
     parallaxX = Math.max(-12, Math.min(12, (event.clientX / Math.max(1, window.innerWidth) - .5) * -24));
     parallaxY = Math.max(-8, Math.min(8, (event.clientY / Math.max(1, window.innerHeight) - .5) * -16));
     if (!parallaxFrame) parallaxFrame = requestAnimationFrame(function () {
       parallaxFrame = 0;
-      if (motionEnabled && !travelling && document.visibilityState !== "hidden") cosmos.style.transform = "translate3d(" + parallaxX.toFixed(1) + "px," + parallaxY.toFixed(1) + "px,0)";
+      if (motionEnabled && !travelling && document.visibilityState !== "hidden") {
+        cosmos.style.transform = "translate3d(" + parallaxX.toFixed(1) + "px," + parallaxY.toFixed(1) + "px,0)";
+        planes.forEach(function (plane, index) {
+          var depth = (index + 1) * 1.5;
+          plane.style.transform = "translate3d(" + (parallaxX * depth).toFixed(1) + "px," + (parallaxY * depth).toFixed(1) + "px,0)";
+        });
+      }
     });
   });
   window.addEventListener("pointerleave", resetCosmos);
