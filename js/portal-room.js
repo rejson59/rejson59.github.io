@@ -123,6 +123,9 @@
     }
     flight.classList.add("is-active");
     document.body.classList.add("is-travelling");
+    // Pigułka ma najwyższą warstwę: na czas lotu nie może zasłaniać tunelu.
+    var feedback = document.getElementById("rejson-liquid-widget-root");
+    if (feedback) feedback.style.setProperty("visibility", "hidden", "important");
     status.textContent = "Wyruszamy do projektu…";
     // Liczymy wyłącznie widoczny czas: przełączenie karty nie skróci animacji.
     var elapsed = 0;
@@ -146,6 +149,8 @@
     if (raf) cancelAnimationFrame(raf);
     travelling = false; flight.classList.remove("is-active");
     document.body.classList.remove("is-travelling");
+    var feedback = document.getElementById("rejson-liquid-widget-root");
+    if (feedback) feedback.style.setProperty("visibility", "visible", "important");
     var mouth = document.getElementById("flight-mouth");
     if (mouth) { var copy = mouth.querySelector(".flight-source"); if (copy) copy.remove(); mouth.classList.remove("has-source"); }
     if (target) { door.disabled = false; button.disabled = false; status.textContent = ""; }

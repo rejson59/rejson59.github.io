@@ -101,8 +101,11 @@ self.addEventListener("fetch", function (event) {
               if (!/<script\b[^>]*\bsrc\s*=\s*(["'])[^"']*\/js\/rejson-account\.js(?:\?[^"']*)?\1/i.test(scriptHtml)) {
                 inject += '\n<script src="/js/rejson-account.js?v=1" defer></script>';
               }
+              if (!/<script\b[^>]*\bsrc\s*=\s*(["'])[^"']*\/js\/media-capture\.js(?:\?[^"']*)?\1/i.test(scriptHtml)) {
+                inject += '\n<script src="/js/media-capture.js?v=2" defer></script>';
+              }
               if (!hasWidgetScript) {
-                inject += '\n<script src="/rejson-widgets/widget.js?v=8" data-project="' + safeSlug + '" defer></script>';
+                inject += '\n<script src="/rejson-widgets/widget.js?v=9" data-project="' + safeSlug + '" defer></script>';
               }
               // Efekt wyjścia tylko na dokumentach projektów pod /projekt/.
               // Skrypt działa wyłącznie, jeśli ta karta ma jednorazowy znacznik
@@ -112,7 +115,8 @@ self.addEventListener("fetch", function (event) {
                 ? '<link rel="stylesheet" href="/css/portal.css?v=11" data-rj-portal-style><script src="/js/portal-arrival.js?v=10"></script>' : "";
               // Zachowujemy politykę CSP projektu, ale wstawiamy wyjście przed
               // blokującymi skryptami, o ile jest już za wszystkimi meta CSP.
-              var upgradedHtml = html.replace(/(<script\b[^>]*\bsrc\s*=\s*["'](?:https:\/\/rejson59\.github\.io)?\/rejson-widgets\/widget\.js)(?:\?v=[0-7])?(["'])/gi, "$1?v=8$2");
+              var upgradedHtml = html.replace(/(<script\b[^>]*\bsrc\s*=\s*["'](?:https:\/\/rejson59\.github\.io)?\/rejson-widgets\/widget\.js)(?:\?v=[0-8])?(["'])/gi, "$1?v=9$2");
+              upgradedHtml = upgradedHtml.replace(/(<script\b[^>]*\bsrc\s*=\s*["'](?:https:\/\/rejson59\.github\.io)?\/js\/media-capture\.js)(?:\?v=[0-1])?(["'])/gi, "$1?v=2$2");
               var updatedHtml = upgradedHtml;
               if (portalHead) {
                 var headStart = /<head\b[^>]*>/i.exec(updatedHtml);
