@@ -78,17 +78,23 @@ async function main() {
     listeners.fetch(event); assert.ok(result); return result;
   }
   let res = await response(), html = await res.text();
-  assert.equal((html.match(/src="\/rejson-widgets\/widget\.js\?v=11"/g)||[]).length,1);
+  assert.equal((html.match(/src="\/rejson-widgets\/widget\.js\?v=12"/g)||[]).length,1);
   assert.equal((html.match(/src="\/js\/media-capture\.js\?v=2"/g)||[]).length,1);
   assert.equal((html.match(/src="\/js\/mobile-ads\.js\?v=4"/g)||[]).length,1);
   assert.equal(res.headers.get('content-security-policy'),"default-src 'self'");
   pageHtml='<html><head></head><body><script src="/js/media-capture.js?v=1"></script><script src="/rejson-widgets/widget.js?v=8"></script></body></html>';
   res=await response(); html=await res.text();
-  assert.equal((html.match(/src="\/rejson-widgets\/widget\.js\?v=11"/g)||[]).length,1);
+  assert.equal((html.match(/src="\/rejson-widgets\/widget\.js\?v=12"/g)||[]).length,1);
   assert.equal((html.match(/src="\/js\/media-capture\.js\?v=2"/g)||[]).length,1);
   pageHtml='<html><head></head><body><script src="/rejson-widgets/widget.js?v=10"></script></body></html>';
   res=await response(); html=await res.text();
-  assert.equal((html.match(/src="\/rejson-widgets\/widget\.js\?v=11"/g)||[]).length,1,'aktualizuje pigułkę v10');
+  assert.equal((html.match(/src="\/rejson-widgets\/widget\.js\?v=12"/g)||[]).length,1,'aktualizuje pigułkę v10');
+  pageHtml='<html><head></head><body><script src="/rejson-widgets/widget.js?v=11"></script></body></html>';
+  res=await response(); html=await res.text();
+  assert.equal((html.match(/src="\/rejson-widgets\/widget\.js\?v=12"/g)||[]).length,1,'aktualizuje v11 bez duplikatu');
+  pageHtml='<html><head></head><body><script src="/rejson-widgets/widget.js?v=12"></script></body></html>';
+  res=await response(); html=await res.text();
+  assert.equal((html.match(/src="\/rejson-widgets\/widget\.js\?v=12"/g)||[]).length,1,'nie duplikuje bieżącej wersji');
   pageHtml='<html><head><link rel="stylesheet" href="/css/mobile-ads.css?v=1"></head><body><script src="/js/mobile-ads.js?v=1" defer></script></body></html>';
   res=await response(); html=await res.text();
   assert.equal((html.match(/src="\/js\/mobile-ads\.js\?v=4"/g)||[]).length,1,'aktualizuje skrypt bez duplikatu');
