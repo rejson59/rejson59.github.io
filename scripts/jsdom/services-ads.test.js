@@ -16,7 +16,7 @@ for(const file of ['index.html','partnerstwo.html','uslugi.html','rejchat.html',
  const w=dom.window;w.sessionStorage.setItem('rj_side_ads_dismissed_v1','1');assert.ok(w.document.querySelector('script[src^="/js/side-ads.js"]'),file);assert.ok(w.document.querySelector('link[href^="/css/side-ads.css"]'),file);
  w.eval(read('js/side-ads.js'));w.eval(read('js/side-ads.js'));
  assert.equal(w.document.querySelectorAll('.rj-side-ads').length,1,file);
- assert.equal(w.document.querySelectorAll('.rj-side-ad').length,3,file);
+ assert.equal(w.document.querySelectorAll('.rj-side-ad').length,3,file);assert.equal(w.document.querySelectorAll('.rj-side-ad-icon svg[aria-hidden="true"]').length,3,file + ': dekoracyjne ikony');
  assert.equal(w.document.querySelectorAll('.rj-side-ad--offer[href="/partnerstwo#propozycja"]').length,1,file);
  assert.match(w.document.querySelector('.rj-side-ads-title').textContent,/mini reklamy i promocje/);assert.ok(w.document.querySelector('.rj-side-ad[href="/rejchat"]'));assert.ok(w.document.querySelector('.rj-side-ad[href="/rejfile"]'));
  assert.equal(w.document.querySelectorAll('.rj-side-ads button, .rj-side-ads-close').length,0,file + ': bez przycisku zamykania');
