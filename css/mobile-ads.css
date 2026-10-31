@@ -1,19 +1,21 @@
-/* Dwa stałe, niewyłączalne banery na dole ekranu; zawartość ma własną przestrzeń. */
+/* Jedna niewielka ramka przy dolnej, prawej krawędzi. */
 #rj-mobile-ads-check { position:fixed !important; z-index:2147482999 !important; visibility:hidden !important; width:0 !important; height:0 !important; pointer-events:none !important; }
 #rj-mobile-ads,.rj-mobile-ads-spacer { display:none; }
 @media (max-width:1199px) {
-  html { scroll-padding-bottom:calc(82px + env(safe-area-inset-bottom, 0px)); }
-  html.rj-mobile-ads-active { --rj-mobile-ads-height:64px; }
-  .rj-mobile-ads-spacer { display:block; height:calc(var(--rj-mobile-ads-height, 64px) + env(safe-area-inset-bottom, 0px)); clear:both; }
-  #rj-mobile-ads { position:fixed; box-sizing:border-box; inset:auto 0 0; z-index:99980; display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:6px; height:calc(var(--rj-mobile-ads-height, 64px) + env(safe-area-inset-bottom, 0px)); padding:6px max(8px,env(safe-area-inset-right, 0px)) calc(6px + env(safe-area-inset-bottom, 0px)) max(8px,env(safe-area-inset-left, 0px)); border-top:1px solid #93c9da55; background:#101a27; box-shadow:0 -8px 24px #0004; color:#effaff; font:400 12px/1.2 system-ui,sans-serif; }
-  #rj-mobile-ads .rj-mobile-ad { box-sizing:border-box; display:flex; align-items:center; gap:8px; min-width:0; min-height:0; padding:5px 8px; border:1px solid #a4d4d326; border-radius:10px; color:#f2fcff; text-decoration:none; }
-  #rj-mobile-ads .rj-mobile-ad--house { background:linear-gradient(115deg,#264b4b,#192d38); }
-  #rj-mobile-ads .rj-mobile-ad--offer { background:linear-gradient(115deg,#343257,#252b41); border-color:#afa5fa55; }
-  #rj-mobile-ads .rj-mobile-ad:focus-visible { outline:2px solid #a9eedb; outline-offset:-3px; }
-  #rj-mobile-ads .rj-mobile-ad-icon { display:grid; place-items:center; flex:none; width:29px; height:29px; border-radius:9px; background:#ffffff19; color:#bff8e6; font-size:17px; }
-  #rj-mobile-ads .rj-mobile-ad-text { display:flex; flex-direction:column; gap:3px; min-width:0; }
-  #rj-mobile-ads small { color:#b8d6dd; font:800 8px/1.1 system-ui,sans-serif; letter-spacing:.08em; }
-  #rj-mobile-ads strong { color:#f4fcff; font:700 11px/1.15 system-ui,sans-serif; overflow-wrap:anywhere; }
-  /* Zachęta do konta i pigułka nie zasłaniają banerów. */
-  html.rj-mobile-ads-active #join-nudge { bottom:calc(84px + var(--rj-mobile-ads-height, 64px) + env(safe-area-inset-bottom, 0px)) !important; }
+  html { scroll-padding-bottom:calc(72px + env(safe-area-inset-bottom, 0px)); }
+  html.rj-mobile-ads-active { --rj-mobile-ads-height:56px; }
+  .rj-mobile-ads-spacer { display:block; height:calc(var(--rj-mobile-ads-height, 56px) + env(safe-area-inset-bottom, 0px)); clear:both; }
+  #rj-mobile-ads { position:fixed; box-sizing:border-box; right:max(8px,env(safe-area-inset-right, 0px)); bottom:calc(8px + env(safe-area-inset-bottom, 0px)); z-index:99980; display:flex; align-items:center; width:min(390px,calc(100% - max(8px,env(safe-area-inset-left, 0px)) - max(8px,env(safe-area-inset-right, 0px)))); height:48px; padding:1px 2px 1px 10px; gap:4px; overflow:hidden; border:1px solid #9eb8c23d; border-radius:13px; background:#172431f5; box-shadow:0 5px 18px #0003; color:#effaff; font:400 12px/1.2 system-ui,sans-serif; direction:ltr; }
+  #rj-mobile-ads .rj-mobile-ads-label { flex:0 0 100px; color:#b8d2d6; font:700 10px/1.25 system-ui,sans-serif; }
+  #rj-mobile-ads .rj-mobile-ads-label small { display:block; color:#8baab1; font:400 9px/1.2 system-ui,sans-serif; }
+  #rj-mobile-ads .rj-mobile-ads-items { min-width:0; flex:1 1 auto; display:flex; overflow-x:auto; overscroll-behavior-x:contain; scroll-snap-type:x mandatory; scroll-behavior:smooth; scrollbar-width:none; }
+  #rj-mobile-ads .rj-mobile-ads-items::-webkit-scrollbar { display:none; }
+  #rj-mobile-ads .rj-mobile-ad { box-sizing:border-box; flex:0 0 100%; min-width:0; min-height:44px; display:flex; align-items:center; gap:6px; padding:0 5px; scroll-snap-align:start; color:#e7fbf3; font:700 11px/1.2 system-ui,sans-serif; text-decoration:none; }
+  #rj-mobile-ads .rj-mobile-ad--offer { color:#e5ddff; }
+  #rj-mobile-ads .rj-mobile-ad span { min-width:0; overflow-wrap:anywhere; }
+  #rj-mobile-ads .rj-mobile-ad:focus-visible, #rj-mobile-ads .rj-mobile-ads-pause:focus-visible { outline:2px solid #a9eedb; outline-offset:-3px; }
+  #rj-mobile-ads .rj-mobile-ads-pause { flex:0 0 44px; height:44px; border:0; border-radius:10px; background:transparent; color:#bdd2d6; font:700 14px/1 system-ui,sans-serif; cursor:pointer; }
+  #rj-mobile-ads .rj-mobile-ads-pause:hover { background:#ffffff13; }
+  html.rj-mobile-ads-active #join-nudge { bottom:calc(84px + var(--rj-mobile-ads-height, 56px) + env(safe-area-inset-bottom, 0px)) !important; }
 }
+@media (prefers-reduced-motion:reduce) { #rj-mobile-ads .rj-mobile-ads-items { scroll-behavior:auto; } }
