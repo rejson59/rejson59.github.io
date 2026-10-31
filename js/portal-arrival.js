@@ -2,7 +2,7 @@
    Bez znacznika z tej samej karty nie zmienia strony projektu. */
 (function () {
   "use strict";
-  var KEY = "rj_portal_arrival_v1";
+  var KEY = "rj_rocket_trip_v1";
   var marker;
   try {
     marker = JSON.parse(sessionStorage.getItem(KEY) || "null");
@@ -20,7 +20,7 @@
   if (typeof marker.path !== "string" || typeof marker.at !== "number" ||
       Date.now() - marker.at < 0 || Date.now() - marker.at > 60000 ||
       !sameDestination(marker.path, location.pathname)) return;
-  // Strona portalu przekazuje informację, czy animacja jest włączona.
+  // Podróż przekazuje informację, czy animacja jest włączona.
   var motionOverride = marker.motionOverride === true;
   if (!motionOverride && window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
   if (window.top !== window.self) return;
@@ -34,13 +34,13 @@
   if (motionOverride) root.setAttribute("data-motion-override", "");
   root.setAttribute("role", "status");
   root.setAttribute("aria-live", "polite");
-  root.innerHTML = '<div class="rj-arrival-vignette rj-arrival-wide" aria-hidden="true"></div><div class="rj-arrival-vignette rj-arrival-medium" aria-hidden="true"></div><div class="rj-arrival-vignette rj-arrival-small" aria-hidden="true"></div><div class="rj-arrival-ring" aria-hidden="true"></div><div class="rj-arrival-echo rj-arrival-echo--one" aria-hidden="true"></div><div class="rj-arrival-echo rj-arrival-echo--two" aria-hidden="true"></div><div class="rj-arrival-rays" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><div class="rj-arrival-veil" aria-hidden="true"></div><div class="rj-wait-flight" aria-hidden="true"><div class="rj-wait-rays"></div><i></i><i></i><i></i><i></i><i></i><i></i><i></i><span></span></div><div class="rj-portal-arrival-caption">W podróży · projekt się ładuje…</div>';
+  root.innerHTML = '<div class="rj-arrival-stars" aria-hidden="true"></div><div class="rj-arrival-map" aria-hidden="true"><svg class="rj-arrival-route" viewBox="0 0 1000 400" preserveAspectRatio="none"><path d="M145 295 C380 310 490 90 855 110"/></svg><div class="rj-arrival-home"></div><div class="rj-arrival-planet"></div><img class="rj-arrival-rocket" src="/assets/travel-rocket.svg" alt=""></div><div class="rj-arrival-caption">Otwieramy projekt…</div>';
   document.documentElement.appendChild(root);
   var started = false;
   var removed = false;
   var timer = 0;
   var loadTimer = 0;
-  var remaining = 4000;
+  var remaining = 1500;
   var visibleSince = 0;
   function remove() {
     if (removed) return;

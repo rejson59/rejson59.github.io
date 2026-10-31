@@ -37,17 +37,15 @@ Kod, który zmienia sesję w tej samej karcie, powinien dodatkowo wysłać `wind
 
 Wstrzykiwany skrypt jest `defer`; projekt uruchamiany wcześniej może nasłuchiwać `rj:account-ready` lub sam dołączyć skrypt przed swoim kodem. Integracja sesji nie dodaje automatycznie zapisu danych do aplikacji. Szczególnie ProStudent ma dane lokalne i ich synchronizacja wymaga osobnego projektu i zgody użytkownika.
 
-## Animacja wyjścia z portalu
+## Podróż rakietą i oczekiwanie na projekt
 
-Przy przejściu do projektu pod tym samym originem globalny worker wstawia skrypt i CSS wyjścia. Jest wstawiany po polityce CSP typu meta, ale przed skryptami projektu, więc wolny skrypt w `<head>` nie powinien już opóźniać nakładki. Obsługiwane są także przekierowania z katalogu głównego projektu na jego własną podstronę. Znacznik jest jednorazowy, ma krótki termin ważności i nie zawiera tokenu konta.
+Kliknięcie projektu otwiera nową kartę z automatyczną podróżą. Dla tego samego originu `sessionStorage` otrzymuje jednorazowy, krótko ważny znacznik `rj_rocket_trip_v1`, który nie zawiera tokenu konta. Globalny worker może wstawić do projektu CSS i skrypt pokazujące rakietę podczas ładowania, po meta CSP i przed blokującymi skryptami. Przy ograniczeniu ruchu w ustawieniach systemu projekt otwiera się od razu, bez animacji.
 
-Nie można wstrzyknąć efektu do innego originu ani ominąć CSP. Projektowy service worker o węższym zakresie może przejąć nawigację zamiast globalnego workera, dlatego taki projekt musi dodać skrypt i styl wyjścia do własnego dokumentu lub workera. Nie zastępuj jego service workera, bo może obsługiwać offline/PWA. Dla tych przypadków potrzebna jest zmiana w danym repozytorium; sama strona główna nie gwarantuje efektu wszędzie.
-
-W dokumencie projektu o tym samym originie można dodać w `<head>` po ewentualnej polityce CSP i przed skryptami blokującymi:
+Efekt nie jest gwarantowany przy innym originie, restrykcyjnej CSP ani w projekcie z własnym service workerem o węższym zakresie. Nie zastępuj jego workera — może obsługiwać offline/PWA. W takich projektach na wspólnej domenie można dodać w `<head>`, po meta CSP i przed blokującymi skryptami:
 
 ```html
-<link rel="stylesheet" href="/css/portal.css?v=12" data-rj-portal-style>
-<script src="/js/portal-arrival.js?v=11"></script>
+<link rel="stylesheet" href="/css/portal.css?v=13" data-rj-portal-style>
+<script src="/js/portal-arrival.js?v=12"></script>
 ```
 
-Skrypt bez jednorazowego znacznika z portalu niczego nie wyświetli. Nie należy dodawać tych odwołań na obcej domenie i obiecywać działania — tam znacznik `sessionStorage` nie jest dostępny.
+Nazwy ścieżek pozostają dla zgodności, lecz animacja przedstawia rakietę, nie portal. Bez poprawnego znacznika skrypt nic nie wyświetla. Na obcej domenie nie jest dostępny znacznik `sessionStorage` strony głównej; projekt otworzy się bez zasłony oczekiwania.

@@ -74,8 +74,8 @@ const server = http.createServer((req, res) => {
         const cards = [...document.querySelectorAll('.origins .project-card')];
         const preview = cards.map(c => {
           const el = c.querySelector('.card-preview'), r = el.getBoundingClientRect();
-          return {width:r.width,height:r.height,iframe:!!el.querySelector('iframe[data-card-preview]'),portal:el.getAttribute('data-portal') !== null,
-            tilt:c.hasAttribute('data-tilt'), dates:c.querySelector('.card-meta')?.textContent || '', button:!!c.querySelector('.btn-portal[data-portal][target="_blank"]')};
+          return {width:r.width,height:r.height,iframe:!!el.querySelector('iframe[data-card-preview]'),portal:el.getAttribute('data-journey') !== null,
+            tilt:c.hasAttribute('data-tilt'), dates:c.querySelector('.card-meta')?.textContent || '', button:!!c.querySelector('.btn-journey[data-journey][target="_blank"]')};
         });
         const header = [...document.querySelectorAll('.site-header .brand,.site-header .mobile-account,.site-header .rj-bell,.site-header .metric-badge,.site-header .metric-more-toggle,.site-header .hamburger-btn')].filter(el => el.getClientRects().length).map(el => {const r=el.getBoundingClientRect();return {name:el.className, left:r.left,right:r.right,top:r.top,bottom:r.bottom};});
         return {preview,scroll:document.documentElement.scrollWidth,header};
@@ -126,7 +126,7 @@ const server = http.createServer((req, res) => {
     await configure(logged);
     await logged.addInitScript(() => localStorage.setItem('rejson_community_session_v1', JSON.stringify({username:'Tester',token:'0123456789abcdef0123456789abcdef'})));
     const lp = await logged.newPage();
-    for (const url of ['/index.html','/rejchat.html','/widzety.html','/partnerstwo.html','/tablica-pomyslow.html','/portal/index.html?projekt=RejStream']) {
+    for (const url of ['/index.html','/rejchat.html','/widzety.html','/partnerstwo.html','/tablica-pomyslow.html']) {
       await lp.goto(origin + url,{waitUntil:'domcontentloaded'});
       await lp.locator('.rj-header-profile').waitFor({state:'visible'});
       assert.equal(await lp.locator('header a[href$="logowanie"]').filter({visible:true}).count(),0,`${url}: konto nie jest zdublowane`);
@@ -141,6 +141,6 @@ const server = http.createServer((req, res) => {
     assert.equal(await np.locator('#site-unique-badge').isVisible(),true,'fallback bez JS');
     assert((await np.evaluate(() => document.documentElement.scrollWidth)) <= 320,'fallback bez przewijania poziomego');
     await nojs.close();
-    console.log('PASS: liczniki, klawiatura, sesja, telefon/tablet, podglądy, portale, daty, 3D i animacja premium');
+    console.log('PASS: liczniki, klawiatura, sesja, telefon/tablet, podglądy, podróże, daty, 3D i animacja premium');
   } finally { await browser.close(); server.close(); }
 })().catch(e => { console.error(e); server.close(); process.exitCode=1; });

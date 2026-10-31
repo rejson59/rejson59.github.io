@@ -5,7 +5,7 @@ const path = require('node:path');
 const { JSDOM } = require('jsdom');
 const root = path.resolve(__dirname, '../..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
-const pages = ['index.html','rejchat.html','profil.html','logowanie.html','partnerstwo.html','rejfile.html','tablica-pomyslow.html','widzety.html','admin.html','404.html','portal/index.html','rejson-widgets/index.html'];
+const pages = ['index.html','rejchat.html','profil.html','logowanie.html','partnerstwo.html','rejfile.html','tablica-pomyslow.html','widzety.html','admin.html','404.html','rejson-widgets/index.html'];
 for (const page of pages) {
   const document = new JSDOM(read(page)).window.document;
   assert.ok(document.querySelector('link[href^="/css/liquid.css?v="]'), `${page}: wspólny arkusz`);

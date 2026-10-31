@@ -1,143 +1,21 @@
-/* Przyciski portalu i efekt przejścia — bez ingerowania w 3D kart. */
-.btn.btn-portal,
-[data-theme="light"] .btn.btn-portal {
-  position: relative; isolation: isolate; overflow: hidden;
-  min-height: 46px; gap: 10px; border: 1px solid rgba(157,182,255,.5);
-  border-radius: 14px; color: #f7fbff; background: linear-gradient(120deg,#151a42,#292061 58%,#164a67);
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.15), 0 6px 25px rgba(80,90,220,.24);
-  transition: transform .3s cubic-bezier(.22,.8,.25,1), box-shadow .3s, border-color .3s;
-  will-change: auto;
-}
-.btn.btn-portal::before {
-  content: ""; flex: 0 0 23px; width: 23px; height: 23px; border-radius: 50%;
-  background: radial-gradient(circle at 50% 50%, #fff 0 4%, #c4faff 12%, #7e7af9 28%, #17103d 49%, transparent 51%), conic-gradient(from 30deg,#79f8ff,#ad8dff,#fff,#79f8ff,#8d69f6,#79f8ff);
-  box-shadow: 0 0 0 1px rgba(208,248,255,.72), 0 0 12px #76cfff, inset 0 0 4px #fff;
-}
-.btn.btn-portal:hover::before, .btn.btn-portal:focus-visible::before { animation: rj-portal-spin 4s linear infinite; }
-.btn.btn-portal::after { content:""; position:absolute; inset:-100% -60%; z-index:-1; border:0; border-radius:0; opacity:.36; box-shadow:none; background:linear-gradient(110deg,transparent 44%,rgba(180,225,255,.35) 50%,transparent 56%); transform:translateX(-65%); }
-.btn.btn-portal:hover::after,.btn.btn-portal:focus-visible::after { animation:rj-portal-button-sheen 3s ease-in-out infinite; }
-.btn.btn-portal:hover,.btn.btn-portal:focus-visible { transform:translateY(-2px); border-color:#c9efff; color:#fff; background:linear-gradient(120deg,#1e255c,#3b2c82 58%,#195d79); box-shadow:0 10px 30px rgba(112,117,255,.42),0 0 16px rgba(99,224,255,.24); }
-.btn.btn-portal:active { transform:scale(.98); }
-.btn.btn-portal .icon { width:14px; height:14px; opacity:.8; }
-@keyframes rj-portal-spin { to { transform: rotate(360deg); } }
-@keyframes rj-portal-button-sheen { 0%,20%{transform:translateX(-65%)} 55%,100%{transform:translateX(65%)} }
-
-/* Cały ekran jest niezależną warstwą, więc nie zmieniamy transformów kart. */
-#rj-portal-flight,#rj-portal-arrival { position:fixed; inset:0; z-index:2147483646; overflow:hidden; pointer-events:none; background:#050517; color:white; }
-#rj-portal-flight { display:grid; place-items:center; animation:rj-flight-backdrop 1.35s ease both; }
-.rj-portal-stars { position:absolute; inset:-40%; background-image:radial-gradient(1px 1px at 12% 23%,#fff 96%,transparent),radial-gradient(2px 2px at 70% 30%,#b8eaff 96%,transparent),radial-gradient(1px 1px at 42% 68%,#fff 96%,transparent),radial-gradient(2px 2px at 80% 74%,#bda9ff 96%,transparent); background-size:200px 180px,280px 250px,240px 200px,300px 260px; opacity:.7; animation:rj-star-rush 1.35s ease-in both; }
-.rj-portal-vortex { position:relative; width:min(58vw,440px); aspect-ratio:1; border-radius:50%; background:radial-gradient(circle, #f5ffff 0%,#bafaff 3%,#7488ff 11%,#382e8c 22%,#100d31 39%,#07091f 50%, transparent 64%); box-shadow:0 0 55px 14px rgba(97,126,255,.38),0 0 120px 35px rgba(86,90,240,.16); animation:rj-vortex-in 1.35s cubic-bezier(.45,0,.72,.4) both; }
-.rj-portal-vortex::before,.rj-portal-vortex::after { content:""; position:absolute; inset:8%; border-radius:50%; border:4px solid transparent; border-top-color:#d6fcff; border-right-color:#8678ff; border-bottom-color:#68dfff; box-shadow:0 0 18px #6ba9ff,inset 0 0 18px #8c75ff; animation:rj-portal-spin 1.2s linear infinite; }
-.rj-portal-vortex::after { inset:18%; border-width:2px; border-top-color:#bb9dff; border-left-color:#c7faff; border-right-color:transparent; animation-direction:reverse; animation-duration:.85s; }
-.rj-portal-caption { position:absolute; bottom:12%; left:20px; right:20px; text-align:center; font:600 13px/1.5 system-ui,sans-serif; letter-spacing:.12em; text-transform:uppercase; color:#d2dfff; animation:rj-portal-caption 1.35s ease both; }
-@keyframes rj-flight-backdrop { 0%{opacity:0} 15%{opacity:1} 100%{opacity:1} }
-@keyframes rj-vortex-in { 0%{transform:scale(.08);opacity:.3} 35%{transform:scale(.72);opacity:1} 76%{transform:scale(1.6);opacity:1} 100%{transform:scale(8);opacity:1} }
-@keyframes rj-star-rush { 0%{transform:scale(.5);opacity:0} 30%{opacity:.8} 100%{transform:scale(3.2);opacity:0} }
-@keyframes rj-portal-caption { 0%{opacity:0;transform:translateY(8px)} 25%,65%{opacity:1;transform:none} 90%,100%{opacity:0} }
-/* Trzy nieruchome, miękkie winiety odsłaniają coraz większy obszar.
-   Zmieniamy tylko opacity gotowych warstw i transform obręczy: bez
-   animowania gradientów, maski ani układu strony projektu. */
-#rj-portal-arrival { display:grid; place-items:center; background:#010307; }
-#rj-portal-arrival .rj-arrival-vignette,
-#rj-portal-arrival .rj-arrival-veil { position:absolute; inset:0; pointer-events:none; }
-#rj-portal-arrival .rj-arrival-wide { background:radial-gradient(ellipse at center, transparent 0%, transparent 46%, #010307 95%); }
-#rj-portal-arrival .rj-arrival-medium { background:radial-gradient(ellipse at center, transparent 0%, transparent 19%, #010307 57%); }
-#rj-portal-arrival .rj-arrival-small { background:radial-gradient(ellipse at center, transparent 0%, transparent 5%, #010307 29%); }
-#rj-portal-arrival .rj-arrival-veil { background:#010307; }
-#rj-portal-arrival .rj-arrival-ring { position:absolute; left:50%; top:50%; width:clamp(150px,28vmin,280px); aspect-ratio:1; border:1px solid #78e1d8; border-radius:50%; opacity:0; pointer-events:none; }
-#rj-portal-arrival .rj-arrival-ring::before { content:""; position:absolute; inset:7%; border:1px solid #a0bdf2; border-radius:50%; opacity:.8; }
-#rj-portal-arrival .rj-arrival-ring::after { content:""; position:absolute; inset:-5%; border:2px solid transparent; border-left-color:#59bcb5; border-right-color:#728fd0; border-radius:50%; transform:rotate(-32deg); opacity:.7; }
-/* Echa obręczy i kilka krótkich smug tworzą wrażenie, że ostatnie
-   fragmenty tunelu mijają widza; wszystkie są lekkimi warstwami CSS. */
-#rj-portal-arrival .rj-arrival-echo { position:absolute; left:50%; top:50%; width:clamp(130px,24vmin,240px); aspect-ratio:1; border:1px solid transparent; border-left-color:#71d7ce; border-right-color:#8fa7e5; border-radius:50%; opacity:0; pointer-events:none; }
-#rj-portal-arrival .rj-arrival-echo::before { content:""; position:absolute; inset:5%; border:1px solid transparent; border-top-color:#89cce2; border-bottom-color:#65b9ae; border-radius:50%; }
-#rj-portal-arrival .rj-arrival-rays { position:absolute; inset:0; pointer-events:none; }
-#rj-portal-arrival .rj-arrival-rays i { position:absolute; left:50%; top:50%; display:block; width:2px; height:26px; border-radius:2px; background:linear-gradient(transparent,#80d6d3,transparent); opacity:0; }
-#rj-portal-arrival .rj-arrival-rays i:nth-child(1) { --ray-angle:12deg; }
-#rj-portal-arrival .rj-arrival-rays i:nth-child(2) { --ray-angle:48deg; }
-#rj-portal-arrival .rj-arrival-rays i:nth-child(3) { --ray-angle:96deg; }
-#rj-portal-arrival .rj-arrival-rays i:nth-child(4) { --ray-angle:137deg; }
-#rj-portal-arrival .rj-arrival-rays i:nth-child(5) { --ray-angle:190deg; }
-#rj-portal-arrival .rj-arrival-rays i:nth-child(6) { --ray-angle:228deg; }
-#rj-portal-arrival .rj-arrival-rays i:nth-child(7) { --ray-angle:278deg; }
-#rj-portal-arrival .rj-arrival-rays i:nth-child(8) { --ray-angle:321deg; }
-/* !important jest celowe: niektóre projekty wyłączają globalnie animation
-   przy reduced motion. Wpływ ograniczamy wyłącznie do nakładki portalu. */
-#rj-portal-arrival.is-playing { background:transparent; animation:rj-arrival-finished 2.8s linear both !important; }
-#rj-portal-arrival.is-playing .rj-arrival-veil { animation:rj-veil-reveal 2.8s ease-out both !important; }
-#rj-portal-arrival.is-playing .rj-arrival-small { animation:rj-small-reveal 2.8s ease-in-out both !important; }
-#rj-portal-arrival.is-playing .rj-arrival-medium { animation:rj-medium-reveal 2.8s ease-in-out both !important; }
-#rj-portal-arrival.is-playing .rj-arrival-wide { animation:rj-wide-reveal 2.8s ease-in-out both !important; }
-#rj-portal-arrival.is-playing .rj-arrival-ring { animation:rj-arrival-ring 2.8s ease-out both !important; }
-#rj-portal-arrival.is-playing .rj-arrival-echo--one { animation:rj-echo-one 2.8s ease-out both !important; }
-#rj-portal-arrival.is-playing .rj-arrival-echo--two { animation:rj-echo-two 2.8s ease-out both !important; }
-#rj-portal-arrival.is-playing .rj-arrival-rays i { animation:rj-arrival-ray 2.8s ease-out both !important; }
-#rj-portal-arrival.is-playing .rj-arrival-rays i:nth-child(even) { animation:rj-arrival-ray-late 2.8s ease-out both !important; }
-#rj-portal-arrival .rj-portal-vortex { width:min(40vw,260px); animation:rj-arrival-breathe 2.8s ease-in-out infinite alternate !important; background:radial-gradient(circle,#010307 0%,#020c10 20%,#0b2d32 43%,transparent 70%); box-shadow:none; opacity:.6; }
-#rj-portal-arrival .rj-portal-vortex::before, #rj-portal-arrival .rj-portal-vortex::after { display:block; border:1px solid #55b7ae55; box-shadow:none; animation:none; }
-#rj-portal-arrival .rj-portal-vortex::before { inset:10%; }
-#rj-portal-arrival .rj-portal-vortex::after { inset:20%; border-color:#4f80a144; }
-#rj-portal-arrival.is-playing .rj-portal-vortex { display:none; }
-.rj-portal-arrival-caption { position:absolute; bottom:14%; color:#95b6b6; font:600 13px/1.5 system-ui,sans-serif; letter-spacing:.08em; text-align:center; }
-#rj-portal-arrival.is-playing .rj-portal-arrival-caption { display:none; }
-@keyframes rj-arrival-breathe { from { transform:scale(.92); opacity:.35; } to { transform:scale(1.04); opacity:.6; } }
-@keyframes rj-arrival-ring { 0% { transform:translate(-50%,-50%) scale(.45); opacity:0; } 20% { opacity:.8; } 60% { opacity:.6; } 100% { transform:translate(-50%,-50%) scale(3.4); opacity:0; } }
-@keyframes rj-echo-one {
-  0%,10% { transform:translate(-50%,-50%) rotate(-28deg) scale(.5,.34); opacity:0; }
-  25% { opacity:.7; }
-  62% { opacity:.42; }
-  90%,100% { transform:translate(-50%,-50%) rotate(12deg) scale(4.2,2.85); opacity:0; }
-}
-@keyframes rj-echo-two {
-  0%,24% { transform:translate(-50%,-50%) rotate(30deg) scale(.45,.32); opacity:0; }
-  42% { opacity:.56; }
-  72% { opacity:.32; }
-  100% { transform:translate(-50%,-50%) rotate(-8deg) scale(3.6,2.5); opacity:0; }
-}
-@keyframes rj-arrival-ray {
-  0%,12% { transform:translate(-50%,-50%) rotate(var(--ray-angle)) translateY(-50px) scaleY(.4); opacity:0; }
-  29% { opacity:.65; }
-  60% { opacity:.35; }
-  85%,100% { transform:translate(-50%,-50%) rotate(var(--ray-angle)) translateY(-44vmax) scaleY(1.3); opacity:0; }
-}
-@keyframes rj-arrival-ray-late {
-  0%,25% { transform:translate(-50%,-50%) rotate(var(--ray-angle)) translateY(-60px) scaleY(.4); opacity:0; }
-  43% { opacity:.55; }
-  70% { opacity:.28; }
-  100% { transform:translate(-50%,-50%) rotate(var(--ray-angle)) translateY(-42vmax) scaleY(1.2); opacity:0; }
-}
-@keyframes rj-veil-reveal { 0%,5% { opacity:1; } 24%,100% { opacity:0; } }
-@keyframes rj-small-reveal { 0%,25% { opacity:1; } 58%,100% { opacity:0; } }
-@keyframes rj-medium-reveal { 0%,39% { opacity:1; } 80%,100% { opacity:0; } }
-@keyframes rj-wide-reveal { 0%,55% { opacity:1; } 100% { opacity:0; } }
-/* Nie pozwól, by wyjście minęło w tle, zanim gość zobaczy kartę. */
-#rj-portal-arrival.is-paused,
-#rj-portal-arrival.is-paused *,
-#rj-portal-arrival.is-paused *::before,
-#rj-portal-arrival.is-paused *::after { animation-play-state:paused !important; }
-/* Zdarzenie korzenia sprząta nakładkę dopiero po zakończeniu całego wyjścia. */
-@keyframes rj-arrival-finished { from,to { opacity:1; } }
-@media (prefers-reduced-motion:reduce) {
-  .btn.btn-portal::before,.btn.btn-portal::after { animation:none !important; }
-  .btn.btn-portal,.btn.btn-portal:hover { transition:none; transform:none; }
-  #rj-portal-flight,#rj-portal-arrival:not([data-motion-override]) { display:none !important; }
-}
-
-/* Ten sam tunel trwa również po otrzymaniu dokumentu, dopóki strona się ładuje. */
-#rj-portal-arrival .rj-wait-flight { position:absolute; inset:0; overflow:hidden; background:radial-gradient(ellipse at center,#010307 0%,#071724 22%,#102d3a 55%,#03090f 95%); pointer-events:none; }
-#rj-portal-arrival .rj-wait-rays { position:absolute; inset:0; background:repeating-conic-gradient(from 0deg at 50% 50%,transparent 0deg,#5de2ce22 8deg,transparent 16deg,#638cff1c 24deg); opacity:.7; }
-#rj-portal-arrival .rj-wait-flight i { position:absolute; display:block; left:50%; top:50%; width:min(80vw,80vh); aspect-ratio:1; border:2px solid #8df5ff; border-bottom-color:#8df5ff55; border-radius:50%; animation:rj-wait-rush 1.75s linear infinite !important; }
-#rj-portal-arrival .rj-wait-flight i:nth-of-type(even) { border-color:#bdb4ff99; }
-#rj-portal-arrival .rj-wait-flight i:nth-of-type(2) { animation-delay:-.25s !important; }
-#rj-portal-arrival .rj-wait-flight i:nth-of-type(3) { animation-delay:-.5s !important; }
-#rj-portal-arrival .rj-wait-flight i:nth-of-type(4) { animation-delay:-.75s !important; }
-#rj-portal-arrival .rj-wait-flight i:nth-of-type(5) { animation-delay:-1s !important; }
-#rj-portal-arrival .rj-wait-flight i:nth-of-type(6) { animation-delay:-1.25s !important; }
-#rj-portal-arrival .rj-wait-flight i:nth-of-type(7) { animation-delay:-1.5s !important; }
-#rj-portal-arrival .rj-wait-flight span { position:absolute; left:50%; top:50%; width:16vmin; aspect-ratio:1; border-radius:50%; transform:translate(-50%,-50%); background:radial-gradient(circle,#010307 25%,#03121b 60%,transparent 75%); }
-#rj-portal-arrival.is-playing .rj-wait-flight { animation:rj-wait-disappear .85s ease-out both !important; }
-@keyframes rj-wait-rush { 0% { transform:translate(-50%,-50%) scale(.16); opacity:0; } 15% { opacity:.7; } 75% { opacity:.8; } 100% { transform:translate(-50%,-50%) scale(2); opacity:0; } }
-@keyframes rj-wait-disappear { to { opacity:0; } }
-/* shorthand animacji tunelu nie może nadpisać pauzy nieaktywnej karty. */
-#rj-portal-arrival.is-paused .rj-wait-flight i { animation-play-state:paused !important; }
-#rj-portal-arrival.is-paused .rj-wait-flight { animation-play-state:paused !important; }
+/* Wspólny styl przycisku oraz zasłony kończącej podróż. Nazwa pliku pozostaje dla starszych projektów. */
+.btn.btn-journey,[data-theme="light"] .btn.btn-journey { position:relative; isolation:isolate; overflow:hidden; min-height:46px; gap:10px; border:1px solid #a9dddca6; border-radius:14px; color:#f7ffff; background:linear-gradient(120deg,#183b54,#274c69 58%,#475483); box-shadow:inset 0 1px 0 #ffffff26,0 6px 25px #648bc63d; transition:transform .3s cubic-bezier(.22,.8,.25,1),box-shadow .3s,border-color .3s; }
+.btn.btn-journey::before { content:""; flex:0 0 23px; width:23px; height:23px; background:url('/assets/travel-rocket.svg') center/contain no-repeat; transform:rotate(45deg); }
+.btn.btn-journey:hover,.btn.btn-journey:focus-visible { transform:translateY(-2px); border-color:#c5f8ed; color:#fff; box-shadow:0 10px 30px #729cd168,0 0 16px #78d9dc33; }.btn.btn-journey:active { transform:scale(.98); }.btn.btn-journey .icon { width:14px; height:14px; opacity:.8; }
+#rj-portal-arrival { position:fixed; inset:0; z-index:2147483646; overflow:hidden; pointer-events:none; color:#f6f7ff; background:radial-gradient(ellipse at 50% 44%,#253559 0%,#141e3c 38%,#0b1027 76%); }
+#rj-portal-arrival .rj-arrival-stars { position:absolute; inset:0; opacity:.55; background-image:radial-gradient(1px 1px at 10% 17%,#fff 90%,transparent),radial-gradient(1px 1px at 75% 20%,#c3daff 90%,transparent),radial-gradient(2px 2px at 33% 78%,#95d8ed 90%,transparent),radial-gradient(1px 1px at 86% 77%,#fff 90%,transparent); background-size:220px 180px,310px 260px,370px 320px,260px 210px; }
+#rj-portal-arrival .rj-arrival-map { position:absolute; left:50%; top:50%; width:min(930px,calc(100% - 48px)); height:clamp(230px,31vw,340px); transform:translate(-50%,-50%); }
+#rj-portal-arrival .rj-arrival-route { position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
+#rj-portal-arrival .rj-arrival-route path { fill:none; stroke:#99d8df; stroke-width:1.6; stroke-dasharray:4 9; opacity:.5; vector-effect:non-scaling-stroke; }
+#rj-portal-arrival .rj-arrival-home,#rj-portal-arrival .rj-arrival-planet { position:absolute; aspect-ratio:1; border-radius:50%; }
+#rj-portal-arrival .rj-arrival-home { left:9%; top:66%; width:clamp(55px,8vw,90px); background:radial-gradient(circle at 33% 27%,#c6fbeb,#65c4ba 45%,#3d6f96 100%); box-shadow:inset -12px -14px 25px #142d5370,0 0 36px #8bdadf35; }
+#rj-portal-arrival .rj-arrival-planet { left:82%; top:18%; width:clamp(65px,9vw,100px); background:radial-gradient(circle at 31% 24%,#ffe7bf,#f3a994 48%,#aa6781 100%); box-shadow:inset -13px -14px 25px #70395870,0 0 42px #ffb5a038; }
+#rj-portal-arrival .rj-arrival-planet::after { content:""; position:absolute; left:-25%; right:-25%; top:41%; height:24%; border:3px solid #f8c7b6aa; border-radius:50%; transform:rotate(-18deg); }
+#rj-portal-arrival .rj-arrival-rocket { position:absolute; left:84%; top:11%; width:clamp(54px,7vw,76px); transform:rotate(54deg); filter:drop-shadow(0 8px 12px #070b1c88); animation:rj-rocket-idle .6s ease-in-out infinite alternate !important; }
+#rj-portal-arrival .rj-arrival-caption { position:absolute; left:20px; right:20px; bottom:16%; text-align:center; color:#d4e1ed; font:600 13px/1.5 system-ui,sans-serif; letter-spacing:.08em; }
+#rj-portal-arrival.is-playing { animation:rj-arrival-finished .85s ease-out both !important; }
+#rj-portal-arrival.is-paused,#rj-portal-arrival.is-paused * { animation-play-state:paused !important; }
+@keyframes rj-arrival-finished { from { opacity:1; } to { opacity:0; } }
+@keyframes rj-rocket-idle { from { transform:rotate(54deg) translateY(0); } to { transform:rotate(54deg) translateY(3px); } }
+@media (prefers-reduced-motion:reduce) { .btn.btn-journey,.btn.btn-journey:hover { transition:none; transform:none; } #rj-portal-arrival:not([data-motion-override]) { display:none !important; } }
+@media(max-width:600px) { #rj-portal-arrival .rj-arrival-planet { left:77%; } #rj-portal-arrival .rj-arrival-rocket { left:79%; } }

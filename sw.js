@@ -63,7 +63,7 @@ self.addEventListener("fetch", function (event) {
     if (url.origin !== self.location.origin) return;
     /* Konto i strony usługowe nie są projektami: żadnych wstrzykniętych skryptów,
        widgetów ani rejestracji wejścia przez service worker. */
-    if (/^\/(?:logowanie|partnerstwo|rejfile|rejchat|spolecznosc|profil)(?:\.html)?\/?$/i.test(url.pathname) || /^\/portal(?:\/|$)/i.test(url.pathname)) return;
+    if (/^\/(?:logowanie|partnerstwo|rejfile|rejchat|spolecznosc|profil)(?:\.html)?\/?$/i.test(url.pathname) || /^\/(?:portal|podroz)(?:\/|$)/i.test(url.pathname)) return;
 
     var parts = (url.pathname || "/").split("/").filter(function (s) {
       return s && !/\.html?$/i.test(s);
@@ -109,14 +109,17 @@ self.addEventListener("fetch", function (event) {
               }
               // Efekt wyjścia tylko na dokumentach projektów pod /projekt/.
               // Skrypt działa wyłącznie, jeśli ta karta ma jednorazowy znacznik
-              // z prawdziwego wejścia przez portal. Nigdy nie dotyczy iframe.
+              // z podróży rakietą. Nigdy nie dotyczy iframe.
               var portalHead = /^\/[A-Za-z0-9._-]+\//.test(url.pathname) &&
                 /<head\b[^>]*>/i.test(html) && /<\/head\s*>/i.test(html) && !/<script\b[^>]*\bsrc\s*=\s*(["'])[^"']*portal-arrival\.js(?:\?[^"']*)?\1/i.test(scriptHtml)
-                ? '<link rel="stylesheet" href="/css/portal.css?v=12" data-rj-portal-style><script src="/js/portal-arrival.js?v=11"></script>' : "";
+                ? '<link rel="stylesheet" href="/css/portal.css?v=13" data-rj-portal-style><script src="/js/portal-arrival.js?v=12"></script>' : "";
               // Zachowujemy politykę CSP projektu, ale wstawiamy wyjście przed
               // blokującymi skryptami, o ile jest już za wszystkimi meta CSP.
               var upgradedHtml = html.replace(/(<script\b[^>]*\bsrc\s*=\s*["'](?:https:\/\/rejson59\.github\.io)?\/rejson-widgets\/widget\.js)(?:\?v=[0-8])?(["'])/gi, "$1?v=9$2");
               upgradedHtml = upgradedHtml.replace(/(<script\b[^>]*\bsrc\s*=\s*["'](?:https:\/\/rejson59\.github\.io)?\/js\/media-capture\.js)(?:\?v=[0-1])?(["'])/gi, "$1?v=2$2");
+              // Projekty z własnym bootstrapem dostają nowe wersje bez dublowania.
+              upgradedHtml = upgradedHtml.replace(/(<script\b[^>]*\bsrc\s*=\s*["'](?:https:\/\/rejson59\.github\.io)?\/js\/portal-arrival\.js)(?:\?v=[^"']*)?(["'])/gi, "$1?v=12$2");
+              upgradedHtml = upgradedHtml.replace(/(<link\b[^>]*\bhref\s*=\s*["'](?:https:\/\/rejson59\.github\.io)?\/css\/portal\.css)(?:\?v=[^"']*)?(["'])/gi, "$1?v=13$2");
               var updatedHtml = upgradedHtml;
               if (portalHead) {
                 var headStart = /<head\b[^>]*>/i.exec(updatedHtml);

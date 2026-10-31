@@ -22,7 +22,7 @@ const server = http.createServer((req,res) => {
     const context = await browser.newContext();
     await context.route('**/*', r => r.request().url().startsWith(origin + '/') ? r.continue() : r.abort());
     const page = await context.newPage();
-    const urls = ['/index.html','/rejchat.html','/widzety.html','/logowanie.html','/tablica-pomyslow.html','/admin.html','/rejfile.html','/partnerstwo.html','/portal/index.html?projekt=RejStream','/rejson-widgets/index.html','/404.html'];
+    const urls = ['/index.html','/rejchat.html','/widzety.html','/logowanie.html','/tablica-pomyslow.html','/admin.html','/rejfile.html','/partnerstwo.html','/rejson-widgets/index.html','/404.html'];
     for (const width of [320,375,760,800,1024,1200,1201,1440]) {
       await page.setViewportSize({width,height:900});
       for (const url of urls) {
