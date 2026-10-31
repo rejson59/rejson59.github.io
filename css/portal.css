@@ -1,10 +1,18 @@
-/* Wspólny styl przycisku oraz zasłony kończącej podróż. Nazwa pliku pozostaje dla starszych projektów. */
+/* Przycisk projektu i rakietowa nakładka używana na stronach projektów. */
 .btn.btn-journey,[data-theme="light"] .btn.btn-journey { position:relative; isolation:isolate; overflow:hidden; min-height:46px; gap:10px; border:1px solid #91baffaa; border-radius:14px; color:#f7ffff; background:linear-gradient(120deg,#273b61,#43538a 58%,#62538f); box-shadow:inset 0 1px 0 #ffffff26,0 6px 25px #648bc63d; transition:transform .3s cubic-bezier(.22,.8,.25,1),box-shadow .3s,border-color .3s; }
 .btn.btn-journey::before { content:""; flex:0 0 23px; width:23px; height:23px; background:url('/assets/travel-rocket.svg?v=2') center/contain no-repeat; transform:rotate(45deg); }
 .btn.btn-journey:hover,.btn.btn-journey:focus-visible { transform:translateY(-2px); border-color:#cfddff; color:#fff; box-shadow:0 10px 30px #729cd168,0 0 16px #78d9dc33; }.btn.btn-journey:active { transform:scale(.98); }.btn.btn-journey .icon { width:14px; height:14px; opacity:.8; }
-#rj-portal-arrival { position:fixed; inset:0; z-index:2147483646; overflow:hidden; pointer-events:none; color:#f6f7ff; background:radial-gradient(ellipse at 50% 48%,#1a2941 0%,#101720 44%,#0b0e13 78%); }
+#rj-arrival-css-check { position:fixed !important; z-index:2147483645 !important; visibility:hidden !important; width:0 !important; height:0 !important; pointer-events:none !important; }
+#rj-portal-arrival { position:fixed; inset:0; z-index:2147483646; overflow:hidden; pointer-events:auto; color:#f6f7ff; background:radial-gradient(ellipse at 50% 48%,#1a2941 0%,#101720 44%,#0b0e13 78%); font-family:Inter,ui-sans-serif,system-ui,sans-serif; }
+#rj-portal-arrival * { box-sizing:border-box; }
 #rj-portal-arrival .rj-arrival-stars { position:absolute; inset:0; opacity:.55; background-image:radial-gradient(1px 1px at 10% 17%,#fff 90%,transparent),radial-gradient(1px 1px at 75% 20%,#c3daff 90%,transparent),radial-gradient(2px 2px at 33% 78%,#95d8ed 90%,transparent),radial-gradient(1px 1px at 86% 77%,#fff 90%,transparent); background-size:220px 180px,310px 260px,370px 320px,260px 210px; }
-#rj-portal-arrival .rj-arrival-map { position:absolute; left:50%; top:50%; width:min(930px,calc(100% - 48px)); height:clamp(230px,31vw,340px); transform:translate(-50%,-50%); }
+#rj-portal-arrival .rj-arrival-content { position:relative; z-index:1; width:min(1040px,calc(100% - 48px)); min-height:100%; margin:auto; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:36px 0; }
+#rj-portal-arrival .rj-arrival-heading { text-align:center; max-width:min(100%,700px); }
+#rj-portal-arrival .rj-arrival-eyebrow { margin:0 0 12px; color:#9dc2ff; font:800 10px/1.4 system-ui,sans-serif; letter-spacing:.24em; }
+#rj-portal-arrival .rj-arrival-name { margin:0; color:#f6f7ff; font:700 clamp(36px,4.5vw,64px)/1.08 system-ui,sans-serif; letter-spacing:-.055em; overflow-wrap:anywhere; }
+#rj-portal-arrival .rj-arrival-name.is-long { font-size:clamp(18px,2.6vw,36px); }
+#rj-portal-arrival .rj-arrival-caption { margin:12px 0 0; color:#bfccdf; font:400 14px/1.4 system-ui,sans-serif; }
+#rj-portal-arrival .rj-arrival-map { position:relative; width:min(100%,930px); height:clamp(230px,31vw,340px); margin:15px auto 18px; overflow:hidden; overflow:clip; }
 #rj-portal-arrival .rj-arrival-route { position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
 #rj-portal-arrival .rj-arrival-route path { fill:none; stroke:#87b4ff; stroke-width:1.6; stroke-dasharray:4 9; opacity:.5; vector-effect:non-scaling-stroke; }
 #rj-portal-arrival .rj-arrival-home,#rj-portal-arrival .rj-arrival-planet { position:absolute; aspect-ratio:1; border-radius:50%; }
@@ -13,17 +21,33 @@
 #rj-portal-arrival .rj-arrival-home::before { content:""; position:absolute; left:22%; top:16%; width:31%; height:17%; border-radius:50%; background:#fff; opacity:.26; transform:rotate(-32deg); }
 #rj-portal-arrival .rj-arrival-planet::before { content:""; position:absolute; top:29%; left:34%; width:13%; height:13%; border-radius:50%; background:#fff; opacity:.23; }
 #rj-portal-arrival .rj-arrival-planet::after { content:""; position:absolute; left:-25%; right:-25%; top:41%; height:24%; border:3px solid #c3b9ff99; border-radius:50%; transform:rotate(-18deg); }
-#rj-portal-arrival .rj-arrival-rocket-wrap { position:absolute; left:84%; top:11%; width:clamp(64px,8vw,92px); transform:rotate(54deg); filter:drop-shadow(0 8px 12px #070b1c88); }
+#rj-portal-arrival .rj-arrival-motion { position:absolute; inset:0; pointer-events:none; animation:rj-arrival-flight 7.5s cubic-bezier(.35,0,.25,1) both !important; }
+#rj-portal-arrival .rj-arrival-rocket-wrap { position:absolute; left:12%; top:59%; width:clamp(64px,8vw,92px); transform:rotate(54deg); filter:drop-shadow(0 8px 12px #070b1c88); }
 #rj-portal-arrival .rj-arrival-rocket { position:relative; display:block; width:100%; height:auto; animation:rj-rocket-idle 1.15s cubic-bezier(.3,.75,.4,1) infinite !important; }
 #rj-portal-arrival .rj-arrival-puffs { position:absolute; left:50%; top:68%; width:32%; height:41%; transform:translateX(-50%); }
 #rj-portal-arrival .rj-arrival-puffs i { position:absolute; display:block; left:28%; top:25%; width:44%; aspect-ratio:1; border-radius:50%; background:radial-gradient(circle at 32% 28%,#d9e5ff,#6aa6ff 55%,#3f6fbe); box-shadow:inset -2px -3px 5px #080c1a59,inset 2px 2px 4px #ffffff73; animation:rj-arrival-puff 1.15s cubic-bezier(.3,.75,.4,1) infinite !important; }
 #rj-portal-arrival .rj-arrival-puffs i:nth-child(2) { top:51%; left:16%; width:34%; animation-delay:.13s !important; background:radial-gradient(circle at 32% 28%,#e3daff,#a98bff 55%,#6856ac); }
 #rj-portal-arrival .rj-arrival-puffs i:nth-child(3) { top:73%; left:53%; width:27%; animation-delay:.26s !important; }
-#rj-portal-arrival .rj-arrival-caption { position:absolute; left:20px; right:20px; bottom:16%; text-align:center; color:#d4e1ed; font:600 13px/1.5 system-ui,sans-serif; letter-spacing:.08em; }
-#rj-portal-arrival.is-playing { animation:rj-arrival-finished .85s ease-out both !important; }
+#rj-portal-arrival .rj-arrival-controls { width:min(520px,100%); }
+#rj-portal-arrival .rj-arrival-progress { height:3px; background:#ffffff20; border-radius:5px; overflow:hidden; }
+#rj-portal-arrival .rj-arrival-progress span { display:block; width:100%; height:100%; border-radius:inherit; background:linear-gradient(90deg,#6aa6ff,#a98bff 52%,#48e0a4); transform-origin:left; animation:rj-arrival-progress 7.5s linear both !important; }
+#rj-portal-arrival .rj-arrival-buttons { display:flex; justify-content:space-between; gap:20px; margin-top:16px; }
+#rj-portal-arrival button { border:0; padding:4px 0; margin:0; background:none; color:#d3e1ed; font:400 12px/1.4 system-ui,sans-serif; text-decoration:underline; text-underline-offset:4px; cursor:pointer; }
+#rj-portal-arrival button:focus-visible { outline:2px solid #b1f5ee; outline-offset:4px; }
+#rj-portal-arrival.is-playing { pointer-events:none; animation:rj-arrival-finished .85s ease-out both !important; }
 #rj-portal-arrival.is-paused,#rj-portal-arrival.is-paused * { animation-play-state:paused !important; }
+#rj-portal-arrival.motion-off .rj-arrival-motion { animation-play-state:paused !important; }
+#rj-portal-arrival.motion-off .rj-arrival-rocket,#rj-portal-arrival.motion-off .rj-arrival-puffs i { animation:none !important; }
+@keyframes rj-arrival-flight { 0% { transform:translate3d(0,0,0); } 38% { transform:translate3d(27%,-19%,0); } 70% { transform:translate3d(52%,-41%,0); } 100% { transform:translate3d(72%,-48%,0); } }
+@keyframes rj-arrival-progress { from { transform:scaleX(0); } to { transform:scaleX(1); } }
 @keyframes rj-arrival-finished { from { opacity:1; } to { opacity:0; } }
 @keyframes rj-rocket-idle { 0%,100% { transform:translateY(1px) scale(1.06,.94); } 40% { transform:translateY(-3px) scale(.96,1.06); } 67% { transform:translateY(2px) scale(1.08,.92); } 87% { transform:translateY(0) scale(1.02,.98); } }
 @keyframes rj-arrival-puff { 0%,100% { transform:translateY(0) scale(1.28,.7); opacity:.35; } 40% { transform:translateY(9px) scale(.9,1.1); opacity:.8; } 67% { transform:translateY(14px) scale(1.3,.65); opacity:.35; } }
 @media (prefers-reduced-motion:reduce) { .btn.btn-journey,.btn.btn-journey:hover { transition:none; transform:none; } #rj-portal-arrival:not([data-motion-override]) { display:none !important; } }
-@media(max-width:600px) { #rj-portal-arrival .rj-arrival-map { width:calc(100% - 40px); height:240px; } #rj-portal-arrival .rj-arrival-planet { left:77%; } #rj-portal-arrival .rj-arrival-rocket-wrap { left:79%; } }
+@media(max-width:600px) {
+  #rj-portal-arrival .rj-arrival-content { width:calc(100% - 40px); padding:30px 0; }
+  #rj-portal-arrival .rj-arrival-map { height:240px; margin:28px auto 22px; }
+  #rj-portal-arrival .rj-arrival-planet { left:77%; }
+  #rj-portal-arrival .rj-arrival-motion { animation-name:rj-arrival-flight-small !important; }
+  @keyframes rj-arrival-flight-small { 0% { transform:translate3d(0,0,0); } 38% { transform:translate3d(25%,-19%,0); } 70% { transform:translate3d(49%,-41%,0); } 100% { transform:translate3d(67%,-48%,0); } }
+}
