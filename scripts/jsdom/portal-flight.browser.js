@@ -40,7 +40,16 @@ const server = http.createServer((req, res) => {
         originalPaused:getComputedStyle(document.querySelector('#portal-door .gate-energy--one')).animationPlayState,
         sourceOrbitPlayState:getComputedStyle(source.querySelector('.gate-energy--one')).animationPlayState };
     });
-    assert.equal(result.orbitAnimation, 'gate-energy-one'); // rzeczywista animowana brama
+    const cameraMotion = await page.locator('#scene-camera').evaluate(el => {
+      const animation = el.getAnimations().find(a => a.animationName === 'camera-approach');
+      if (!animation) return null;
+      animation.pause(); animation.currentTime = 0; const start = getComputedStyle(el).transform;
+      animation.currentTime = 1200; const end = getComputedStyle(el).transform;
+      animation.play(); return [start, end];
+    });
+    assert.ok(cameraMotion, 'lot rozpoczyna animacja kamery');
+    assert.notEqual(cameraMotion[0], cameraMotion[1], 'kamera przemieszcza się w głąb sceny');
+    assert.equal(result.orbitAnimation, 'gate-energy-one'); // źródło szczeliny
     assert.equal(result.originalPaused, 'paused');
     assert.notEqual(result.first.mouth.transform, result.middle.mouth.transform);
     assert.ok(result.middle.tunnel.opacity > result.first.tunnel.opacity);

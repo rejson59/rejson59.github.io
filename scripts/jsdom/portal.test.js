@@ -54,13 +54,13 @@ function arrival(marker, opts = {}) {
     assert.equal(portal.querySelector('script[src*="portal-scene"]'), null);
     assert.ok(portal.querySelector('#portal-door .gate-structure .gate-void'));
     assert.equal(portal.querySelectorAll('#portal-door .gate-stardust i').length, 8);
-    assert.equal(portal.querySelectorAll('.starfield i').length, 16);
-    assert.ok(portal.querySelector('#cosmos-art'));
-    assert.ok(portal.querySelector('.cosmic-streams path'));
+    assert.equal(portal.querySelectorAll('.pathway .step').length, 8);
+    assert.ok(portal.querySelector('#scene-camera'));
+    assert.ok(portal.querySelector('.flying-creature svg'));
     assert.equal(portal.querySelectorAll('#portal-door .gate-energy').length, 2);
-    assert.equal(portal.querySelectorAll('.depth-plane').length, 3);
-    assert.match(css, /portal-fragments-near\.svg/);
-    assert.match(css, /@keyframes star-spark/);
+    assert.match(css, /perspective:900px/);
+    assert.match(css, /@keyframes step-float/);
+    assert.match(css, /@keyframes camera-approach/);
     assert.match(css, /@keyframes gate-streak/);
     assert.match(css, /translateZ\(/); // przestrzenny tunel w trakcie lotu
     assert.ok(portal.body.classList.contains('motion-override'));
