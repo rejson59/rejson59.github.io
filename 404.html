@@ -8,7 +8,7 @@
     // Starsze linki do portali prowadzą teraz do automatycznej podróży.
     var portalMatch = location.pathname.match(/^\/portal\/([A-Za-z0-9._-]{1,100})\/?$/);
     if (portalMatch && portalMatch[1] !== "." && portalMatch[1] !== "..") {
-      location.replace("/podroz/?projekt=" + encodeURIComponent(portalMatch[1]) + "&v=2");
+      location.replace("/podroz/?projekt=" + encodeURIComponent(portalMatch[1]) + "&v=3");
     }
   </script>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
