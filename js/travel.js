@@ -3,14 +3,44 @@
   'use strict';
   var name = new URLSearchParams(location.search).get('projekt') || '';
   var featured = { RejStream:'https://rejson59.github.io/RejStream/', Jakuplayer:'https://rejson59.github.io/Jakuplayer/', JoyPad:'https://rejson59.github.io/JoyPad/', mconline:'https://rejson59.github.io/mconline/', VibeAnimations:'https://rejson59.github.io/VibeAnimations/' };
-  var KEY = 'rj_rocket_trip_v1', DURATION = 4200;
+  var KEY = 'rj_rocket_trip_v1', DURATION = 7500, REDUCE_KEY = 'rj_rocket_reduce_motion_v1';
   try { sessionStorage.removeItem('rj_portal_arrival_v1'); } catch (e) { /* starszy znacznik nie jest wymagany */ }
   var title = document.getElementById('project-name'), status = document.getElementById('travel-status'), skip = document.getElementById('skip');
-  var direct = document.getElementById('direct');
-  var target = null, elapsed = 0, previous = null, raf = 0, leaving = false, errorShown = false;
-  var motion = !(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  document.body.classList.toggle('motion-off', !motion);
+  var direct = document.getElementById('direct'), reduceButton = document.getElementById('reduce-motion');
+  var rocket = document.querySelector('.rocket-motion');
+  var target = null, elapsed = 0, previous = null, raf = 0, leaving = false, errorShown = false, flightFinished = false;
+  var reduced = false;
+  try { reduced = localStorage.getItem(REDUCE_KEY) === '1'; } catch (e) { /* animacja pozostaje dostępna */ }
+  function updateMotion() {
+    document.body.classList.toggle('motion-off', reduced);
+    reduceButton.setAttribute('aria-pressed', String(reduced));
+    reduceButton.textContent = reduced ? 'Włącz ruch rakiety' : 'Ogranicz ruch';
+  }
+  updateMotion();
   document.body.classList.toggle('is-paused', document.visibilityState === 'hidden');
+  // Wybrana podróż trwa do końca nawet przy systemowym ograniczeniu ruchu;
+  // osoby wrażliwe na ruch mogą go ograniczyć lub pominąć animację.
+  reduceButton.addEventListener('click', function () {
+    reduced = !reduced;
+    try { localStorage.setItem(REDUCE_KEY, reduced ? '1' : '0'); } catch (e) { /* ustawienie działa w tej karcie */ }
+    updateMotion();
+  });
+  rocket.addEventListener('animationend', function (event) {
+    if (event.target === rocket && (event.animationName === 'rocket-journey' || event.animationName === 'rocket-journey-small')) flightFinished = true;
+  });
+  function tripComplete() {
+    if (elapsed < DURATION) return false;
+    if (reduced || flightFinished) return true;
+    // Awaria CSS lub brak zdarzenia nie może zatrzymać projektu na zawsze,
+    // ale aktywnej, wolniejszej animacji nie przerywamy przed końcem.
+    if (elapsed < DURATION + 2000) return false;
+    try {
+      if (rocket.getAnimations) return !rocket.getAnimations().some(function (a) {
+        return (a.animationName === 'rocket-journey' || a.animationName === 'rocket-journey-small') && a.playState !== 'finished' && a.playState !== 'idle';
+      });
+      return getComputedStyle(rocket).animationName === 'none' || elapsed >= DURATION + 5000;
+    } catch (e) { return elapsed >= DURATION + 5000; }
+  }
   function find(list) { return Array.isArray(list) ? list.find(function (r) { return r && r.name === name; }) : null; }
   function liveUrl(repo) {
     if (!repo) return null;
@@ -29,7 +59,7 @@
     function finish() {
       if (finished) return; finished = true;
       try {
-        if (animateArrival && url.origin === location.origin) sessionStorage.setItem(KEY, JSON.stringify({path:url.pathname, at:Date.now(), motionOverride:true, kind:'rocket'}));
+        if (animateArrival && !reduced && url.origin === location.origin) sessionStorage.setItem(KEY, JSON.stringify({path:url.pathname, at:Date.now(), motionOverride:true, kind:'rocket'}));
         else sessionStorage.removeItem(KEY);
       } catch (e) { /* brak storage nie blokuje wejścia */ }
       try { location.replace(url.href); } catch (e) { leaving = false; skip.disabled = false; direct.hidden = false; status.textContent = 'Nie udało się otworzyć projektu automatycznie.'; }
@@ -42,13 +72,14 @@
     if (!href || target || errorShown) return;
     target = href; direct.href = href; skip.disabled = false;
     try { if (new URL(href).origin === location.origin) { var p = document.createElement('link'); p.rel = 'prefetch'; p.href = href; document.head.appendChild(p); } } catch (e) { /* nawigacja nadal działa */ }
-    if (!motion) navigate(false); else if (elapsed >= DURATION) navigate(true);
+    if (tripComplete()) navigate(true);
   }
   skip.addEventListener('click', function () { navigate(false); });
   function tick(now) {
     if (leaving || errorShown) return;
     if (document.visibilityState !== 'hidden') { if (previous !== null) elapsed += Math.max(0, now - previous); previous = now; } else previous = null;
-    if (elapsed >= DURATION) { status.textContent = target ? 'Otwieramy projekt…' : 'Szukamy projektu…'; if (target) { navigate(true); return; } }
+    if (elapsed >= DURATION) status.textContent = target ? 'Otwieramy projekt…' : 'Szukamy projektu…';
+    if (target && tripComplete()) { navigate(true); return; }
     raf = requestAnimationFrame(tick);
   }
   document.addEventListener('visibilitychange', function () { previous = null; document.body.classList.toggle('is-paused', document.visibilityState === 'hidden'); });

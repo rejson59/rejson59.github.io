@@ -39,7 +39,7 @@ Wstrzykiwany skrypt jest `defer`; projekt uruchamiany wcześniej może nasłuchi
 
 ## Podróż rakietą i oczekiwanie na projekt
 
-Kliknięcie projektu otwiera nową kartę z automatyczną podróżą. Sam lot i przejście realizuje strona główna, bez zmian w repozytoriach projektów i bez osobnych PR-ów. Plan paczki rakietowej nie jest aktywny. Dla tego samego originu `sessionStorage` otrzymuje jednorazowy, krótko ważny znacznik `rj_rocket_trip_v1`, który nie zawiera tokenu konta. Globalny worker może wstawić do projektu CSS i skrypt pokazujące rakietę podczas ładowania, po meta CSP i przed blokującymi skryptami. Przy ograniczeniu ruchu w ustawieniach systemu projekt otwiera się od razu, bez animacji.
+Kliknięcie projektu otwiera nową kartę z automatyczną podróżą. Sam lot i przejście realizuje strona główna, bez zmian w repozytoriach projektów i bez osobnych PR-ów. Plan paczki rakietowej nie jest aktywny. Dla tego samego originu `sessionStorage` otrzymuje jednorazowy, krótko ważny znacznik `rj_rocket_trip_v1`, który nie zawiera tokenu konta. Globalny worker może wstawić do projektu CSS i skrypt pokazujące rakietę podczas ładowania, po meta CSP i przed blokującymi skryptami. Podróż trwa do końca także przy systemowym ograniczeniu ruchu. Użytkownik może ograniczyć ruch rakiety lub pominąć animację przyciskiem.
 
 Dodatkowa zasłona oczekiwania już po rozpoczęciu ładowania strony projektu nie jest gwarantowana przy innym originie, restrykcyjnej CSP ani w projekcie z własnym service workerem o węższym zakresie. Sam lot przed przejściem nie zależy od tych mechanizmów. Nie zastępuj jego workera — może obsługiwać offline/PWA. W takich projektach na wspólnej domenie można dodać w `<head>`, po meta CSP i przed blokującymi skryptami:
 
