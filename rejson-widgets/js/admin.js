@@ -28,6 +28,8 @@
     items: [],
     itemsComplete: false,
     selectedId: null,
+    bulkIds: new Set(),
+    bulkBusy: false,
     projectFilter: "all",
     typeFilter: "all",
     statusFilter: "all",
@@ -164,6 +166,7 @@
   });
 
   logoutBtn.addEventListener("click", function () {
+    state.bulkIds.clear();
     window.RejsonCloud.setStoredSession(null);
     state.sandboxMode = false;
     state.mode = "login";
@@ -171,6 +174,7 @@
   });
 
   async function enterDashboard() {
+    state.bulkIds.clear();
     authView.hidden = true;
     dashView.hidden = false;
     logoutBtn.hidden = false;
@@ -209,6 +213,7 @@
       }
     }
 
+    state.bulkIds.forEach(function (id) { if (!state.items.some(function (it) { return String(it.id) === id; })) state.bulkIds.delete(id); });
     if (
       state.items.length > 0 &&
       (!state.selectedId ||
@@ -316,8 +321,21 @@
     return list;
   }
 
+  function updateBulkControls(filtered) {
+    filtered = filtered || getFilteredItems();
+    var select = document.getElementById("bulk-select-visible");
+    var count = document.getElementById("bulk-count");
+    var selectedVisible = filtered.filter(function (it) { return state.bulkIds.has(String(it.id)); }).length;
+    select.checked = filtered.length > 0 && selectedVisible === filtered.length;
+    select.indeterminate = selectedVisible > 0 && selectedVisible < filtered.length;
+    select.disabled = state.bulkBusy || !filtered.length || !state.itemsComplete;
+    count.textContent = "Zaznaczono: " + state.bulkIds.size;
+    document.getElementById("bulk-apply").disabled = state.bulkBusy || !state.bulkIds.size || !state.itemsComplete;
+    document.getElementById("bulk-delete").disabled = state.bulkBusy || !state.bulkIds.size || !state.itemsComplete;
+  }
   function renderFeed() {
     var filtered = getFilteredItems();
+    updateBulkControls(filtered);
     if (!filtered.length) {
       feedEl.innerHTML =
         '<div class="glass-card" style="padding:28px;text-align:center;color:var(--muted)">Brak zgłoszeń spełniających wybrane filtry.</div>';
@@ -328,7 +346,7 @@
       .map(function (it) {
         var selected = it.id === state.selectedId;
         return (
-          '<button type="button" class="sub-row ' +
+          '<div class="sub-row-wrap"><label class="bulk-check"><input type="checkbox" data-bulk-id="' + esc(it.id) + '" aria-label="Zaznacz: ' + esc(it.title) + '"' + (state.bulkIds.has(String(it.id)) ? ' checked' : '') + (state.bulkBusy || !state.itemsComplete ? ' disabled' : '') + '></label><button type="button" class="sub-row ' +
           (selected ? "is-selected" : "") +
           '" data-select-id="' +
           esc(it.id) +
@@ -367,7 +385,7 @@
           esc(fmtDate(it.created_at)) +
           "</span>" +
           "  </div>" +
-          "</button>"
+          "</button></div>"
         );
       })
       .join("");
@@ -595,6 +613,53 @@
     })).join("\n\n");
   }
 
+  /* Operacje zbiorcze działają tylko na jawnie zaznaczonych pozycjach.
+     Każdy zapis w chmurze jest potwierdzany; nieudane pozycje pozostają zaznaczone. */
+  feedEl.addEventListener("change", function (e) {
+    var box = e.target.closest("[data-bulk-id]");
+    if (!box || state.bulkBusy) return;
+    if (box.checked) state.bulkIds.add(box.dataset.bulkId); else state.bulkIds.delete(box.dataset.bulkId);
+    updateBulkControls();
+  });
+  document.getElementById("bulk-select-visible").addEventListener("change", function (e) {
+    getFilteredItems().forEach(function (it) { if (e.target.checked) state.bulkIds.add(String(it.id)); else state.bulkIds.delete(String(it.id)); });
+    renderFeed();
+  });
+  async function bulkAction(remove) {
+    if (state.bulkBusy || !state.itemsComplete || !state.bulkIds.size) return;
+    var ids = Array.from(state.bulkIds);
+    if (remove && !window.confirm("Usunąć " + ids.length + " zaznaczonych zgłoszeń? Tej operacji nie można cofnąć.")) return;
+    var status = document.getElementById("bulk-status").value;
+    if (!remove && !Object.prototype.hasOwnProperty.call(STATUS_META, status)) return;
+    state.bulkBusy = true; dashView.inert = true; dashView.setAttribute("aria-busy", "true"); renderFeed();
+    var ok = 0, failed = 0;
+    for (var i = 0; i < ids.length; i++) {
+      var id = ids[i];
+      document.getElementById("bulk-count").textContent = "Przetwarzanie: " + (i + 1) + "/" + ids.length;
+      try {
+        if (state.sandboxMode) {
+          var mirror = window.RejsonCloud.loadMirror();
+          var found = (mirror.items || []).find(function (it) { return String(it.id) === id; });
+          if (!found) throw new Error("Nie znaleziono zgłoszenia");
+          if (remove) mirror.items = mirror.items.filter(function (it) { return String(it.id) !== id; });
+          else found.status = status;
+          window.RejsonCloud.saveMirror(mirror);
+        } else {
+          var rows = await window.RejsonCloud.restTable("submissions?id=eq." + encodeURIComponent(id), remove ? "DELETE" : "PATCH", remove ? undefined : { status: status }, { Prefer: "return=representation" });
+          if (!Array.isArray(rows) || !rows.some(function (row) { return String(row.id) === id && (remove || row.status === status); })) throw new Error("Brak potwierdzenia zapisu");
+        }
+        if (remove) state.items = state.items.filter(function (it) { return String(it.id) !== id; });
+        else { var item = state.items.find(function (it) { return String(it.id) === id; }); if (item) item.status = status; }
+        state.bulkIds.delete(id); ok++;
+      } catch (err) { failed++; }
+    }
+    if (!state.items.some(function (it) { return it.id === state.selectedId; })) state.selectedId = state.items[0] ? state.items[0].id : null;
+    state.bulkBusy = false; dashView.inert = false; dashView.removeAttribute("aria-busy"); renderAll();
+    notify((remove ? "Usunięto: " : "Zmieniono status: ") + ok + (failed ? "; nie udało się: " + failed + " — pozostały zaznaczone." : ""));
+  }
+  document.getElementById("bulk-apply").addEventListener("click", function () { bulkAction(false); });
+  document.getElementById("bulk-delete").addEventListener("click", function () { bulkAction(true); });
+
   /* Obsługa kliknięć na liście i w inspektorze */
   feedEl.addEventListener("click", function (e) {
     var row = e.target.closest("[data-select-id]");
@@ -607,12 +672,14 @@
   projPillsEl.addEventListener("click", function (e) {
     var pill = e.target.closest("[data-proj-pill]");
     if (!pill) return;
+    state.bulkIds.clear();
     state.projectFilter = pill.dataset.projPill;
     renderAll();
   });
 
   document.querySelectorAll("[data-type-filter]").forEach(function (btn) {
     btn.addEventListener("click", function () {
+      state.bulkIds.clear();
       state.typeFilter = btn.dataset.typeFilter;
       document.querySelectorAll("[data-type-filter]").forEach(function (b) {
         b.classList.toggle("is-active", b === btn);
@@ -622,6 +689,7 @@
   });
 
   document.getElementById("filter-status").addEventListener("change", function (e) {
+    state.bulkIds.clear();
     state.statusFilter = e.target.value;
     renderFeed();
   });
@@ -632,6 +700,7 @@
   });
 
   document.getElementById("admin-search").addEventListener("input", function (e) {
+    state.bulkIds.clear();
     state.search = e.target.value;
     renderFeed();
   });

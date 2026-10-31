@@ -472,12 +472,6 @@
       if (siteCountEl) {
         animateCounterValue(siteCountEl, getTodayCount(slug), shouldBump, siteBadgeEl, true);
       }
-      var siteUniqueEl = document.getElementById("site-unique-count");
-      var siteUniqueBadge = document.getElementById("site-unique-badge");
-      if (siteUniqueBadge) siteUniqueBadge.classList.add("is-ready");
-      if (siteUniqueEl) {
-        animateCounterValue(siteUniqueEl, getUniqueCount(slug), shouldBump, siteUniqueBadge, true);
-      }
     }
 
     /* 2. Liczniki kliknięć (dziś) i unikalnych wyświetleń na kartach projektów */
@@ -549,12 +543,6 @@
       animateCounterValue(siteCountEl, siteViews, false, siteBadgeEl, true);
     }
 
-    var siteUniqueEl = document.getElementById("site-unique-count");
-    var siteUniqueBadge = document.getElementById("site-unique-badge");
-    if (siteUniqueEl && countsMap[SITE_SLUG.toLowerCase()]) {
-      if (siteUniqueBadge) siteUniqueBadge.classList.add("is-ready");
-      animateCounterValue(siteUniqueEl, getUniqueCount(SITE_SLUG), false, siteUniqueBadge, true);
-    }
 
     var badges = document.querySelectorAll("[data-project-views]");
     for (var i = 0; i < badges.length; i++) {
@@ -672,6 +660,27 @@
       "Authorization": "Bearer " + SUPABASE_ANON_KEY,
       "Content-Type": "application/json"
     };
+  }
+
+  /* Oczko pokazuje dzisiejszy agregat, nigdy liczbę historyczną z cache. */
+  var dailyVisitorsRequest = 0;
+  function fetchDailySiteVisitors() {
+    var el = document.getElementById("site-unique-count");
+    if (!el || !window.fetch) return Promise.resolve(null);
+    var requestId = ++dailyVisitorsRequest;
+    return fetch(SUPABASE_URL + "/rest/v1/rpc/site_visitors_today", {
+      method: "POST", headers: supaHeaders(), body: "{}", cache: "no-store"
+    }).then(function (res) {
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      return res.json();
+    }).then(function (data) {
+      if (requestId !== dailyVisitorsRequest) return null;
+      if (!data || data.day !== todayWarsawDateStr() || !Number.isSafeInteger(data.count) || data.count < 0) throw new Error("Nieaktualne dane");
+      el.textContent = fmtViews(data.count);
+      var badge = document.getElementById("site-unique-badge");
+      if (badge) badge.classList.add("is-ready");
+      return data.count;
+    }).catch(function () { if (requestId === dailyVisitorsRequest) el.textContent = "—"; return null; });
   }
 
   function fetchAllCounts() {
@@ -1593,6 +1602,7 @@
     registerGlobalServiceWorker();
     setupJoinNudge();
     bindPresenceInteractionGate();
+    fetchDailySiteVisitors();
 
     /* 1. Natychmiast meldujemy obecność na tej podstronie (szybka synchronizacja
        przejść widać w panelu), a w tle pobieramy stan liczników z Supabase */
@@ -1603,7 +1613,7 @@
     fetchAllCounts().then(function () {
       refreshAllDOMCounters();
       if (!isInsideCardThumbnail()) {
-        registerView(currentActiveSlug);
+        registerView(currentActiveSlug).then(fetchDailySiteVisitors);
         sendPresenceHeartbeat(currentActiveSlug, "ping");
         if (currentActiveSlug === SITE_SLUG) {
           checkReferrerProjectVisit();
@@ -1625,6 +1635,7 @@
       document.addEventListener("visibilitychange", function () {
         if (document.visibilityState === "visible") {
           fetchAllCounts();
+          fetchDailySiteVisitors();
           sendPresenceHeartbeat(currentActiveSlug, "ping");
           fetchTotalOnline();
           if (!ws) connectRealtime();
@@ -1646,6 +1657,7 @@
       setInterval(function () {
         if (document.visibilityState === "visible") {
           fetchAllCounts();
+          fetchDailySiteVisitors();
         }
       }, 12000);
     }
@@ -1655,6 +1667,7 @@
     getCount: getCount,
     getUniqueCount: getUniqueCount,
     getTodayCount: getTodayCount,
+    fetchDailySiteVisitors: fetchDailySiteVisitors,
     getOnlineCount: getOnlineCount,
     getTotalOnlineCount: getTotalOnlineCount,
     registerView: registerView,

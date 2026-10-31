@@ -1,14 +1,13 @@
-/* Boczne banery na dużych ekranach; treść dostaje własną przestrzeń. */
+/* Jedna ramka po prawej; zawartość strony ma własną przestrzeń. */
 .rj-side-ads { display:none; }
 @media (min-width:1200px) {
-  body.rj-side-ads-enabled > main, body.rj-side-ads-enabled > main[class], body.rj-side-ads-enabled > footer { width:calc(100% - 320px); margin-left:auto; margin-right:auto; }
-  .rj-side-ads { position:fixed; top:90px; z-index:20; display:flex; flex-direction:column; gap:12px; width:140px; max-height:calc(100vh - 105px); overflow-y:auto; scrollbar-width:thin; }
-  .rj-side-ads--left { left:12px; }.rj-side-ads--right { right:12px; }
-  .rj-side-ad { box-sizing:border-box; display:flex; flex-direction:column; gap:10px; min-height:188px; padding:16px 13px; border:1px solid #99c8e933; border-radius:16px; color:#eaf8ff; background:#172632; text-decoration:none; font:400 12px/1.42 system-ui,sans-serif; box-shadow:0 12px 26px #0002; transition:transform .2s,border-color .2s; overflow-wrap:anywhere; }
-  .rj-side-ad:hover { transform:translateY(-2px); border-color:#9ce7d5; }.rj-side-ad:focus-visible { outline:3px solid #9ce7d5; outline-offset:2px; }
-  .rj-side-ad--chat { background:radial-gradient(circle at 100% 5%,#8c7bdc77,transparent 50%),linear-gradient(150deg,#28334a,#191d31); }
-  .rj-side-ad--file { background:radial-gradient(circle at 100% 0%,#61d8c477,transparent 52%),linear-gradient(150deg,#234143,#152b31); }
-  .rj-side-ad--offer { min-height:162px; background:linear-gradient(150deg,#282d41,#191d2d); border-style:dashed; border-color:#a6b4d966; }
-  .rj-side-ad-tag { color:#bed4ed; font-size:9px; font-weight:800; letter-spacing:.11em; line-height:1.35; }.rj-side-ad-symbol { display:grid; place-items:center; width:34px; height:34px; border-radius:11px; background:#ffffff19; color:#c6fced; font-size:21px; }.rj-side-ad strong { color:#f6faff; font-size:17px; line-height:1.14; letter-spacing:-.025em; }.rj-side-ad > span:not(.rj-side-ad-tag):not(.rj-side-ad-symbol) { color:#d0dce7; }.rj-side-ad b { margin-top:auto; color:#a9eedb; font-size:11px; }
+  body.rj-side-ads-enabled > main, body.rj-side-ads-enabled > main[class], body.rj-side-ads-enabled > footer { width:calc(100% - 180px); margin-left:0; margin-right:180px; }
+  .rj-side-ads { box-sizing:border-box; position:fixed; top:90px; right:12px; z-index:20; display:flex; flex-direction:column; gap:8px; width:156px; max-height:calc(100vh - 190px); overflow-y:auto; scrollbar-width:thin; padding:9px; border:1px solid #99c8e933; border-radius:16px; background:#111e2a; box-shadow:0 12px 26px #0002; }
+  .rj-side-ads-title { margin:3px 2px 4px; color:#c3dce4; font:700 11px/1.35 system-ui,sans-serif; }
+  .rj-side-ad { box-sizing:border-box; display:flex; flex-direction:column; gap:7px; padding:12px 10px; border:1px solid #99c8e933; border-radius:12px; color:#eaf8ff; background:#172632; text-decoration:none; font:400 11px/1.35 system-ui,sans-serif; overflow-wrap:anywhere; }
+  .rj-side-ad:hover { border-color:#9ce7d5; }.rj-side-ad:focus-visible { outline:2px solid #9ce7d5; outline-offset:-2px; }
+  .rj-side-ad--chat { background:linear-gradient(150deg,#303650,#1b2231); }
+  .rj-side-ad--file { background:linear-gradient(150deg,#294848,#172d32); }
+  .rj-side-ad--offer { background:#262d40; border-style:dashed; }
+  .rj-side-ad-tag { color:#bed4ed; font-size:9px; font-weight:800; letter-spacing:.06em; }.rj-side-ad strong { color:#f6faff; font-size:15px; line-height:1.15; }.rj-side-ad b { color:#a9eedb; font-size:11px; }
 }
-@media (prefers-reduced-motion:reduce) { .rj-side-ad { transition:none; }.rj-side-ad:hover { transform:none; } }

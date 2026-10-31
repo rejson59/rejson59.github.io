@@ -491,3 +491,11 @@
   25% { transform: translateX(-4px); }
   75% { transform: translateX(4px); }
 }
+
+/* Zaznaczanie wielu zgłoszeń bez zagnieżdżania kontrolek w przycisku. */
+.bulk-toolbar { display:flex; align-items:center; flex-wrap:wrap; gap:10px; padding:12px 14px; margin:0 0 12px; }
+.bulk-toolbar label { display:flex; align-items:center; gap:6px; }
+.bulk-toolbar input, .bulk-check input { width:18px; height:18px; accent-color:var(--accent, #7dd3fc); }
+.sub-row-wrap { display:flex; align-items:stretch; gap:6px; }
+.bulk-check { display:grid; place-items:center; flex:0 0 36px; cursor:pointer; }
+.sub-row-wrap .sub-row { flex:1; min-width:0; }

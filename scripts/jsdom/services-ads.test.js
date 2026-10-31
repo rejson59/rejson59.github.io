@@ -11,14 +11,14 @@ const service=new JSDOM(read('uslugi.html'),{url:'https://rejson59.github.io/usl
 assert.match(service.window.document.querySelector('h1').textContent,/stronę/);
 assert.equal(service.window.document.querySelectorAll('a[href="partnerstwo?temat=strona#propozycja"]').length,2);
 service.window.eval(read('js/uslugi.js'));const menu=service.window.document.getElementById('services-menu');menu.click();assert.equal(menu.getAttribute('aria-expanded'),'true');service.window.document.getElementById('services-theme').click();assert.equal(service.window.document.documentElement.dataset.theme,'light');service.window.close();
-for(const file of ['index.html','partnerstwo.html','uslugi.html','rejchat.html','rejfile.html','tablica-pomyslow.html','widzety.html']) {
+for(const file of ['index.html','partnerstwo.html','uslugi.html','rejchat.html','rejfile.html','tablica-pomyslow.html','widzety.html','404.html','admin.html','logowanie.html','profil.html','rejson-widgets/index.html']) {
  const dom=new JSDOM(read(file),{url:'https://rejson59.github.io/'+file,runScripts:'outside-only',virtualConsole:new VirtualConsole()});
  const w=dom.window;w.sessionStorage.setItem('rj_side_ads_dismissed_v1','1');assert.ok(w.document.querySelector('script[src^="/js/side-ads.js"]'),file);assert.ok(w.document.querySelector('link[href^="/css/side-ads.css"]'),file);
  w.eval(read('js/side-ads.js'));w.eval(read('js/side-ads.js'));
- assert.equal(w.document.querySelectorAll('.rj-side-ads').length,2,file);
- assert.equal(w.document.querySelectorAll('.rj-side-ad').length,4,file);
- assert.equal(w.document.querySelectorAll('.rj-side-ad--offer[href="/partnerstwo#propozycja"]').length,2,file);
- assert.ok(w.document.querySelector('.rj-side-ad[href="/rejchat"]'));assert.ok(w.document.querySelector('.rj-side-ad[href="/rejfile"]'));
+ assert.equal(w.document.querySelectorAll('.rj-side-ads').length,1,file);
+ assert.equal(w.document.querySelectorAll('.rj-side-ad').length,3,file);
+ assert.equal(w.document.querySelectorAll('.rj-side-ad--offer[href="/partnerstwo#propozycja"]').length,1,file);
+ assert.match(w.document.querySelector('.rj-side-ads-title').textContent,/mini reklamy i promocje/);assert.ok(w.document.querySelector('.rj-side-ad[href="/rejchat"]'));assert.ok(w.document.querySelector('.rj-side-ad[href="/rejfile"]'));
  assert.equal(w.document.querySelectorAll('.rj-side-ads button, .rj-side-ads-close').length,0,file + ': bez przycisku zamykania');
  assert.ok(w.document.body.classList.contains('rj-side-ads-enabled'));w.close();
 }
