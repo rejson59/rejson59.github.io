@@ -24,6 +24,35 @@
     if(close)close.addEventListener('click',function(){dialog.close();join.focus();});
     dialog.addEventListener('click',function(e){if(e.target===dialog){dialog.close();join.focus();}});
   }
+  // Jednorazowy szkic w tej karcie. Żaden plik ani wiadomość nie jest wysyłana automatycznie.
+  var draftKey='rejfile_chat_draft_v1', draftBox=document.getElementById('file-draft'), draftStatus=document.getElementById('file-draft-status');
+  function readFileDraft(){
+    try {
+      var d=JSON.parse(sessionStorage.getItem(draftKey)||'null');
+      if(!d) return null;
+      if(typeof d.link!=='string' || typeof d.at!=='number' || typeof d.expires!=='number'){sessionStorage.removeItem(draftKey);return null;}
+      var age=Date.now()-d.at, u=new URL(d.link);
+      if(age<0 || age>30*60*1000 || d.expires<=Date.now() || u.origin!==location.origin || u.username || u.password || u.href!==d.link || u.pathname!=='/rejfile' || u.search || !/^#f=[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\.[0-9a-f]{64}$/i.test(u.hash)){sessionStorage.removeItem(draftKey);return null;}
+      return d;
+    } catch (_) { try{sessionStorage.removeItem(draftKey);}catch(e){} return null; }
+  }
+  function showDraft(){ if(draftBox)draftBox.hidden=!readFileDraft(); }
+  if(draftBox){
+    showDraft();
+    var firstDraft=readFileDraft();
+    if(firstDraft) setTimeout(showDraft, Math.max(1,Math.min(firstDraft.at+30*60*1000,firstDraft.expires)-Date.now()+1));
+    document.getElementById('file-draft-add').addEventListener('click',function(){
+      var d=readFileDraft(), form=document.getElementById('chat-form'), field=document.getElementById('chat-input');
+      if(!d){draftBox.hidden=true;return;}
+      if(!form || form.hidden){draftStatus.textContent='Zaloguj się, aby przygotować wiadomość na czacie.';return;}
+      var text=field.value||'', next=text+(text && !/\s$/.test(text) ? ' ' : '')+'Plik z RejFile: '+d.link;
+      if(next.length>field.maxLength){draftStatus.textContent='W wiadomości nie ma miejsca na link. Skróć tekst i spróbuj ponownie.';return;}
+      field.value=next; field.dispatchEvent(new Event('input',{bubbles:true}));
+      try{sessionStorage.removeItem(draftKey);}catch(_){}
+      draftBox.hidden=true; field.focus();
+    });
+    document.getElementById('file-draft-discard').addEventListener('click',function(){try{sessionStorage.removeItem(draftKey);}catch(_){}draftBox.hidden=true;});
+  }
   var input=document.getElementById('chat-search'),list=document.getElementById('chat-list'),status=document.getElementById('chat-search-status');
   function filter(){
     var q=input.value.trim().toLocaleLowerCase('pl'), count=0,all=0;

@@ -69,3 +69,7 @@ Lista jest inwentaryzacją, a nie wynikiem pełnego audytu. Statusy szczegółow
 - [zaplecze-resellera](https://github.com/rejson59/zaplecze-resellera)
 - [Zayra-ai-asistant](https://github.com/rejson59/Zayra-ai-asistant)
 - [zayra-voice](https://github.com/rejson59/zayra-voice)
+
+## Odłożone: dobrowolne wsparcie
+
+Właściciel poprosił, aby wrócić później do jednorazowych wpłat oraz ewentualnych planów Pro/Premium. Nie wybrano ani nie skonfigurowano operatora i nie uruchomiono żadnych płatności. Temat należy przypomnieć przy odpowiedniej kolejnej rozmowie; asystent nie ma automatycznego, terminowego przypominania. Przed wdrożeniem ustalić operatora, koszty, zasady rozliczeń oraz bezpieczną weryfikację uprawnień. Istniejące darmowe funkcje mają pozostać dostępne.

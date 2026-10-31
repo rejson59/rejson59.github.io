@@ -1,0 +1,24 @@
+/* Mapa połączeń projektów: osobna, nieinteraktywna warstwa za treścią. */
+body.rj-home .backdrop {
+  mask-image: none;
+  -webkit-mask-image: none;
+  background: radial-gradient(ellipse at 85% 0%, #243b5b 0%, transparent 48%),
+    radial-gradient(ellipse at 8% 80%, #143b3d 0%, transparent 45%),
+    linear-gradient(155deg, #10182c, #0b1120 52%, #101527);
+}
+body.rj-home .backdrop::before,
+body.rj-home .backdrop::after { content: ""; position: absolute; inset: 0; pointer-events: none; }
+body.rj-home .backdrop::before {
+  background: url("/assets/universe-network.svg") center / cover no-repeat;
+  opacity: .86;
+}
+body.rj-home .backdrop::after {
+  background: radial-gradient(ellipse at 50% 48%, transparent 20%, rgba(6, 12, 24, .42) 100%);
+}
+[data-theme="light"] body.rj-home .backdrop {
+  background: radial-gradient(ellipse at 85% 0%, #c0d8ef 0%, transparent 48%),
+    radial-gradient(ellipse at 8% 80%, #c3e7de 0%, transparent 45%),
+    linear-gradient(155deg, #e2eafa, #edf2fa 52%, #e7e9f5);
+}
+[data-theme="light"] body.rj-home .backdrop::before { opacity: .72; filter: brightness(.62) saturate(1.35); }
+[data-theme="light"] body.rj-home .backdrop::after { background: radial-gradient(ellipse at 50% 48%, transparent 20%, rgba(225, 235, 248, .16) 100%); }

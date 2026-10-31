@@ -7,7 +7,7 @@
   <title>RejFile — wyślij coś dalej</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="css/rejfile.css?v=1">
-  <script defer src="js/rejfile.js?v=2"></script>
+  <script defer src="js/rejfile.js?v=3"></script>
   <link rel="stylesheet" href="/css/liquid.css?v=2026-10-30-2">
   <link rel="stylesheet" href="/css/rejchat.css?v=1">
   <script defer src="/js/rejchat-profiles.js?v=1"></script>
@@ -25,7 +25,7 @@
       <div id="recipient-wrap" hidden><label for="recipient">Nazwa odbiorcy w społeczności</label><input id="recipient" maxlength="24" autocomplete="off" placeholder="np. nazwa_użytkownika"><small>Odbiorca znajdzie plik w swojej skrzynce RejFile.</small></div>
       <div class="progress" id="progress-wrap" hidden><div class="progress-top"><span id="progress-label">Przygotowuję…</span><strong id="progress-percent">0%</strong></div><progress id="progress" aria-label="Postęp przesyłania" max="100" value="0"></progress></div>
       <p id="error" class="message error" role="alert" hidden></p><button class="primary" id="send" type="submit">Prześlij plik <span>↗</span></button><p class="fine">Plik wygasa po 3 dniach. Nie udostępniaj treści nielegalnych ani plików poufnych. <a href="#zasady">Jak to działa?</a></p></form>
-      <div id="success" class="success" hidden role="status"><div class="success-icon">✓</div><h3>Plik jest gotowy!</h3><p id="success-text"></p><div id="link-wrap" hidden><label for="share-link">Link do udostępnienia</label><div class="copy-row"><input id="share-link" readonly><button type="button" id="copy-link">Kopiuj</button></div><small>Link daje dostęp każdemu, kto go zna. Przekaż go tylko zaufanym osobom.</small></div><button type="button" class="secondary" id="another">Wyślij kolejny plik ↗</button></div>
+      <div id="success" class="success" hidden role="status"><div class="success-icon">✓</div><h3>Plik jest gotowy!</h3><p id="success-text"></p><div id="link-wrap" hidden><label for="share-link">Link do udostępnienia</label><div class="copy-row"><input id="share-link" readonly><button type="button" id="copy-link">Kopiuj</button></div><small>Link daje dostęp każdemu, kto go zna. Przekaż go tylko zaufanym osobom.</small><button type="button" class="secondary" id="share-chat">Przygotuj wiadomość w RejChat ↗</button><small>RejChat ma na razie czat publiczny. Link trafi tam dopiero po Twoim potwierdzeniu i wysłaniu wiadomości.</small></div><button type="button" class="secondary" id="another">Wyślij kolejny plik ↗</button></div>
     </section>
     <aside class="side"><section class="card inbox" aria-labelledby="inbox-title"><div class="kicker">02 / TWOJA SKRZYNKA</div><h2 id="inbox-title">Pliki dla Ciebie <span>↘</span></h2><p id="inbox-status">Sprawdzam konto…</p><div id="inbox-list" class="file-list"></div><a href="logowanie" id="login" class="secondary" hidden>Zaloguj się do społeczności ↗</a><button type="button" class="text-button" id="refresh" hidden>Odśwież skrzynkę ↻</button></section>
       <section class="card sent"><div class="kicker">03 / TWOJE PRZESYŁKI</div><h2>Wysłane z tej przeglądarki</h2><p>Tu znajdziesz linki i opcję cofnięcia dostępu. Nie czyść danych przeglądarki, jeśli chcesz nimi zarządzać.</p><div id="sent-list" class="file-list"><p>Nie ma tu jeszcze żadnych przesyłek.</p></div></section>

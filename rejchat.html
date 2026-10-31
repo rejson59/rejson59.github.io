@@ -243,7 +243,7 @@
   <script defer src="/js/liquid-nav.js?v=1"></script>
   <link rel="stylesheet" href="/css/liquid.css?v=2026-10-30-2">
   <link rel="stylesheet" href="/css/responsive.css?v=1">
-  <link rel="stylesheet" href="/css/rejchat.css?v=2">
+  <link rel="stylesheet" href="/css/rejchat.css?v=3">
 </head>
 <body class="rj-community community-page">
   <div id="rj-page-loader" aria-hidden="true">
@@ -542,6 +542,13 @@
           <div class="comm-chat-list" id="chat-list" aria-live="polite">
             <p class="comm-chat-empty">Ładowanie czatu…</p>
           </div>
+          <div class="rejchat-file-draft" id="file-draft" hidden>
+            <strong>Link z RejFile jest gotowy</strong>
+            <p>To czat publiczny — każdy, kto zobaczy link, może pobrać plik. Dodaj go tylko, jeśli chcesz go publicznie udostępnić. Wysłanie nastąpi dopiero po kliknięciu „Wyślij”.</p>
+            <div><button type="button" class="btn btn-primary btn-sm" id="file-draft-add">Dodaj link do wiadomości</button><button type="button" class="btn btn-ghost btn-sm" id="file-draft-discard">Usuń przygotowany link</button></div>
+            <p id="file-draft-status" role="status" aria-live="polite"></p>
+          </div>
+          <p class="rejchat-file-shortcut"><a href="/rejfile" target="_blank" rel="noopener">＋ Przygotuj plik w RejFile (nowa karta)</a> · Link możesz potem dodać do wiadomości w tej nowej karcie.</p>
           <form class="comm-chat-form" id="chat-form" hidden>
             <input class="comm-input" id="chat-input" type="text" maxlength="280" autocomplete="off"
                    placeholder="Napisz coś…" aria-label="Wiadomość na czat">
@@ -648,7 +655,7 @@
   <script defer src="js/view-tracker.js?v=6"></script>
   <script defer src="/js/rejchat-profiles.js?v=1"></script>
   <script defer src="js/community.js?v=2026-10-30-rejchat-3"></script>
-  <script defer src="/js/rejchat.js?v=2"></script>
+  <script defer src="/js/rejchat.js?v=3"></script>
   <script defer src="/js/media-capture.js?v=2"></script>
   <script defer src="/rejson-widgets/widget.js?v=9" data-project="rejson59.github.io"></script>
 </body>
