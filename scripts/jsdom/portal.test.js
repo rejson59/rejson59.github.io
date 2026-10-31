@@ -52,14 +52,14 @@ function arrival(marker, opts = {}) {
     assert.equal(portal.querySelector('canvas'), null);
     assert.equal(portal.querySelector('script[src*="portal-webgl"]'), null);
     assert.equal(portal.querySelector('script[src*="portal-scene"]'), null);
-    assert.equal(portal.querySelector('#portal-door .gate-art').getAttribute('src'), '/assets/portal-rift.svg');
+    assert.ok(portal.querySelector('#portal-door .gate-structure .gate-void'));
+    assert.equal(portal.querySelectorAll('#portal-door .depth-slice').length, 4);
+    assert.equal(portal.querySelectorAll('#portal-door .gate-dust i').length, 8);
     assert.equal(portal.querySelectorAll('#portal-door .gate-energy').length, 2);
-    assert.equal(portal.querySelectorAll('#portal-door .gate-particles i').length, 10);
-    assert.equal(portal.querySelectorAll('.scene-atmosphere i').length, 3);
-    assert.match(css, /@keyframes gate-drift/);
-    assert.match(css, /@keyframes scene-meteor/);
+    assert.ok(portal.querySelector('.chamber-floor'));
+    assert.match(css, /@keyframes depth-pass/);
+    assert.match(css, /@keyframes gate-streak/);
     assert.match(css, /translateZ\(/); // przestrzenny tunel w trakcie lotu
-    assert.match(read('assets/portal-rift.svg'), /#01040b/); // ciemne wnętrze
     assert.ok(portal.body.classList.contains('motion-override'));
     assert.ok(portal.querySelector('#flight .flight-darkness'));
     assert.equal(portal.querySelectorAll('#flight .tunnel-ring').length, 7);
@@ -104,7 +104,7 @@ function arrival(marker, opts = {}) {
     assert.equal(t.doc.getElementById('flight').style.getPropertyValue('--travel-x'), (t.w.innerWidth / 2 - 550) + 'px');
     assert.equal(t.doc.getElementById('flight').style.getPropertyValue('--travel-y'), (t.w.innerHeight / 2 - 250) + 'px');
     assert.ok(t.doc.getElementById('flight').classList.contains('is-active'));
-    assert.ok(t.doc.querySelector('#flight-mouth.has-source .flight-source .gate-art'));
+    assert.ok(t.doc.querySelector('#flight-mouth.has-source .flight-source .gate-structure'));
     assert.equal(t.w.sessionStorage.getItem(KEY), null); // czekamy na całą animację
     t.frame(0); t.frame(4100); assert.equal(t.w.sessionStorage.getItem(KEY), null);
     t.frame(4200); assert.equal(JSON.parse(t.w.sessionStorage.getItem(KEY)).path, '/RejStream/');
