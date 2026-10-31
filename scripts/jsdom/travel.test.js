@@ -26,7 +26,7 @@ const external=new dom.window.MouseEvent('click',{bubbles:true,cancelable:true,b
 dom.window.open=()=>null;const blocked=new dom.window.MouseEvent('click',{bubbles:true,cancelable:true,button:0});dom.window.document.querySelector('a').dispatchEvent(blocked);assert.equal(blocked.defaultPrevented,false);dom.window.close();
 
 function arrival(marker, url='/Project/', sheet=true) {
- const d=new JSDOM('<!doctype html><html><head><link data-rj-portal-style href="/css/portal.css?v=15"></head><body></body></html>',{url:'https://rejson59.github.io'+url,runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:new VirtualConsole()});
+ const d=new JSDOM('<!doctype html><html><head><link data-rj-portal-style href="/css/portal.css?v=16"></head><body></body></html>',{url:'https://rejson59.github.io'+url,runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:new VirtualConsole()});
  const w=d.window; w.matchMedia=()=>({matches:false}); w.requestAnimationFrame=()=>1;
  const computed=w.getComputedStyle.bind(w);w.getComputedStyle=el=>el.id==='rj-arrival-css-check'?{position:'fixed',zIndex:'2147483645'}:computed(el);
  if(sheet) Object.defineProperty(w.document.querySelector('link'),'sheet',{value:{}});

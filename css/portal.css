@@ -21,7 +21,8 @@
 #rj-portal-arrival .rj-arrival-home::before { content:""; position:absolute; left:22%; top:16%; width:31%; height:17%; border-radius:50%; background:#fff; opacity:.26; transform:rotate(-32deg); }
 #rj-portal-arrival .rj-arrival-planet::before { content:""; position:absolute; top:29%; left:34%; width:13%; height:13%; border-radius:50%; background:#fff; opacity:.23; }
 #rj-portal-arrival .rj-arrival-planet::after { content:""; position:absolute; left:-25%; right:-25%; top:41%; height:24%; border:3px solid #c3b9ff99; border-radius:50%; transform:rotate(-18deg); }
-#rj-portal-arrival .rj-arrival-motion { position:absolute; inset:0; pointer-events:none; animation:rj-arrival-flight 7.5s cubic-bezier(.35,0,.25,1) both !important; }
+#rj-portal-arrival .rj-arrival-motion { position:absolute; inset:0; pointer-events:none; animation:rj-arrival-flight 4.2s cubic-bezier(.37,0,.37,1) both !important; will-change:transform; }
+#rj-portal-arrival .rj-arrival-elevation { position:absolute; inset:0; animation:rj-arrival-climb 4.2s cubic-bezier(.58,0,.42,1) both !important; will-change:transform; }
 #rj-portal-arrival .rj-arrival-rocket-wrap { position:absolute; left:12%; top:59%; width:clamp(64px,8vw,92px); transform:rotate(54deg); filter:drop-shadow(0 8px 12px #070b1c88); }
 #rj-portal-arrival .rj-arrival-rocket { position:relative; display:block; width:100%; height:auto; animation:rj-rocket-idle 1.15s cubic-bezier(.3,.75,.4,1) infinite !important; }
 #rj-portal-arrival .rj-arrival-puffs { position:absolute; left:50%; top:68%; width:32%; height:41%; transform:translateX(-50%); }
@@ -30,16 +31,19 @@
 #rj-portal-arrival .rj-arrival-puffs i:nth-child(3) { top:73%; left:53%; width:27%; animation-delay:.26s !important; }
 #rj-portal-arrival .rj-arrival-controls { width:min(520px,100%); }
 #rj-portal-arrival .rj-arrival-progress { height:3px; background:#ffffff20; border-radius:5px; overflow:hidden; }
-#rj-portal-arrival .rj-arrival-progress span { display:block; width:100%; height:100%; border-radius:inherit; background:linear-gradient(90deg,#6aa6ff,#a98bff 52%,#48e0a4); transform-origin:left; animation:rj-arrival-progress 7.5s linear both !important; }
+#rj-portal-arrival .rj-arrival-progress span { display:block; width:100%; height:100%; border-radius:inherit; background:linear-gradient(90deg,#6aa6ff,#a98bff 52%,#48e0a4); transform-origin:left; animation:rj-arrival-progress 4.2s linear both !important; }
 #rj-portal-arrival .rj-arrival-buttons { display:flex; justify-content:space-between; gap:20px; margin-top:16px; }
 #rj-portal-arrival button { border:0; padding:4px 0; margin:0; background:none; color:#d3e1ed; font:400 12px/1.4 system-ui,sans-serif; text-decoration:underline; text-underline-offset:4px; cursor:pointer; }
 #rj-portal-arrival button:focus-visible { outline:2px solid #b1f5ee; outline-offset:4px; }
+#rj-portal-arrival.is-playing .rj-arrival-progress span { animation:rj-arrival-progress-finish .6s ease-out both !important; }
 #rj-portal-arrival.is-playing { pointer-events:none; animation:rj-arrival-finished .85s ease-out both !important; }
 #rj-portal-arrival.is-paused,#rj-portal-arrival.is-paused * { animation-play-state:paused !important; }
-#rj-portal-arrival.motion-off .rj-arrival-motion { animation-play-state:paused !important; }
+#rj-portal-arrival.motion-off .rj-arrival-motion,#rj-portal-arrival.motion-off .rj-arrival-elevation { animation-play-state:paused !important; }
 #rj-portal-arrival.motion-off .rj-arrival-rocket,#rj-portal-arrival.motion-off .rj-arrival-puffs i { animation:none !important; }
-@keyframes rj-arrival-flight { 0% { transform:translate3d(0,0,0); } 38% { transform:translate3d(27%,-19%,0); } 70% { transform:translate3d(52%,-41%,0); } 100% { transform:translate3d(72%,-48%,0); } }
-@keyframes rj-arrival-progress { from { transform:scaleX(0); } to { transform:scaleX(1); } }
+@keyframes rj-arrival-flight { from { transform:translate3d(0,0,0); } to { transform:translate3d(72%,0,0); } }
+@keyframes rj-arrival-climb { from { transform:translate3d(0,0,0); } to { transform:translate3d(0,-48%,0); } }
+@keyframes rj-arrival-progress { from { transform:scaleX(0); } to { transform:scaleX(.9); } }
+@keyframes rj-arrival-progress-finish { from { transform:scaleX(.9); } to { transform:scaleX(1); } }
 @keyframes rj-arrival-finished { from { opacity:1; } to { opacity:0; } }
 @keyframes rj-rocket-idle { 0%,100% { transform:translateY(1px) scale(1.06,.94); } 40% { transform:translateY(-3px) scale(.96,1.06); } 67% { transform:translateY(2px) scale(1.08,.92); } 87% { transform:translateY(0) scale(1.02,.98); } }
 @keyframes rj-arrival-puff { 0%,100% { transform:translateY(0) scale(1.28,.7); opacity:.35; } 40% { transform:translateY(9px) scale(.9,1.1); opacity:.8; } 67% { transform:translateY(14px) scale(1.3,.65); opacity:.35; } }
@@ -49,5 +53,5 @@
   #rj-portal-arrival .rj-arrival-map { height:240px; margin:28px auto 22px; }
   #rj-portal-arrival .rj-arrival-planet { left:77%; }
   #rj-portal-arrival .rj-arrival-motion { animation-name:rj-arrival-flight-small !important; }
-  @keyframes rj-arrival-flight-small { 0% { transform:translate3d(0,0,0); } 38% { transform:translate3d(25%,-19%,0); } 70% { transform:translate3d(49%,-41%,0); } 100% { transform:translate3d(67%,-48%,0); } }
+  @keyframes rj-arrival-flight-small { from { transform:translate3d(0,0,0); } to { transform:translate3d(67%,0,0); } }
 }

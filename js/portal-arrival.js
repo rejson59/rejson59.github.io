@@ -30,7 +30,7 @@
     var root = document.createElement('div'); root.id = 'rj-portal-arrival';
     if (override) root.setAttribute('data-motion-override', '');
     root.setAttribute('role', 'region'); root.setAttribute('aria-label', 'Podróż do projektu');
-    root.innerHTML = '<div class="rj-arrival-stars" aria-hidden="true"></div><div class="rj-arrival-content"><div class="rj-arrival-heading"><p class="rj-arrival-eyebrow">✦ KIERUNEK</p><h1 class="rj-arrival-name"></h1><p class="rj-arrival-caption" role="status" aria-live="polite">Lecimy do projektu…</p></div><div class="rj-arrival-map" aria-hidden="true"><svg class="rj-arrival-route" viewBox="0 0 1000 400" preserveAspectRatio="none"><path d="M145 295 C380 310 490 90 855 110"/></svg><div class="rj-arrival-home"></div><div class="rj-arrival-planet"></div><div class="rj-arrival-motion"><div class="rj-arrival-rocket-wrap"><div class="rj-arrival-puffs"><i></i><i></i><i></i></div><img class="rj-arrival-rocket" src="/assets/travel-rocket.svg?v=2" alt=""></div></div></div><div class="rj-arrival-controls"><div class="rj-arrival-progress" aria-hidden="true"><span></span></div><div class="rj-arrival-buttons"><button class="rj-arrival-reduce" type="button" aria-pressed="false">Ogranicz ruch</button><button class="rj-arrival-skip" type="button">Pomiń animację ↗</button></div></div></div>';
+    root.innerHTML = '<div class="rj-arrival-stars" aria-hidden="true"></div><div class="rj-arrival-content"><div class="rj-arrival-heading"><p class="rj-arrival-eyebrow">✦ KIERUNEK</p><h1 class="rj-arrival-name"></h1><p class="rj-arrival-caption" role="status" aria-live="polite">Lecimy do projektu…</p></div><div class="rj-arrival-map" aria-hidden="true"><svg class="rj-arrival-route" viewBox="0 0 1000 400" preserveAspectRatio="none"><path d="M145 295 C380 310 490 90 855 110"/></svg><div class="rj-arrival-home"></div><div class="rj-arrival-planet"></div><div class="rj-arrival-motion"><div class="rj-arrival-elevation"><div class="rj-arrival-rocket-wrap"><div class="rj-arrival-puffs"><i></i><i></i><i></i></div><img class="rj-arrival-rocket" src="/assets/travel-rocket.svg?v=2" alt=""></div></div></div></div><div class="rj-arrival-controls"><div class="rj-arrival-progress" aria-hidden="true"><span></span></div><div class="rj-arrival-buttons"><button class="rj-arrival-reduce" type="button" aria-pressed="false">Ogranicz ruch</button><button class="rj-arrival-skip" type="button">Pomiń animację ↗</button></div></div></div>';
     var name = typeof marker.name === 'string' ? marker.name.slice(0,100) : '';
     var title = root.querySelector('.rj-arrival-name'); title.textContent = name || 'Twój projekt';
     if (name.length > 35) title.classList.add('is-long');
@@ -48,8 +48,8 @@
     });
     updateMotion();
     document.documentElement.appendChild(root);
-    var DURATION = 7500, elapsed = 0, previous = null, finished = false, loaded = document.readyState === 'complete';
-    var started = false, removed = false, timer = 0, loadTimer = 0, raf = 0, remaining = 1500, visibleSince = 0;
+    var DURATION = 4200, elapsed = 0, previous = null, finished = false, loaded = document.readyState === 'complete';
+    var started = false, removed = false, waitingLong = false, timer = 0, loadTimer = 0, raf = 0, remaining = 1500, visibleSince = 0;
     function remove() {
       if (removed) return; removed = true;
       clearTimeout(timer); clearTimeout(loadTimer); cancelAnimationFrame(raf);
@@ -83,7 +83,10 @@
     function tick(now) {
       if (removed || started) return;
       if (document.visibilityState !== 'hidden') { if (previous !== null) elapsed += Math.max(0, now - previous); previous = now; } else previous = null;
-      if (elapsed >= DURATION && !loaded) caption.textContent = 'Jeszcze chwilka, ładujemy projekt…';
+      if (elapsed >= DURATION && !loaded) {
+        var message = waitingLong ? 'Ładowanie trwa dłużej. Możesz pominąć animację.' : 'Jeszcze chwilka, ładujemy projekt…';
+        if (caption.textContent !== message) caption.textContent = message;
+      }
       if (loaded && flightComplete()) { reveal(); return; }
       raf = requestAnimationFrame(tick);
     }
@@ -95,7 +98,9 @@
     root.addEventListener('animationend', function (e) { if (e.target === root && e.animationName === 'rj-arrival-finished') remove(); });
     document.addEventListener('visibilitychange', syncVisibility); syncVisibility();
     if (!loaded) window.addEventListener('load', onLoad, {once:true});
-    loadTimer = setTimeout(onLoad, 12000); // uszkodzony zasób nie może blokować projektu
+    // Długie lub nieudane ładowanie nigdy nie udaje zdarzenia load. Zamiast tego
+    // zostawiamy użytkownikowi widoczny przycisk pominięcia.
+    loadTimer = setTimeout(function () { waitingLong = true; }, 12000);
     raf = requestAnimationFrame(tick);
   }
   // Stary bootstrap może załadować starszy arkusz. Aktualizujemy go centralnie,
@@ -103,8 +108,8 @@
   var sheet = document.querySelector('link[data-rj-portal-style]');
   if (!sheet || !sheet.sheet) return;
   var version = 0; try { version = Number(new URL(sheet.href, location.href).searchParams.get('v')) || 0; } catch (e) {}
-  if (version >= 15) { mount(); return; }
-  var fresh = document.createElement('link'); fresh.rel = 'stylesheet'; fresh.href = '/css/portal.css?v=15';
+  if (version >= 16) { mount(); return; }
+  var fresh = document.createElement('link'); fresh.rel = 'stylesheet'; fresh.href = '/css/portal.css?v=16';
   fresh.addEventListener('load', mount, {once:true});
   (document.head || document.documentElement).appendChild(fresh);
 })();

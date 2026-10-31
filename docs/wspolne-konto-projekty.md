@@ -39,15 +39,15 @@ Wstrzykiwany skrypt jest `defer`; projekt uruchamiany wcześniej może nasłuchi
 
 ## Rakieta podczas ładowania projektu
 
-Karty prowadzą bezpośrednio na stronę projektu w nowej karcie. Dla stron tego samego originu kliknięcie może przekazać do nowej karty jednorazowy znacznik `rj_rocket_overlay_v2` bez tokenu konta. Globalny worker wstrzykuje na zgodnych dokumentach arkusz i skrypt nakładki po meta CSP, przed skryptami projektu. Lot trwa co najmniej 7,5 s i odsłania projekt, gdy skończy się animacja oraz ładowanie strony (lub po limicie oczekiwania na zasoby). Jest przycisk pominięcia i ograniczenia ruchu. Dawne linki `/podroz/` i `/portal/` przekierowują do docelowego projektu.
+Karty prowadzą bezpośrednio na stronę projektu w nowej karcie. Dla stron tego samego originu kliknięcie może przekazać do nowej karty jednorazowy znacznik `rj_rocket_overlay_v2` bez tokenu konta. Globalny worker wstrzykuje na zgodnych dokumentach arkusz i skrypt nakładki po meta CSP, przed skryptami projektu. Lot trwa około 4,2 s widocznej karty, po czym nakładka pozostaje aż do zdarzenia `load` dokumentu. Przy bardzo długim oczekiwaniu można pominąć nakładkę przyciskiem. Zdarzenie `load` nie obejmuje wszystkich późniejszych zadań asynchronicznych aplikacji. Jest przycisk pominięcia i ograniczenia ruchu. Dawne linki `/podroz/` i `/portal/` przekierowują do docelowego projektu.
 
 To rozwiązanie nie wymaga zmiany projektu, ale **nie jest gwarantowane wszędzie**: projekt z osobnym service workerem o węższym zakresie, blokująca polityka CSP, brak service workera lub projekt na obcym originie mogą uniemożliwić wstrzyknięcie. W takich przypadkach projekt otwiera się bezpośrednio bez nakładki. Nie zastępuj projektowego service workera: może obsługiwać offline/PWA. Przed otrzymaniem pierwszej odpowiedzi sieciowej docelowego dokumentu przeglądarka nie może jeszcze wyświetlić nakładki na tym dokumencie.
 
 Jeśli projekt na wspólnej domenie wymaga jawnego bootstrapa, może umieścić w `<head>` po ewentualnym meta CSP, przed skryptami blokującymi:
 
 ```html
-<link rel="stylesheet" href="/css/portal.css?v=15" data-rj-portal-style>
-<script src="/js/portal-arrival.js?v=14"></script>
+<link rel="stylesheet" href="/css/portal.css?v=16" data-rj-portal-style>
+<script src="/js/portal-arrival.js?v=15"></script>
 ```
 
 Nazwy ścieżek pozostają dla zgodności. Bez poprawnego znacznika skrypt nic nie wyświetla; obcy origin nie ma dostępu do pamięci sesji strony głównej.
