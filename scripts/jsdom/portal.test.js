@@ -96,7 +96,9 @@ function arrival(marker, opts = {}) {
     assert.equal(t.doc.getElementById('enter').disabled, false);
     assert.equal(t.doc.getElementById('flight').classList.contains('is-active'), false); // bez automatycznej nawigacji
     t.doc.getElementById('portal-door').getBoundingClientRect = () => ({ left:400, top:100, width:300, height:300 });
+    const feedback = t.doc.createElement('div'); feedback.id = 'rejson-liquid-widget-root'; feedback.style.setProperty('visibility','visible','important'); t.doc.documentElement.appendChild(feedback);
     t.doc.getElementById('enter').click();
+    assert.equal(feedback.style.visibility, 'hidden');
     assert.equal(t.doc.getElementById('flight').style.getPropertyValue('--portal-x'), '550px');
     assert.equal(t.doc.getElementById('flight').style.getPropertyValue('--portal-y'), '250px');
     assert.equal(t.doc.getElementById('flight').style.getPropertyValue('--travel-x'), (t.w.innerWidth / 2 - 550) + 'px');
@@ -109,6 +111,7 @@ function arrival(marker, opts = {}) {
     assert.ok(t.errors.some(x => /navigation/.test(x))); // jsdom nie nawiguje
     t.w.dispatchEvent(new t.w.PageTransitionEvent('pageshow', { persisted: true }));
     assert.equal(t.doc.getElementById('flight').classList.contains('is-active'), false);
+    assert.equal(feedback.style.visibility, 'visible');
     assert.equal(t.doc.getElementById('enter').disabled, false); assert.equal(t.w.sessionStorage.getItem(KEY), null);
     assert.equal(t.doc.querySelector('#flight-mouth .flight-source'), null);
     t.dom.window.close();
@@ -302,10 +305,10 @@ function arrival(marker, opts = {}) {
   assert.ok(noMeta.indexOf('portal-arrival.js') < noMeta.indexOf('/slow.js'));
   source = '<html><head></head><body><!-- przykładowy rejson-widgets/widget.js --></body></html>';
   const commented = await (await request('https://rejson59.github.io/Example/')).text();
-  assert.match(commented, /<script src="\/rejson-widgets\/widget\.js\?v=8"/);
+  assert.match(commented, /<script src="\/rejson-widgets\/widget\.js\?v=9"/);
   source = '<html><head></head><body><script defer data-project="Test" src="https://rejson59.github.io/rejson-widgets/widget.js?v=4"></script></body></html>';
   const existing = await (await request('https://rejson59.github.io/Example/')).text();
-  assert.match(existing, /widget\.js\?v=8/); assert.equal((existing.match(/<script[^>]+rejson-widgets\/widget\.js/g) || []).length, 1);
+  assert.match(existing, /widget\.js\?v=9/); assert.equal((existing.match(/<script[^>]+rejson-widgets\/widget\.js/g) || []).length, 1);
   assert.match(existing, /data-project="Test"/);
   source = source.replace('?v=4','?v=99');
   const future = await (await request('https://rejson59.github.io/Example/')).text();

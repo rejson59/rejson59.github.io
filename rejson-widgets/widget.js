@@ -1240,7 +1240,8 @@
       viewport: window.innerWidth + " × " + window.innerHeight,
       language: navigator.language || "pl-PL",
       touch: ("ontouchstart" in window) || navigator.maxTouchPoints > 0,
-      consoleErrors: capturedErrors.slice()
+      // Komunikaty błędów mogą zawierać dane wpisane w formularzach.
+      consoleErrors: capturedErrors.length ? ["Liczba błędów: " + capturedErrors.length] : []
     };
   }
 
@@ -1406,7 +1407,7 @@
       "</button>" +
       '<label class="rj-attach-btn">📎 Plik<input type="file" id="rj-file-in" accept="image/*,video/*" hidden></label>' +
       "</div>" +
-      '<p class="rj-attach-hint">Możesz też wkleić zrzut (Ctrl+V) albo przeciągnąć plik tutaj.</p>' +
+      '<p class="rj-attach-hint">Możesz wkleić zrzut (Ctrl+V) albo przeciągnąć plik. Sprawdź, czy zrzut lub nagranie nie ujawnia haseł, prywatnych linków ani wiadomości.</p>' +
       status +
       attachChipsHtml() +
       '<p class="rj-privacy-note">Automatyczne raporty techniczne pomagają szybciej naprawiać błędy.</p>' +
@@ -1555,7 +1556,8 @@
       p_is_public: true,
       p_author_name: sessionUsername() || draft.author.trim() || "Anonim",
       p_author_contact: null,
-      p_page_url: window.location.href,
+      // Parametry i fragment mogą zawierać prywatne linki lub tokeny.
+      p_page_url: window.location.origin + window.location.pathname,
       p_diagnostics: state.type === "bug" ? collectDiagnostics() : {},
       p_voter_key: getVoterId(),
       p_fp: fpId()

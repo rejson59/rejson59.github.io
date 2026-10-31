@@ -190,6 +190,12 @@
       windowHeight: vh,
       scrollX: 0,
       scrollY: -window.scrollY,
+      // Tylko kopia dokumentu jest zmieniana; prawdziwe formularze pozostają nienaruszone.
+      onclone: function (clone) {
+        clone.querySelectorAll("input, textarea, select, [contenteditable], [data-rj-private]").forEach(function (el) {
+          el.style.setProperty("display", "none", "important");
+        });
+      },
       ignoreElements: function (el) {
         /* samego siebie nie fotografujemy */
         return el.classList && el.classList.contains("rj-sheet");
