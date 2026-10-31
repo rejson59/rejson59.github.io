@@ -37,15 +37,17 @@ Kod, który zmienia sesję w tej samej karcie, powinien dodatkowo wysłać `wind
 
 Wstrzykiwany skrypt jest `defer`; projekt uruchamiany wcześniej może nasłuchiwać `rj:account-ready` lub sam dołączyć skrypt przed swoim kodem. Integracja sesji nie dodaje automatycznie zapisu danych do aplikacji. Szczególnie ProStudent ma dane lokalne i ich synchronizacja wymaga osobnego projektu i zgody użytkownika.
 
-## Podróż rakietą i oczekiwanie na projekt
+## Rakieta podczas ładowania projektu
 
-Kliknięcie projektu otwiera nową kartę z automatyczną podróżą. Sam lot i przejście realizuje strona główna, bez zmian w repozytoriach projektów i bez osobnych PR-ów. Plan paczki rakietowej nie jest aktywny. Dla tego samego originu `sessionStorage` otrzymuje jednorazowy, krótko ważny znacznik `rj_rocket_trip_v1`, który nie zawiera tokenu konta. Globalny worker może wstawić do projektu CSS i skrypt pokazujące rakietę podczas ładowania, po meta CSP i przed blokującymi skryptami. Podróż trwa do końca także przy systemowym ograniczeniu ruchu. Użytkownik może ograniczyć ruch rakiety lub pominąć animację przyciskiem.
+Karty prowadzą bezpośrednio na stronę projektu w nowej karcie. Dla stron tego samego originu kliknięcie może przekazać do nowej karty jednorazowy znacznik `rj_rocket_overlay_v2` bez tokenu konta. Globalny worker wstrzykuje na zgodnych dokumentach arkusz i skrypt nakładki po meta CSP, przed skryptami projektu. Lot trwa co najmniej 7,5 s i odsłania projekt, gdy skończy się animacja oraz ładowanie strony (lub po limicie oczekiwania na zasoby). Jest przycisk pominięcia i ograniczenia ruchu. Dawne linki `/podroz/` i `/portal/` przekierowują do docelowego projektu.
 
-Dodatkowa zasłona oczekiwania już po rozpoczęciu ładowania strony projektu nie jest gwarantowana przy innym originie, restrykcyjnej CSP ani w projekcie z własnym service workerem o węższym zakresie. Sam lot przed przejściem nie zależy od tych mechanizmów. Nie zastępuj jego workera — może obsługiwać offline/PWA. W takich projektach na wspólnej domenie można dodać w `<head>`, po meta CSP i przed blokującymi skryptami:
+To rozwiązanie nie wymaga zmiany projektu, ale **nie jest gwarantowane wszędzie**: projekt z osobnym service workerem o węższym zakresie, blokująca polityka CSP, brak service workera lub projekt na obcym originie mogą uniemożliwić wstrzyknięcie. W takich przypadkach projekt otwiera się bezpośrednio bez nakładki. Nie zastępuj projektowego service workera: może obsługiwać offline/PWA. Przed otrzymaniem pierwszej odpowiedzi sieciowej docelowego dokumentu przeglądarka nie może jeszcze wyświetlić nakładki na tym dokumencie.
+
+Jeśli projekt na wspólnej domenie wymaga jawnego bootstrapa, może umieścić w `<head>` po ewentualnym meta CSP, przed skryptami blokującymi:
 
 ```html
-<link rel="stylesheet" href="/css/portal.css?v=14" data-rj-portal-style>
-<script src="/js/portal-arrival.js?v=13"></script>
+<link rel="stylesheet" href="/css/portal.css?v=15" data-rj-portal-style>
+<script src="/js/portal-arrival.js?v=14"></script>
 ```
 
-Nazwy ścieżek pozostają dla zgodności, lecz animacja przedstawia rakietę, nie portal. Bez poprawnego znacznika skrypt nic nie wyświetla. Na obcej domenie nie jest dostępny znacznik `sessionStorage` strony głównej; projekt otworzy się bez zasłony oczekiwania.
+Nazwy ścieżek pozostają dla zgodności. Bez poprawnego znacznika skrypt nic nie wyświetla; obcy origin nie ma dostępu do pamięci sesji strony głównej.

@@ -173,11 +173,9 @@
     return meta;
   }
 
-  function journeyUrl(name) { return "/podroz/?projekt=" + encodeURIComponent(name) + "&v=3"; }
-
   function actionsHTML(p) {
     var liveBtn = p.liveUrl
-      ? '<a class="btn btn-live btn-journey btn-sm" data-journey href="' + esc(journeyUrl(p.name)) + '" target="_blank" rel="noopener noreferrer"><span>Otwórz projekt</span>' + ICON_ARROW + "</a>"
+      ? '<a class="btn btn-live btn-journey btn-sm" data-journey href="' + esc(p.liveUrl) + '" target="_blank" rel="noopener noreferrer"><span>Otwórz projekt</span>' + ICON_ARROW + "</a>"
       : "";
     var feedbackBtn = '<button class="btn btn-feedback btn-sm" type="button" data-feedback-project="' + esc(p.name) + '" data-rj-keep>' +
       '<span class="feedback-pill-dot" aria-hidden="true"></span>Zgłoś błąd / pomysł</button>';
@@ -194,7 +192,7 @@
 
     var cleanHost = p.liveUrl ? p.liveUrl.replace(/^https?:\/\//, "") : "";
     var preview = p.liveUrl
-      ? '<a class="card-preview" data-journey href="' + esc(journeyUrl(p.name)) + '" target="_blank" rel="noopener noreferrer" aria-label="Podgląd ' + esc(p.name) + ' — otwórz projekt">' +
+      ? '<a class="card-preview" data-journey href="' + esc(p.liveUrl) + '" target="_blank" rel="noopener noreferrer" aria-label="Podgląd ' + esc(p.name) + ' — otwórz projekt">' +
           '<div class="card-preview-frame" aria-hidden="true"><iframe data-src="' + esc(p.liveUrl) + '" name="rejson-card-preview" data-card-preview="1" tabindex="-1" aria-hidden="true"></iframe><div class="card-preview-topbar"><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-url">' + esc(cleanHost) + '</span></div></div><span class="card-preview-hint">otwórz ↗</span></a>'
       : "";
 
@@ -207,7 +205,7 @@
             '<span class="card-badges">' + badgesHTML(p) + "</span>" +
           "</div>" +
           preview +
-          '<h3 class="card-title"><a href="' + esc(p.liveUrl ? journeyUrl(p.name) : p.url) + '"' + (p.liveUrl ? ' data-journey' : '') + ' target="_blank" rel="noopener noreferrer"' + '>' + esc(p.name) + "</a></h3>" +
+          '<h3 class="card-title"><a href="' + esc(p.liveUrl ? p.liveUrl : p.url) + '"' + (p.liveUrl ? ' data-journey' : '') + ' target="_blank" rel="noopener noreferrer"' + '>' + esc(p.name) + "</a></h3>" +
           '<p class="card-desc">' + esc(p.description) + "</p>" +
           topics +
           '<p class="card-meta">' + metaHTML(p) + "</p>" +
@@ -250,7 +248,7 @@
       if (badgesEl) badgesEl.innerHTML = badgesHTML(p);
       var titleLink = cardEl.querySelector(".card-title a");
       if (titleLink) {
-        titleLink.href = p.liveUrl ? journeyUrl(p.name) : p.url;
+        titleLink.href = p.liveUrl ? p.liveUrl : p.url;
         titleLink.textContent = p.name;
       }
       var descEl = cardEl.querySelector(".card-desc");
