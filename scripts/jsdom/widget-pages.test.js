@@ -8,7 +8,7 @@ const root = path.resolve(__dirname, '../..');
 const read = p => fs.readFileSync(path.join(root, p), 'utf8');
 const widget = read('rejson-widgets/widget.js');
 const media = read('js/media-capture.js');
-const pages = ['index.html','404.html','admin.html','logowanie.html','partnerstwo.html','profil.html','rejchat.html','rejfile.html','tablica-pomyslow.html','widzety.html','rejson-widgets/index.html'];
+const pages = ['index.html','404.html','admin.html','logowanie.html','partnerstwo.html','uslugi.html','profil.html','rejchat.html','rejfile.html','tablica-pomyslow.html','widzety.html','rejson-widgets/index.html'];
 const wait = () => new Promise(resolve => setTimeout(resolve, 30));
 async function main() {
   for (const page of pages) {
@@ -87,8 +87,8 @@ async function main() {
   assert.equal((html.match(/src="\/js\/media-capture\.js\?v=2"/g)||[]).length,1);
   pageHtml='<html><head><link rel="stylesheet" href="/css/portal.css?v=12" data-rj-portal-style><script src="/js/portal-arrival.js?v=11"></script></head><body></body></html>';
   res=await response(); html=await res.text();
-  assert.equal((html.match(/src="\/js\/portal-arrival\.js\?v=15"/g)||[]).length,1);
-  assert.equal((html.match(/href="\/css\/portal\.css\?v=16"/g)||[]).length,1);
+  assert.equal((html.match(/src="\/js\/portal-arrival\.js\?v=16"/g)||[]).length,1);
+  assert.equal((html.match(/href="\/css\/portal\.css\?v=17"/g)||[]).length,1);
   let handled=false; listeners.fetch({request:{method:'GET',mode:'navigate',destination:'document',url:'https://rejson59.github.io/podroz/?projekt=Test'},waitUntil(){handled=true;},respondWith(){handled=true;}});
   assert.equal(handled,false,'przejściowa podróż nie jest rejestrowana jako projekt');
   console.log('PASS: service worker dodaje/aktualizuje skrypty bez duplikatu i nie osłabia CSP');

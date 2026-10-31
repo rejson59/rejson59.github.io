@@ -7,3 +7,11 @@
 .partner-home-link { margin-left:auto; flex-shrink:0; display:inline-flex; gap:12px; align-items:center; padding:12px 15px; border-radius:11px; background:#a69bff; color:#151329; font-size:13px; font-weight:700; text-decoration:none; }
 .partner-home-link:hover { filter:brightness(1.08); }
 @media(max-width:700px) { .partner-home-inner { align-items:flex-start; flex-wrap:wrap; padding:20px; } .partner-home-inner>div { flex:1; min-width:180px; } .partner-home-link { margin-left:0; } }
+.services-home { margin-top:18px; margin-bottom:24px; display:flex; align-items:center; gap:24px; }
+.services-home > div { flex:1; border-left:3px solid #7ddfd1; padding:4px 0 4px 18px; }
+.services-home p { margin:0 0 5px; font-size:10px; letter-spacing:.14em; font-weight:800; color:var(--accent-strong); }
+.services-home h2 { margin:0 0 5px; font-size:20px; }
+.services-home div > span { color:var(--muted); font-size:13px; line-height:1.5; }
+.services-home > a { color:var(--text); font-size:13px; font-weight:700; text-decoration:none; border:1px solid var(--border-strong); border-radius:12px; padding:12px 15px; }
+.services-home > a:hover { border-color:#7ddfd1; }
+@media(max-width:700px) { .services-home { align-items:flex-start; flex-direction:column; gap:14px; } }

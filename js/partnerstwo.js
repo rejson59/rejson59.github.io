@@ -4,6 +4,23 @@
   var form = document.getElementById("partner-form");
   var feedback = document.getElementById("partner-feedback");
   var sending = false;
+  // Ten sam prywatny formularz przyjmuje też zapytania o stworzenie strony.
+  if (new URLSearchParams(location.search).get("temat") === "strona") {
+    document.title = "Zapytanie o stronę — Rejson59";
+    document.querySelector(".partner-hero .partner-eyebrow").textContent = "✦ TWORZENIE STRON · WSPÓŁPRACA";
+    document.querySelector(".brand-suffix").textContent = ".github.io / strony";
+    document.querySelector(".partner-footer span").textContent = "Tworzenie stron · Rejson59";
+    document.querySelector(".partner-hero h1").textContent = "Masz pomysł na stronę?";
+    document.querySelector(".partner-lead").textContent = "Napisz, czego potrzebujesz. Porozmawiajmy o stronie dopasowanej do Ciebie i Twojego pomysłu.";
+    document.querySelector(".partner-hero .partner-primary").textContent = "Przejdź do formularza ↗";
+    document.querySelector(".partner-options").hidden = true;
+    document.querySelector(".partner-preview-label").textContent = "TWOJA STRONA + REJSON59";
+    form.elements.namedItem("kind").querySelector('option[value="other"]').textContent = "Stworzenie strony internetowej";
+    form.elements.namedItem("kind").value = "other";
+    form.elements.namedItem("message").value = "Chcę porozmawiać o stworzeniu strony internetowej.\n";
+    document.getElementById("form-title").textContent = "Opowiedz mi o swojej stronie.";
+    document.querySelector(".partner-contact-intro > p:not(.partner-eyebrow)").textContent = "Napisz, czym się zajmujesz i jakiej strony potrzebujesz. Odpowiem na podany adres e-mail — szczegóły i koszty ustalimy wspólnie.";
+  }
   function field(name) { return form.elements.namedItem(name); }
   function status(message, kind) {
     feedback.textContent = message;

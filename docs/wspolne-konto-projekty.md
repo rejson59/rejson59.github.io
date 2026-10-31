@@ -46,8 +46,8 @@ To rozwiązanie nie wymaga zmiany projektu, ale **nie jest gwarantowane wszędzi
 Jeśli projekt na wspólnej domenie wymaga jawnego bootstrapa, może umieścić w `<head>` po ewentualnym meta CSP, przed skryptami blokującymi:
 
 ```html
-<link rel="stylesheet" href="/css/portal.css?v=16" data-rj-portal-style>
-<script src="/js/portal-arrival.js?v=15"></script>
+<link rel="stylesheet" href="/css/portal.css?v=17" data-rj-portal-style>
+<script src="/js/portal-arrival.js?v=16"></script>
 ```
 
 Nazwy ścieżek pozostają dla zgodności. Bez poprawnego znacznika skrypt nic nie wyświetla; obcy origin nie ma dostępu do pamięci sesji strony głównej.

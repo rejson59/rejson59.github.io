@@ -10,11 +10,13 @@
   <link rel="stylesheet" href="css/style.css?v=2026-10-27-1">
   <link rel="stylesheet" href="css/partnerstwo.css?v=1">
   <script defer src="rejson-widgets/js/supabase-config.js"></script>
-  <script defer src="js/partnerstwo.js?v=1"></script>
+  <script defer src="js/partnerstwo.js?v=2"></script>
   <link rel="stylesheet" href="/css/liquid.css?v=2026-10-30-2">
   <link rel="stylesheet" href="/css/rejchat.css?v=1">
   <script defer src="/js/rejchat-profiles.js?v=1"></script>
   <link rel="stylesheet" href="/css/responsive.css?v=1">
+  <link rel="stylesheet" href="/css/side-ads.css?v=1">
+  <script defer src="/js/side-ads.js?v=1"></script>
 </head>
 <body class="rj-partner partner-page">
   <a class="partner-skip" href="#propozycja">Przejdź do formularza</a>
@@ -34,7 +36,7 @@
       <div class="partner-hero-copy">
         <p class="partner-eyebrow"><span aria-hidden="true">✦</span> PARTNERSTWO · REKLAMA · WSPÓŁPRACA</p>
         <h1><svg class="page-mark" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#partner"></use></svg>Masz coś, czym warto się <span>podzielić?</span></h1>
-        <p class="partner-lead">Stwórzmy miejsce dla Twojego projektu, marki albo pomysłu. Napisz, co chcesz pokazać — wspólnie ustalimy najlepszą formę współpracy.</p>
+        <p class="partner-lead">Chcesz pokazać produkt, wydarzenie, usługę, inicjatywę albo coś zupełnie innego? Nie musisz mieć własnej strony ani projektu — napisz, co chcesz wypromować.</p>
         <a href="#propozycja" class="partner-primary">Porozmawiajmy o reklamie <span aria-hidden="true">↗</span></a>
         <p class="partner-tiny">Bez zobowiązań · szczegóły i cena ustalane indywidualnie</p>
       </div>
@@ -46,7 +48,7 @@
     <section class="partner-options container" aria-labelledby="options-title">
       <div class="partner-section-head"><p class="partner-eyebrow">MOŻLIWOŚCI</p><h2 id="options-title">Jak możemy współpracować?</h2><p>To propozycje formatów — dostępność i szczegóły ustalimy indywidualnie.</p></div>
       <div class="partner-grid">
-        <article class="partner-option"><span class="partner-icon">↗</span><span class="partner-num">01 / WIDOCZNOŚĆ</span><h3>Baner reklamowy</h3><p>Przedstaw swoją stronę, usługę lub projekt w wyraźnym miejscu.</p></article>
+        <article class="partner-option"><span class="partner-icon">↗</span><span class="partner-num">01 / WIDOCZNOŚĆ</span><h3>Baner reklamowy</h3><p>Pokaż w tym miejscu produkt, wydarzenie, usługę, inicjatywę lub inny pomysł.</p></article>
         <article class="partner-option"><span class="partner-icon">✦</span><span class="partner-num">02 / ODKRYWANIE</span><h3>Wyróżniona karta</h3><p>Opowiedz o swoim pomyśle w formie dopasowanej do strony.</p></article>
         <article class="partner-option"><span class="partner-icon">✺</span><span class="partner-num">03 / TWÓJ POMYSŁ</span><h3>Coś innego?</h3><p>Masz własny plan? Chętnie o nim przeczytam i odpowiem.</p></article>
       </div>
@@ -60,7 +62,7 @@
             <label>Adres e-mail <input name="email" type="email" autocomplete="email" required maxlength="254" placeholder="ty@przyklad.pl"></label>
           </div>
           <label>Rodzaj współpracy <select name="kind" required><option value="">Wybierz lub napisz własny pomysł</option><option value="banner">Baner reklamowy</option><option value="card">Wyróżniona karta</option><option value="other">Inna współpraca</option><option value="undecided">Jeszcze nie wiem</option></select></label>
-          <label>Adres strony lub projektu <span class="partner-optional">opcjonalnie</span><input name="website" type="url" maxlength="500" placeholder="https://twoj-projekt.pl"></label>
+          <label>Link związany z propozycją <span class="partner-optional">opcjonalnie</span><input name="website" type="url" maxlength="500" placeholder="https://... (jeśli masz)"></label>
           <label>Opowiedz o propozycji <textarea name="message" required minlength="20" maxlength="4000" rows="6" placeholder="Co chcesz pokazać? Jakiej współpracy szukasz?"></textarea></label>
           <label class="partner-consent"><input type="checkbox" name="consent" required><span>Zgadzam się na wykorzystanie tych danych do odpowiedzi na moje zapytanie o współpracę.</span></label>
           <p class="partner-privacy">Wiadomość i dane kontaktowe trafią do panelu administratora strony, aby mógł odpowiedzieć. Nie podawaj haseł ani poufnych danych.</p>

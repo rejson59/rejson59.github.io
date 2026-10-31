@@ -13,8 +13,6 @@
 #rj-portal-arrival .rj-arrival-name.is-long { font-size:clamp(18px,2.6vw,36px); }
 #rj-portal-arrival .rj-arrival-caption { margin:12px 0 0; color:#bfccdf; font:400 14px/1.4 system-ui,sans-serif; }
 #rj-portal-arrival .rj-arrival-map { position:relative; width:min(100%,930px); height:clamp(230px,31vw,340px); margin:15px auto 18px; overflow:hidden; overflow:clip; }
-#rj-portal-arrival .rj-arrival-route { position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
-#rj-portal-arrival .rj-arrival-route path { fill:none; stroke:#87b4ff; stroke-width:1.6; stroke-dasharray:4 9; opacity:.5; vector-effect:non-scaling-stroke; }
 #rj-portal-arrival .rj-arrival-home,#rj-portal-arrival .rj-arrival-planet { position:absolute; aspect-ratio:1; border-radius:50%; }
 #rj-portal-arrival .rj-arrival-home { left:9%; top:66%; width:clamp(55px,8vw,90px); background:radial-gradient(circle at 32% 28%,#b9d3ff,#6aa6ff 55%,#3f6fbe); box-shadow:inset -12px -14px 25px #080c1a59,inset 8px 10px 20px #ffffff73,0 0 36px #6aa6ff35; }
 #rj-portal-arrival .rj-arrival-planet { left:82%; top:18%; width:clamp(65px,9vw,100px); background:radial-gradient(circle at 32% 28%,#e3daff,#a98bff 55%,#6856ac); box-shadow:inset -13px -14px 25px #080c1a59,inset 9px 11px 21px #ffffff73,0 0 42px #a98bff35; }
