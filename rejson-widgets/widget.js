@@ -510,6 +510,10 @@
     "  position: relative;",
     "  width: min(338px, calc(100vw - 32px));",
     "  padding: 13px;",
+    "  max-height: calc(100vh - 52px - var(--rj-mobile-ads-height, 0px));",
+    "  max-height: calc(100dvh - 52px - var(--rj-mobile-ads-height, 0px));",
+    "  overflow-y: auto;",
+    "  overscroll-behavior: contain;",
     "  opacity: 0;",
     "  filter: blur(6px);",
     "  transform: translateY(4px) scale(0.98);",
@@ -991,7 +995,7 @@
     var safeY = isBottom ? "env(safe-area-inset-bottom, 0px)" : "env(safe-area-inset-top, 0px)";
     vesselEl.style.right = isRight ? "calc(" + edgeOffset + "px + " + safeX + ")" : "auto";
     vesselEl.style.left = isRight ? "auto" : "calc(" + edgeOffset + "px + " + safeX + ")";
-    vesselEl.style.bottom = isBottom ? "calc(18px + " + safeY + ")" : "auto";
+    vesselEl.style.bottom = isBottom ? "calc(18px + " + safeY + " + var(--rj-mobile-ads-height, 0px))" : "auto";
     vesselEl.style.top = isBottom ? "auto" : "calc(18px + " + safeY + ")";
   }
 
