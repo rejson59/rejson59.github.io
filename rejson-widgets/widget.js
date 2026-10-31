@@ -469,13 +469,13 @@
     ".rj-collapse {",
     "  position: fixed;",
     "  z-index: 2147483002;",
-    "  width: 28px;",
-    "  height: 28px;",
+    "  width: 22px;",
+    "  height: 22px;",
     "  border-radius: 999px;",
     "  border: 1px solid rgba(184, 213, 255, 0.5);",
     "  background: #1b2739;",
     "  color: #ffffff;",
-    "  font: 700 17px/1 system-ui, sans-serif;",
+    "  font: 700 12px/1 system-ui, sans-serif;",
     "  display: grid;",
     "  place-items: center;",
     "  padding: 0;",
@@ -930,7 +930,7 @@
     var rect = vesselEl.getBoundingClientRect();
     if (!rect.width || !rect.height) { collapseBtn.classList.add("is-hidden"); return; }
     var isEdge = state.mode === "edge";
-    var size = 28, margin = 4;
+    var size = 22, margin = 4;
     var onRight = state.corner.indexOf("right") !== -1;
     var cx = isEdge ? (onRight ? rect.right - size / 2 : rect.left + size / 2) : rect.right - size / 2;
     var x = Math.max(margin, Math.min(window.innerWidth - size - margin, cx - size / 2));
