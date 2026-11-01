@@ -67,9 +67,12 @@ const server=http.createServer((req,res)=>{
     assert.equal(await page.locator('#chat-input').inputValue(),'');
     await page.locator('#posts-tab').click();
     assert.equal(await page.locator('#panel-posts').isVisible(),true);
+    assert.equal(await page.locator('#channel-general').getAttribute('aria-pressed'),'false');
     await page.locator('#channel-general').click();
     assert.equal(await page.locator('#panel-chat').isVisible(),true);
-    for(const width of [320,375,760,800,1024,1440]) {
+    assert.equal(await page.locator('#channel-general').getAttribute('aria-pressed'),'true');
+    for(const theme of ['dark','light']) for(const width of [320,375,760,800,1024,1440]) {
+      await page.evaluate(t=>document.documentElement.dataset.theme=t,theme);
       await page.setViewportSize({width,height:850});
       const result=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth, chat:document.querySelector('.comm-chat').getBoundingClientRect().width, columns:getComputedStyle(document.querySelector('.comm-layout')).gridTemplateColumns.split(' ').length}));
       assert(result.scroll<=width,`${width}: poziome przewijanie ${result.scroll}`);

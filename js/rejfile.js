@@ -31,10 +31,39 @@
       var raw=sessionStorage.getItem(CHAT_DRAFT), old=null;
       try { old=JSON.parse(raw||'null'); } catch (_) {}
       if(old && typeof old.at==='number' && Date.now()-old.at>=0 && Date.now()-old.at<30*60*1000 && old.expires>Date.now() && old.link!==shareLink(item) && !window.confirm('W RejChat czeka już inny link z RejFile. Zastąpić go tym linkiem?')) return;
-      sessionStorage.setItem(CHAT_DRAFT, JSON.stringify({link:shareLink(item), at:Date.now(), expires:expiry}));
+      sessionStorage.setItem(CHAT_DRAFT, JSON.stringify({link:shareLink(item), at:Date.now(), expires:expiry, kind:/\.rjnote$/i.test(item.name)?'note':'file'}));
     } catch (_) { window.alert('Nie można przygotować linku w tej karcie. Skopiuj go i wklej w RejChat ręcznie.'); return; }
     location.assign('/rejchat');
   }
+  var shareKind='file', noteContent=$('note-content');
+  document.querySelectorAll('[data-share-kind]').forEach(function(button) {
+    button.addEventListener('click',function(){
+      if(busy)return;shareKind=button.dataset.shareKind;
+      document.querySelectorAll('[data-share-kind]').forEach(function(x){x.setAttribute('aria-pressed',String(x===button));});
+      $('file-editor').hidden=shareKind!=='file';$('note-editor').hidden=shareKind!=='note';
+      $('send').firstChild.textContent=shareKind==='note'?'Udostępnij notatkę ':'Prześlij plik ';report($('error'),'');
+    });
+  });
+  document.querySelectorAll('[data-note-command]').forEach(function(button){
+    button.addEventListener('mousedown',function(e){e.preventDefault();});
+    button.addEventListener('click',function(){noteContent.focus();document.execCommand(button.dataset.noteCommand,false,null);});
+  });
+  function insertNoteTransfer(e,clip){
+    e.preventDefault();if(!clip)return;
+    try {
+      var html=clip.getData('text/html'), plain=clip.getData('text/plain'), content;
+      if(plain.length>1024*1024)throw new Error('Wklejany tekst jest za duży (maksymalnie 1 MiB).');
+      if(html)content=window.RejFileNotes.sanitize(html);else{content=document.createElement('div');content.appendChild(document.createTextNode(plain));}
+      var selection=window.getSelection(), range;
+      if(selection.rangeCount && noteContent.contains(selection.anchorNode) && noteContent.contains(selection.focusNode)){range=selection.getRangeAt(0);range.deleteContents();}
+      else {range=document.createRange();range.selectNodeContents(noteContent);range.collapse(false);}
+      var fragment=document.createDocumentFragment();while(content.firstChild)fragment.appendChild(content.firstChild);var last=fragment.lastChild;range.insertNode(fragment);
+      if(last){range.setStartAfter(last);range.collapse(true);selection.removeAllRanges();selection.addRange(range);}
+    } catch(err){report($('error'),err.message||'Nie udało się wkleić tekstu.');}
+  }
+  $('note-heading').addEventListener('change',function(){noteContent.focus();document.execCommand('formatBlock',false,this.value);});
+  noteContent.addEventListener('paste',function(e){insertNoteTransfer(e,e.clipboardData);});
+  noteContent.addEventListener('drop',function(e){insertNoteTransfer(e,e.dataTransfer);});
   function updateFile(file) {
     selected=file || null; $('file-label').textContent=file ? file.name : 'Przeciągnij plik tutaj';
     $('file-help').textContent=file ? human(file.size)+' · kliknij, aby zmienić' : 'lub wybierz z urządzenia';
@@ -95,11 +124,12 @@
     catch(_){if(version!==sessionVersion)return;$('inbox-status').textContent='Nie można potwierdzić sesji. Sprawdź połączenie lub zaloguj się ponownie.';$('login').hidden=false;$('refresh').hidden=false;}
   }
   form.addEventListener('submit',async function(e){e.preventDefault();if(busy)return;report($('error'),'');var file=selected;
+    if(shareKind==='note'){try{if(!window.RejFileNotes)throw new Error('Edytor notatek jest niedostępny.');file=window.RejFileNotes.encode(noteContent.innerHTML,$('note-title').value);}catch(err){report($('error'),err.message);return;}}
     if(!file){report($('error'),'Wybierz plik.');return;} if(file.size<1||file.size>LIMIT){report($('error'),'Plik musi mieć od 1 bajtu do 100 MB.');return;}
     if(!window.crypto||!crypto.getRandomValues){report($('error'),'Ta przeglądarka nie obsługuje bezpiecznego tworzenia linków.');return;}
     var mode=document.querySelector('input[name="mode"]:checked').value, recipient=mode==='account'?$('recipient').value.trim():null;
     if(recipient&&!/^[A-Za-z0-9][A-Za-z0-9_.-]{2,23}$/.test(recipient)){report($('error'),'Wpisz poprawną nazwę odbiorcy.');return;} if(mode==='account'&&!recipient){report($('error'),'Podaj nazwę odbiorcy.');return;}
-    busy=true;$('send').disabled=true;var item={name:escapeName(file.name),owner:key(),share:mode==='link'?key():null,recipient:recipient,status:'uploading'},created=false;
+    busy=true;$('send').disabled=true;noteContent.contentEditable='false';$('note-title').disabled=true;document.querySelectorAll('[data-share-kind], [data-note-command], #note-heading').forEach(function(x){x.disabled=true;});var item={name:escapeName(file.name),owner:key(),share:mode==='link'?key():null,recipient:recipient,status:'uploading'},created=false;
     try {
       progress('Przygotowuję przesyłkę…',0,file.size);
       var start=await rpc('create',{name:item.name,size:file.size,owner:item.owner,share:item.share,recipient:recipient,session:token});
@@ -109,20 +139,42 @@
       progress('Kończę przesyłanie…',file.size,file.size);
       var result=await rpc('finish',{id:item.id,owner:item.owner});if(!result.expires_at)throw new Error('Nie udało się potwierdzić przesłania.');
       item.status='ready';item.expires=result.expires_at;persist();renderHistory();form.hidden=true;$('success').hidden=false;
-      $('success-text').textContent=mode==='link'?'Wyślij link osobie, której chcesz udostępnić plik. Wygasa: '+when(item.expires)+'.':'Plik czeka w skrzynce użytkownika '+recipient+'. Wygasa: '+when(item.expires)+'.';
+      $('success').querySelector('h3').textContent=shareKind==='note'?'Notatka jest gotowa!':'Plik jest gotowy!';$('another').textContent='Wyślij kolejną przesyłkę ↗';
+      $('success-text').textContent=mode==='link'?'Wyślij link osobie, której chcesz udostępnić '+(shareKind==='note'?'notatkę':'plik')+'. Wygasa: '+when(item.expires)+'.':(shareKind==='note'?'Notatka':'Plik')+' czeka w skrzynce użytkownika '+recipient+'. Wygasa: '+when(item.expires)+'.';
       $('link-wrap').hidden=!item.share;if(item.share){$('share-link').value=shareLink(item);$('share-chat').onclick=function(){prepareChat(item);};}$('copy-link').textContent='Kopiuj';
     } catch(err){report($('error'),err.message || 'Nie udało się przesłać pliku.'); if(created)renderHistory();}
-    finally {busy=false;$('send').disabled=false;$('progress-wrap').hidden=true;}
+    finally {busy=false;$('send').disabled=false;$('progress-wrap').hidden=true;noteContent.contentEditable='true';$('note-title').disabled=false;document.querySelectorAll('[data-share-kind], [data-note-command], #note-heading').forEach(function(x){x.disabled=false;});}
   });
   $('copy-link').addEventListener('click',function(){copy($('share-link').value,$('copy-link'));});
-  $('another').addEventListener('click',function(){form.hidden=false;$('success').hidden=true;fileInput.value='';updateFile(null);});
+  $('another').addEventListener('click',function(){form.hidden=false;$('success').hidden=true;fileInput.value='';updateFile(null);if(shareKind==='note'){noteContent.replaceChildren();$('note-title').value='';$('note-heading').value='p';}});
   function credentials(entry) { entry=entry||active; return entry ? {id:entry.id,share:entry.share||null,owner:entry.owner||null,session:token} : {}; }
   async function openFile(data) {
-    if(!data||!uuid.test(data.id))return;if(downloadBusy){report($('download-error'),'Poczekaj na zakończenie bieżącego pobierania.');return;}active=data;$('download-panel').hidden=false;$('download').hidden=true;$('download-progress').hidden=true;report($('download-error'),'');$('download-meta').textContent='Sprawdzam plik…';$('download-panel').scrollIntoView({behavior:'smooth',block:'center'});
+    if(!data||!uuid.test(data.id))return;if(downloadBusy){report($('download-error'),'Poczekaj na zakończenie bieżącego pobierania.');return;}active=data;$('note-preview').hidden=true;$('note-preview-content').replaceChildren();$('copy-note-status').textContent='';$('download-panel').hidden=false;$('download').hidden=true;$('download').firstChild.textContent='Pobierz plik ';$('download-progress').hidden=true;report($('download-error'),'');$('download-meta').textContent='Sprawdzam plik…';$('download-panel').scrollIntoView({behavior:'smooth',block:'center'});
     var opening=active;
-    try {var info=await rpc('info',credentials(opening));if(active!==opening)return;if(typeof info.name!=='string'||!Number.isSafeInteger(info.size)||info.size<1||info.size>LIMIT||!Number.isInteger(info.chunks)||info.chunks!==Math.ceil(info.size/CHUNK))throw new Error('Nieprawidłowe dane pliku.');active.info=info;$('download-title').textContent=escapeName(info.name);$('download-meta').textContent=human(info.size)+' · dostępny do '+when(info.expires_at)+(info.sender?' · od '+info.sender:'');$('download').hidden=false;}
+    try {var info=await rpc('info',credentials(opening));if(active!==opening)return;if(typeof info.name!=='string'||!Number.isSafeInteger(info.size)||info.size<1||info.size>LIMIT||!Number.isInteger(info.chunks)||info.chunks!==Math.ceil(info.size/CHUNK))throw new Error('Nieprawidłowe dane pliku.');active.info=info;$('download-title').textContent=escapeName(info.name);$('download-meta').textContent=human(info.size)+' · dostępny do '+when(info.expires_at)+(info.sender?' · od '+info.sender:'');$('download').hidden=false;if(/\.rjnote$/i.test(info.name)&&info.size<=1024*1024) previewNote(opening);}
     catch(e){if(active!==opening)return;$('download-meta').textContent='';report($('download-error'),e.message);}
   }
+  async function previewNote(entry) {
+    try {
+      var grant=await rpc('chunk',Object.assign(credentials(entry),{index:0}));
+      var res=await fetch(publicUrl(grant.url),{cache:'no-store',referrerPolicy:'no-referrer'});
+      if(!res.ok)throw new Error('Nie udało się pobrać notatki.');
+      var blob=await res.blob();if(blob.size!==entry.info.size)throw new Error('Pobrana notatka ma nieprawidłowy rozmiar.');
+      var note=window.RejFileNotes.decode(await blob.text());if(active!==entry)return;
+      $('download-title').textContent=note.title||'Notatka';$('download').firstChild.textContent='Pobierz notatkę ';$('note-preview-content').replaceChildren(note.content);$('note-preview').hidden=false;
+      $('download-meta').textContent='Notatka · dostępna do '+when(entry.info.expires_at)+(entry.info.sender?' · od '+entry.info.sender:'');
+    }catch(e){if(active===entry)report($('download-error'),'Nie można wyświetlić notatki. Możesz spróbować pobrać plik.');}
+  }
+  $('copy-note').addEventListener('click',async function(){
+    var content=$('note-preview-content');
+    try {
+      if(navigator.clipboard && navigator.clipboard.write && window.ClipboardItem){
+        try {await navigator.clipboard.write([new ClipboardItem({'text/html':new Blob([content.innerHTML],{type:'text/html'}),'text/plain':new Blob([content.innerText],{type:'text/plain'})})]);$('copy-note-status').textContent='Skopiowano notatkę z formatowaniem.';}
+        catch(err){if(!navigator.clipboard.writeText)throw err;await navigator.clipboard.writeText(content.innerText);$('copy-note-status').textContent='Skopiowano sam tekst.';}
+      } else if(navigator.clipboard && navigator.clipboard.writeText){await navigator.clipboard.writeText(content.innerText);$('copy-note-status').textContent='Skopiowano sam tekst.';}
+      else throw new Error('Schowek jest niedostępny.');
+    } catch(e){$('copy-note-status').textContent='Nie udało się skopiować. Zaznacz treść i skopiuj ją ręcznie.';}
+  });
   $('download').addEventListener('click',async function(){if(!active||!active.info)return;var entry=active,parts=[];downloadBusy=true;$('download').disabled=true;$('download-progress').hidden=false;report($('download-error'),'');
     try {for(var i=0;i<entry.info.chunks;i++){var grant=await rpc('chunk',Object.assign(credentials(entry),{index:i}));var res=await fetch(publicUrl(grant.url),{cache:'no-store',referrerPolicy:'no-referrer'});if(!res.ok)throw new Error('Nie udało się pobrać części pliku.');var blob=await res.blob();var expected=Math.min(CHUNK,entry.info.size-i*CHUNK);if(blob.size!==expected)throw new Error('Pobrana część ma nieprawidłowy rozmiar.');parts.push(blob);var percent=Math.round(Math.min((i+1)*CHUNK,entry.info.size)/entry.info.size*100);$('download-bar').value=percent;$('download-percent').textContent=percent+'%';}
       var object=URL.createObjectURL(new Blob(parts,{type:'application/octet-stream'}));var a=document.createElement('a');a.href=object;a.download=escapeName(entry.info.name);document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(object);},60000);

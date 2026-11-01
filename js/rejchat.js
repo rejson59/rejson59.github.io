@@ -6,6 +6,7 @@
   if(!tabs[0]||!tabs[1])return;
   function activate(index,focus,updateHash){
     tabs.forEach(function(tab,i){tab.setAttribute('aria-selected',String(i===index));tab.tabIndex=i===index?0:-1;panels[i].hidden=i!==index;});
+    var channel=document.getElementById('channel-general');if(channel){channel.classList.toggle('is-active',index===0);channel.setAttribute('aria-pressed',String(index===0));}
     if(focus)tabs[index].focus();
     if(updateHash && history.replaceState)history.replaceState(null,'',location.pathname+location.search+(index?'#wpisy':'#czat'));
   }
@@ -45,7 +46,7 @@
       var d=readFileDraft(), form=document.getElementById('chat-form'), field=document.getElementById('chat-input');
       if(!d){draftBox.hidden=true;return;}
       if(!form || form.hidden){draftStatus.textContent='Zaloguj się, aby przygotować wiadomość na czacie.';return;}
-      var text=field.value||'', next=text+(text && !/\s$/.test(text) ? ' ' : '')+'Plik z RejFile: '+d.link;
+      var text=field.value||'', next=text+(text && !/\s$/.test(text) ? ' ' : '')+(d.kind==='note'?'Notatka z RejFile: ':'Plik z RejFile: ')+d.link;
       if(next.length>field.maxLength){draftStatus.textContent='W wiadomości nie ma miejsca na link. Skróć tekst i spróbuj ponownie.';return;}
       field.value=next; field.dispatchEvent(new Event('input',{bubbles:true}));
       try{sessionStorage.removeItem(draftKey);}catch(_){}

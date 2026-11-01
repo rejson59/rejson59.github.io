@@ -243,7 +243,7 @@
   <script defer src="/js/liquid-nav.js?v=1"></script>
   <link rel="stylesheet" href="/css/liquid.css?v=2026-10-30-2">
   <link rel="stylesheet" href="/css/responsive.css?v=1">
-  <link rel="stylesheet" href="/css/rejchat.css?v=3">
+  <link rel="stylesheet" href="/css/rejchat.css?v=4">
   <link rel="stylesheet" href="/css/side-ads.css?v=5">
   <script defer src="/js/side-ads.js?v=5"></script>
   <link rel="stylesheet" href="/css/mobile-ads.css?v=5">
@@ -512,16 +512,18 @@
       <h1 class="comm-title"><svg class="page-mark" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#people"></use></svg>RejChat<span class="rejchat-title-dot">.</span></h1>
       <p class="comm-lead">Wpadnij pogadać, podziel się pomysłem i poznaj innych.</p>
     </section>
-    <div class="rejchat-tabs" role="tablist" aria-label="Widoki RejChat">
+
+    <div class="comm-layout">
+      <aside class="comm-sidebar" aria-label="Nawigacja i użytkownicy online">
+        <div class="chat-navigation"><div class="chat-navigation-heading"><span class="chat-navigation-mark" aria-hidden="true">✦</span><div><strong>Twoja przestrzeń</strong><small>Rozmowy i wpisy</small></div></div>
+          <div class="rejchat-tabs" role="tablist" aria-label="Widoki RejChat">
       <button type="button" role="tab" id="chat-tab" aria-controls="panel-chat" aria-selected="true"><svg class="ui-icon" aria-hidden="true"><use href="/assets/ui-icons.svg?v=2#chat"></use></svg> Czat</button>
       <button type="button" role="tab" id="posts-tab" aria-controls="panel-posts" aria-selected="false" tabindex="-1">✦ Wpisy</button>
     </div>
-
-    <div class="comm-layout">
-      <aside class="comm-sidebar" aria-label="Kto jest online">
+        </div>
         <div class="chat-channel-list" aria-label="Dostępne rozmowy">
           <span class="chat-channel-label">ROZMOWY</span>
-          <button type="button" id="channel-general" class="chat-channel is-active" aria-controls="panel-chat"><span class="chat-channel-icon" aria-hidden="true">✦</span><span><strong>Czat ogólny</strong><small>Porozmawiaj ze społecznością</small></span></button>
+          <button type="button" id="channel-general" class="chat-channel is-active" aria-pressed="true" aria-controls="panel-chat"><span class="chat-channel-icon" aria-hidden="true">✦</span><span><strong>Czat ogólny</strong><small>Porozmawiaj ze społecznością</small></span></button>
         </div>
         <!-- ============ KTO JEST TERAZ ONLINE ============ -->
         <section class="comm-online-card glass-card" aria-label="Zalogowani użytkownicy online">
@@ -537,8 +539,8 @@
         <!-- ============ CZAT NA ŻYWO ============ -->
         <section class="comm-chat glass-card" aria-label="Czat RejChat">
           <header class="comm-chat-head">
-            <h2><span class="comm-chat-dot" aria-hidden="true"></span> Czat ogólny <span class="comm-chat-sub">na żywo</span></h2>
-            <span class="comm-chat-hint">odświeża się co 5 s</span>
+            <div class="chat-room-heading"><span class="chat-room-mark" aria-hidden="true">✦</span><div><h2>Czat ogólny</h2><p>Publiczna rozmowa społeczności</p></div></div>
+            <span class="comm-chat-hint"><span class="comm-chat-dot" aria-hidden="true"></span> Odświeżanie co 5 s</span>
           </header>
           <label class="rejchat-search"><span class="sr-only">Szukaj we wczytanych wiadomościach</span><input class="comm-input" id="chat-search" type="search" maxlength="100" placeholder="Szukaj we wczytanych wiadomościach…"></label>
           <p class="rejchat-search-hint" id="chat-search-status" aria-live="polite">Widoczne są ostatnie wczytane wiadomości.</p>
@@ -547,12 +549,12 @@
             <p class="comm-chat-empty">Ładowanie czatu…</p>
           </div>
           <div class="rejchat-file-draft" id="file-draft" hidden>
-            <strong>Link z RejFile jest gotowy</strong>
-            <p>To czat publiczny — każdy, kto zobaczy link, może pobrać plik. Dodaj go tylko, jeśli chcesz go publicznie udostępnić. Wysłanie nastąpi dopiero po kliknięciu „Wyślij”.</p>
+            <strong>Link do przesyłki z RejFile jest gotowy</strong>
+            <p>To czat publiczny — każdy, kto zobaczy link, może otworzyć lub pobrać przesyłkę. Dodaj go tylko, jeśli chcesz go publicznie udostępnić. Wysłanie nastąpi dopiero po kliknięciu „Wyślij”.</p>
             <div><button type="button" class="btn btn-primary btn-sm" id="file-draft-add">Dodaj link do wiadomości</button><button type="button" class="btn btn-ghost btn-sm" id="file-draft-discard">Usuń przygotowany link</button></div>
             <p id="file-draft-status" role="status" aria-live="polite"></p>
           </div>
-          <p class="rejchat-file-shortcut"><a href="/rejfile" target="_blank" rel="noopener">＋ Przygotuj plik w RejFile (nowa karta)</a> · Link możesz potem dodać do wiadomości w tej nowej karcie.</p>
+          <p class="rejchat-file-shortcut"><a href="/rejfile" target="_blank" rel="noopener">＋ Przygotuj plik lub notatkę w RejFile (nowa karta)</a> · Link możesz potem dodać do wiadomości w tej nowej karcie.</p>
           <form class="comm-chat-form" id="chat-form" hidden>
             <input class="comm-input" id="chat-input" type="text" maxlength="280" autocomplete="off"
                    placeholder="Napisz coś…" aria-label="Wiadomość na czat">
@@ -659,7 +661,7 @@
   <script defer src="js/view-tracker.js?v=7"></script>
   <script defer src="/js/rejchat-profiles.js?v=1"></script>
   <script defer src="js/community.js?v=2026-10-30-rejchat-3"></script>
-  <script defer src="/js/rejchat.js?v=3"></script>
+  <script defer src="/js/rejchat.js?v=4"></script>
   <script defer src="/js/media-capture.js?v=2"></script>
   <script defer src="/rejson-widgets/widget.js?v=12" data-project="rejson59.github.io"></script>
   <noscript><div class="rj-mobile-ads-spacer" aria-hidden="true"></div><aside id="rj-mobile-ads" aria-label="Mini reklamy i promocje"><span class="rj-mobile-ads-label">mini reklamy i promocje :) <span class="rj-mobile-ads-hint">przesuń →</span></span><div class="rj-mobile-ads-items" tabindex="0" aria-label="Przewijane mini reklamy"><a class="rj-mobile-ad rj-mobile-ad--site" href="/uslugi"><span class="rj-mobile-ad-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01M8 14h8"/></svg></span><span>Masz pomysł na swoją stronę?</span></a><a class="rj-mobile-ad rj-mobile-ad--offer" href="/partnerstwo#propozycja"><span class="rj-mobile-ad-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m4 10 11-5v14L4 14zM4 10v4m3.5 1 1.5 4h3l-1-3.3M18 9l2-2m-2 5h3m-3 3 2 2"/></svg></span><span>Masz coś, czym chcesz się podzielić?</span></a><a class="rj-mobile-ad rj-mobile-ad--house" href="/rejfile"><span class="rj-mobile-ad-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v13H6z"/><path d="M14 3v5h4M12 16V10m-2 2 2-2 2 2"/></svg></span><span>RejFile · wyślij plik</span></a></div></aside></noscript>
