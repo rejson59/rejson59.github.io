@@ -3,7 +3,7 @@
   "private": true,
   "description": "Testy przeglądarkowe loadera i efektu 3D kart (jsdom). Uruchomienie: npm install && npm test",
   "scripts": {
-    "test": "node loader.test.js && node premium.test.js && node tilt.test.js && node travel.test.js && node services-ads.test.js && node mobile-ads.test.js && node admin-bulk.test.js && node daily-visitors.test.js && node liquid.test.js && node widget-pages.test.js && node seo.test.js"
+    "test": "node loader.test.js && node preview-performance.test.js && node premium.test.js && node tilt.test.js && node travel.test.js && node services-ads.test.js && node mobile-ads.test.js && node admin-bulk.test.js && node daily-visitors.test.js && node liquid.test.js && node widget-pages.test.js && node seo.test.js"
   },
   "devDependencies": {
     "jsdom": "^24.1.3",

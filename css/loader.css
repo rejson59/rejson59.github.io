@@ -257,6 +257,8 @@ html[data-theme="light"] .rj-progress.is-done {
   transition: opacity 0.35s ease, visibility 0s linear 0.38s;
   pointer-events: none;
 }
+/* Nie utrzymujemy niewidocznych animacji w dziesiątkach kart. */
+.card-preview:not(.is-loading) .card-preview-loader { display:none; }
 .card-preview.is-loading .card-preview-loader {
   opacity: 1;
   visibility: visible;
