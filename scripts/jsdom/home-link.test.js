@@ -1,0 +1,7 @@
+/* Zabezpieczenie przed pustym domkiem przy niedostępnym sprite. */
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{JSDOM}=require('jsdom');
+const root=path.resolve(__dirname,'../..');
+const pages=['index.html','rejtools.html','rejfile.html','rejchat.html','logowanie.html','profil.html','widzety.html','uslugi.html','partnerstwo.html','tablica-pomyslow.html','admin.html','404.html','rejson-widgets/index.html'];
+for(const file of pages){const dom=new JSDOM(fs.readFileSync(path.join(root,file),'utf8'));const links=dom.window.document.querySelectorAll('.rj-shared-header .rj-home-link');assert.equal(links.length,1,file);const a=links[0];assert.equal(a.getAttribute('href'),'/');assert.equal(a.getAttribute('aria-label'),'Strona główna');const svg=a.querySelector('svg');assert(svg&&svg.getAttribute('viewBox')==='0 0 24 24'&&svg.querySelector('path[d]')&&!svg.querySelector('use'),file+': domek zawiera rzeczywisty kształt SVG');dom.window.close();}
+for(const file of ['spolecznosc.html','portal/index.html','podroz/index.html','rejson-widgets/admin.html','rejson-widgets/board.html']){const dom=new JSDOM(fs.readFileSync(path.join(root,file),'utf8'));const a=dom.window.document.querySelector('.rj-legacy-home');assert(a&&a.getAttribute('href')==='/'&&a.getAttribute('aria-label')==='Strona główna'&&a.querySelector('svg path[d]'),file+': domek na starszej stronie');dom.window.close();}
+console.log('PASS: własny kształt domku i link do strony głównej na 18 dokumentach');
