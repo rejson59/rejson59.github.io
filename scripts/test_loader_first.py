@@ -54,7 +54,7 @@ def main():
 
         # 4. loader.css nie blokuje
         check(name, "loader.css jest non-blocking (media print + onload)",
-              'css/loader.css?v=10" media="print"' in html)
+              'css/loader.css?v=11" media="print"' in html)
 
         # 5. Bootstrap WAAPI zaraz po znaczniku nakładki
         idx_overlay_end = html.find('<noscript><style>#rj-page-loader')
@@ -148,7 +148,7 @@ def main():
         check(name, "arkusz zewnętrzny zna etap (style nie znikają po wczytaniu CSS)",
               ".rj-loader-stage" in LOADER_CSS and ".rj-loader-labels" in LOADER_CSS)
         check(name, "loader.js i loader.css w nowych wersjach (bez starej wersji z cache)",
-              "js/loader.js?v=12" in html and "css/loader.css?v=10" in html)
+              "js/loader.js?v=13" in html and "css/loader.css?v=11" in html)
         # 10c. Odporność na słaby sprzęt (zgłoszenie: „zacina, pasek cofa się, stoi pusty”)
         check(name, "pierwszy ruch paska robi CSS (kompozytor), nie JS",
               "@keyframes rj-progress-creep" in crit and "animation: rj-progress-creep" in crit)

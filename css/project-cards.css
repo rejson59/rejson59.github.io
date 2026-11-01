@@ -8,6 +8,8 @@
 .rj-home .showcase-heading > a:hover { text-decoration:underline; }
 .rj-home .showcase-heading > a:focus-visible,.rj-home .showcase-story summary:focus-visible { outline:2px solid var(--accent-strong); outline-offset:3px; }
 .rj-home .showcase-grid,.rj-home .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(min(100%,285px),1fr)); gap:16px; align-items:stretch; }
+/* Pozostałe projekty: najwyżej trzy kolumny, także na bardzo szerokim ekranie. */
+.rj-home .grid { grid-template-columns:repeat(auto-fill,minmax(min(100%,max(285px,calc((100% - 32px) / 3))),1fr)); }
 .rj-home .showcase-item { display:flex; min-width:0; }
 .rj-home .showcase-item > .project-card { flex:1; min-width:0; }
 .rj-home .project-card .card-inner { box-sizing:border-box; height:100%; padding:14px; border-radius:22px; }

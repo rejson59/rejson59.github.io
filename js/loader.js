@@ -8,7 +8,7 @@
  *    nakłada loader, a po ~200 ms przechodzi dalej.
  * 3. Odroczone podglądy projektów: karty mają <iframe data-src="...">,
  *    a prawdziwy src wskakuje dopiero, gdy podgląd zbliża się do viewportu
- *    (IntersectionObserver, rootMargin ~900px). Strona ładuje się najpierw,
+ *    (IntersectionObserver, rootMargin 500px). Strona ładuje się najpierw,
  *    podglądy potem — i tylko te, które faktycznie dojedziesz.
  */
 (function () {
@@ -56,23 +56,36 @@
       var h = small ? 10 : 16;
       var slots = group.querySelectorAll(".dough-slot");
       var started = 0;
+      var animations = [];
       slots.forEach(function (slot, i) {
         var delay = i * 130;
         var ballEl = slot.querySelector(".ball");
         var shadowEl = slot.querySelector(".shadow");
         try {
           if (ballEl) {
-            ballEl.animate(doughBallFrames(h), { duration: DOUGH_MS, iterations: Infinity, delay: delay, fill: "backwards" });
+            animations.push(ballEl.animate(doughBallFrames(h), { duration: DOUGH_MS, iterations: Infinity, delay: delay, fill: "backwards" }));
             started++;
           }
           if (shadowEl) {
-            shadowEl.animate(DOUGH_SHADOW_FRAMES, { duration: DOUGH_MS, iterations: Infinity, delay: delay, fill: "backwards" });
+            animations.push(shadowEl.animate(DOUGH_SHADOW_FRAMES, { duration: DOUGH_MS, iterations: Infinity, delay: delay, fill: "backwards" }));
             started++;
           }
         } catch (e) { /* zostaje fallback CSS */ }
       });
       /* CSS-owe klatki wyłączamy dopiero, gdy WAAPI faktycznie przejął ruch */
-      if (started) group.classList.add("is-waapi");
+      if (started) { group._rjAnimations = animations; group.classList.add("is-waapi"); }
+    });
+  }
+
+  /* Tylko małe kulki podglądu — nigdy nie dotykamy animacji nakładki strony. */
+  function stopPreviewDough(preview) {
+    preview.querySelectorAll('.card-preview-loader .rj-dough').forEach(function (group) {
+      (group._rjAnimations || []).forEach(function (animation) {
+        try { if (animation && animation.cancel) animation.cancel(); } catch (e) { /* brak WAAPI */ }
+      });
+      group._rjAnimations = [];
+      group._rjWaapi = false;
+      group.classList.remove('is-waapi');
     });
   }
 
@@ -112,7 +125,7 @@
 
       (function next(i) {
         if (i >= queue.length) { scheduleSweep(); return; }
-        mountPreview(queue[i]);
+        enqueuePreview(queue[i]);
         /* słaby sprzęt: kolejna ramka czeka na wolną chwilę, nie na zegarek */
         if (lite && window.requestIdleCallback) {
           window.requestIdleCallback(function () { next(i + 1); }, { timeout: 800 });
@@ -313,12 +326,14 @@
   function ensurePreviewLoader(preview) {
     if (preview._rjLoaderReady) return;
     preview._rjLoaderReady = true;
-    var el = document.createElement("div");
-    el.className = "card-preview-loader";
-    el.setAttribute("aria-hidden", "true");
-    el.innerHTML = '<div class="rj-dough rj-dough--sm">' + ball + "</div>";
-    preview.appendChild(el);
-    animateDough(el);
+    var el = preview.querySelector(".card-preview-loader");
+    if (!el) {
+      el = document.createElement("div");
+      el.className = "card-preview-loader";
+      el.setAttribute("aria-hidden", "true");
+      el.innerHTML = '<div class="rj-dough rj-dough--sm">' + ball + "</div>";
+      preview.appendChild(el);
+    }
 
     /* awaryjna plakietka, gdy podgląd nie da się wczytać (żadnych czarnych dziur) */
     if (!preview.querySelector(".card-preview-fallback")) {
@@ -357,10 +372,10 @@
     previewObserver = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
         if (entry.isIntersecting || entry.intersectionRatio > 0) {
-          mountPreview(entry.target);
+          enqueuePreview(entry.target);
         }
       });
-    }, { rootMargin: "900px 0px 900px 0px", threshold: 0.01 });
+    }, { rootMargin: "500px 0px 500px 0px", threshold: 0.01 });
   }
 
   /* Ciężkie projekty (np. RejStream z osadzonym wideo) potrzebują czasu:
@@ -421,6 +436,7 @@
     if (preview._rjSettled) return;
     preview._rjSettled = true;
     preview._rjMounting = false;
+    stopPreviewDough(preview);
     clearTimeout(preview._rjTimer);
     clearTimeout(preview._rjRecheck);
     preview.classList.remove("is-loading");
@@ -498,6 +514,8 @@
     preview._rjSettled = false;
     preview.classList.remove("is-failed", "is-loaded");
     preview.classList.add("is-loading");
+    ensurePreviewLoader(preview);
+    animateDough(preview.querySelector(".card-preview-loader"));
 
     var attempt = preview._rjAttempts || 0;
     preview._rjAttempts = attempt + 1;
@@ -586,6 +604,32 @@
   }
 
   /* Ręczne ponowienie z plakietki „Spróbuj ponownie" */
+  /* Jedna wspólna kolejka dla observera i scrolla: również po pierwszym
+     ekranie nie uruchamiamy wielu ciężkich stron w tej samej klatce. */
+  var previewQueue = [], previewQueueTimer = null;
+  function drainPreviewQueue() {
+    previewQueueTimer = null;
+    var started = false;
+    while (previewQueue.length) {
+      var next = previewQueue.shift();
+      next._rjQueued = false;
+      if (!document.documentElement.contains(next) || next._rjMounting || next._rjSettled) continue;
+      mountPreview(next);
+      started = true;
+      break;
+    }
+    /* Okno odpoczynku trwa także po opróżnieniu kolejki, aby następne
+       wywołania observera w tej samej klatce nie ominęły odstępu. */
+    if (started || previewQueue.length) previewQueueTimer = setTimeout(drainPreviewQueue, 220);
+  }
+  function enqueuePreview(preview) {
+    if (!pageReady) { preview._rjWantMount = true; return; }
+    if (preview._rjQueued || preview._rjMounting || preview._rjSettled) return;
+    preview._rjQueued = true;
+    previewQueue.push(preview);
+    if (!previewQueueTimer) drainPreviewQueue();
+  }
+
   function retryPreview(preview) {
     if (!preview) return;
     clearTimeout(preview._rjTimer);
@@ -610,7 +654,7 @@
       if (snapshotState(p) === "ok") return;
       var r = p.getBoundingClientRect();
       if (!r.width && !r.height) return; /* ukryta sekcja */
-      if (r.bottom > -900 && r.top < vh + 900) mountPreview(p);
+      if (r.bottom > -500 && r.top < vh + 500) enqueuePreview(p);
     });
   }
 
@@ -640,7 +684,7 @@
       ensurePreviewLoader(p);
       if (!previewObserver) {
         /* bardzo stare przeglądarki — po prostu ładuj po kolei */
-        mountPreview(p);
+        enqueuePreview(p);
         return;
       }
       p._rjObserved = true;
@@ -651,16 +695,20 @@
       p.addEventListener("pointerenter", function () { mountPreview(p); }, { passive: true });
       p.addEventListener("focus", function () { mountPreview(p); });
     });
-    animateDough(document);
   }
 
   /* karty renderowane przez app.js dopiero po pobraniu danych */
   if ("MutationObserver" in window) {
     var mo = new MutationObserver(function (muts) {
       for (var i = 0; i < muts.length; i++) {
-        if (muts[i].addedNodes.length) {
-          scheduleScan();
-          return;
+        for (var j = 0; j < muts[i].addedNodes.length; j++) {
+          var node = muts[i].addedNodes[j];
+          if (node.nodeType !== 1) continue;
+          if (node.matches('.card-preview') || node.querySelector('.card-preview') ||
+              (node.matches('iframe[data-src]') && node.closest('.card-preview'))) {
+            scheduleScan();
+            return;
+          }
         }
       }
     });
@@ -685,8 +733,9 @@
       sweepScheduled = false;
       sweepPreviews();
     };
-    if (window.requestAnimationFrame) window.requestAnimationFrame(run);
-    else setTimeout(run, 120);
+    /* Jeden pomiar po krótkim oddechu, zamiast mierzenia każdej karty
+       przy każdej klatce przewijania. IntersectionObserver działa niezależnie. */
+    setTimeout(run, 200);
   }
 
   window.addEventListener("scroll", scheduleSweep, { passive: true });
@@ -717,7 +766,8 @@
   };
 
   /* nakładka strony: kulki napędzone natychmiast (defer ⇒ DOM już sparsowany) */
-  animateDough(document);
+  var initialOverlay = getOverlay();
+  if (initialOverlay) animateDough(initialOverlay);
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", function () { scan(document); });
