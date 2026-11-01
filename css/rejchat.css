@@ -163,3 +163,34 @@ a[data-profile-name]:hover { text-decoration:underline; }
 .rejchat-file-draft [role="status"]:empty { display: none; }
 .rejchat-file-shortcut { margin: 0; padding: 8px 20px; color: var(--muted); font-size: 12px; }
 .rejchat-file-shortcut a { color: var(--accent-strong); font-weight: 700; }
+
+/* Przestrzeń rozmowy: prawdziwe widoki, bez pozorowanych prywatnych konwersacji. */
+.rj-community .comm-main{max-width:1300px}
+.rj-community .comm-hero{margin-bottom:24px}
+.rj-community .comm-layout{gap:0;border:1px solid var(--liquid-border,var(--border));border-radius:28px;overflow:hidden;background:var(--liquid-surface,var(--card));box-shadow:0 22px 70px #0002;align-items:stretch}
+.rj-community .comm-sidebar{padding:16px;gap:14px;align-content:start;border-right:1px solid var(--border);background:color-mix(in srgb,var(--bg-elev) 65%,transparent)}
+.chat-navigation-heading{display:flex;align-items:center;gap:11px;padding:5px 4px 16px}.chat-navigation-mark,.chat-room-mark{display:grid;place-items:center;flex:none;width:43px;height:43px;border-radius:15px;background:linear-gradient(135deg,#9aedd1,#9acbff);color:#133c44;font-size:21px}.chat-navigation-heading strong,.chat-navigation-heading small{display:block}.chat-navigation-heading strong{font-size:14px}.chat-navigation-heading small{color:var(--muted);font-size:11px;margin-top:3px}
+.rj-community .rejchat-tabs{display:flex;width:100%;box-sizing:border-box;margin:0;border-radius:14px;gap:3px;padding:4px}.rj-community .rejchat-tabs button{flex:1;padding:10px 8px;border-radius:10px}
+.rj-community .chat-channel-list{padding:8px 0 0;border:0;border-radius:0;background:none;box-shadow:none}
+.rj-community .chat-channel-label{padding:0 4px 9px}.rj-community .chat-channel{border-radius:15px;background:transparent;border-color:transparent}.rj-community .chat-channel.is-active{background:color-mix(in srgb,var(--accent) 11%,var(--bg-elev));border-color:color-mix(in srgb,var(--accent) 26%,var(--border))}.rj-community .chat-channel:hover{background:color-mix(in srgb,var(--accent) 10%,var(--bg-elev))}
+.rj-community .comm-online-card{border-radius:18px;box-shadow:none;padding:15px}
+.rj-community .comm-primary{background:color-mix(in srgb,var(--card) 88%,transparent)}
+.rj-community .comm-chat{border:0;border-radius:0;box-shadow:none;background:transparent}
+.rj-community .comm-chat-head{min-height:76px;box-sizing:border-box;background:color-mix(in srgb,var(--bg-elev) 72%,transparent)}
+.chat-room-heading{display:flex;align-items:center;gap:12px}.chat-room-heading h2{margin:0}.chat-room-heading p{margin:5px 0 0;color:var(--muted);font-size:12px}.chat-room-mark{width:44px;height:44px}
+.rj-community .comm-chat-hint{display:flex;align-items:center;gap:8px;white-space:nowrap}.rj-community .comm-chat-dot{width:7px;height:7px;animation:none}
+.rj-community .rejchat-search input{border-radius:12px}
+.rj-community .comm-chat-list{height:clamp(340px,54vh,650px);max-height:650px;scroll-padding:16px}
+.rj-community .chat-bubble{box-shadow:0 3px 12px #0000000b}.rj-community .chat-text{white-space:pre-wrap;overflow-wrap:anywhere}
+.rj-community .comm-chat-form .comm-input{background:var(--input-bg)}.rj-community .comm-chat-form .btn{border-radius:999px;padding-inline:20px}
+.rj-community #panel-posts{padding:20px}.rj-community #panel-posts .comm-composer{margin-top:0}
+@media(max-width:760px){
+ .rj-community .comm-layout{border:0;border-radius:0;background:transparent;box-shadow:none;gap:12px}
+ .rj-community .comm-sidebar{display:contents;padding:0;border:0;background:none}
+ .rj-community .chat-navigation{order:-2}.chat-navigation-heading{display:none}
+ .rj-community .chat-channel-list{order:-1;padding:0}.rj-community .chat-channel-label{display:none}
+ .rj-community .comm-primary{border:1px solid var(--liquid-border,var(--border));border-radius:22px;overflow:hidden}
+ .rj-community .comm-online-card{order:2}.rj-community .comm-chat-head{min-height:70px}
+ .rj-community .comm-chat-list{height:clamp(280px,43vh,480px);min-height:280px}
+ .rj-community #panel-posts{padding:14px}
+}
