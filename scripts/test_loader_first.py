@@ -148,7 +148,7 @@ def main():
         check(name, "arkusz zewnętrzny zna etap (style nie znikają po wczytaniu CSS)",
               ".rj-loader-stage" in LOADER_CSS and ".rj-loader-labels" in LOADER_CSS)
         check(name, "loader.js i loader.css w nowych wersjach (bez starej wersji z cache)",
-              "js/loader.js?v=13" in html and "css/loader.css?v=11" in html)
+              "js/loader.js?v=14" in html and "css/loader.css?v=11" in html)
         # 10c. Odporność na słaby sprzęt (zgłoszenie: „zacina, pasek cofa się, stoi pusty”)
         check(name, "pierwszy ruch paska robi CSS (kompozytor), nie JS",
               "@keyframes rj-progress-creep" in crit and "animation: rj-progress-creep" in crit)
@@ -168,9 +168,9 @@ def main():
         check(name, "loader.js sprząta spóźnione timery przed pokazaniem",
               "clearHideTimers()" in JS and JS.count("later(") >= 3)
         check(name, "podglądy startują pojedynczo (bez zrywu 5 iframe)",
-              "(function next(i)" in JS and "var gap = lite ? 320 : 150;" in JS)
+              "function drainPreviewQueue()" in JS and "lite ? 240 : 120" in JS and "previewQueue.shift()" in JS)
         check(name, "na słabym sprzęcie ramki startują w wolnych chwilach",
-              "requestIdleCallback(function () { next(i + 1); }" in JS)
+              "requestIdleCallback(drainPreviewQueue, { timeout: 400 })" in JS)
         check(name, "loader.js nie pauzuje animacji nakładki (to ją zamrażało)",
               "pauseLoaderAnimations" not in JS and "getAnimations" not in JS)
         check(name, "nakładka znika z układu po zaniknięciu", 'el.style.display = "none";' in JS)

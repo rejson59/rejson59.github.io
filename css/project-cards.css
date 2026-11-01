@@ -1,4 +1,7 @@
-/* Galeria projektów: mniejsze karty, bez zmian w mechanice podglądów i tilt. */
+/* Galeria projektów: mniejsze karty, bez zmian w mechanice tilt. */
+/* Topbar ma nieprzezroczyste tło, więc rozmywanie za nim przy scrollu nie
+   wnosi efektu wizualnego, a wymaga ponownego przetwarzania obrazu. */
+body.rj-home .rj-shared-header { backdrop-filter:none; -webkit-backdrop-filter:none; }
 .rj-home .origins { padding:28px 0 32px; background:none; }
 .rj-home .showcase-heading { display:flex; flex-wrap:wrap; align-items:end; justify-content:space-between; gap:12px 20px; margin-bottom:20px; }
 .rj-home .showcase-heading h2 { margin:0; font-size:clamp(25px,3vw,34px); letter-spacing:-.035em; }
@@ -14,6 +17,9 @@
 .rj-home .showcase-item > .project-card { flex:1; min-width:0; }
 .rj-home .project-card .card-inner { box-sizing:border-box; height:100%; padding:14px; border-radius:22px; }
 .rj-home .project-card .card-preview { order:-2; width:100%; max-width:none; aspect-ratio:16/9; height:auto; margin:0 0 12px; border-radius:14px; --iframe-scale:.25; }
+/* Przeglądarka pomija rysowanie dalekich zawartości, bez zmiany rozmiaru
+   karty i bez wyłączania efektu 3D. */
+.rj-home .project-card .card-preview-frame { content-visibility:auto; }
 .rj-home .grid .project-card .card-preview { aspect-ratio:16/8; }
 .rj-home .project-card .card-top { order:-1; margin-bottom:9px; gap:6px; }
 .rj-home .project-card .card-index { font-size:10px; letter-spacing:.04em; }

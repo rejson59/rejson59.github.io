@@ -8,7 +8,7 @@
  *    nakłada loader, a po ~200 ms przechodzi dalej.
  * 3. Odroczone podglądy projektów: karty mają <iframe data-src="...">,
  *    a prawdziwy src wskakuje dopiero, gdy podgląd zbliża się do viewportu
- *    (IntersectionObserver, rootMargin 500px). Strona ładuje się najpierw,
+ *    (IntersectionObserver, rootMargin 800px). Strona ładuje się najpierw,
  *    podglądy potem — i tylko te, które faktycznie dojedziesz.
  */
 (function () {
@@ -103,37 +103,23 @@
      gdy loader jeszcze gra — zabierały główny wątek i GPU, przez co kulki
      gubiły klatki. Montujemy je dopiero po zdjęciu nakładki. */
   var pageReady = false;
+  var previewQueue = [], previewQueueTimer = null;
+  var sweepScheduled = false;
 
   function markPageReady() {
     if (pageReady) return;
     pageReady = true;
 
-    /* Podglądy, które już zgłosiły chęć (były w zasięgu ekranu), montujemy
-       POJEDYNCZO. Wcześniej pięć iframe-ów (w tym projekt z wideo) startowało
-       w jednej klatce — na słabszym sprzęcie oznaczało to kilkusekundowe
-       zamrożenie strony zaraz po zniknięciu loadera. */
-    setTimeout(function () {
-      var queue = [];
-      var previews = document.querySelectorAll(".card-preview");
-      previews.forEach(function (p) {
-        if (p._rjWantMount) queue.push(p);
-      });
-
-      var el = getOverlay();
-      var lite = !!(el && el.classList.contains("rj-loader--lite"));
-      var gap = lite ? 320 : 150;
-
-      (function next(i) {
-        if (i >= queue.length) { scheduleSweep(); return; }
-        enqueuePreview(queue[i]);
-        /* słaby sprzęt: kolejna ramka czeka na wolną chwilę, nie na zegarek */
-        if (lite && window.requestIdleCallback) {
-          window.requestIdleCallback(function () { next(i + 1); }, { timeout: 800 });
-        } else {
-          setTimeout(function () { next(i + 1); }, gap);
-        }
-      })(0);
-    }, 150);
+    /* Widoczne karty przed tymi, które są dopiero w strefie wyprzedzenia.
+       Wspólna kolejka rozkłada starty; nie trzeba czekać dwa razy na timer. */
+    var previews = document.querySelectorAll(".card-preview");
+    previews.forEach(function (p) {
+      if (p._rjWantMount && p._rjNear !== false && p._rjVisible) enqueuePreview(p, true);
+    });
+    previews.forEach(function (p) {
+      if (p._rjWantMount && p._rjNear !== false && !p._rjVisible) enqueuePreview(p);
+    });
+    scheduleSweep();
   }
 
   function progressApi() {
@@ -367,15 +353,40 @@
     }
   }
 
-  var previewObserver = null;
+  var PREVIEW_RELEASE_DELAY_MS = 1200;
+  var previewObserver = null, visibleObserver = null, retentionObserver = null;
   if ("IntersectionObserver" in window) {
     previewObserver = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
-        if (entry.isIntersecting || entry.intersectionRatio > 0) {
-          enqueuePreview(entry.target);
+        var p = entry.target;
+        p._rjNear = !!(entry.isIntersecting || entry.intersectionRatio > 0);
+        if (p._rjNear) enqueuePreview(p, p._rjVisible);
+        else p._rjWantMount = false;
+      });
+    }, { rootMargin: "800px 0px 800px 0px", threshold: 0.01 });
+
+    visibleObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        var p = entry.target;
+        p._rjVisible = !!(entry.isIntersecting || entry.intersectionRatio > 0);
+        if (p._rjVisible) { p._rjNear = true; enqueuePreview(p, true); }
+      });
+    }, { threshold: 0.01 });
+
+    /* Dalekie ramki nie muszą przez całą wizytę odtwarzać własnych filmów,
+       animacji i skryptów. Wrócą automatycznie zanim karta wejdzie w widok. */
+    retentionObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        var p = entry.target;
+        p._rjRetained = !!(entry.isIntersecting || entry.intersectionRatio > 0);
+        clearTimeout(p._rjReleaseTimer);
+        if (!p._rjRetained) {
+          p._rjReleaseTimer = setTimeout(function () {
+            if (!p._rjRetained) releaseFarPreview(p);
+          }, PREVIEW_RELEASE_DELAY_MS);
         }
       });
-    }, { rootMargin: "500px 0px 500px 0px", threshold: 0.01 });
+    }, { rootMargin: "1200px 0px 1200px 0px", threshold: 0 });
   }
 
   /* Ciężkie projekty (np. RejStream z osadzonym wideo) potrzebują czasu:
@@ -509,6 +520,7 @@
       if (frame.classList.contains("is-frozen") || snap === "broken") unfreezePreview(preview);
     }
 
+    preview._rjSuspended = false;
     preview._rjMounting = true;
     preview._rjMounted = true;
     preview._rjSettled = false;
@@ -600,35 +612,71 @@
       return;
     }
     armWatchdog();
-    if (previewObserver) previewObserver.unobserve(preview);
+    if (retentionObserver) retentionObserver.observe(preview);
   }
 
-  /* Ręczne ponowienie z plakietki „Spróbuj ponownie" */
-  /* Jedna wspólna kolejka dla observera i scrolla: również po pierwszym
-     ekranie nie uruchamiamy wielu ciężkich stron w tej samej klatce. */
-  var previewQueue = [], previewQueueTimer = null;
+  /* Zwolnienie zachowuje link, geometrię karty, błędy i sprawdzone migawki.
+     Nie zmieniamy licznika prób na kolejny adres z pominięciem cache: po
+     powrocie jest zwykłe ładowanie, a nie ręczne ponowienie błędu. */
+  function releaseFarPreview(preview) {
+    if (!document.documentElement.contains(preview) || !preview._rjMounted || preview._rjNear === true ||
+        preview.contains(document.activeElement) || snapshotState(preview) !== "none") return;
+    var iframe = preview.querySelector("iframe[data-src]");
+    if (!iframe) return;
+    var failed = preview.classList.contains("is-failed");
+    clearTimeout(preview._rjTimer);
+    clearTimeout(preview._rjRecheck);
+    preview._rjOnLoad = preview._rjOnError = null;
+    stopPreviewDough(preview);
+    preview._rjMounting = false;
+    preview._rjMounted = false;
+    preview._rjAttempts = 0;
+    preview._rjSuspended = !failed;
+    if (!failed) preview._rjSettled = false;
+    preview.classList.remove("is-loading", "is-loaded");
+    /* Usunięcie src zwalnia dokument ramki; data-src pozostaje nienaruszone. */
+    iframe.removeAttribute("src");
+    if (retentionObserver) retentionObserver.unobserve(preview);
+  }
+
+  /* Jedna wspólna kolejka: priorytet mają karty już na ekranie, ale starty
+     nadal są rozłożone — nigdy nie odpalamy wszystkich w jednej klatce. */
   function drainPreviewQueue() {
     previewQueueTimer = null;
     var started = false;
     while (previewQueue.length) {
       var next = previewQueue.shift();
       next._rjQueued = false;
-      if (!document.documentElement.contains(next) || next._rjMounting || next._rjSettled) continue;
+      if (!document.documentElement.contains(next) || next._rjMounting || next._rjSettled || next._rjNear === false) continue;
       mountPreview(next);
       started = true;
       break;
     }
-    /* Okno odpoczynku trwa także po opróżnieniu kolejki, aby następne
-       wywołania observera w tej samej klatce nie ominęły odstępu. */
-    if (started || previewQueue.length) previewQueueTimer = setTimeout(drainPreviewQueue, 220);
+    if (started || previewQueue.length) {
+      var el = getOverlay(), lite = !!(el && el.classList.contains("rj-loader--lite"));
+      previewQueueTimer = setTimeout(function () {
+        if (lite && window.requestIdleCallback) {
+          window.requestIdleCallback(drainPreviewQueue, { timeout: 400 });
+        } else drainPreviewQueue();
+      }, lite ? 240 : 120);
+    }
   }
-  function enqueuePreview(preview) {
+  function enqueuePreview(preview, priority) {
     if (!pageReady) { preview._rjWantMount = true; return; }
-    if (preview._rjQueued || preview._rjMounting || preview._rjSettled) return;
+    if (preview._rjMounting || preview._rjSettled) return;
+    if (preview._rjQueued) {
+      if (priority) {
+        var index = previewQueue.indexOf(preview);
+        if (index > 0) { previewQueue.splice(index, 1); previewQueue.unshift(preview); }
+      }
+      return;
+    }
     preview._rjQueued = true;
-    previewQueue.push(preview);
+    if (priority) previewQueue.unshift(preview); else previewQueue.push(preview);
     if (!previewQueueTimer) drainPreviewQueue();
   }
+
+  /* Ręczne ponowienie z plakietki „Spróbuj ponownie" */
 
   function retryPreview(preview) {
     if (!preview) return;
@@ -654,7 +702,7 @@
       if (snapshotState(p) === "ok") return;
       var r = p.getBoundingClientRect();
       if (!r.width && !r.height) return; /* ukryta sekcja */
-      if (r.bottom > -500 && r.top < vh + 500) enqueuePreview(p);
+      if (r.bottom > -800 && r.top < vh + 800) { p._rjNear = true; enqueuePreview(p, r.bottom > 0 && r.top < vh); }
     });
   }
 
@@ -689,11 +737,19 @@
       }
       p._rjObserved = true;
       previewObserver.observe(p);
+      if (visibleObserver) visibleObserver.observe(p);
 
       /* siatka bezpieczeństwa: kursor lub fokus montuje podgląd natychmiast,
          nawet gdyby observer się spóźnił (np. po skoku do kotwicy) */
       p.addEventListener("pointerenter", function () { mountPreview(p); }, { passive: true });
       p.addEventListener("focus", function () { mountPreview(p); });
+      p.addEventListener("focusout", function () {
+        if (p._rjRetained !== false) return;
+        clearTimeout(p._rjReleaseTimer);
+        p._rjReleaseTimer = setTimeout(function () {
+          if (!p._rjRetained) releaseFarPreview(p);
+        }, PREVIEW_RELEASE_DELAY_MS);
+      });
     });
   }
 
@@ -725,7 +781,6 @@
   }, true);
 
   /* --- sweep: montowanie bez polegania wyłącznie na IntersectionObserver --- */
-  var sweepScheduled = false;
   function scheduleSweep() {
     if (sweepScheduled) return;
     sweepScheduled = true;
@@ -738,7 +793,8 @@
     setTimeout(run, 200);
   }
 
-  window.addEventListener("scroll", scheduleSweep, { passive: true });
+  /* Observer już śledzi ruch: pełny pomiar na scroll tylko jako fallback. */
+  if (!previewObserver) window.addEventListener("scroll", scheduleSweep, { passive: true });
   window.addEventListener("resize", scheduleSweep, { passive: true });
   window.addEventListener("pageshow", function () {
     /* powrót z bfcache: ramki bywają puste, a klasy mówią „wczytane" */
