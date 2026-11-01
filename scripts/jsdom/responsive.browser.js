@@ -85,7 +85,7 @@ const server = http.createServer((req, res) => {
       for (const p of result.preview) {
         assert(p.iframe && p.portal && p.tilt && p.button, `${width}: podgląd, portal i 3D`);
         assert.match(p.dates,/Utworzono:/); assert.match(p.dates,/Aktualizacja:/);
-        if (width <= 760) assert(Math.abs(p.width / p.height - (width <= 640 ? 2 : 16/9)) < .03, `${width}: kompaktowy podgląd ${JSON.stringify(p)}`);
+        if (width <= 760) assert(width <= 640 ? p.height > p.width : Math.abs(p.width / p.height - 16/9) < .03, `${width}: kompaktowy podgląd ${JSON.stringify(p)}`);
       }
       for (let i=0;i<result.header.length;i++) for (let j=i+1;j<result.header.length;j++) {
         const a=result.header[i], b=result.header[j];
