@@ -5,3 +5,7 @@
   body .rj-shared-header .mobile-account, body .rj-shared-header .hamburger-btn { display:none!important; }
   body .rj-shared-header .site-nav { display:flex!important; position:static!important; width:100%!important; max-height:none; box-sizing:border-box; }
 }
+@media(max-width:1200px) {
+ body .rj-shared-header .header-right { flex-wrap:wrap; gap:8px; }
+ body .rj-shared-header .site-nav { flex:1 0 100%; }
+}

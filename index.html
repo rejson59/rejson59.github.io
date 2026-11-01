@@ -264,13 +264,14 @@
   <link rel="stylesheet" href="/css/rejchat.css?v=1">
   <script defer src="/js/rejchat-profiles.js?v=1"></script>
   <link rel="stylesheet" href="/css/responsive.css?v=2">
+  <link rel="stylesheet" href="/css/project-cards.css?v=1">
   <link rel="stylesheet" href="/css/universe-tools.css?v=1">
   <link rel="stylesheet" href="/css/side-ads.css?v=5">
   <script defer src="/js/side-ads.js?v=5"></script>
   <link rel="stylesheet" href="/css/mobile-ads.css?v=5">
   <script defer src="/js/mobile-ads.js?v=5"></script>
-  <link rel="stylesheet" href="/css/shared-topbar.css?v=2">
-  <noscript><link rel="stylesheet" href="/css/shared-topbar-nojs.css?v=1"></noscript>
+  <link rel="stylesheet" href="/css/shared-topbar.css?v=3">
+  <noscript><link rel="stylesheet" href="/css/shared-topbar-nojs.css?v=2"></noscript>
 </head>
 <body class="rj-home">
   <div id="rj-page-loader" aria-hidden="true">
@@ -511,7 +512,7 @@
         <span class="brand-text">rejson59<span class="brand-suffix">.github.io</span></span>
       </a>
 
-      <div class="header-right">
+      <div class="header-right"><a href="/" class="rj-home-link" aria-label="Strona główna" title="Strona główna"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#home"></use></svg></a>
         <a href="logowanie" class="mobile-account" aria-label="Konto / logowanie" title="Konto / logowanie"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#account"></use></svg></a>
         <nav id="site-nav" class="site-nav" aria-label="Nawigacja główna">
           <a href="logowanie" class="nav-icon-link" title="Konto / logowanie" aria-label="Konto / logowanie"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#account"></use></svg><span class="nav-label">Konto</span></a>
@@ -685,17 +686,11 @@
     </section>
 
     <!-- ============ WYRÓŻNIONE: POCZĄTKI ORAZ NAJLEPSZA STRONA ============ -->
-    <section class="origins container" aria-label="Wyróżnione projekty">
+    <section class="origins container" aria-labelledby="showcase-title">
+      <div class="showcase-heading"><div><p class="showcase-kicker">✦ WARTO ZAJRZEĆ</p><h2 id="showcase-title">Wybrane projekty</h2><p>Od pierwszej strony po najnowsze pomysły.</p></div><a href="#projekty">Zobacz pozostałe <span aria-hidden="true">↓</span></a></div>
       <div class="showcase-grid">
         <!-- 1. Świeża nowość — RejStream -->
         <div class="showcase-item" id="rejstream" aria-labelledby="rejstream-heading">
-          <div class="section-head">
-            <div>
-              <p class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span> Świeża nowość · październik 2026</p>
-              <h2 id="rejstream-heading">Najnowsza perełka — strona, na której spędzisz czas oglądając seriale i animacje:</h2>
-              <p class="section-intro">RejStream to katalog w stylu serwisu streamingowego, który działa od razu w przeglądarce — idealny na wieczór z serialem lub animacją.</p>
-            </div>
-          </div>
           <article class="project-card is-rejstream" data-tilt data-repo="RejStream" aria-label="RejStream — seriale i animacje online">
             <div class="card-inner">
               <div class="card-sheen" aria-hidden="true"></div>
@@ -744,8 +739,9 @@
               <a class="card-preview" data-journey href="https://rejson59.github.io/RejStream/" target="_blank" rel="noopener noreferrer" aria-label="Podgląd RejStream — otwórz projekt">
                 <div class="card-preview-frame" aria-hidden="true"><iframe data-src="https://rejson59.github.io/RejStream/" name="rejson-card-preview" data-card-preview="1" tabindex="-1" aria-hidden="true"></iframe><div class="card-preview-topbar"><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-url">rejson59.github.io/RejStream/</span></div></div><div class="card-preview-loader" aria-hidden="true"><div class="rj-dough rj-dough--sm"><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span></div></div><span class="card-preview-hint">otwórz ↗</span>
               </a>
-              <h3 class="card-title"><a href="https://rejson59.github.io/RejStream/" data-journey target="_blank" rel="noopener noreferrer">RejStream</a></h3>
+              <h3 class="card-title" id="rejstream-heading"><a href="https://rejson59.github.io/RejStream/" data-journey target="_blank" rel="noopener noreferrer">RejStream</a></h3>
               <p class="card-desc">Oglądaj seriale i animacje online — katalog w stylu streamingu, który włączasz jednym kliknięciem w przeglądarce, bez konta i instalacji.</p>
+              <details class="showcase-story"><summary>Historia i szczegóły</summary><p><strong>Najnowsza perełka — strona, na której spędzisz czas oglądając seriale i animacje:</strong> RejStream to katalog w stylu serwisu streamingowego, który działa od razu w przeglądarce — idealny na wieczór z serialem lub animacją.</p></details>
               <ul class="card-topics" aria-label="Tematy"><li>seriale</li><li>animacje</li><li>streaming</li></ul>
               <p class="card-meta" data-featured-meta="RejStream"><span class="meta-item mono">Utworzono: 24 paź 2026</span><span class="meta-item mono">Aktualizacja: 25 paź 2026</span></p>
               <div class="card-actions">
@@ -760,13 +756,6 @@
 
         <!-- 2. Początki — Jakuplayer -->
         <div class="showcase-item" id="poczatki" aria-labelledby="origins-heading">
-          <div class="section-head">
-            <div>
-              <p class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span> Początki</p>
-              <h2 id="origins-heading">Spójrz na moje początki, tak wyglądała moja pierwsza działająca strona na githubie:</h2>
-              <p class="section-intro">Prosty odtwarzacz HTML — bez frameworków, wdrożony prosto na GitHub Pages. Działa do dziś i od niego zaczęło się regularne publikowanie.</p>
-            </div>
-          </div>
           <article class="project-card is-origins" data-tilt data-repo="Jakuplayer" aria-label="Jakuplayer — pierwsza działająca strona">
             <div class="card-inner">
               <div class="card-sheen" aria-hidden="true"></div>
@@ -814,8 +803,9 @@
               <a class="card-preview" data-journey href="https://rejson59.github.io/Jakuplayer/" target="_blank" rel="noopener noreferrer" aria-label="Podgląd Jakuplayer — otwórz projekt">
                 <div class="card-preview-frame" aria-hidden="true"><iframe data-src="https://rejson59.github.io/Jakuplayer/" name="rejson-card-preview" data-card-preview="1" tabindex="-1" aria-hidden="true"></iframe><div class="card-preview-topbar"><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-url">rejson59.github.io/Jakuplayer/</span></div></div><div class="card-preview-loader" aria-hidden="true"><div class="rj-dough rj-dough--sm"><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span></div></div><span class="card-preview-hint">otwórz ↗</span>
               </a>
-              <h3 class="card-title"><a href="https://rejson59.github.io/Jakuplayer/" data-journey target="_blank" rel="noopener noreferrer">Jakuplayer</a></h3>
+              <h3 class="card-title" id="origins-heading"><a href="https://rejson59.github.io/Jakuplayer/" data-journey target="_blank" rel="noopener noreferrer">Jakuplayer</a></h3>
               <p class="card-desc">Słuchaj muzyki za darmo i bez ograniczeń — pierwsza w pełni działająca strona, jaką opublikowałem na GitHubie.</p>
+              <details class="showcase-story"><summary>Historia i szczegóły</summary><p><strong>Spójrz na moje początki, tak wyglądała moja pierwsza działająca strona na githubie:</strong> Prosty odtwarzacz HTML — bez frameworków, wdrożony prosto na GitHub Pages. Działa do dziś i od niego zaczęło się regularne publikowanie.</p></details>
               <ul class="card-topics" aria-label="Tematy"><li>muzyka</li><li>pierwszy projekt</li><li>GitHub Pages</li></ul>
               <p class="card-meta" data-featured-meta="Jakuplayer"><span class="meta-item mono">Utworzono: 29 cze 2025</span><span class="meta-item mono">Aktualizacja: 23 paź 2026</span></p>
               <div class="card-actions">
@@ -830,13 +820,6 @@
 
         <!-- 3. Najlepsza i najbardziej rozbudowana strona — JoyPad -->
         <div class="showcase-item" id="najlepsza" aria-labelledby="featured-heading">
-          <div class="section-head">
-            <div>
-              <p class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span> Najlepszy projekt</p>
-              <h2 id="featured-heading">Według mnie najlepsza i najbardziej rozbudowana strona:</h2>
-              <p class="section-intro">Domowa konsola w przeglądarce — komputer lub TV wyświetla grę, a telefony łączą się kodem QR jako bezprzewodowe kontrolery.</p>
-            </div>
-          </div>
           <article class="project-card is-featured" data-tilt data-repo="JoyPad" aria-label="JoyPad — najlepsza i najbardziej rozbudowana strona">
             <div class="card-inner">
               <div class="card-sheen" aria-hidden="true"></div>
@@ -884,8 +867,9 @@
               <a class="card-preview" data-journey href="https://rejson59.github.io/JoyPad/" target="_blank" rel="noopener noreferrer" aria-label="Podgląd JoyPad — otwórz projekt">
                 <div class="card-preview-frame" aria-hidden="true"><iframe data-src="https://rejson59.github.io/JoyPad/" name="rejson-card-preview" data-card-preview="1" tabindex="-1" aria-hidden="true"></iframe><div class="card-preview-topbar"><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-url">rejson59.github.io/JoyPad/</span></div></div><div class="card-preview-loader" aria-hidden="true"><div class="rj-dough rj-dough--sm"><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span></div></div><span class="card-preview-hint">otwórz ↗</span>
               </a>
-              <h3 class="card-title"><a href="https://rejson59.github.io/JoyPad/" data-journey target="_blank" rel="noopener noreferrer">JoyPad</a></h3>
+              <h3 class="card-title" id="featured-heading"><a href="https://rejson59.github.io/JoyPad/" data-journey target="_blank" rel="noopener noreferrer">JoyPad</a></h3>
               <p class="card-desc">Zamień swój komputer i telefon na bezprzewodową konsolę! Wspólny ekran, osobiste pady na telefonach, gry 3D i arcade, haptyka oraz Moments.</p>
+              <details class="showcase-story"><summary>Historia i szczegóły</summary><p><strong>Według mnie najlepsza i najbardziej rozbudowana strona:</strong> Domowa konsola w przeglądarce — komputer lub TV wyświetla grę, a telefony łączą się kodem QR jako bezprzewodowe kontrolery.</p></details>
               <ul class="card-topics" aria-label="Tematy"><li>konsola</li><li>multiplayer</li><li>telefon jako pad</li></ul>
               <p class="card-meta" data-featured-meta="JoyPad"><span class="meta-item mono">Utworzono: 23 wrz 2026</span><span class="meta-item mono">Aktualizacja: 23 paź 2026</span></p>
               <div class="card-actions">
@@ -900,13 +884,6 @@
 
         <!-- 4. Minecraft niemal 1:1 w przeglądarce — mconline -->
         <div class="showcase-item" id="mconline" aria-labelledby="mconline-heading">
-          <div class="section-head">
-            <div>
-              <p class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span> Gra 3D w przeglądarce</p>
-              <h2 id="mconline-heading">Prawdziwy Minecraft niemal 1:1 — działający bezpośrednio w przeglądarce:</h2>
-              <p class="section-intro">Otwarty świat z bloków 3D z craftingiem, ekwipunkiem i sterowaniem na komputerze oraz telefonie — bez pobierania i instalacji.</p>
-            </div>
-          </div>
           <article class="project-card is-minecraft" data-tilt data-repo="mconline" aria-label="mconline — Minecraft niemal 1:1 w przeglądarce">
             <div class="card-inner">
               <div class="card-sheen" aria-hidden="true"></div>
@@ -954,8 +931,9 @@
               <a class="card-preview" data-journey href="https://rejson59.github.io/mconline/" target="_blank" rel="noopener noreferrer" aria-label="Podgląd mconline — otwórz projekt">
                 <div class="card-preview-frame" aria-hidden="true"><iframe data-src="https://rejson59.github.io/mconline/" name="rejson-card-preview" data-card-preview="1" tabindex="-1" aria-hidden="true"></iframe><div class="card-preview-topbar"><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-url">rejson59.github.io/mconline/</span></div></div><div class="card-preview-loader" aria-hidden="true"><div class="rj-dough rj-dough--sm"><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span></div></div><span class="card-preview-hint">otwórz ↗</span>
               </a>
-              <h3 class="card-title"><a href="https://rejson59.github.io/mconline/" data-journey target="_blank" rel="noopener noreferrer">mconline</a></h3>
+              <h3 class="card-title" id="mconline-heading"><a href="https://rejson59.github.io/mconline/" data-journey target="_blank" rel="noopener noreferrer">mconline</a></h3>
               <p class="card-desc">Zagraj w moją własną przerobioną wersję Minecrafta w przeglądarce — budowanie, crafting z wyszukiwarką receptur, ekwipunek i obsługa dotyku na telefonie.</p>
+              <details class="showcase-story"><summary>Historia i szczegóły</summary><p><strong>Prawdziwy Minecraft niemal 1:1 — działający bezpośrednio w przeglądarce:</strong> Otwarty świat z bloków 3D z craftingiem, ekwipunkiem i sterowaniem na komputerze oraz telefonie — bez pobierania i instalacji.</p></details>
               <ul class="card-topics" aria-label="Tematy"><li>Minecraft 1:1</li><li>sandbox 3D</li><li>bez instalacji</li></ul>
               <p class="card-meta" data-featured-meta="mconline"><span class="meta-item mono">Utworzono: 25 wrz 2026</span><span class="meta-item mono">Aktualizacja: 25 paź 2026</span></p>
               <div class="card-actions">
@@ -970,13 +948,6 @@
 
         <!-- 5. Projekt zrobiony o 3 w nocy — VibeAnimations -->
         <div class="showcase-item" id="vibe-animations" aria-labelledby="vibe-heading">
-          <div class="section-head">
-            <div>
-              <p class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span> Nocny zryw · 03:00 w nocy</p>
-              <h2 id="vibe-heading">Projekt, który zrobiłem w losową noc o 3:00, gdy nie mogłem spać — a jego wynik i wygląd są zdumiewające:</h2>
-              <p class="section-intro">Interaktywna galeria efektownych stylów, animacji i gotowych promptów UI, która powstała spontanicznie w jedną bezsenną noc.</p>
-            </div>
-          </div>
           <article class="project-card is-vibe" data-tilt data-repo="VibeAnimations" aria-label="VibeAnimations — projekt zrobiony o 3 w nocy">
             <div class="card-inner">
               <div class="card-sheen" aria-hidden="true"></div>
@@ -1024,8 +995,9 @@
               <a class="card-preview" data-journey href="https://rejson59.github.io/VibeAnimations/" target="_blank" rel="noopener noreferrer" aria-label="Podgląd VibeAnimations — otwórz projekt">
                 <div class="card-preview-frame" aria-hidden="true"><iframe data-src="https://rejson59.github.io/VibeAnimations/" name="rejson-card-preview" data-card-preview="1" tabindex="-1" aria-hidden="true"></iframe><div class="card-preview-topbar"><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-url">rejson59.github.io/VibeAnimations/</span></div></div><div class="card-preview-loader" aria-hidden="true"><div class="rj-dough rj-dough--sm"><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span></div></div><span class="card-preview-hint">otwórz ↗</span>
               </a>
-              <h3 class="card-title"><a href="https://rejson59.github.io/VibeAnimations/" data-journey target="_blank" rel="noopener noreferrer">VibeAnimations</a></h3>
+              <h3 class="card-title" id="vibe-heading"><a href="https://rejson59.github.io/VibeAnimations/" data-journey target="_blank" rel="noopener noreferrer">VibeAnimations</a></h3>
               <p class="card-desc">Galeria nieziemskich i genialnych pomysłów na wygląd przyszłych stron oraz aplikacji. Znajdź prompty, które pozwolą wygenerować projekt dokładnie tak, jak go sobie wyobrażasz!</p>
+              <details class="showcase-story"><summary>Historia i szczegóły</summary><p><strong>Projekt, który zrobiłem w losową noc o 3:00, gdy nie mogłem spać — a jego wynik i wygląd są zdumiewające:</strong> Interaktywna galeria efektownych stylów, animacji i gotowych promptów UI, która powstała spontanicznie w jedną bezsenną noc.</p></details>
               <ul class="card-topics" aria-label="Tematy"><li>nocny projekt</li><li>animacje UI</li><li>galeria promptów</li></ul>
               <p class="card-meta" data-featured-meta="VibeAnimations"><span class="meta-item mono">Utworzono: 10 wrz 2026</span><span class="meta-item mono">Aktualizacja: 11 wrz 2026</span></p>
               <div class="card-actions">
