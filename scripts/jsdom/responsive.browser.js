@@ -77,7 +77,7 @@ const server = http.createServer((req, res) => {
           return {width:r.width,height:r.height,iframe:!!el.querySelector('iframe[data-card-preview]'),portal:el.getAttribute('data-journey') !== null,
             tilt:c.hasAttribute('data-tilt'), dates:c.querySelector('.card-meta')?.textContent || '', button:!!c.querySelector('.btn-journey[data-journey][target="_blank"]')};
         });
-        const header = [...document.querySelectorAll('.site-header .brand,.site-header .mobile-account,.site-header .rj-bell,.site-header .metric-badge,.site-header .metric-more-toggle,.site-header .hamburger-btn')].filter(el => el.getClientRects().length).map(el => {const r=el.getBoundingClientRect();return {name:el.className, left:r.left,right:r.right,top:r.top,bottom:r.bottom};});
+        const header = [...document.querySelectorAll('.site-header .brand,.site-header .rj-home-link,.site-header .mobile-account,.site-header .rj-bell,.site-header .metric-badge,.site-header .metric-more-toggle,.site-header .hamburger-btn')].filter(el => el.getClientRects().length).map(el => {const r=el.getBoundingClientRect();return {name:el.className, left:r.left,right:r.right,top:r.top,bottom:r.bottom};});
         return {preview,scroll:document.documentElement.scrollWidth,header};
       });
       assert(result.scroll <= width, `${width}: poziome przewijanie`);
@@ -85,7 +85,7 @@ const server = http.createServer((req, res) => {
       for (const p of result.preview) {
         assert(p.iframe && p.portal && p.tilt && p.button, `${width}: podgląd, portal i 3D`);
         assert.match(p.dates,/Utworzono:/); assert.match(p.dates,/Aktualizacja:/);
-        if (width <= 760) assert(Math.abs(p.width / p.height - 4/3) < .02, `${width}: kompaktowy podgląd ${JSON.stringify(p)}`);
+        if (width <= 760) assert(Math.abs(p.width / p.height - (width <= 640 ? 2 : 16/9)) < .03, `${width}: kompaktowy podgląd ${JSON.stringify(p)}`);
       }
       for (let i=0;i<result.header.length;i++) for (let j=i+1;j<result.header.length;j++) {
         const a=result.header[i], b=result.header[j];

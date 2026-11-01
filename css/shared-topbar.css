@@ -79,3 +79,8 @@ body.rj-board .rj-shared-header .rj-shared-inner > .brand { flex:0 1 auto; }
   body .rj-shared-header .site-nav { left:auto; }
   body .rj-shared-header .site-nav .theme-toggle { margin:0; }
 }
+
+/* Domek jest stałym elementem topbaru, również poza zwijanym menu. */
+body .rj-shared-header .rj-home-link { display:inline-flex; align-items:center; justify-content:center; flex:none; box-sizing:border-box; width:42px; height:42px; border:1px solid var(--bar-border); border-radius:14px; background:var(--bar-panel); color:var(--bar-text); text-decoration:none; }
+body .rj-shared-header .rj-home-link .ui-icon { width:20px; height:20px; }
+body .rj-shared-header .rj-home-link:hover { border-color:color-mix(in srgb, #74ddc2 60%,var(--bar-border)); background:color-mix(in srgb,#74ddc2 12%,var(--bar-panel)); }
