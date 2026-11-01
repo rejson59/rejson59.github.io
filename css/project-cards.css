@@ -39,6 +39,14 @@
  .rj-home .showcase-heading { margin-bottom:15px; }
  .rj-home .project-card .card-inner { padding:13px; }
  .rj-home .project-card .card-preview { aspect-ratio:16/8; --iframe-scale:.65; }
+ /* Na telefonie żywy podgląd ma pionowy kadr po lewej, a treść i akcje
+    pozostają po prawej. Karty bez adresu podglądu zachowują pełną szerokość. */
+ .rj-home .project-card .card-inner:has(> .card-preview) { display:grid; grid-template-columns:minmax(90px,35%) minmax(0,1fr); grid-template-rows:repeat(7,auto); column-gap:12px; align-content:start; }
+ .rj-home .project-card .card-inner:has(> .card-preview) > :not(.card-preview):not(.card-sheen) { grid-column:2; min-width:0; }
+ .rj-home .project-card .card-inner:has(> .card-preview) > .card-preview { grid-column:1; grid-row:1 / -1; align-self:start; aspect-ratio:3/5; height:auto; min-height:180px; margin:0; --iframe-scale:.32; }
+ .rj-home .project-card .card-inner:has(> .card-preview) .card-desc { display:block; overflow:visible; overflow-wrap:anywhere; }
+ .rj-home .project-card .card-inner:has(> .card-preview) .card-topics li { max-width:100%; overflow-wrap:anywhere; }
+ .rj-home .project-card .card-inner:has(> .card-preview) .card-preview-fallback { padding:8px 4px; overflow-wrap:anywhere; }
  .rj-home .project-card .card-actions { flex-direction:row; }
  .rj-home .project-card .card-actions .btn { width:auto; flex:1 1 140px; min-height:42px; }
 }
