@@ -1,0 +1,7 @@
+/* Bez skryptów menu pozostaje dostępne w pełnym wierszu. */
+@media(max-width:1200px) {
+  body .rj-shared-header .rj-shared-inner { flex-wrap:wrap!important; padding:8px 0!important; }
+  body .rj-shared-header .header-right { flex:1 1 100%!important; width:100%; justify-content:stretch!important; }
+  body .rj-shared-header .mobile-account, body .rj-shared-header .hamburger-btn { display:none!important; }
+  body .rj-shared-header .site-nav { display:flex!important; position:static!important; width:100%!important; max-height:none; box-sizing:border-box; }
+}

@@ -39,3 +39,43 @@
 [data-theme=light] .rj-files :is(#recipient,#share-link) { background:#f6f9fc; border-color:#aab9ca; color:#1b2936; }
 [data-theme=light] .rj-files .secondary { background:#e7f2ed; color:#195f4c; border-color:#a7c9b9; }
 [data-theme=light] .rj-files .text-button { color:#176552; }
+
+/* Jedna geometria na wszystkich stronach, w tym na stronie głównej. */
+body .rj-shared-header .brand-mark {
+  width:48px; height:48px; padding:0; border:0; border-radius:13px;
+  background:transparent; box-shadow:none;
+}
+body.rj-home .rj-shared-header .rj-shared-inner { flex-wrap:nowrap; padding:0!important; }
+body.rj-home .rj-shared-header .header-right { flex-basis:auto; justify-content:flex-end; gap:12px; }
+body.rj-home .rj-shared-header .site-nav { background:var(--bar-panel); }
+body .rj-shared-header .rj-profile-nav-replaced { display:none!important; }
+body .rj-shared-header .rj-header-profile { display:inline-flex; flex:none; align-items:center; justify-content:center; width:44px; height:44px; padding:3px; border-radius:50%; border:1px solid #8fe9db77; background:#172d39; box-shadow:0 0 0 4px #6aded413,0 5px 20px #0003; text-decoration:none; }
+body .rj-shared-header .rj-header-profile img { display:block; width:100%; height:100%; object-fit:cover; border-radius:50%; }
+/* Statystyki i powiadomienia są specyficzne dla strony głównej, więc pozostają
+   osobno pod wspólną nawigacją, zamiast zmieniać kształt topbaru. */
+.rj-home-stats { position:relative; z-index:40; }
+.rj-home-stats-inner { width:min(100% - 48px,1340px); margin:0 auto; padding:10px 0 0; display:flex; justify-content:flex-end; position:relative; }
+.rj-home-stats .header-metrics { position:relative; }
+@media(max-width:1200px) {
+  body .rj-shared-header .brand-mark { width:40px; height:40px; padding:0; }
+  body.rj-home .rj-shared-header .site-nav { background:var(--bar-panel); }
+}
+@media(max-width:760px) {
+  .rj-home-stats-inner { width:calc(100% - 32px); padding-top:8px; }
+  body .rj-shared-header .rj-header-profile { width:40px; height:40px; }
+}
+/* Pusta przestrzeń wiersza nie może przykrywać rozwiniętej karty konta. */
+.rj-home-stats, .rj-home-stats-inner { pointer-events:none; }
+.rj-home-stats .header-metrics, .rj-home-stats .rj-panel { pointer-events:auto; }
+@media (min-width:1200px) {
+  body.rj-side-ads-enabled .rj-home-stats-inner { width:calc(100% - 420px); max-width:1120px; }
+}
+@media(max-width:1200px) {
+  body .rj-shared-header .hamburger-btn, body .rj-shared-header .mobile-account { width:42px; height:42px; min-height:42px; }
+}
+body.rj-board .rj-shared-header .rj-shared-inner { flex-wrap:nowrap; }
+body.rj-board .rj-shared-header .rj-shared-inner > .brand { flex:0 1 auto; }
+@media(max-width:1200px) {
+  body .rj-shared-header .site-nav { left:auto; }
+  body .rj-shared-header .site-nav .theme-toggle { margin:0; }
+}
