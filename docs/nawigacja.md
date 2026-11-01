@@ -8,11 +8,13 @@ Porównanie topbaru strony głównej i podstron, stanów zalogowanych, jasnego/c
 
 ```sh
 cd scripts/jsdom && npm install
+node home-link.test.js
+CHROME_BIN=/ścieżka/do/chromium node home-link.browser.js
 CHROME_BIN=/ścieżka/do/chromium node topbar-consistency.browser.js
 CHROME_BIN=/ścieżka/do/chromium node responsive.browser.js
 CHROME_BIN=/ścieżka/do/chromium node account-sidebar.browser.js
 ```
 
-Ikona domku prowadzi na `/` i jest widoczna na wszystkich stronach ze wspólnym topbarem, poza zwijanym menu; działa też bez JavaScriptu. Ta sama ikona pozostaje na stronie głównej, by nie zmieniać geometrii nawigacji między stronami.
+Ikona domku ma własny kształt SVG w HTML (nie zależy od pobrania zewnętrznego pliku ikon), prowadzi na `/` i jest widoczna na wszystkich stronach ze wspólnym topbarem, poza zwijanym menu; działa też bez JavaScriptu. Ta sama ikona pozostaje na stronie głównej, by nie zmieniać geometrii nawigacji między stronami.
 
 Na starszych stronach przekierowujących i awaryjnych ekranach podróży domek jest osobnym odnośnikiem, bo te krótkotrwałe strony nie używają topbaru.
