@@ -194,3 +194,49 @@ a[data-profile-name]:hover { text-decoration:underline; }
  .rj-community .comm-chat-list{height:clamp(280px,43vh,480px);min-height:280px}
  .rj-community #panel-posts{padding:14px}
 }
+
+/* Skrzynka zdarzeń RejChat jest obok konta, a nie w osobnym wierszu statystyk. */
+.rj-shared-header .rj-chat-alerts { position:relative; flex:none; }
+.rj-shared-header .rj-chat-bell { position:relative; display:flex; align-items:center; justify-content:center; width:42px; height:42px; border:1px solid var(--bar-border); border-radius:14px; background:var(--bar-panel); color:var(--bar-text); cursor:pointer; }
+.rj-chat-bell svg { width:21px; height:21px; }
+.rj-chat-bell-count { position:absolute; top:-6px; right:-6px; min-width:19px; height:19px; box-sizing:border-box; padding:0 4px; border-radius:999px; background:#70e4cd; color:#082923; font:800 10px/19px system-ui,sans-serif; }
+.rj-chat-alert-panel { position:absolute; z-index:200; right:0; top:calc(100% + 14px); width:min(370px,calc(100vw - 32px)); border:1px solid var(--bar-border); border-radius:20px; background:var(--bar-panel); color:var(--bar-text); box-shadow:0 20px 60px #0007; overflow:hidden; font:14px/1.45 system-ui,sans-serif; }
+.rj-chat-alert-head { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:16px; border-bottom:1px solid var(--bar-border); }
+.rj-chat-alert-head strong,.rj-chat-alert-head small { display:block; }.rj-chat-alert-head small { color:var(--bar-muted); margin-top:2px; }
+.rj-chat-alert-close { border:0; background:transparent; color:var(--bar-text); font-size:25px; cursor:pointer; }
+.rj-chat-alert-status:not(:empty) { color:#d56955; padding:10px 15px; }
+.rj-chat-alert-list { max-height:min(55vh,420px); overflow:auto; padding:6px; }
+.rj-chat-alert-empty { color:var(--bar-muted); margin:0; padding:16px 10px; }.rj-chat-alert-empty a { color:inherit; text-decoration:underline; }
+.rj-chat-alert-item { display:flex; gap:10px; padding:12px; border-radius:12px; color:var(--bar-text); text-decoration:none; }
+.rj-chat-alert-item:hover,.rj-chat-alert-item.is-unread { background:color-mix(in srgb,#64d5c0 15%,var(--bar-panel)); }
+.rj-chat-alert-item small { display:block; color:var(--bar-muted); margin-top:3px; }.rj-chat-alert-symbol { font-size:20px; line-height:1.2; color:#70d9c5; }
+.rj-chat-alert-actions { display:flex; flex-wrap:wrap; justify-content:space-between; gap:10px; padding:12px 16px; border-top:1px solid var(--bar-border); }
+.rj-chat-alert-actions button { border:0; padding:2px; background:none; color:var(--bar-text); text-decoration:underline; cursor:pointer; font:inherit; font-size:12px; }
+.rj-chat-alert-panel [hidden],.rj-chat-alert-panel[hidden],.rj-chat-bell-count[hidden],.chat-jump[hidden] { display:none!important; }
+.chat-jump { display:block; margin:0 auto 10px; padding:8px 14px; border:1px solid var(--border); border-radius:999px; background:var(--bg-elev); color:var(--text); cursor:pointer; font:inherit; }
+@media(max-width:480px) { .rj-community .rj-shared-header .header-right { gap:6px; } }
+.rejchat-target-note { margin:0 0 14px; padding:12px 16px; border:1px solid var(--border); border-radius:14px; background:var(--bg-elev); color:var(--text); font-size:13px; }
+.rejchat-target-note[hidden] { display:none; }
+/* Panel nie wychodzi poza lewą krawędź, gdy dzwonek jest przed kontem. */
+.rj-chat-alert-panel { position:fixed; right:16px; top:80px; }
+@media(max-width:1200px) { .rj-chat-alert-panel { top:72px; } }
+.chat-length { margin:0; padding:0 20px 8px; text-align:right; font-size:11px; color:var(--muted); }
+#chat-connection.is-offline { color:#e08b6c; }
+/* Czytelniejszy wstęp i spokojniejsze podkreślenie aktywnego widoku. */
+.rj-community .comm-hero { max-width:none; box-sizing:border-box; padding:25px 30px; border:1px solid color-mix(in srgb,var(--accent) 22%,var(--border)); border-radius:25px; background:radial-gradient(circle at 90% 10%,color-mix(in srgb,var(--accent) 16%,transparent),transparent 42%),var(--card); }
+.rj-community .rejchat-brow { display:inline-block; padding:6px 10px; border-radius:999px; background:color-mix(in srgb,var(--accent) 12%,transparent); letter-spacing:.12em; }
+.rj-community .comm-hero h1 { margin:8px 0 5px; }
+.rj-community .rejchat-tabs button[aria-selected=true] { box-shadow:0 3px 12px #0002, inset 0 0 0 1px color-mix(in srgb,var(--accent) 25%,transparent); }
+.rj-community .comm-chat-list { scrollbar-color:color-mix(in srgb,var(--accent) 35%,var(--border)) transparent; }
+.rj-community .chat-jump:hover,.rj-shared-header .rj-chat-bell:hover { border-color:var(--accent-strong); }
+@media(max-width:760px) { .rj-community .comm-hero { padding:18px; border-radius:20px; margin-bottom:16px; } }
+/* Na wąskim ekranie dodatkowy dzwonek nie może obciąć nazwy serwisu. */
+@media(max-width:360px) {
+  body.rj-community .rj-shared-header .rj-shared-inner { width:calc(100% - 24px); gap:6px; }
+  body.rj-community .rj-shared-header .brand-mark { width:32px; height:32px; }
+  body.rj-community .rj-shared-header .brand { gap:7px; }
+  body.rj-community .rj-shared-header .header-right { gap:4px; }
+  body.rj-community .rj-shared-header .rj-home-link, body.rj-community .rj-shared-header .rj-chat-bell { width:40px; height:40px; }
+}
+@media(max-width:360px) { body.rj-community .rj-shared-header .header-right { gap:3px; } }
+@media(max-width:360px) { body.rj-community .rj-shared-header .site-nav { right:4px; } }

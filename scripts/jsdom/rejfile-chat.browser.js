@@ -14,7 +14,7 @@ const server=http.createServer((req,res)=>{
  await new Promise(r=>server.listen(0,'127.0.0.1',r));
  const origin=`http://127.0.0.1:${server.address().port}`,browser=await chromium.launch({executablePath:process.env.CHROME_BIN,headless:true,args:['--no-sandbox','--disable-webgl']});
  try{
- const context=await browser.newContext({viewport:{width:1440,height:900}}),page=await context.newPage();let sent=[];
+ const context=await browser.newContext({viewport:{width:1440,height:900}}),page=await context.newPage();let sent=[],chat=[];
  await context.route('**/*',async route=>{
   const u=route.request().url();if(u.startsWith(origin+'/'))return route.continue();
   if(u.includes('/storage/v1/object/'))return route.fulfill({status:200,headers:{'access-control-allow-origin':'*','access-control-allow-methods':'PUT, OPTIONS','access-control-allow-headers':'*'},body:'{}'});
@@ -29,7 +29,8 @@ const server=http.createServer((req,res)=>{
    if(fn==='community_username_status')data={valid:true,taken:true};
    if(fn==='community_login')data={username:'Tester',token:'0123456789abcdef0123456789abcdef'};
    if(fn==='community_whoami')data={username:'Tester'};
-   if(fn==='community_chat_send'){sent.push(post);data={id:5,author_name:'Tester',content:post.p_content,created_at:new Date().toISOString()};}
+   if(fn==='community_chat_send'){sent.push(post);data={id:5,author_name:'Tester',content:post.p_content,created_at:new Date().toISOString()};chat.push(data);}
+   if(fn==='community_chat_list')data=post.p_after_id?[]:chat;
    return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(data)});
   }return route.abort();
  });
