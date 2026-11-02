@@ -247,7 +247,7 @@
   <link rel="stylesheet" href="css/premium.css?v=5">
   <link rel="stylesheet" href="css/portal.css?v=17">
   <link rel="stylesheet" href="css/partner-home.css?v=2">
-  <link rel="stylesheet" href="css/style.css?v=2026-10-27-1">
+  <link rel="stylesheet" href="css/style.css?v=2026-11-02-offchat-1">
   <link rel="stylesheet" href="css/loader.css?v=11" media="print" onload="this.media='all'">
   <script defer src="js/loader.js?v=14"></script>
   <noscript><link rel="stylesheet" href="css/loader.css?v=11"></noscript>
@@ -1010,11 +1010,73 @@
             </div>
           </article>
         </div>
+        <!-- 6. Lokalne AI w przeglądarce — OffChat -->
+        <div class="showcase-item" id="offchat" aria-labelledby="offchat-heading">
+          <article class="project-card is-offchat" data-tilt data-repo="OffChat" aria-label="OffChat — lokalne modele AI w przeglądarce">
+            <div class="card-inner">
+              <div class="card-sheen" aria-hidden="true"></div>
+              <div class="card-top">
+                <span class="card-index mono">/ ✦ — lokalne AI · przeglądarka</span>
+                <span class="card-badges">
+                  <button
+                    class="card-metric is-online mono"
+                    type="button"
+                    data-tooltip-title="Obecność niedostępna"
+                    data-tooltip="OffChat nie przesyła danych o bieżącej obecności, dlatego liczba osób online nie jest dostępna."
+                    aria-label="Liczba osób online w OffChat jest niedostępna"
+                  >
+                    <span class="online-aura-dot" aria-hidden="true"></span>
+                    <span class="card-online-num">—</span>
+                  </button>
+                  <button
+                    class="card-metric is-clicks mono"
+                    type="button"
+                    data-project-views="OffChat"
+                    data-tooltip-title="Kliknięcia dzisiaj"
+                    data-tooltip="Liczba otwarć projektu OffChat dzisiaj — licznik resetuje się o północy czasu polskiego (z 15-min ochroną przed spamem)."
+                    aria-label="Liczba kliknięć w projekt OffChat dzisiaj"
+                  >
+                    <svg class="icon icon-click" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 2v2"/><path d="M5.6 4.4l1.4 1.4"/><path d="M16.4 4.4l-1.4 1.4"/><path d="M9 13V8a2 2 0 0 1 4 0v3h2a4 4 0 0 1 4 4v1a6 6 0 0 1-6 6h-1.5a5.5 5.5 0 0 1-4.6-2.5L4.3 15.6a1.7 1.7 0 0 1 2.5-2.2L9 15V13z"/></svg>
+                    <span class="card-views-num">0</span>
+                  </button>
+                  <button
+                    class="card-metric is-unique mono"
+                    type="button"
+                    data-project-unique="OffChat"
+                    data-tooltip-title="Osoby, które wyświetliły projekt"
+                    data-tooltip="Liczba różnych osób zarejestrowanych dla OffChat; obejmuje wejścia ze strony głównej, ale bezpośrednie wejścia mogą nie być zliczone."
+                    aria-label="Liczba zarejestrowanych osób w OffChat"
+                  >
+                    <svg class="icon icon-eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 12s3.5-6.5 9.5-6.5S21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z"/><circle cx="12" cy="12" r="3"/></svg>
+                    <span class="card-unique-num">0</span>
+                  </button>
+
+                  <span class="lang"><span class="lang-dot" style="background:#f1e05a"></span> JavaScript</span>
+                  <span class="live-badge">LIVE</span>
+                </span>
+              </div>
+              <a class="card-preview" data-journey href="https://rejson59.github.io/OffChat/" target="_blank" rel="noopener noreferrer" aria-label="Podgląd OffChat — otwórz projekt">
+                <div class="card-preview-frame" aria-hidden="true"><iframe data-src="https://rejson59.github.io/OffChat/" name="rejson-card-preview" data-card-preview="1" tabindex="-1" aria-hidden="true"></iframe><div class="card-preview-topbar"><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-dot"></span><span class="card-preview-url">rejson59.github.io/OffChat/</span></div></div><div class="card-preview-loader" aria-hidden="true"><div class="rj-dough rj-dough--sm"><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span><span class="dough-slot"><i class="ball"></i><i class="shadow"></i></span></div></div><span class="card-preview-hint">otwórz ↗</span>
+              </a>
+              <h3 class="card-title" id="offchat-heading"><a href="https://rejson59.github.io/OffChat/" data-journey target="_blank" rel="noopener noreferrer">OffChat</a></h3>
+              <p class="card-desc">Rozmawiaj z modelami AI uruchamianymi lokalnie w przeglądarce. Po pobraniu modelu możesz korzystać z niego również bez internetu.</p>
+              <details class="showcase-story"><summary>Jak działa OffChat?</summary><p>Model działa na Twoim urządzeniu. Pierwsze pobranie wymaga połączenia z internetem; dostępne modele i szybkość zależą od przeglądarki oraz możliwości urządzenia.</p></details>
+              <ul class="card-topics" aria-label="Tematy"><li>lokalne AI</li><li>offline po pobraniu</li><li>przeglądarka</li></ul>
+              <p class="card-meta" data-featured-meta="OffChat"><span class="meta-item mono">Utworzono: 16 wrz 2026</span><span class="meta-item mono">Aktualizacja: 16 wrz 2026</span></p>
+              <div class="card-actions">
+                <a class="btn btn-live btn-journey btn-sm" data-journey href="https://rejson59.github.io/OffChat/" target="_blank" rel="noopener noreferrer"><span>Otwórz projekt</span>
+                  <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg>
+                </a>
+                <button class="btn btn-feedback btn-sm" type="button" data-feedback-project="OffChat" data-rj-keep><span class="feedback-pill-dot" aria-hidden="true"></span>Zgłoś błąd / pomysł</button>
+              </div>
+            </div>
+          </article>
+        </div>
       </div>
 
       <div class="origins-note">
         <p class="mono">Od prostego odtwarzacza HTML, przez nocny zryw o 3:00 i własnego Minecrafta 3D, aż po pełną konsolę z telefonami jako kontrolerami — poniżej znajdziesz wszystkie pozostałe projekty.</p>
-        <a href="#projekty" class="btn btn-ghost btn-sm" id="origins-more-btn">Zobacz pozostałe 32 projekty ↓</a>
+        <a href="#projekty" class="btn btn-ghost btn-sm" id="origins-more-btn">Zobacz pozostałe projekty ↓</a>
       </div>
     </section>
 
@@ -1091,7 +1153,6 @@
         <article class="project-card"><div class="card-inner"><h3 class="card-title"><a href="https://rejson59.github.io/RejSearch/" data-journey target="_blank" rel="noopener noreferrer">RejSearch</a></h3><p class="card-desc">Moja własna wyszukiwarka internetowa!</p><p class="card-meta"><span class="meta-item mono">Utworzono: 2026-10-31</span><span class="meta-item mono">Aktualizacja: 2026-10-31</span></p><div class="card-actions"><a class="btn btn-ghost btn-sm" href="https://github.com/rejson59/RejSearch" target="_blank" rel="noopener noreferrer">Repozytorium GitHub ↗</a></div></div></article>
         <article class="project-card"><div class="card-inner"><h3 class="card-title"><a href="https://rejson59.github.io/ProStudent/" data-journey target="_blank" rel="noopener noreferrer">ProStudent</a></h3><p class="card-desc">Strona stworzona dla uczniów żeby bardziej ogarniali szkołę i te sprawy</p><p class="card-meta"><span class="meta-item mono">Utworzono: 2026-10-26</span><span class="meta-item mono">Aktualizacja: 2026-10-31</span></p><div class="card-actions"><a class="btn btn-ghost btn-sm" href="https://github.com/rejson59/ProStudent" target="_blank" rel="noopener noreferrer">Repozytorium GitHub ↗</a></div></div></article>
         <article class="project-card"><div class="card-inner"><h3 class="card-title"><a href="https://rejson59.github.io/kompi/" data-journey target="_blank" rel="noopener noreferrer">kompi</a></h3><p class="card-desc">Kompilator online do c++ (i może w przyszłości innych języków)</p><p class="card-meta"><span class="meta-item mono">Utworzono: 2026-10-12</span><span class="meta-item mono">Aktualizacja: 2026-10-23</span></p><div class="card-actions"><a class="btn btn-ghost btn-sm" href="https://github.com/rejson59/kompi" target="_blank" rel="noopener noreferrer">Repozytorium GitHub ↗</a></div></div></article>
-        <article class="project-card"><div class="card-inner"><h3 class="card-title"><a href="https://rejson59.github.io/OffChat/" data-journey target="_blank" rel="noopener noreferrer">OffChat</a></h3><p class="card-desc">OffChat to strona internetowa która pozwala uruchamiać całkowicie lokalnie modele AI w zależności od mocy urządzenia, pisz z AI z pełną prywatnością w przeglądarce! </p><p class="card-meta"><span class="meta-item mono">Utworzono: 2026-09-16</span><span class="meta-item mono">Aktualizacja: 2026-09-16</span></p><div class="card-actions"><a class="btn btn-ghost btn-sm" href="https://github.com/rejson59/OffChat" target="_blank" rel="noopener noreferrer">Repozytorium GitHub ↗</a></div></div></article>
         <article class="project-card"><div class="card-inner"><h3 class="card-title"><a href="https://rejson59.github.io/ClassQuest/" data-journey target="_blank" rel="noopener noreferrer">ClassQuest</a></h3><p class="card-desc">ClassQuest to strona służąca do ułatwienia pracy nauczycielowi poprzez nowoczesne i angażujące w tematy lekcji mini gry, sprawiające że nauka jest ciekawsza poprzez rywalizację lub współpracę!</p><p class="card-meta"><span class="meta-item mono">Utworzono: 2026-09-03</span><span class="meta-item mono">Aktualizacja: 2026-09-15</span></p><div class="card-actions"><a class="btn btn-ghost btn-sm" href="https://github.com/rejson59/ClassQuest" target="_blank" rel="noopener noreferrer">Repozytorium GitHub ↗</a></div></div></article>
         <!-- static-projects:end -->
       </div>
@@ -1133,7 +1194,7 @@
   <script defer src="js/view-tracker.js?v=7"></script>
   <script defer src="js/error-reporter.js?v=1"></script>
   <script defer src="js/media-capture.js?v=2"></script>
-  <script defer src="js/app.js?v=2026-10-31-overlay-1"></script>
+  <script defer src="js/app.js?v=2026-11-02-offchat-1"></script>
   <script defer src="js/rocket-open.js?v=1"></script>
   <script defer src="/js/responsive.js?v=2"></script>
   <script defer src="js/premium.js?v=8"></script>
