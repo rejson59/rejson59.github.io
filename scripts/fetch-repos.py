@@ -21,8 +21,8 @@ API = f"https://api.github.com/users/{USER}/repos?per_page=100&sort=updated"
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "js" / "projects-data.js"
 INDEX = ROOT / "index.html"
-# Pozostałe projekty z tekstowymi linkami w HTML; pięć wyróżnionych ma już osobne karty.
-STATIC_PROJECTS = ("RejSearch", "ProStudent", "kompi", "OffChat", "ClassQuest")
+# Pozostałe projekty z tekstowymi linkami w HTML; sześć wyróżnionych ma już osobne karty.
+STATIC_PROJECTS = ("RejSearch", "ProStudent", "kompi", "ClassQuest")
 START = "<!-- static-projects:start -->"
 END = "<!-- static-projects:end -->"
 

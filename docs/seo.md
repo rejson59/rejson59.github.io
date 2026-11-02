@@ -2,7 +2,7 @@
 
 `robots.txt` wskazuje `sitemap.xml`. Mapa zawiera wybrane, publiczne, stabilne adresy tej domeny; nie zawiera logowania, panelu administracyjnego ani RejFile (strona ma `noindex` i służy m.in. do prywatnych linków). Nie wpisujemy wymyślonych dat `lastmod`.
 
-Na stronie głównej pięć wyróżnionych projektów oraz kilka dodatkowych kart mają prawdziwe linki w HTML, dostępne również bez JavaScriptu. JS zastępuje te dodatkowe karty dynamiczną listą z GitHuba, a w razie niedostępności API korzysta z `js/projects-data.js`. Efekt 3D i daty dynamicznych kart pozostają bez zmian.
+Na stronie głównej sześć wyróżnionych projektów oraz kilka dodatkowych kart mają prawdziwe linki w HTML, dostępne również bez JavaScriptu. JS zastępuje te dodatkowe karty dynamiczną listą z GitHuba, a w razie niedostępności API korzysta z `js/projects-data.js`. Efekt 3D i daty dynamicznych kart pozostają bez zmian.
 
 Statyczny wybór i mapa **nie aktualizują się automatycznie**. Aby odświeżyć statyczne opisy, daty i kopię danych z publicznego API GitHuba, uruchom z katalogu repozytorium:
 

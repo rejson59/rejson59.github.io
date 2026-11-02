@@ -3,7 +3,7 @@ const assert=require('node:assert/strict'), fs=require('node:fs'), path=require(
 const {JSDOM,VirtualConsole}=require('jsdom'), root=path.resolve(__dirname,'../..');
 const read=f=>fs.readFileSync(path.join(root,f),'utf8');
 const home=new JSDOM(read('index.html')).window.document;
-const links=[...home.querySelectorAll('.showcase-item a[data-journey]')]; assert.equal(links.length,15);
+const links=[...home.querySelectorAll('.showcase-item a[data-journey]')]; assert.equal(links.length,18);
 for(const a of links) { assert.match(a.href,/^https:\/\/rejson59\.github\.io\/[^/]+\/$/); assert.equal(a.target,'_blank'); assert.match(a.rel,/noopener/); assert.match(a.rel,/noreferrer/); }
 assert.ok(home.querySelector('[data-tilt]')); assert.ok(home.querySelector('script[src^="js/rocket-open.js"]'));
 assert.doesNotMatch(read('js/app.js'),/journeyUrl|\/podroz\/\?projekt/);
@@ -23,7 +23,14 @@ assert.equal(e.defaultPrevented,true);assert.equal(store.private,undefined);asse
 assert.deepEqual(JSON.parse(store.rj_rocket_overlay_v2).path,'/Test/');assert.equal(JSON.parse(store.rj_rocket_overlay_v2).name,'Test');assert.equal(JSON.parse(store.rj_portal_arrival_v1).at,0);
 const modified=new dom.window.MouseEvent('click',{bubbles:true,cancelable:true,button:0,ctrlKey:true});dom.window.document.querySelector('a').dispatchEvent(modified);assert.equal(modified.defaultPrevented,false);assert.equal(calls,1);
 const external=new dom.window.MouseEvent('click',{bubbles:true,cancelable:true,button:0});dom.window.document.querySelector('#external').dispatchEvent(external);assert.equal(external.defaultPrevented,false);assert.equal(calls,1);
-dom.window.open=()=>null;const blocked=new dom.window.MouseEvent('click',{bubbles:true,cancelable:true,button:0});dom.window.document.querySelector('a').dispatchEvent(blocked);assert.equal(blocked.defaultPrevented,false);dom.window.close();
+dom.window.open=()=>null;const blocked=new dom.window.MouseEvent('click',{bubbles:true,cancelable:true,button:0});dom.window.document.querySelector('a').dispatchEvent(blocked);assert.equal(blocked.defaultPrevented,false);
+// Faktyczna wyróżniona karta OffChat otwiera docelowy projekt z tym samym znacznikiem rakiety.
+dom.window.open=()=>child;
+const off=home.querySelector('[data-repo="OffChat"] .card-title a[data-journey]');
+const imported=dom.window.document.createElement('article');imported.dataset.repo='OffChat';imported.innerHTML=off.outerHTML;dom.window.document.body.appendChild(imported);
+const offClick=new dom.window.MouseEvent('click',{bubbles:true,cancelable:true,button:0});imported.querySelector('a').dispatchEvent(offClick);
+assert(offClick.defaultPrevented);assert.equal(dest,'https://rejson59.github.io/OffChat/');assert.equal(JSON.parse(store.rj_rocket_overlay_v2).path,'/OffChat/');assert.equal(JSON.parse(store.rj_rocket_overlay_v2).name,'OffChat');
+dom.window.close();
 
 function arrival(marker, url='/Project/', sheet=true) {
  const d=new JSDOM('<!doctype html><html><head><link data-rj-portal-style href="/css/portal.css?v=17"></head><body></body></html>',{url:'https://rejson59.github.io'+url,runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:new VirtualConsole()});
