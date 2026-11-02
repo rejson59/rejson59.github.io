@@ -8,13 +8,13 @@
     tabs.forEach(function(tab,i){tab.setAttribute('aria-selected',String(i===index));tab.tabIndex=i===index?0:-1;panels[i].hidden=i!==index;});
     var channel=document.getElementById('channel-general');if(channel){channel.classList.toggle('is-active',index===0);channel.setAttribute('aria-pressed',String(index===0));}
     if(focus)tabs[index].focus();
-    if(updateHash && history.replaceState)history.replaceState(null,'',location.pathname+location.search+(index?'#wpisy':'#czat'));
+    if(updateHash && history.replaceState){history.replaceState(null,'',location.pathname+location.search+(index?'#wpisy':'#czat'));window.dispatchEvent(new Event('rj:tab-change'));}
   }
   tabs.forEach(function(tab,i){
     tab.addEventListener('click',function(){activate(i,false,true);});
     tab.addEventListener('keydown',function(e){if(e.key==='ArrowRight'||e.key==='ArrowLeft'||e.key==='Home'||e.key==='End'){e.preventDefault();activate(e.key==='Home'?0:e.key==='End'?1:1-i,true,true);}});
   });
-  function hash(){activate(location.hash==='#wpisy'?1:0,false,false);}
+  function hash(){activate(location.hash==='#wpisy'||/^#powiadomienie=[0-9a-f-]{36}$/i.test(location.hash)?1:0,false,false);}
   window.addEventListener('hashchange',hash);hash();
   var channel=document.getElementById('channel-general');
   if(channel)channel.addEventListener('click',function(){activate(0,false,true);});

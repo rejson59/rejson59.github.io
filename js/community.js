@@ -20,6 +20,7 @@
   var authBusy = false;
   var nameStatus = { valid: false, taken: false, checked: false };
   var feedTimer = null;
+  var feedRequestSeq = 0;
   var expandedPosts = {}; /* postId -> true gdy komentarze rozwinięte */
 
   function esc(s) {
@@ -373,6 +374,7 @@
         saveSession({ token: data.token, username: data.username });
         pinEl.value = "";
         renderAuthZone();
+        loadPosts(true); chatGeneration++; requestChat(true);
         var dialog = document.getElementById("chat-auth-dialog");
         if (dialog && dialog.open) dialog.close();
         var chatPanel = document.getElementById("panel-chat");
@@ -392,6 +394,7 @@
     attachedMedia = [];
     renderMediaPreview();
     renderAuthZone();
+    loadPosts(true); chatGeneration++; requestChat(true);
   }
 
   /* ================= STREFA AUTH / KOMPONOWANIE ================= */
@@ -579,26 +582,52 @@
     feedDrafts = (feedDrafts || []).filter(function (d) { return d.key !== key; });
   }
 
+  function targetNotification() {
+    var match = /^#powiadomienie=([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.exec(location.hash);
+    return match ? match[1] : null;
+  }
+  var lastOpenedNotification = null;
   function loadPosts(silent) {
+    var target = targetNotification();
     var requestToken = session && session.token ? session.token : null;
-    return rpc("community_list_posts", {
+    var seq = ++feedRequestSeq;
+    var targetReq = target && requestToken
+      ? rpc("rejchat_notification_post", { p_token: requestToken, p_notification_id: target }).catch(function () { return null; })
+      : Promise.resolve(null);
+    return Promise.all([rpc("community_list_posts", {
       p_limit: 40,
       p_offset: 0,
       p_token: requestToken,
       p_tag: activeTag
-    })
-      .then(function (data) {
-        if ((session && session.token ? session.token : null) !== requestToken) return [];
+    }), targetReq])
+      .then(function (result) {
+        var data = result[0], targetPost = result[1];
+        if (seq !== feedRequestSeq || target !== targetNotification() || (session && session.token ? session.token : null) !== requestToken) return [];
         var posts = (data && Array.isArray(data.posts)) ? data.posts : [];
+        var note = document.getElementById("rejchat-target-note");
+        if (note) {
+          note.hidden = !target;
+          note.textContent = target ? (targetPost ? "Otwarty wpis z powiadomienia. Wróć do wszystkich wpisów, klikając zakładkę Wpisy." : "Nie udało się otworzyć wpisu z powiadomienia. Mógł zostać usunięty lub wymaga zalogowania na właściwe konto.") : "";
+        }
+        if (targetPost && targetPost.id) {
+          posts = [targetPost].concat(posts.filter(function (p) { return p.id !== targetPost.id; }));
+          if (lastOpenedNotification !== target) expandedPosts[targetPost.id] = true;
+        }
         lastPostsTotal = (data && Number(data.total)) || posts.length;
         if (data && Array.isArray(data.available_tags)) {
           feedTagsKnown = data.available_tags;
           renderFeedTags();
         }
         renderPosts(posts);
+        if (targetPost && targetPost.id && lastOpenedNotification !== target) {
+          lastOpenedNotification = target;
+          var selected = document.querySelector('[data-post-id="' + targetPost.id + '"]');
+          if (selected && selected.scrollIntoView) selected.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
         return posts;
       })
       .catch(function () {
+        if (seq !== feedRequestSeq) return [];
         if (!silent) {
           var feed = document.getElementById("posts-feed");
           if (feed) {
@@ -1314,6 +1343,7 @@
   var chatLastId = null;      /* id ostatniej wiadomości — dociągamy tylko nowe */
   var chatBusy = false;
   var chatTickCount = 0;
+  var chatRequest = null, chatNeedsFull = false, chatGeneration = 0;
 
   function chatMsgHTML(m) {
     var mine = session && session.username === m.author_name;
@@ -1346,6 +1376,8 @@
   function chatScrollBottom() {
     var list = chatList();
     if (list) list.scrollTop = list.scrollHeight;
+    var jump = document.getElementById("chat-jump");
+    if (jump) jump.hidden = true;
   }
 
   function renderChatAll(rows) {
@@ -1376,6 +1408,8 @@
     var input = document.getElementById("chat-input");
     if (!btn || !input) return;
     btn.disabled = !session || chatBusy || !(input.value || "").trim();
+    var length = document.getElementById("chat-length");
+    if (length) length.textContent = (input.value || "").length + " / 280 znaków";
   }
 
   function refreshChatAuth() {
@@ -1389,40 +1423,68 @@
     refreshChatSend();
   }
 
+  function chatConnection(ok) {
+    var status = document.getElementById("chat-connection");
+    if (!status) return;
+    status.textContent = ok ? "Odświeżanie co 5 s" : "Brak połączenia — ponawiamy";
+    status.classList.toggle("is-offline", !ok);
+  }
+
   /* pełne przeładowanie (co ~30 s łapie też wiadomości usunięte przez innych) */
   function loadChatFull() {
     var box = chatList();
-    var stick = chatNearBottom();
-    var prevTop = box ? box.scrollTop : 0;
+    var generation = chatGeneration;
     return rpc("community_chat_list", { p_after_id: null, p_limit: 50 })
       .then(function (rows) {
-        if (!Array.isArray(rows)) return;
+        if (!Array.isArray(rows) || generation !== chatGeneration) return;
+        chatConnection(true);
+        var stick = chatNearBottom(), prevTop = box ? box.scrollTop : 0;
+        var existing = box ? Array.prototype.map.call(box.querySelectorAll("[data-chat-id]"), function (el) { return el.getAttribute("data-chat-id"); }) : [];
+        var added = existing.length && rows.some(function (row) { return existing.indexOf(String(row.id)) < 0; });
         renderChatAll(rows);
         chatLastId = rows.length ? rows[rows.length - 1].id : null;
-        if (stick) chatScrollBottom(); else if (box) box.scrollTop = prevTop;
+        if (stick) chatScrollBottom(); else if (box) { box.scrollTop = prevTop; if (added) showChatJump(); }
       })
       .catch(function () {
+        chatConnection(false);
         var b2 = chatList();
         if (b2 && !chatLastId) b2.innerHTML = '<p class="comm-chat-empty">Nie udało się pobrać czatu — sprawdź połączenie.</p>';
       });
   }
 
   function loadChatIncremental() {
+    var generation = chatGeneration;
     return rpc("community_chat_list", { p_after_id: chatLastId, p_limit: 50 })
       .then(function (rows) {
-        if (!Array.isArray(rows) || !rows.length) return;
+        if (!Array.isArray(rows) || generation !== chatGeneration) return;
+        chatConnection(true);
+        if (!rows.length) return;
         var stick = chatNearBottom();
         appendChat(rows);
         chatLastId = rows[rows.length - 1].id;
-        if (stick) chatScrollBottom();
+        if (stick) chatScrollBottom(); else showChatJump();
       })
-      .catch(function () { /* chwilowy brak sieci — pomijamy tick */ });
+      .catch(function () { chatConnection(false); });
+  }
+
+  function showChatJump() {
+    var jump = document.getElementById("chat-jump");
+    if (jump) jump.hidden = false;
+  }
+
+  // Jedno żądanie listy na raz. Wynik sprzed wysłania/usunięcia nie nadpisuje czatu.
+  function requestChat(full) {
+    if (chatRequest) { if (full) chatNeedsFull = true; return chatRequest; }
+    chatRequest = (full ? loadChatFull() : loadChatIncremental()).finally(function () {
+      chatRequest = null;
+      if (chatNeedsFull) { chatNeedsFull = false; requestChat(true); }
+    });
+    return chatRequest;
   }
 
   function chatPoll() {
     chatTickCount++;
-    if (chatTickCount % 6 === 1 || !chatLastId) return loadChatFull();
-    return loadChatIncremental();
+    return requestChat(chatTickCount % 6 === 1 || !chatLastId);
   }
 
   function handleChatSubmit(ev) {
@@ -1450,10 +1512,12 @@
             is_owner: isOwnerName(row.author_name),
             is_bot: isAgentName(row.author_name)
           }]);
-          chatLastId = row.id;
+          chatGeneration++;
           chatScrollBottom();
+          requestChat(true);
         } else {
-          loadChatIncremental();
+          chatGeneration++;
+          requestChat(true);
         }
       })
       .catch(function (err) {
@@ -1467,7 +1531,10 @@
   function setupChat() {
     if (!chatList()) return;
     refreshChatAuth();
-    loadChatFull();
+    requestChat(true);
+    var jump = document.getElementById("chat-jump");
+    if (jump) jump.addEventListener("click", chatScrollBottom);
+    chatList().addEventListener("scroll", function () { if (chatNearBottom() && jump) jump.hidden = true; });
 
     var form = document.getElementById("chat-form");
     if (form) form.addEventListener("submit", handleChatSubmit);
@@ -1482,8 +1549,8 @@
       var id = btn.getAttribute("data-chat-delete");
       var row = btn.closest(".chat-msg");
       rpc("community_chat_delete", { p_token: session.token, p_id: id })
-        .then(function () { if (row) row.remove(); })
-        .catch(function () { /* brak uprawnień/sieć — zostaje */ });
+        .then(function () { chatGeneration++; if (row) row.remove(); requestChat(true); })
+        .catch(function (err) { var status = document.getElementById("chat-send-status"); if (status) status.textContent = err.message || "Nie udało się usunąć wiadomości."; });
     });
 
     setInterval(function () {
@@ -1512,6 +1579,13 @@
     loadPosts(false);
     setupFeedTagsToggle();
     setupChat();
+    window.addEventListener("hashchange", function () {
+      if (targetNotification()) { activeTag = null; lastOpenedNotification = null; loadPosts(true); }
+      else { var note = document.getElementById("rejchat-target-note"); if (note) note.hidden = true; if (lastOpenedNotification) { lastOpenedNotification = null; loadPosts(true); } }
+    });
+    window.addEventListener("rj:tab-change", function () {
+      if (!targetNotification() && lastOpenedNotification) { lastOpenedNotification = null; var note = document.getElementById("rejchat-target-note"); if (note) note.hidden = true; loadPosts(true); }
+    });
 
     var usernameInput = document.getElementById("auth-username");
     if (usernameInput) usernameInput.addEventListener("input", scheduleNameCheck);
@@ -1585,7 +1659,7 @@
       if (event.key !== SESSION_KEY && event.key !== null) return;
       session = loadSession();
       expandedPosts = {}; openReplyForms = {};
-      renderAuthZone(); loadPosts(true); loadChatFull();
+      renderAuthZone(); loadPosts(true); chatGeneration++; requestChat(true);
     });
     /* Sprawdzamy zapisany token; opóźniona odpowiedź nie może nadpisać nowej sesji. */
     if (session) {
@@ -1594,7 +1668,7 @@
         .then(function (data) {
           if (!session || session.token !== checkingToken) return;
           if (data && data.username) saveSession({ token: checkingToken, username: data.username });
-          else if (data && data.username === null) { saveSession(null); renderAuthZone(); loadPosts(true); loadChatFull(); }
+          else if (data && data.username === null) { saveSession(null); renderAuthZone(); loadPosts(true); chatGeneration++; requestChat(true); }
         })
         .catch(function () { /* chwilowy brak sieci — zostaw sesję */ });
     }

@@ -16,7 +16,7 @@ const server=http.createServer((req,res)=>{
   await new Promise(r=>server.listen(0,'127.0.0.1',r));
   const browser=await chromium.launch({executablePath:process.env.CHROME_BIN,headless:true,args:['--no-sandbox','--disable-webgl']});
   const origin=`http://127.0.0.1:${server.address().port}`;
-  let oldResponse; let loginName='';
+  let oldResponse; let loginName=''; let chatRows=[];
   try {
     const context=await browser.newContext({viewport:{width:375,height:850}});
     await context.route('**/*',async route=>{
@@ -31,7 +31,8 @@ const server=http.createServer((req,res)=>{
       } else if(fn==='community_login'||fn==='community_register') {
         loginName=body.p_username; data={username:body.p_username,token:'0123456789abcdef0123456789abcdef'};
       } else if(fn==='community_whoami') data={username:'Tester'};
-      else if(fn==='community_chat_send') data={id:1,author_name:'Tester',content:body.p_content,created_at:new Date().toISOString()};
+      else if(fn==='community_chat_send') {data={id:1,author_name:'Tester',content:body.p_content,created_at:new Date().toISOString()}; chatRows.push(data);}
+      else if(fn==='community_chat_list') data=body.p_after_id ? chatRows.filter(r=>r.id>body.p_after_id) : chatRows;
       return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(data)}).catch(()=>{});
     });
     const page=await context.newPage();
