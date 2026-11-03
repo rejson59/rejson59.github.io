@@ -11,12 +11,13 @@
  * scripts/update-project-updates.py). Ręcznie edytuj TYLKO dopiski note.
  */
 window.PROJECT_UPDATES = {
-  "mconline": { version: "v2026.11.01" },
-  "MyPilot": { version: "v2026.11.01" },
-  "rejson59.github.io": { version: "v2026.11.01", note: "Społeczność 2.0: zdjęcia i filmy w postach, wątki odpowiedzi, agent AI" },
-  "ProStudent": { version: "v2026.10.31" },
-  "RejStream": { version: "v2026.10.30" },
-  "mc-launcher": { version: "v2026.10.30" },
+  "RejStream": { version: "v2026.11.02" },
+  "RejPlay": { version: "v2026.11.02" },
+  "mc-launcher": { version: "v2026.11.02" },
+  "mconline": { version: "v2026.11.02" },
+  "rejson59.github.io": { version: "v2026.11.02", note: "Społeczność 2.0: zdjęcia i filmy w postach, wątki odpowiedzi, agent AI" },
+  "MyPilot": { version: "v2026.11.02" },
+  "ProStudent": { version: "v2026.11.02" },
   "RejFile": { version: "v2026.10.30" },
   "roblox-online": { version: "v2026.10.29" },
   "Jakuplayer": { version: "v2026.10.28" },
