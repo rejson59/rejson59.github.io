@@ -18,7 +18,8 @@ for (const page of pages.filter(p => p !== '404.html')) {
   for (const link of document.querySelectorAll('header a.nav-icon-link')) {
     assert.ok(link.getAttribute('aria-label') && link.getAttribute('title'), `${page}: dostępna nazwa ikony`);
     const use = link.querySelector('use');
-    assert.ok(use && svg.getElementById(use.getAttribute('href').split('#')[1]), `${page}: istniejący symbol`);
+    const inlineLock = link.getAttribute('href') === '/rejsejf' && link.querySelector('svg rect') && link.querySelector('svg path');
+    assert.ok(inlineLock || (use && svg.getElementById(use.getAttribute('href').split('#')[1])), `${page}: istniejący symbol lub bezpośrednia ikona sejfu`);
   }
 }
 const home = new JSDOM(read('index.html')).window.document;
