@@ -172,6 +172,7 @@
   animation: boardItemIn 0.5s cubic-bezier(0.22, 0.8, 0.3, 1) forwards;
 }
 @keyframes boardItemIn { to { opacity: 1; transform: translateY(0); } }
+.board-item:target { outline:2px solid var(--accent); outline-offset:3px; }
 .board-item:hover { border-color: var(--border-strong); }
 .board-item.is-pinned { border-color: color-mix(in srgb, var(--accent) 38%, var(--border)); }
 

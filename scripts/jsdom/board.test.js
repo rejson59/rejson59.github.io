@@ -188,7 +188,7 @@ const titles = (doc) =>
     check("pasek filtrów ma opis dla czytników ekranu", /aria-pressed/.test(PAGE));
     check("arkusz ma styl plakietki i przełącznika", /\.tag-wait/.test(CSS) && /\.btn-hide-done/.test(CSS));
     check("jest przycisk „tylko moje”", /id="toggle-mine"/.test(PAGE));
-    check("wersje plików podbite (świeży cache)", /board\.js\?v=4/.test(PAGE) && /board\.css\?v=4/.test(PAGE));
+    check("wersje plików podbite (świeży cache)", /board\.js\?v=5/.test(PAGE) && /board\.css\?v=5/.test(PAGE));
   }
 
   const passed = out.filter(Boolean).length;

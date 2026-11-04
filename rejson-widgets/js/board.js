@@ -138,6 +138,13 @@
     return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(v || ""));
   }
 
+  // Link z powiadomienia ma wskazywać właściwe zgłoszenie, także po filtrze.
+  var pendingTarget = isUuid(location.hash.slice(1)) ? location.hash.slice(1) : null;
+  window.addEventListener("hashchange", function () {
+    pendingTarget = isUuid(location.hash.slice(1)) ? location.hash.slice(1) : null;
+    if (pendingTarget) renderFeed();
+  });
+
   /* ---------- Pobieranie danych ---------- */
   async function syncBoard() {
     var fetched = false;
@@ -147,7 +154,7 @@
         var rows = await cloud.rpc("list_public_board", {
           p_project_slug: null,
           p_voter_key: cloud.getVoterKey(),
-          p_limit: 100
+          p_limit: 120
         });
         if (Array.isArray(rows)) {
           state.items = rows;
@@ -253,6 +260,7 @@
   /* ---------- Lista ---------- */
   function filteredItems() {
     var list = state.items.filter(function (it) {
+      if (pendingTarget && String(it.id).toLowerCase() === pendingTarget.toLowerCase()) return true;
       if (state.hideDone && (it.status === "closed" || it.status === "completed")) return false;
       if (state.mineOnly && (!me || String(it.author_name || "").toLowerCase() !== me.toLowerCase())) return false;
       if (state.typeFilter !== "all" && it.type !== state.typeFilter) return false;
@@ -282,7 +290,7 @@
         var statusLabel = STATUS_LABELS[it.status] || null;
         var statusDone = it.status === "completed";
         return (
-          '<article class="board-item' +
+          '<article id="' + esc(it.id) + '" class="board-item' +
           (it.is_pinned ? " is-pinned" : "") +
           '" style="animation-delay:' +
           Math.min(i * 40, 400) +
@@ -355,6 +363,12 @@
         );
       })
       .join("");
+    if (pendingTarget) {
+      var target = document.getElementById(pendingTarget);
+      pendingTarget = null;
+      if (target && feedEl.contains(target)) target.scrollIntoView({block:"center"});
+      else notify("Nie znaleziono tego zgłoszenia na publicznej tablicy.");
+    }
   }
 
   /* ---------- Głosowanie ---------- */

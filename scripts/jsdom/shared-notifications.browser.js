@@ -20,8 +20,8 @@ try {
   });
   const p=await ctx.newPage();
   for(const page of pages){
-   await p.goto(origin+page,{waitUntil:'domcontentloaded'});await p.evaluate(()=>document.querySelector('#rj-page-loader')?.remove());
-   const bell=p.locator('.rj-chat-bell');await bell.waitFor({state:'visible'});assert.equal(await bell.count(),1,page+' jeden dzwonek RejChat');
+   await p.goto(origin+(logged&&page==='/logowanie'?'/logowanie?zarzadzaj=1':page),{waitUntil:'domcontentloaded'});await p.evaluate(()=>document.querySelector('#rj-page-loader')?.remove());
+   const bell=p.locator('.rj-chat-bell');await bell.waitFor({state:'visible'});assert.equal(await bell.count(),1,page+' jeden wspólny dzwonek');
    if(logged)await p.locator('.rj-header-profile').waitFor({state:'visible'});
    await p.waitForFunction(({logged,width})=>{const b=document.querySelector('.rj-chat-bell'),a=logged?document.querySelector('.rj-header-profile'):width<=1200?document.querySelector('.mobile-account'):document.querySelector('.site-nav>a');if(!b||!a)return false;const x=b.getBoundingClientRect(),y=a.getBoundingClientRect();return Math.abs(x.right-y.left)<30;},{logged,width});
    const geom=await p.evaluate(()=>{const b=document.querySelector('.rj-chat-bell'),r=b.getBoundingClientRect(),t=document.querySelector('.brand-text');return {left:r.left,right:r.right,width:r.width,svg:b.querySelector('svg path')?.getBBox().width,scroll:document.documentElement.scrollWidth,brand:[t.clientWidth,t.scrollWidth],color:getComputedStyle(b).color,bg:getComputedStyle(b).backgroundColor};});

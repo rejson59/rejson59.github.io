@@ -26,6 +26,8 @@
   var FOLLOW_KEY = "rj_following_v1";
   var SEEN_KEY = "rj_seen_v1";
   var LINK_KEY = "rj_identity_link_v1";
+  var NOTICES_KEY = "rj_general_notifications_v1:";
+  var READ_KEY = "rj_general_read_v1:";
   var VISIT_KEY = "rj_visit_v1";           /* sessionStorage: raz na wizytę */
   var VOTER_KEY = "rejson_widgets_voter_id_v1"; /* ten sam klucz co pigułka zgłoszeń */
   var LINK_INTERVAL_MS = 7 * 24 * 60 * 60 * 1000; /* odstęp między próbami scalania */
@@ -140,9 +142,61 @@
     return String(p.pushed_at || p.updated_at || p.updated || "");
   }
 
+  // Na podstronach nie ma app.js; dla obserwowanych projektów użyj prawdziwych
+  // danych GitHuba, z limitem odpytywania i bez zerowania migawki przy błędzie.
+  var lastProjectFetch = 0, fetchedProjects = [], projectFetchError = false;
+  function projectData(followed) {
+    var local = projects();
+    if (local.length || !followed.length) { projectFetchError = false; return Promise.resolve(local); }
+    if (Date.now() - lastProjectFetch < 5 * 60 * 1000) return Promise.resolve(fetchedProjects);
+    lastProjectFetch = Date.now();
+    var controller = window.AbortController ? new AbortController() : null;
+    var timeout = controller ? setTimeout(function () { controller.abort(); }, 8000) : null;
+    return fetch("https://api.github.com/users/rejson59/repos?per_page=100&sort=updated", {cache:"no-store", signal:controller ? controller.signal : undefined})
+      .then(function (res) { if (!res.ok) throw new Error("GitHub"); return res.json(); })
+      .then(function (rows) { if (!Array.isArray(rows)) throw new Error("GitHub"); projectFetchError = false; fetchedProjects = rows; return fetchedProjects; })
+      .catch(function () { projectFetchError = true; return fetchedProjects; })
+      .finally(function () { if (timeout) clearTimeout(timeout); });
+  }
+
   /* ---------- powiadomienia ---------- */
 
-  var state = { items: [], loading: false, error: null, ownerOnline: false, board: [] };
+  var state = { items: [], loading: false, error: null, sourceError: "", ownerOnline: false, board: [] };
+  var activeToken = null, inFlight = null;
+  function queueKey(s) { return NOTICES_KEY + String(s.username).toLowerCase(); }
+  function loadQueue(s) {
+    var items = s ? readJSON(window.localStorage, queueKey(s), []) : [];
+    return Array.isArray(items) ? items.filter(function (it) { return it && typeof it.id === "string"; }) : [];
+  }
+  function syncSession() {
+    var s = session(), token = s ? s.token : null;
+    if (token !== activeToken) {
+      activeToken = token;
+      inFlight = null;
+      state.items = loadQueue(s);
+      state.board = [];
+      state.sourceError = "";
+      state.ownerOnline = false;
+    }
+    return s;
+  }
+  function changed() { window.dispatchEvent(new CustomEvent("rj:premium-notifications")); }
+  function markRead(id) {
+    var s = syncSession();
+    if (!s) return;
+    var readKey = READ_KEY + String(s.username).toLowerCase();
+    var read = readJSON(window.localStorage, readKey, {});
+    if (!read || typeof read !== "object" || Array.isArray(read)) read = {};
+    state.items.forEach(function (it) { if (!id || it.id === id) read[it.id] = Date.now(); });
+    var keys = Object.keys(read).sort(function(a,b) { return read[b] - read[a]; });
+    keys.slice(500).forEach(function(key) { delete read[key]; });
+    writeJSON(window.localStorage, readKey, read);
+    state.items = state.items.filter(function (it) { return id && it.id !== id; });
+    writeJSON(window.localStorage, queueKey(s), state.items);
+    paintCount();
+    paintClub();
+    changed();
+  }
 
   /* Klucz, którym pigułka/board podpisują głosy — bez niego `has_voted`
      zawsze wracałoby false i „Twój wkład” kłamałby o zerze. */
@@ -161,35 +215,21 @@
     var s = session();
     if (!s) return Promise.resolve([]);
 
-    var seen = readJSON(window.localStorage, SEEN_KEY, null);
+    var accountSeenKey = SEEN_KEY + ":" + String(s.username).toLowerCase();
+    var seen = readJSON(window.localStorage, accountSeenKey, null);
+    if (!seen) {
+      var legacySeen = readJSON(window.localStorage, SEEN_KEY, null);
+      if (legacySeen && legacySeen.user === s.username) seen = legacySeen;
+    }
     var firstRun = !seen || seen.user !== s.username;
 
-    var prevProjects = (seen && seen.projects) || {};
-    var prevSubs = (seen && seen.subs) || {};
-    var nextProjects = {};
+    var prevProjects = (!firstRun && seen.projects) || {};
+    var prevSubs = (!firstRun && seen.subs) || {};
+    // Podstrony nie mają listy projektów — nie wymazuj poprzedniej migawki.
+    var nextProjects = Object.assign({}, prevProjects);
     var events = [];
 
-    /* 1. projekty, które obserwuję */
     var followed = following();
-    projects().forEach(function (p) {
-      var name = p.name || p.slug;
-      if (!name) return;
-      var stamp = projectStamp(p);
-      nextProjects[name] = stamp;
-      if (!followed.length || followed.indexOf(name) === -1) return;
-      var before = prevProjects[name];
-      if (!firstRun && before && stamp && stamp !== before) {
-        events.push({
-          id: "update:" + name + ":" + stamp,
-          kind: "update",
-          icon: "📦",
-          title: "„" + name + "” dostał aktualizację",
-          text: "Obserwujesz ten projekt, więc mówię od razu.",
-          href: p.liveUrl || p.homepage || p.html_url || ("https://github.com/rejson59/" + name),
-          when: stamp
-        });
-      }
-    });
 
     /* 2. moje zgłoszenia na tablicy — status i odpowiedź */
     var boardPromise = rpc("list_public_board", {
@@ -201,8 +241,37 @@
     var presencePromise = rpc("community_online_users", { p_window_seconds: 120 })
       .catch(function () { return null; });
 
-    return Promise.all([boardPromise, presencePromise]).then(function (res) {
-      var rows = Array.isArray(res[0]) ? res[0] : [];
+    return Promise.all([boardPromise, presencePromise, projectData(followed)]).then(function (res) {
+      // Odpowiedź starej sesji nie może trafić do nowego konta.
+      var currentSession = session();
+      if (!currentSession || currentSession.token !== s.token) return [];
+      var projectRows = res[2];
+      /* 1. projekty, które obserwuję */
+      projectRows.forEach(function (p) {
+        var name = p.name || p.slug;
+        if (!name) return;
+        var stamp = projectStamp(p);
+        var previousTime = Date.parse(prevProjects[name] || "");
+        var currentTime = Date.parse(stamp);
+        if (!isNaN(currentTime) && (isNaN(previousTime) || currentTime >= previousTime)) nextProjects[name] = stamp;
+        if (!followed.length || followed.indexOf(name) === -1) return;
+        var before = prevProjects[name];
+        if (!firstRun && before && !isNaN(currentTime) && !isNaN(previousTime) && currentTime > previousTime) {
+          events.push({
+            id: "update:" + name + ":" + stamp,
+            kind: "update",
+            icon: "📦",
+            title: "„" + name + "” dostał aktualizację",
+            text: "Obserwujesz ten projekt, więc mówię od razu.",
+            href: p.liveUrl || p.homepage || p.html_url || ("https://github.com/rejson59/" + name),
+            when: stamp
+          });
+        }
+      });
+
+      var boardOk = Array.isArray(res[0]);
+      state.sourceError = !boardOk ? "Nie udało się sprawdzić zgłoszeń." : projectFetchError ? "Nie udało się sprawdzić aktualizacji projektów." : "";
+      var rows = boardOk ? res[0] : [];
       var online = Array.isArray(res[1]) ? res[1] : [];
       var nextSubs = {};
       state.board = rows;
@@ -223,7 +292,7 @@
             icon: "📣",
             title: "Nowe zgłoszenie w „" + slug + "”",
             text: it.title || "Ktoś coś zgłosił.",
-            href: "tablica-pomyslow#" + it.id,
+            href: "/tablica-pomyslow#" + it.id,
             when: it.created_at
           });
         });
@@ -242,13 +311,13 @@
         if (sig.s !== before.s) {
           var label = STATUS_LABEL[sig.s] || sig.s;
           events.push({
-            id: "status:" + it.id + ":" + sig.s,
+            id: "status:" + it.id + ":" + sig.s + ":" + (it.updated_at || ""),
             kind: "status",
             icon: sig.s === "completed" ? "✅" : (sig.s === "in_progress" ? "🛠" : "🔎"),
             title: "„" + (it.title || "") + "” — " + label,
             text: "Twoje zgłoszenie zmieniło status.",
-            href: "tablica-pomyslow#" + it.id,
-            when: it.updated_at || nowIso()
+            href: "/tablica-pomyslow#" + it.id,
+            when: it.updated_at || ""
           });
         }
         if (sig.r && sig.r !== before.r) {
@@ -258,7 +327,7 @@
             icon: "💬",
             title: "Nowa odpowiedź Rejsona",
             text: (it.title || "Twoje zgłoszenie") + " — zobacz, co napisał.",
-            href: "tablica-pomyslow#" + it.id,
+            href: "/tablica-pomyslow#" + it.id,
             when: sig.r
           });
         }
@@ -270,37 +339,44 @@
       state.ownerOnline = ownerOnline;
 
       var visit = readJSON(window.sessionStorage, VISIT_KEY, {});
-      if (ownerOnline && !visit.ownerAnnounced) {
+      if (!firstRun && ownerOnline && !visit.ownerAnnounced) {
         visit.ownerAnnounced = true;
         writeJSON(window.sessionStorage, VISIT_KEY, visit);
         events.push({
           id: "presence:" + new Date().toISOString().slice(0, 13),
           kind: "presence",
           icon: "🟢",
-          title: "Rejson59 jest teraz online",
-          text: "Realna obecność — nie timer, który ma Cię popędzać.",
-          href: "rejchat",
+          title: "Rejson59 był online",
+          text: "Widziano go na stronie.",
+          href: "/rejchat",
           when: nowIso()
         });
       }
 
-      writeJSON(window.localStorage, SEEN_KEY, {
+      var nextSeen = {
         user: s.username,
         projects: nextProjects,
-        subs: firstRun ? nextSubs : Object.assign(prevSubs, nextSubs),
-        at: nowIso()
-      });
+        subs: boardOk ? (firstRun ? nextSubs : Object.assign(prevSubs, nextSubs)) : prevSubs,
+        at: boardOk ? nowIso() : (seen && !firstRun && seen.at || nowIso())
+      };
+      writeJSON(window.localStorage, accountSeenKey, nextSeen);
+      writeJSON(window.localStorage, SEEN_KEY, nextSeen);
 
       /* Scalanie, nie podmiana: odświeżenie (np. po powrocie z innej karty)
          nie może skasować powiadomień, które użytkownik już widzi. Deduplikacja
          po stabilnym `id` zdarzenia. */
       var merged = {};
-      state.items.concat(events).forEach(function (ev) {
+      var read = readJSON(window.localStorage, READ_KEY + String(s.username).toLowerCase(), {});
+      if (!read || typeof read !== "object" || Array.isArray(read)) read = {};
+      loadQueue(s).concat(state.items, events).forEach(function (ev) {
         var key = ev.id || ev.title;
-        if (!merged[key]) merged[key] = ev;
+        if (!merged[key] && !Object.prototype.hasOwnProperty.call(read, key)) merged[key] = ev;
       });
       state.items = Object.keys(merged).map(function (k) { return merged[k]; });
       state.items.sort(function (a, b) { return String(b.when).localeCompare(String(a.when)); });
+      state.items = state.items.slice(0, 100);
+      writeJSON(window.localStorage, queueKey(s), state.items);
+      changed();
       return state.items;
     });
   }
@@ -388,8 +464,7 @@
         'Oznacz jako przeczytane</button>';
       var mark = document.getElementById("rj-mark-seen");
       if (mark) mark.addEventListener("click", function () {
-        state.items = [];
-        paintCount();
+        markRead(null);
         renderPanel();
       });
     }
@@ -576,7 +651,7 @@
 
   function mount() {
     var metrics = document.querySelector(".header-metrics");
-    if (metrics && !document.getElementById("rj-bell")) {
+    if (metrics && !document.querySelector(".rj-chat-alerts") && !document.getElementById("rj-bell")) {
       metrics.insertAdjacentHTML("afterbegin", bellHTML());
       metrics.insertAdjacentHTML("afterend", panelHTML());
 
@@ -607,33 +682,49 @@
       });
     }
 
-    if (isLoggedIn()) linkIdentity();
+    if (isLoggedIn() && document.getElementById("rj-club")) linkIdentity();
     paintClub();
     paintCount();
     refresh();
   }
 
   function refresh() {
-    if (!isLoggedIn()) {
+    var s = syncSession();
+    if (!s) {
       state.items = [];
       state.board = [];
       paintCount();
+      changed();
       return Promise.resolve([]);
     }
+    if (inFlight && inFlight.token === s.token) return inFlight.promise;
     state.loading = true;
-    return collect().then(function (items) {
+    var promise = collect().then(function (items) {
+      if (!session() || session().token !== s.token) return [];
       state.loading = false;
       state.error = null;
       paintCount();
       renderPanel();
-      paintClub();
+      if (!document.querySelector(".rj-club--compact.is-open")) paintClub();
       return items;
     }).catch(function (err) {
-      state.loading = false;
-      state.error = String(err && err.message || err);
+      if (session() && session().token === s.token) {
+        state.loading = false;
+        state.error = String(err && err.message || err);
+      }
       return [];
-    });
+    }).finally(function () { if (inFlight && inFlight.promise === promise) inFlight = null; });
+    inFlight = { token: s.token, promise: promise };
+    return promise;
   }
+
+  function sessionChanged() { syncSession(); paintCount(); paintClub(); changed(); refresh(); }
+  window.addEventListener("rj:session-change", sessionChanged);
+  window.addEventListener("storage", function (event) {
+    if (event.key === SESSION_KEY || event.key === null) return sessionChanged();
+    var s = syncSession();
+    if (s && event.key === queueKey(s)) { state.items = loadQueue(s); paintCount(); paintClub(); changed(); }
+  });
 
   window.RJPremium = {
     session: session,
@@ -643,7 +734,9 @@
     isFollowing: isFollowing,
     toggleFollow: toggleFollow,
     linkIdentity: linkIdentity,
-    notifications: function () { return state.items.slice(); },
+    notifications: function () { syncSession(); return state.items.slice(); },
+    markRead: markRead,
+    sourceError: function () { syncSession(); return state.sourceError; },
     refresh: refresh,
     mount: mount
   };
