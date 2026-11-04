@@ -11,7 +11,7 @@
     current=p;$('profile-view').hidden=false;$('profile-name').textContent=p.username;$('profile-name').dataset.profileColor=p.color;
     $('profile-avatar').src=p.is_bot?'/assets/agent-avatar.png':'/assets/avatars/'+p.avatar+'.svg';
     $('profile-bio').textContent=p.bio || 'Tu może pojawić się kilka słów o tej osobie.';
-    document.title=p.username+' — RejChat';
+    document.title=p.username+' — konto rejson59.github.io';
   }
   function editor(p){
     $('profile-editor').hidden=false;

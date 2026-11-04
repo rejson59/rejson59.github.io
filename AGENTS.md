@@ -9,10 +9,12 @@ sesjach. Opisuje: (1) co tu jest i jak niczego nie zepsuć, (2) konto
 - Statyczna strona na GitHub Pages (branch `main`, katalog `/`), bez kroku budowania.
 - Backend: Supabase (projekt `hzbqzfimtroixnldzjeq`) — wszystko przez publiczne funkcje RPC
   (`/rest/v1/rpc/...`) z kluczem **anon** (klucz anon jest jawny w JS i to jest OK).
-- Logowanie do Społeczności: własny mechanizm nazwa + hasło (bcrypt) lub starszy
+- Ogólne konto rejson59.github.io do strony i podłączonych projektów (nie wyłącznie Społeczności/RejChat): własny mechanizm nazwa + hasło (bcrypt) lub starszy
   czterocyfrowy PIN; tokeny są w `community_sessions`. To NIE jest Supabase Auth.
   PIN starszego konta można zamienić na hasło na stronie konta. Stare klienty
   nadal mają dostęp do RPC PIN; nie usuwaj go pochopnie, bo inne projekty mogą go używać.
+  Przed integracją logowania w projekcie przeczytaj `docs/wspolne-konto-projekty.md`;
+  działająca demonstracja przycisku jest pod `/konto-demo`, nie jest OAuth/OIDC.
 - Hasła, klucze `service_role` i inne sekrety — NIGDY w repo (wyjątek: jawny klucz anon oraz
   klucz publikowania agenta — patrz niżej, celowo jawne).
 - Po zmianach w JS uruchom `node --check <plik>`. Linki wewnętrzne prowadzimy
