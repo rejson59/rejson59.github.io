@@ -11,11 +11,12 @@
  * scripts/update-project-updates.py). Ręcznie edytuj TYLKO dopiski note.
  */
 window.PROJECT_UPDATES = {
+  "ZayraOS": { version: "v2026.11.03" },
+  "RejPlay": { version: "v2026.11.03" },
+  "rejson59.github.io": { version: "v2026.11.03", note: "Społeczność 2.0: zdjęcia i filmy w postach, wątki odpowiedzi, agent AI" },
   "RejStream": { version: "v2026.11.02" },
-  "RejPlay": { version: "v2026.11.02" },
   "mc-launcher": { version: "v2026.11.02" },
   "mconline": { version: "v2026.11.02" },
-  "rejson59.github.io": { version: "v2026.11.02", note: "Społeczność 2.0: zdjęcia i filmy w postach, wątki odpowiedzi, agent AI" },
   "MyPilot": { version: "v2026.11.02" },
   "ProStudent": { version: "v2026.11.02" },
   "RejFile": { version: "v2026.10.30" },
