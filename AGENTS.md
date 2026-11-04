@@ -88,6 +88,9 @@ GitHub Pages buduje `main` automatycznie (~1 min). Po merge zweryfikuj stronę n
 Zasada nadrzędna: **każde powiadomienie musi pochodzić z realnych danych.**
 Nigdy „ktoś właśnie coś zrobił”, jeśli to nie wydarzyło się naprawdę.
 
+- Jeden wspólny dzwonek `js/rejchat-notifications.js` łączy powiadomienia
+  RejChat z realnymi zdarzeniami witryny z `js/premium.js`; nie dodawaj
+  osobnych dzwonków. Ograniczenia i źródła: `docs/powiadomienia.md`.
 - Źródła powiadomień (`js/premium.js`): nowszy `updated_at` obserwowanego
   projektu, zmiana statusu / odpowiedź na moje zgłoszenie, realna obecność
   właściciela (`community_online_users`).

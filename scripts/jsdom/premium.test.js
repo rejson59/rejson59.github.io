@@ -305,9 +305,12 @@ const count = (doc) => {
     t2.w.RJPremium.refresh();
     await wait(40);
     const second = t2.w.RJPremium.notifications().filter((n) => n.kind === "presence").length;
-    check("gdy naprawdę jest online — powiadomienie jest", first === 1, "sztuk: " + first);
-    check("drugi raz w tej samej wizycie nie powtarza",
-      second === first && first <= 1, "przed: " + first + ", po: " + second);
+    t2.w.RJPremium.refresh();
+    await wait(40);
+    const third = t2.w.RJPremium.notifications().filter((n) => n.kind === "presence").length;
+    check("pierwsze uruchomienie zapisuje punkt odniesienia", first === 0);
+    check("gdy naprawdę jest online — powiadomienie jest", second === 1, "sztuk: " + second);
+    check("drugi raz w tej samej wizycie nie powtarza", third === second && second === 1);
   }
 
   console.log("\n=== G. ODPORNOŚĆ: BRAK SIECI NIE PSUJE STRONY ===");
@@ -335,7 +338,7 @@ const count = (doc) => {
   {
     check("karta premium podpięta na stronie głównej", /id="rj-club"/.test(INDEX));
     check("arkusz premium dołączony", /css\/premium\.css\?v=5/.test(INDEX));
-    check("skrypt premium dołączony", /js\/premium\.js\?v=8/.test(INDEX));
+    check("skrypt premium dołączony", /js\/premium\.js\?v=9/.test(INDEX));
     check("karta premium stoi przed listą projektów",
       INDEX.indexOf('id="rj-club"') < INDEX.indexOf('id="projekty"'));
     check("karta premium jest widoczna przed wyróżnionymi projektami",
