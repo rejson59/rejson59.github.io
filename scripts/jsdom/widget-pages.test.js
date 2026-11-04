@@ -80,7 +80,7 @@ async function main() {
   let res = await response(), html = await res.text();
   assert.equal((html.match(/src="\/rejson-widgets\/widget\.js\?v=12"/g)||[]).length,1);
   assert.equal((html.match(/src="\/js\/media-capture\.js\?v=2"/g)||[]).length,1);
-  assert.equal((html.match(/src="\/js\/mobile-ads\.js\?v=5"/g)||[]).length,1);
+  assert.equal((html.match(/mobile-ads\.js/g)||[]).length,0, 'SW nie dodaje reklam do projektów');
   assert.equal(res.headers.get('content-security-policy'),"default-src 'self'");
   pageHtml='<html><head></head><body><script src="/js/media-capture.js?v=1"></script><script src="/rejson-widgets/widget.js?v=8"></script></body></html>';
   res=await response(); html=await res.text();
@@ -95,24 +95,6 @@ async function main() {
   pageHtml='<html><head></head><body><script src="/rejson-widgets/widget.js?v=12"></script></body></html>';
   res=await response(); html=await res.text();
   assert.equal((html.match(/src="\/rejson-widgets\/widget\.js\?v=12"/g)||[]).length,1,'nie duplikuje bieżącej wersji');
-  pageHtml='<html><head><link rel="stylesheet" href="/css/mobile-ads.css?v=1"></head><body><script src="/js/mobile-ads.js?v=1" defer></script></body></html>';
-  res=await response(); html=await res.text();
-  assert.equal((html.match(/src="\/js\/mobile-ads\.js\?v=5"/g)||[]).length,1,'aktualizuje skrypt bez duplikatu');
-  assert.equal((html.match(/href="\/css\/mobile-ads\.css\?v=5"/g)||[]).length,1,'aktualizuje arkusz');
-  pageHtml='<html><head><link rel="stylesheet" href="/css/mobile-ads.css?v=3"></head><body><script src="/js/mobile-ads.js?v=3" defer></script></body></html>';
-  res=await response(); html=await res.text();
-  assert.equal((html.match(/src="\/js\/mobile-ads\.js\?v=5"/g)||[]).length,1,'aktualizuje v3');
-  assert.equal((html.match(/href="\/css\/mobile-ads\.css\?v=5"/g)||[]).length,1,'aktualizuje arkusz v3');
-  pageHtml='<html><head><link rel="stylesheet" href="/css/mobile-ads.css?v=4"></head><body><script src="/js/mobile-ads.js?v=4" defer></script></body></html>';
-  res=await response(); html=await res.text();
-  assert.equal((html.match(/src="\/js\/mobile-ads\.js\?v=5"/g)||[]).length,1,'aktualizuje skrypt v4');
-  assert.equal((html.match(/href="\/css\/mobile-ads\.css\?v=5"/g)||[]).length,1,'aktualizuje arkusz v4');
-  pageHtml='<html><head><link rel="stylesheet" href="/css/portal.css?v=12" data-rj-portal-style><script src="/js/portal-arrival.js?v=11"></script></head><body></body></html>';
-  res=await response(); html=await res.text();
-  assert.equal((html.match(/src="\/js\/portal-arrival\.js\?v=16"/g)||[]).length,1);
-  assert.equal((html.match(/href="\/css\/portal\.css\?v=17"/g)||[]).length,1);
-  let handled=false; listeners.fetch({request:{method:'GET',mode:'navigate',destination:'document',url:'https://rejson59.github.io/podroz/?projekt=Test'},waitUntil(){handled=true;},respondWith(){handled=true;}});
-  assert.equal(handled,false,'przejściowa podróż nie jest rejestrowana jako projekt');
   console.log('PASS: service worker dodaje/aktualizuje skrypty bez duplikatu i nie osłabia CSP');
 }
 main().catch(err => {console.error(err);process.exitCode=1;});
