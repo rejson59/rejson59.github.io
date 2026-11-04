@@ -3,14 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Konto społeczności Rejson59 — logowanie i rejestracja bez e-maila.">
+  <meta name="description" content="Ogólne konto rejson59.github.io — logowanie i rejestracja bez e-maila.">
   <title>Konto Rejson59 — logowanie</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <script>try { var theme = localStorage.getItem('theme'); if (theme === 'light' || theme === 'dark') document.documentElement.dataset.theme = theme; } catch (e) {}</script>
   <link rel="stylesheet" href="css/style.css?v=2026-10-27-1">
   <link rel="stylesheet" href="css/community.css?v=2026-10-25">
   <link rel="stylesheet" href="css/logowanie.css?v=2">
-  <script defer src="js/logowanie.js?v=6"></script>
+  <script defer src="js/logowanie.js?v=7"></script>
   <link rel="stylesheet" href="/css/liquid.css?v=2026-10-30-2">
   <link rel="stylesheet" href="/css/rejchat.css?v=1">
   <script defer src="/js/rejchat-profiles.js?v=1"></script><script defer src="/js/rejchat-notifications.js?v=2"></script>
@@ -51,11 +51,11 @@
   <main data-rj-private class="container account-main" id="konto">
     <div class="account-intro">
       <span class="account-eyebrow">✦ TWOJE KONTO REJSON59</span>
-      <h1><svg class="page-mark" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#account"></use></svg>Jedno miejsce.<br><span>Twoja społeczność.</span></h1>
+      <h1><svg class="page-mark" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#account"></use></svg>Jedno miejsce.<br><span>Twoje projekty.</span></h1>
       <p>Zabierz swój profil i obsługiwane dane ze sobą: zaloguj się na tym samym koncie na innym urządzeniu. Bez e-maila i bez opłat.</p>
     </div>
     <div class="account-layout">
-      <section class="comm-auth account-card" aria-label="Konto społeczności">
+      <section class="comm-auth account-card" aria-label="Konto rejson59.github.io">
         <div class="comm-auth-inner">
           <div id="account-loading" role="status">Sprawdzam sesję…</div>
           <div id="account-guest" hidden>
@@ -78,7 +78,7 @@
           <div id="account-user" hidden>
             <span class="account-status">✓ Sesja potwierdzona</span>
             <h2>Miło Cię widzieć, <span id="account-username"></span>!</h2>
-            <p class="comm-auth-sub">To konto działa na tej stronie i w społeczności. RejStream korzysta z tego samego konta.</p>
+            <p class="comm-auth-sub">To Twoje ogólne konto na rejson59.github.io i w obsługiwanych projektach.</p>
             <a class="btn btn-primary account-link" id="account-return" href="/" hidden>Wróć do projektu →</a>
             <a class="btn btn-primary account-link" href="rejchat">Przejdź do RejChat →</a>
             <a class="account-text-link" href="profil">Otwórz i dostosuj profil ↗</a>
@@ -116,11 +116,12 @@
         </div>
       </section>
       <aside class="account-benefits" aria-label="Co daje konto">
-        <h2>Małe konto, więcej możliwości</h2>
+        <h2>Jedno konto, więcej możliwości</h2>
+        <div class="account-benefit"><span>🔑</span><div><h3>Jedno konto do projektów</h3><p>W obsługiwanych projektach możesz użyć tego samego konta. <a href="/konto-demo">Wypróbuj przycisk logowania ↗</a></p></div></div>
         <div class="account-benefit"><span>💬</span><div><h3>RejChat i profil</h3><p>Pisz, komentuj i dostosuj swój publiczny profil.</p></div></div>
         <div class="account-benefit"><span>⭐</span><div><h3>RejStream</h3><p>Zapisuj ulubione i postęp oglądania na koncie, aby wrócić do nich na innym urządzeniu.</p></div></div>
         <div class="account-benefit"><span>🔔</span><div><h3>Twój kącik na stronie</h3><p>Śledź projekty i wracaj do swoich zgłoszeń.</p></div></div>
-        <p class="account-footnote">Przeglądanie strony i projektów nie wymaga konta. Po zalogowaniu na drugim urządzeniu wrócisz do profilu i danych, które dany projekt zapisuje na koncie; nie wszystkie projekty są jeszcze połączone.</p>
+        <p class="account-footnote">Przeglądanie strony nie wymaga konta; niektóre funkcje go potrzebują. Po zalogowaniu na drugim urządzeniu wrócisz do profilu i danych, które dany projekt zapisuje na koncie; nie wszystkie projekty są jeszcze połączone.</p>
       </aside>
     </div>
   </main>

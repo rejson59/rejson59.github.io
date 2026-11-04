@@ -8,7 +8,7 @@ const root = path.resolve(__dirname, '../..');
 const read = p => fs.readFileSync(path.join(root, p), 'utf8');
 const widget = read('rejson-widgets/widget.js');
 const media = read('js/media-capture.js');
-const pages = ['index.html','404.html','admin.html','logowanie.html','partnerstwo.html','uslugi.html','profil.html','rejchat.html','rejfile.html','tablica-pomyslow.html','widzety.html','rejson-widgets/index.html','rejtools.html'];
+const pages = ['index.html','404.html','admin.html','logowanie.html','partnerstwo.html','uslugi.html','profil.html','rejchat.html','rejfile.html','tablica-pomyslow.html','widzety.html','rejson-widgets/index.html','rejtools.html','konto-demo.html'];
 const wait = () => new Promise(resolve => setTimeout(resolve, 30));
 async function main() {
   for (const page of pages) {

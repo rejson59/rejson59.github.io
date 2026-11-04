@@ -1,4 +1,4 @@
-/* Konto społeczności: osobny ekran, ten sam istniejący backend i sesja. */
+/* Ogólne konto rejson59.github.io: istniejący backend i sesja. */
 (function () {
   "use strict";
   var URL = "https://hzbqzfimtroixnldzjeq.supabase.co";
@@ -17,11 +17,15 @@
       return dest.pathname + dest.search + dest.hash;
     } catch (e) { return null; }
   }
-  function returnToProject() {
+  var manage = new URLSearchParams(location.search).get("zarzadzaj") === "1";
+  function continueAfterAuth() {
     var dest = projectReturn();
-    if (!dest) return;
-    try { sessionStorage.removeItem(RETURN); } catch (e) {}
-    location.assign(dest);
+    if (dest) {
+      try { sessionStorage.removeItem(RETURN); } catch (e) {}
+      location.replace(dest);
+    } else if (!manage) {
+      location.replace("/profil");
+    }
   }
   var returnLink = document.getElementById("account-return");
   var returnPath = projectReturn();
@@ -78,6 +82,8 @@
     show("account-loading");
     rpc("community_whoami", { p_token: session.token }).then(function (result) {
       if (seq !== generation) return;
+      var current = stored();
+      if (!current || current.token !== session.token) { verify(); return; }
       if (!result || !Object.prototype.hasOwnProperty.call(result, "username")) throw new Error("Nieprawidłowa odpowiedź serwera.");
       if (result.username === null) {
         try { localStorage.removeItem(SESSION); } catch (e) {}
@@ -86,9 +92,10 @@
         return;
       }
       if (typeof result.username !== "string" || !result.username) throw new Error("Nieprawidłowa odpowiedź serwera.");
-      // Popraw lokalną nazwę jedynie dla wciąż aktualnej sesji.
+      // Sesja została sprawdzona ponownie po odpowiedzi.
       try { localStorage.setItem(SESSION, JSON.stringify({ token: session.token, username: result.username })); } catch (e) {}
-      signedIn(result.username);
+      if (manage && !projectReturn()) signedIn(result.username);
+      else continueAfterAuth();
     }).catch(function () { if (seq === generation) show("account-unavailable"); });
   }
   function setMode(next) {
@@ -122,8 +129,8 @@
         try { localStorage.setItem(SESSION, JSON.stringify({ token: data.token, username: data.username })); }
         catch (e) { throw new Error("Nie można zapisać sesji w tej przeglądarce."); }
         pin.value = "";
-        signedIn(data.username);
-        returnToProject();
+        if (manage && !projectReturn()) signedIn(data.username);
+        else { window.dispatchEvent(new Event("rj:session-change")); continueAfterAuth(); }
       }).catch(function (err) { if (seq === generation) report(err.message || "Nie udało się zalogować."); })
       .finally(function () { submit.disabled = false; });
   });

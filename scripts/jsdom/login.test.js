@@ -10,7 +10,7 @@ const js = fs.readFileSync(path.join(root, 'js/logowanie.js'), 'utf8');
 const key = 'rejson_community_session_v1';
 const tick = () => new Promise(resolve => setTimeout(resolve, 5));
 function create(initial, handler, opts = {}) {
-  const dom = new JSDOM(html, {runScripts: 'outside-only', url:'https://rejson59.github.io/logowanie' + (opts.search || '')});
+  const dom = new JSDOM(html, {runScripts: 'outside-only', url:'https://rejson59.github.io/logowanie' + (opts.search === undefined ? '?zarzadzaj=1' : opts.search)});
   const w = dom.window, d = w.document;
   w.TextEncoder = TextEncoder;
   if (initial) w.localStorage.setItem(key, JSON.stringify(initial));
@@ -90,6 +90,14 @@ function create(initial, handler, opts = {}) {
   const ok = create(saved, async () => ({data:{username:'Canonical'}})); await tick();
   assert.equal(ok.d.getElementById('account-username').textContent, 'Canonical');
   assert.equal(JSON.parse(ok.w.localStorage.getItem(key)).username, 'Canonical'); ok.close();
+  // Stara odpowiedź o wygasłej sesji nie może usunąć innego konta.
+  let resolveOld; const oldResponse = new Promise(resolve => { resolveOld = resolve; });
+  const newerToken = 'b'.repeat(48);
+  const race = create(saved, async (fn, payload) => fn === 'community_whoami' ? (payload.p_token === token ? oldResponse : {data:{username:'Bob'}}) : {data:{has_password:true}});
+  race.w.localStorage.setItem(key, JSON.stringify({token:newerToken,username:'Bob'}));
+  resolveOld({data:{username:null}}); await tick(); await tick();
+  assert.equal(JSON.parse(race.w.localStorage.getItem(key)).token,newerToken);
+  assert.equal(race.d.getElementById('account-username').textContent,'Bob'); race.close();
   const offline = create(saved, async () => new Error('offline')); await tick();
   assert.equal(offline.d.getElementById('account-unavailable').hidden, false);
   assert.equal(JSON.parse(offline.w.localStorage.getItem(key)).token, token); offline.close();
