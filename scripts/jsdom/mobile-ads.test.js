@@ -2,7 +2,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {JSDOM,VirtualConsole}=require('jsdom'),root=path.resolve(__dirname,'../..');
 const read=f=>fs.readFileSync(path.join(root,f),'utf8');
-const pages=['index.html','uslugi.html','partnerstwo.html','rejchat.html','rejfile.html','tablica-pomyslow.html','widzety.html','logowanie.html','profil.html','admin.html','404.html','rejtools.html','rejsejf.html','konto-demo.html'];
+const pages=['index.html','uslugi.html','partnerstwo.html','rejchat.html','rejfile.html','tablica-pomyslow.html','widzety.html','logowanie.html','profil.html','404.html','rejtools.html','rejsejf.html','konto-demo.html'];
 for(const file of pages){const dom=new JSDOM(read(file),{url:'https://rejson59.github.io/'+file,runScripts:'outside-only',virtualConsole:new VirtualConsole()});const w=dom.window,d=w.document;
  assert.ok(d.querySelector('noscript #rj-mobile-ads'),file+': fallback bez JS');assert.equal(d.querySelectorAll('noscript .rj-mobile-ad-icon svg').length,3,file+': ikony bez JS');
  d.querySelector('noscript #rj-mobile-ads').parentNode.remove();
@@ -13,8 +13,9 @@ for(const file of pages){const dom=new JSDOM(read(file),{url:'https://rejson59.g
  assert.equal(d.querySelectorAll('#rj-mobile-ads a').length,3,file);assert.equal(d.querySelectorAll('#rj-mobile-ads .rj-mobile-ad-icon svg').length,3,file+': ikony');assert.equal(d.querySelectorAll('#rj-mobile-ads button').length,0,file);assert.match(d.querySelector('#rj-mobile-ads').textContent,/mini reklamy/);
  assert.ok(d.querySelector('#rj-mobile-ads a[href="/rejfile"]'));assert.ok(d.querySelector('#rj-mobile-ads a[href="/uslugi"]'));assert.ok(d.querySelector('#rj-mobile-ads a[href="/partnerstwo#propozycja"]'));
  assert.ok(d.documentElement.classList.contains('rj-mobile-ads-active'));w.close();}
-for(const url of ['https://rejson59.github.io/OffChat/','https://rejson59.github.io/rejson-widgets/','https://rejson59.github.io/OtherProject/']) { const d=new JSDOM('<body></body>',{url,runScripts:'outside-only'});d.window.getComputedStyle=()=>({position:'fixed',zIndex:'2147482999'});d.window.eval(read('js/mobile-ads.js'));d.window.eval(read('js/side-ads.js'));assert.equal(d.window.document.querySelector('#rj-mobile-ads, .rj-side-ads'),null,url);d.window.close(); }
+for(const url of ['https://rejson59.github.io/admin','https://rejson59.github.io/admin.html','https://rejson59.github.io/admin/','https://rejson59.github.io/OffChat/','https://rejson59.github.io/rejson-widgets/','https://rejson59.github.io/OtherProject/']) { const d=new JSDOM('<body></body>',{url,runScripts:'outside-only'});d.window.getComputedStyle=()=>({position:'fixed',zIndex:'2147482999'});d.window.eval(read('js/mobile-ads.js'));d.window.eval(read('js/side-ads.js'));assert.equal(d.window.document.querySelector('#rj-mobile-ads, .rj-side-ads'),null,url);d.window.close(); }
 assert.doesNotMatch(read('rejson-widgets/index.html'),/mobile-ads\.js|side-ads\.js|rj-mobile-ads-spacer/);
+assert.doesNotMatch(read('admin.html'),/mobile-ads\.(?:js|css)|side-ads\.(?:js|css)|rj-mobile-ads-spacer|id="rj-mobile-ads"/);
 assert.match(read('rejson-widgets/widget.js'),/var\(--rj-mobile-ads-height, 0px\)/);
 assert.match(read('css/mobile-ads.css'),/scroll-padding-bottom/);
 assert.doesNotMatch(read('js/mobile-ads.js'),/fetch\(|localStorage|sessionStorage/);
