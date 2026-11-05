@@ -164,3 +164,12 @@ body.rj-community :is(.rejchat-tabs button,.chat-channel,.rejchat-rules summary,
  body.rj-community .chat-bubble { max-width:min(88%,720px); }
 }
 @media (min-width:1025px) and (max-width:1400px) { body.rj-community .rejchat-info { position:static; } }
+.rejchat-compose-context { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:10px 24px 0; padding:9px 12px; border-left:3px solid var(--rc-accent); border-radius:8px; background:var(--rc-surface-raised); color:var(--rc-ink); font-size:12px; }
+.rejchat-compose-context[hidden] { display:none; }
+.rejchat-compose-context span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.rejchat-compose-context button,.rejchat-message-action { border:0; background:transparent; color:var(--rc-accent); font:inherit; cursor:pointer; }
+.rejchat-message-action { font-size:11px; font-weight:700; padding:3px 6px; }
+.rejchat-reply-quote { margin:0 0 8px; padding:6px 9px; border-left:3px solid var(--rc-accent); border-radius:4px; color:var(--rc-sub); background:var(--rc-surface-raised); font-size:12px; overflow-wrap:anywhere; }
+.rejchat-edited { font-size:10px; color:var(--rc-sub); }
+body.rj-community .comm-chat-form textarea.comm-input { resize:vertical; min-height:56px; max-height:180px; line-height:1.45; padding:12px 14px; }
+body.rj-community .comm-chat-form { align-items:flex-end; }

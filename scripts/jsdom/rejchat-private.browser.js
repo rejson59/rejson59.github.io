@@ -10,15 +10,15 @@ function who(body){return body.p_token?.[0]==='a'?'Alicja':body.p_token?.[0]==='
 async function mock(route){const url=route.request().url();if(url.startsWith(origin+'/'))return route.continue();if(!url.includes('/rest/v1/rpc/'))return route.abort();const fn=url.split('/').pop(),body=route.request().postDataJSON()||{},me=who(body);let d=[];
  if(fn==='community_whoami')d={username:me};
  if(fn==='rejchat_get_profiles')d=(body.p_names||[]).map(username=>({username,avatar:'cat',color:'mint'}));
- if(fn==='community_chat_list')d=body.p_after_id?[]:publicRows;
+ if(fn==='rejchat_room_list_v2')d=body.p_after_id?[]:publicRows;
  if(fn==='community_list_posts')d={posts:[],total:0,available_tags:[]};
  if(fn==='rejchat_notifications_list')d={items:[],unread:0};
  if(fn==='rejchat_dm_open') {if(!['Alicja','Bartek'].includes(body.p_username)||body.p_username===me)return route.fulfill({status:400,json:{message:'Nie znaleziono takiego konta.'}});d={id:tid,username:body.p_username};}
- if(fn==='rejchat_dm_send'&&body.p_content==='Odrzucona prywatna treść')return route.fulfill({status:400,json:{message:'Ta treść została niedawno wysłana. Zmień ją lub spróbuj ponownie później.'}});
- if(fn==='rejchat_dm_send'){const m={id:newId(),thread_id:tid,author_name:me,content:body.p_content,created_at:new Date().toISOString(),read_at:null};dm.push(m);d={id:m.id,created_at:m.created_at};}
+ if(fn==='rejchat_dm_send_v2'&&body.p_content==='Odrzucona prywatna treść')return route.fulfill({status:400,json:{message:'Ta treść została niedawno wysłana. Zmień ją lub spróbuj ponownie później.'}});
+ if(fn==='rejchat_dm_send_v2'){const m={id:newId(),thread_id:tid,author_name:me,content:body.p_content,created_at:new Date().toISOString(),read_at:null};dm.push(m);d={id:m.id,created_at:m.created_at};}
  if(fn==='rejchat_dm_inbox'){const unread=dm.filter(m=>m.author_name!==me&&!m.read_at).length;d=dm.length?[{id:tid,username:me==='Alicja'?'Bartek':'Alicja',last_at:dm[dm.length-1].created_at,unread}]:[];}
- if(fn==='rejchat_dm_list'){if(holdThread&&me==='Alicja')await new Promise(resolve=>{releaseThread=resolve;});d={username:me==='Alicja'?'Bartek':'Alicja',messages:dm.slice(-100).map(m=>({...m,mine:m.author_name===me,reactions:react.filter(r=>r.scope==='private'&&r.message_id===m.id).map(r=>({emoji:r.emoji,count:1,mine:r.actor===me}))}))};dm.forEach(m=>{if(m.author_name!==me)m.read_at=new Date().toISOString()});}
- if(fn==='rejchat_dm_history')d=dm.slice(0,-100).map(m=>({...m,mine:m.author_name===me,reactions:[]}));
+ if(fn==='rejchat_dm_list_v2'){if(holdThread&&me==='Alicja')await new Promise(resolve=>{releaseThread=resolve;});d={username:me==='Alicja'?'Bartek':'Alicja',messages:dm.slice(-100).map(m=>({...m,mine:m.author_name===me,reactions:react.filter(r=>r.scope==='private'&&r.message_id===m.id).map(r=>({emoji:r.emoji,count:1,mine:r.actor===me}))}))};dm.forEach(m=>{if(m.author_name!==me)m.read_at=new Date().toISOString()});}
+ if(fn==='rejchat_dm_history_v2')d=dm.slice(0,-100).map(m=>({...m,mine:m.author_name===me,reactions:[]}));
  if(fn==='rejchat_dm_read_all'){dm.forEach(m=>{if(m.author_name!==me)m.read_at=new Date().toISOString()});d={marked:1};}
  if(fn==='rejchat_react'){const idx=react.findIndex(r=>r.scope===body.p_scope&&r.message_id===body.p_message_id&&r.emoji===body.p_emoji&&r.actor===me);if(idx>=0){react.splice(idx,1);d={active:false};}else{const owner=body.p_scope==='public'?'Alicja':dm.find(m=>m.id===body.p_message_id)?.author_name;react.push({id:newId(),scope:body.p_scope,thread_id:body.p_scope==='private'?tid:null,message_id:body.p_message_id,emoji:body.p_emoji,actor:me,owner,created_at:new Date().toISOString(),read:false});d={active:true};}}
  if(fn==='rejchat_reactions_list')d=react.filter(r=>r.scope==='public'&&body.p_ids.includes(r.message_id)).map(r=>({message_id:r.message_id,emoji:r.emoji,count:1,mine:r.actor===me}));

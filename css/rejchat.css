@@ -303,3 +303,4 @@ a[data-profile-name]:hover { text-decoration:underline; }
  .rj-community .chat-channel { min-width:0; align-items:flex-start; }.rj-community .chat-channel small { overflow-wrap:anywhere; }
  .rj-community .comm-chat-head { min-height:70px; }.rejchat-mute-notice { margin-bottom:12px; }
 }
+.profile-editor input#nickname-input { width:100%; border:1px solid var(--border); border-radius:16px; background:var(--input-bg); color:var(--text); padding:14px; font:inherit; box-sizing:border-box; }

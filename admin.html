@@ -29,7 +29,7 @@
   <link rel="stylesheet" href="css/admin-partner.css?v=1">
   <link rel="stylesheet" href="/css/liquid.css?v=2026-10-30-2">
   <link rel="stylesheet" href="/css/rejchat.css?v=1">
-  <script defer src="/js/rejchat-profiles.js?v=1"></script><script defer src="/js/rejchat-notifications.js?v=4"></script><script defer src="/js/premium.js?v=9"></script>
+  <script defer src="/js/rejchat-profiles.js?v=2"></script><script defer src="/js/rejchat-notifications.js?v=4"></script><script defer src="/js/premium.js?v=9"></script>
   <link rel="stylesheet" href="/css/responsive.css?v=1">
   <link rel="stylesheet" href="/css/shared-topbar.css?v=4">
   <script defer src="/js/shared-topbar.js?v=1"></script>
@@ -391,6 +391,9 @@
               <div id="rcmod-blocks" class="rcmod-list"></div>
             </section>
           </div>
+          <section class="rcmod-section"><h3>Publiczny nick konta</h3><p>Nick jest widoczny obok nazwy konta. Puste pole usuwa nick; użytkownik także może go zmienić.</p>
+            <form id="rcmod-nick-form" class="rcmod-form"><label for="rcmod-nick-user">Nazwa konta</label><input id="rcmod-nick-user" maxlength="24" required><label for="rcmod-nick-value">Nowy nick (pusty = usuń)</label><input id="rcmod-nick-value" maxlength="32"><button class="btn btn-primary btn-sm" type="submit">Zapisz nick</button></form>
+          </section>
           <section class="rcmod-section rcmod-messages"><div class="rcmod-title"><div><h3>Ostatnie wiadomości publiczne</h3><p>Ostatnie 100 wiadomości. Możesz zaznaczyć kilka i usunąć je jednocześnie.</p></div><button type="button" id="rcmod-refresh" class="btn btn-glass btn-sm">Odśwież</button></div>
             <div class="rcmod-actions"><label><input type="checkbox" id="rcmod-select-all"> Zaznacz wszystkie</label><button type="button" id="rcmod-delete" class="btn btn-glass btn-sm" disabled>Usuń zaznaczone</button></div>
             <div id="rcmod-messages" class="rcmod-list"></div>
@@ -636,7 +639,7 @@
   <script src="js/error-reporter.js?v=1" defer></script>
   <script src="js/admin-errors.js?v=1"></script>
   <script src="js/admin-partner.js?v=1"></script>
-  <script src="js/admin-rejchat-moderation.js?v=2"></script>
+  <script src="js/admin-rejchat-moderation.js?v=3"></script>
   <script src="js/admin-panel.js?v=2026-11-05-moderation"></script>
   <script defer src="/js/media-capture.js?v=2"></script>
   <script defer src="/rejson-widgets/widget.js?v=12" data-project="rejson59.github.io"></script>

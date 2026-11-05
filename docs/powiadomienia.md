@@ -34,3 +34,11 @@ To proste heurystyki, nie model AI ani skaner bezpieczeństwa linków. Mogą bł
 Czat „Linki” to oddzielny publiczny pokój RejChat. Wiadomość musi zawierać adres zaczynający się od http://, https:// lub www.; ogólny czat pozostaje osobny. Oba pokoje mają wspólną moderację, wyciszenia, reakcje i limity antyspamowe. Maksymalna długość nowej wiadomości publicznej to 2000 znaków. Historia każdego z nich jest usuwana po 14 dniach przy wysyłaniu nowej wiadomości, a wyszukiwanie obejmuje tylko aktualnie wczytane wiadomości. Pokój nie sprawdza, czy adres jest bezpieczny.
 
 RejFile przyjmuje wklejony obraz ze schowka (Ctrl+V), gdy aktywny jest wybór pliku i fokus nie znajduje się w polu tekstowym. Obraz jest jedynie wybierany — użytkownik nadal potwierdza przesłanie i wybraną metodę udostępnienia. Notatki i zwykłe wklejanie tekstu pozostają bez zmian.
+
+## Publiczny nick konta
+
+Profil może mieć opcjonalny publiczny nick wyświetlany razem z niezmienną nazwą konta (np. „Gwiazda (@Konto)”). Nie zmienia on nazwy logowania ani adresu profilu. Właściciel ustawia go w profilu, a administrator — w Centrum moderacji. Puste pole usuwa nick; właściciel może zmienić go raz na pięć minut. Globalny filtr fraz obowiązuje także dla nicka; aktywne wyciszenie wstrzymuje jego zmianę przez właściciela. Nicki są publiczne, więc nie wpisuj w nich prywatnych danych. Zmiana nie daje innym kontom uprawnień do profilu ani nie jest dowodem tożsamości — właściwa nazwa konta pozostaje widoczna.
+
+## Odpowiedzi i edycja w rozmowach
+
+Na czacie ogólnym, w Linkach i rozmowach 1:1 zalogowany użytkownik może odpowiadać na wiadomości; odpowiedź pokazuje fragment aktualnej treści oryginału. Po usunięciu oryginału odnośnik do niego znika. Autor może edytować własne wiadomości; zmiana jest oznaczona „Edytowano”. Serwer weryfikuje autora i uczestnictwo w DM, a także stosuje dotychczasowe mute, filtr fraz i reguły antyspamowe. Edycje są ograniczone do jednej na 5 sekund dla danej wiadomości. Historyczny limit znaków DM pozostaje bez zmian; nowsze wpisy, kanały i stare klienty pozostają dostępne.

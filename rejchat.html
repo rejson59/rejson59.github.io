@@ -244,7 +244,7 @@
   <link rel="stylesheet" href="/css/liquid.css?v=2026-10-30-2">
   <link rel="stylesheet" href="/css/responsive.css?v=1">
   <link rel="stylesheet" href="/css/rejchat.css?v=8">
-  <link rel="stylesheet" href="/css/rejchat-studio.css?v=2">
+  <link rel="stylesheet" href="/css/rejchat-studio.css?v=3">
   <link rel="stylesheet" href="/css/side-ads.css?v=5">
   <script defer src="/js/side-ads.js?v=6"></script>
   <link rel="stylesheet" href="/css/mobile-ads.css?v=5">
@@ -560,12 +560,12 @@
             <p id="file-draft-status" role="status" aria-live="polite"></p>
           </div>
           <p class="rejchat-file-shortcut"><a href="/rejfile" target="_blank" rel="noopener"><span aria-hidden="true">＋</span> Przygotuj plik lub notatkę w RejFile ↗</a> <span>Link możesz dodać do wiadomości.</span></p>
+          <div class="rejchat-compose-context" id="chat-compose-context" hidden><span id="chat-compose-label"></span><button type="button" id="chat-compose-cancel">Anuluj</button></div>
           <form class="comm-chat-form" id="chat-form" hidden>
-            <input class="comm-input" id="chat-input" type="text" maxlength="2000" autocomplete="off"
-                   placeholder="Napisz coś…" aria-label="Wiadomość na czat">
+            <textarea class="comm-input" id="chat-input" rows="2" maxlength="2000" placeholder="Napisz coś…" aria-label="Wiadomość na czat"></textarea>
             <button class="btn btn-primary btn-sm" id="chat-send" type="submit" disabled>Wyślij</button>
           </form>
-          <p class="chat-length" id="chat-length">0 / 2000 znaków</p>
+          <p class="chat-length" id="chat-length">0 / 2000 znaków · Enter — wyślij, Shift+Enter — nowa linia</p>
           <p id="chat-send-status" class="comm-chat-note" role="status" aria-live="polite"></p>
           <p class="comm-chat-note" id="chat-note"><span>Czytasz jako gość.</span> <button type="button" class="chat-join" id="chat-join" hidden>Dołącz do rozmowy ↗</button><a id="chat-join-fallback" href="logowanie">Dołącz do rozmowy ↗</a></p>
         </section>
@@ -578,8 +578,9 @@
             <div id="dm-inbox" class="dm-inbox" aria-label="Twoje rozmowy"></div>
             <p id="dm-status" class="comm-chat-note" role="status" aria-live="polite"></p>
             <div id="dm-thread" hidden><h3 id="dm-thread-title" class="dm-thread-title"></h3><button type="button" class="dm-older" id="dm-older" hidden>Wczytaj starsze wiadomości</button><div id="dm-messages" class="comm-chat-list" aria-live="polite"></div>
-              <form id="dm-send-form" class="comm-chat-form"><input id="dm-input" class="comm-input" maxlength="1000" autocomplete="off" placeholder="Napisz prywatną wiadomość…" aria-label="Prywatna wiadomość"><button class="btn btn-primary btn-sm" type="submit" id="dm-send">Wyślij</button></form>
-              <p class="dm-length" id="dm-length">0 / 1000 znaków</p></div>
+              <div class="rejchat-compose-context" id="dm-compose-context" hidden><span id="dm-compose-label"></span><button type="button" id="dm-compose-cancel">Anuluj</button></div>
+              <form id="dm-send-form" class="comm-chat-form"><textarea id="dm-input" class="comm-input" rows="2" maxlength="1000" placeholder="Napisz prywatną wiadomość…" aria-label="Prywatna wiadomość"></textarea><button class="btn btn-primary btn-sm" type="submit" id="dm-send">Wyślij</button></form>
+              <p class="dm-length" id="dm-length">0 / 1000 znaków · Enter — wyślij, Shift+Enter — nowa linia</p></div>
           </div>
         </section>
 
@@ -706,11 +707,11 @@
   </footer>
 
   <script defer src="js/view-tracker.js?v=7"></script>
-  <script defer src="/js/rejchat-profiles.js?v=1"></script>
-  <script defer src="js/community.js?v=2026-11-05-chat-3"></script>
+  <script defer src="/js/rejchat-profiles.js?v=2"></script>
+  <script defer src="js/community.js?v=2026-11-05-chat-4"></script>
   <script defer src="/js/rejchat.js?v=7"></script>
   <script defer src="/js/rejchat-reactions.js?v=1"></script>
-  <script defer src="/js/rejchat-private.js?v=2"></script>
+  <script defer src="/js/rejchat-private.js?v=4"></script>
   <script defer src="/js/rejchat-link-preview.js?v=1"></script>
   <script defer src="/js/rejchat-mute.js?v=1"></script>
   <script defer src="/js/rejchat-notifications.js?v=4"></script><script defer src="/js/premium.js?v=9"></script>

@@ -22,11 +22,12 @@
   panel.addEventListener('toggle',function(){if(panel.open)load();});
   $('refresh').addEventListener('click',load);
   $('phrase-form').addEventListener('submit',function(e){e.preventDefault();var value=$('phrase').value.trim();if(!value)return;action('admin_rejchat_phrase',{p_phrase:value,p_delete_id:null},function(){$('phrase').value='';});});
+  $('nick-form').addEventListener('submit',function(e){e.preventDefault();var name=$('nick-user').value.trim(),nick=$('nick-value').value.trim();if(!name||!window.confirm('Zmienić publiczny nick konta '+name+'?'))return;action('admin_rejchat_set_nickname',{p_username:name,p_nickname:nick},function(){$('nick-form').reset();});});
   $('block-form').addEventListener('submit',function(e){e.preventDefault();var name=$('user').value.trim(),minutes=Number($('duration').value),why=$('reason').value.trim();if(!name||!window.confirm(minutes===0?'Zdjąć wyciszenie konta '+name+'?':'Wyciszyć konto '+name+'?'))return;action('admin_rejchat_mute',{p_username:name,p_minutes:minutes,p_reason:why},function(){$('user').value='';$('reason').value='';});});
   function selected(){return Array.from($('messages').querySelectorAll('[data-message]:checked')).map(function(c){return c.value;});}
   function selectionChanged(){var n=selected().length,all=$('messages').querySelectorAll('[data-message]').length;$('delete').disabled=!n;$('delete').textContent=n?'Usuń zaznaczone ('+n+')':'Usuń zaznaczone';$('select-all').checked=!!all&&n===all;$('select-all').indeterminate=n>0&&n<all;}
   $('messages').addEventListener('change',selectionChanged);
   $('select-all').addEventListener('change',function(){$('messages').querySelectorAll('[data-message]').forEach(function(c){c.checked=$('select-all').checked;});selectionChanged();});
   $('delete').addEventListener('click',function(){var ids=selected();if(ids.length&&window.confirm('Usunąć '+ids.length+' zaznaczonych wiadomości publicznych? Tej operacji nie można cofnąć.'))action('admin_rejchat_delete_messages',{p_ids:ids});});
-  window.RJAdminRejChat={clear:function(){seq++;panel.open=false;['phrases','blocks','messages'].forEach(function(id){$(id).replaceChildren();});message('');$('phrase-form').reset();$('block-form').reset();}};
+  window.RJAdminRejChat={clear:function(){seq++;panel.open=false;['phrases','blocks','messages'].forEach(function(id){$(id).replaceChildren();});message('');$('phrase-form').reset();$('block-form').reset();$('nick-form').reset();}};
 })(window,document);
