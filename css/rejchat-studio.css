@@ -147,3 +147,20 @@ body.rj-community :is(.rejchat-tabs button,.chat-channel,.rejchat-rules summary,
  body.rj-community .chat-channel { gap:6px; padding:8px 6px; }.rj-community .chat-channel strong { font-size:11px; }.rj-community .chat-channel small { font-size:9px; }
 }
 @media(prefers-reduced-motion:reduce) { body.rj-community .chat-channel,body.rj-community .post-card { transition:none; } }
+
+/* Komputer: więcej miejsca na rozmowę, mniej wysokości zajmuje nagłówek. */
+@media (min-width: 1025px) {
+ body.rj-community .comm-main { max-width:1760px; padding-top:16px; }
+ body.rj-community .comm-hero { min-height:0; padding:17px 24px; margin-bottom:14px; border-radius:18px; grid-template-columns:minmax(0,1fr) 150px; }
+ body.rj-community .comm-hero h1 { font-size:38px; }
+ body.rj-community .comm-hero .rejchat-brow { margin-bottom:5px; }
+ body.rj-community .comm-hero .comm-lead { margin-top:6px; }
+ body.rj-community .rejchat-hero-tags { margin-top:9px; }
+ body.rj-community .rejchat-hero-art { width:140px; height:95px; transform:scale(.6); }
+ body.rj-community .comm-layout { gap:12px; }
+ body.rj-community .comm-sidebar,body.rj-community .rejchat-info { position:sticky; top:16px; }
+ body.rj-community .comm-chat-head { min-height:75px; padding:14px 22px; }
+ body.rj-community .comm-chat-list { height:clamp(410px,60vh,780px); max-height:780px; }
+ body.rj-community .chat-bubble { max-width:min(88%,720px); }
+}
+@media (min-width:1025px) and (max-width:1400px) { body.rj-community .rejchat-info { position:static; } }

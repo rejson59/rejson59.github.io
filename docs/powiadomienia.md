@@ -28,3 +28,9 @@ Serwer sprawdza nowe i edytowane treści czatu, wpisów, komentarzy oraz prywatn
 Dane limitów są prywatne. Dla kontroli duplikatów przechowywane są tylko HMAC treści pod losowym kluczem danego konta i rodzaju, nie treść DM; maksymalnie 10 skrótów w rekordzie. Klucz i skróty dostępne są tylko zapleczu bazy. Zadanie co 15 minut usuwa nieaktywny stan starszy niż 15 minut (zwykle najpóźniej po ok. 30 minutach). Przy błędzie lub zatrzymaniu zadania czas przechowywania może się wydłużyć. Po odrzuceniu transakcja jest wycofywana: nie ma kolejki odrzuconych wiadomości, trwałego licznika prób ani automatycznych wyciszeń.
 
 To proste heurystyki, nie model AI ani skaner bezpieczeństwa linków. Mogą błędnie blokować zwykłe treści i nie wykrywają wszystkich naruszeń ani obejść. Użytkownik otrzymuje komunikat i może zmienić tekst lub poczekać; administrator nadal ręcznie zarządza frazami i wyciszeniami.
+
+## Kanał linków
+
+Czat „Linki” to oddzielny publiczny pokój RejChat. Wiadomość musi zawierać adres zaczynający się od http://, https:// lub www.; ogólny czat pozostaje osobny. Oba pokoje mają wspólną moderację, wyciszenia, reakcje i limity antyspamowe. Maksymalna długość nowej wiadomości publicznej to 2000 znaków. Historia każdego z nich jest usuwana po 14 dniach przy wysyłaniu nowej wiadomości, a wyszukiwanie obejmuje tylko aktualnie wczytane wiadomości. Pokój nie sprawdza, czy adres jest bezpieczny.
+
+RejFile przyjmuje wklejony obraz ze schowka (Ctrl+V), gdy aktywny jest wybór pliku i fokus nie znajduje się w polu tekstowym. Obraz jest jedynie wybierany — użytkownik nadal potwierdza przesłanie i wybraną metodę udostępnienia. Notatki i zwykłe wklejanie tekstu pozostają bez zmian.

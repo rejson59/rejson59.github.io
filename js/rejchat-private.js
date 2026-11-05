@@ -15,7 +15,7 @@
   function setActive(privateMode){
     if(privateMode){document.getElementById('chat-tab').click();}
     view.hidden=!privateMode;publicView.hidden=privateMode;
-    channel.classList.toggle('is-active',privateMode);channel.setAttribute('aria-pressed',String(privateMode));general.classList.toggle('is-active',!privateMode);general.setAttribute('aria-pressed',String(!privateMode));
+    channel.classList.toggle('is-active',privateMode);channel.setAttribute('aria-pressed',String(privateMode));if(privateMode){general.classList.remove('is-active');general.setAttribute('aria-pressed','false');var links=document.getElementById('channel-links');if(links){links.classList.remove('is-active');links.setAttribute('aria-pressed','false');}}
   }
   function show(){setActive(true);sync();if(session()){refreshInbox();if(selected)loadThread();}}
   function formatTime(value){var d=new Date(value);return isNaN(d)?'':d.toLocaleString('pl-PL',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});}

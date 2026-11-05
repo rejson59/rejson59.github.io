@@ -16,7 +16,7 @@ const server=http.createServer((req,res)=>{
   await new Promise(r=>server.listen(0,'127.0.0.1',r));
   const browser=await chromium.launch({executablePath:process.env.CHROME_BIN,headless:true,args:['--no-sandbox','--disable-webgl']});
   const origin=`http://127.0.0.1:${server.address().port}`;
-  let oldResponse; let loginName=''; let chatRows=[];
+  let oldResponse; let loginName=''; let chatRows=[], linkRows=[];
   try {
     const context=await browser.newContext({viewport:{width:375,height:850}});
     await context.route('**/*',async route=>{
@@ -34,6 +34,11 @@ const server=http.createServer((req,res)=>{
       } else if(fn==='community_whoami') data={username:'Tester'};
       else if(fn==='community_chat_send') {data={id:1,author_name:'Tester',content:body.p_content,created_at:new Date().toISOString()}; chatRows.push(data);}
       else if(fn==='community_chat_list') data=body.p_after_id ? chatRows.filter(r=>r.id>body.p_after_id) : chatRows;
+      else if(fn==='rejchat_room_list') data=body.p_after_id ? [] : linkRows;
+      else if(fn==='rejchat_link_send') {
+        if(!/https?:\/\//.test(body.p_content)) return route.fulfill({status:400,json:{message:'Dodaj do wiadomości link.'}});
+        data={id:2,author_name:'Tester',content:body.p_content,created_at:new Date().toISOString()}; linkRows.push(data);
+      }
       return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(data)}).catch(()=>{});
     });
     const page=await context.newPage();
@@ -71,6 +76,21 @@ const server=http.createServer((req,res)=>{
     await page.locator('.chat-msg.is-mine').waitFor({state:'visible'});
     assert.equal(await page.locator('.chat-msg.is-mine .chat-text').textContent(),'Cześć!');
     assert.equal(await page.locator('#chat-input').inputValue(),'');
+    await page.locator('#chat-input').fill('szkic ogólny');
+    await page.locator('#channel-links').click();
+    await page.waitForFunction(()=>document.querySelector('#chat-room-title').textContent==='Linki');
+    assert.equal(await page.locator('#chat-input').inputValue(),'');
+    assert.equal(await page.locator('#channel-links').getAttribute('aria-pressed'),'true');
+    await page.locator('#chat-input').fill('bez linku'); await page.locator('#chat-send').click();
+    await page.locator('#chat-send-status').getByText('Dodaj do wiadomości link.').waitFor();
+    assert.equal(await page.locator('#chat-input').inputValue(),'bez linku');
+    await page.locator('#chat-input').fill('https://example.org/hello');await page.locator('#chat-send').click();
+    await page.locator('#chat-list .chat-text').getByText('https://example.org/hello').waitFor();
+    assert.equal(await page.locator('#chat-list').getByText('Cześć!').count(),0);
+    await page.locator('#channel-general').click();
+    await page.locator('#chat-list .chat-text').getByText('Cześć!').waitFor();
+    assert.equal(await page.locator('#chat-input').inputValue(),'szkic ogólny');
+    assert.equal(await page.locator('#chat-list').getByText('https://example.org/hello').count(),0);
     await page.locator('#posts-tab').click();
     assert.equal(await page.locator('#panel-posts').isVisible(),true);
     assert.equal(await page.locator('#channel-general').getAttribute('aria-pressed'),'false');
@@ -103,7 +123,8 @@ const server=http.createServer((req,res)=>{
       if(fn==='community_register') {registration=body;data={username:body.p_username,token:'abcdef0123456789abcdef0123456789'};}
       return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(data)}).catch(()=>{});
     });
-    const np=await fresh.newPage(); await np.goto(origin+'/rejchat.html',{waitUntil:'domcontentloaded'});
+    const np=await fresh.newPage(); await np.goto(origin+'/rejchat.html#linki',{waitUntil:'domcontentloaded'});
+    await np.waitForFunction(()=>document.querySelector('#chat-room-title').textContent==='Linki');assert.equal(await np.locator('#channel-links').getAttribute('aria-pressed'),'true');
     await np.evaluate(()=>document.querySelector('#rj-page-loader')?.remove());
     await np.locator('#chat-join').click();
     await np.locator('#auth-username').fill('NowyUzytkownik');

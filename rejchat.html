@@ -244,7 +244,7 @@
   <link rel="stylesheet" href="/css/liquid.css?v=2026-10-30-2">
   <link rel="stylesheet" href="/css/responsive.css?v=1">
   <link rel="stylesheet" href="/css/rejchat.css?v=8">
-  <link rel="stylesheet" href="/css/rejchat-studio.css?v=1">
+  <link rel="stylesheet" href="/css/rejchat-studio.css?v=2">
   <link rel="stylesheet" href="/css/side-ads.css?v=5">
   <script defer src="/js/side-ads.js?v=6"></script>
   <link rel="stylesheet" href="/css/mobile-ads.css?v=5">
@@ -515,7 +515,7 @@
         <p class="rejchat-brow"><span aria-hidden="true">✦</span> SPOŁECZNOŚĆ REJSONA</p>
         <h1 class="comm-title" id="rejchat-heading">RejChat<span class="rejchat-title-dot">.</span></h1>
         <p class="comm-lead">Dobre rozmowy zaczynają się tutaj.<br>Wpadnij, podziel się pomysłem i poznaj innych.</p>
-        <div class="rejchat-hero-tags" aria-label="Dostępne w RejChat"><span>Czat ogólny</span><span>Wpisy</span><span>Rozmowy 1:1</span></div>
+        <div class="rejchat-hero-tags" aria-label="Dostępne w RejChat"><span>Czat ogólny</span><span>Linki</span><span>Wpisy</span><span>Rozmowy 1:1</span></div>
       </div>
       <div class="rejchat-hero-art" aria-hidden="true"><span class="hero-orbit hero-orbit-one"></span><span class="hero-orbit hero-orbit-two"></span><span class="hero-spark hero-spark-one">✦</span><span class="hero-spark hero-spark-two">✳</span><span class="hero-bubble hero-bubble-back"><i></i><i></i><i></i></span><span class="hero-bubble hero-bubble-front"><i></i><i></i><i></i></span></div>
     </section>
@@ -534,6 +534,7 @@
         <div class="chat-channel-list" aria-label="Dostępne rozmowy">
           <span class="chat-channel-label">ROZMOWY</span>
           <button type="button" id="channel-general" class="chat-channel is-active" aria-pressed="true" aria-controls="panel-chat"><span class="chat-channel-icon" aria-hidden="true">✦</span><span><strong>Czat ogólny</strong><small>Porozmawiaj ze społecznością</small></span></button>
+          <button type="button" id="channel-links" class="chat-channel" aria-pressed="false" aria-controls="panel-chat"><span class="chat-channel-icon" aria-hidden="true">↗</span><span><strong>Linki</strong><small>Odnośniki w jednym miejscu</small></span></button>
           <button type="button" id="channel-private" class="chat-channel" aria-pressed="false" aria-controls="panel-chat"><span class="chat-channel-icon" aria-hidden="true">✉</span><span><strong>Prywatne rozmowy</strong><small>Wiadomości między kontami</small></span><span id="dm-nav-unread" class="dm-unread" hidden></span></button>
         </div>
       </aside>
@@ -542,7 +543,7 @@
         <!-- ============ CZAT NA ŻYWO ============ -->
         <section class="comm-chat glass-card" id="chat-public-view" aria-label="Czat RejChat">
           <header class="comm-chat-head">
-            <div class="chat-room-heading"><span class="chat-room-mark" aria-hidden="true">#</span><div><span class="room-eyebrow">PRZESTRZEŃ PUBLICZNA</span><h2>Czat ogólny</h2><p>Rozmawiaj ze społecznością</p></div></div>
+            <div class="chat-room-heading"><span class="chat-room-mark" aria-hidden="true">#</span><div><span class="room-eyebrow">PRZESTRZEŃ PUBLICZNA</span><h2 id="chat-room-title">Czat ogólny</h2><p id="chat-room-description">Rozmawiaj ze społecznością</p></div></div>
             <span class="comm-chat-hint"><span class="comm-chat-dot" aria-hidden="true"></span> <span id="chat-connection" role="status">Odświeżanie co 2 s</span></span>
           </header>
           <label class="rejchat-search"><span class="search-mark" aria-hidden="true">⌕</span><span class="sr-only">Szukaj we wczytanych wiadomościach</span><input class="comm-input" id="chat-search" type="search" maxlength="100" placeholder="Szukaj w wiadomościach…"></label>
@@ -560,11 +561,11 @@
           </div>
           <p class="rejchat-file-shortcut"><a href="/rejfile" target="_blank" rel="noopener"><span aria-hidden="true">＋</span> Przygotuj plik lub notatkę w RejFile ↗</a> <span>Link możesz dodać do wiadomości.</span></p>
           <form class="comm-chat-form" id="chat-form" hidden>
-            <input class="comm-input" id="chat-input" type="text" maxlength="280" autocomplete="off"
+            <input class="comm-input" id="chat-input" type="text" maxlength="2000" autocomplete="off"
                    placeholder="Napisz coś…" aria-label="Wiadomość na czat">
             <button class="btn btn-primary btn-sm" id="chat-send" type="submit" disabled>Wyślij</button>
           </form>
-          <p class="chat-length" id="chat-length">0 / 280 znaków</p>
+          <p class="chat-length" id="chat-length">0 / 2000 znaków</p>
           <p id="chat-send-status" class="comm-chat-note" role="status" aria-live="polite"></p>
           <p class="comm-chat-note" id="chat-note"><span>Czytasz jako gość.</span> <button type="button" class="chat-join" id="chat-join" hidden>Dołącz do rozmowy ↗</button><a id="chat-join-fallback" href="logowanie">Dołącz do rozmowy ↗</a></p>
         </section>
@@ -706,10 +707,10 @@
 
   <script defer src="js/view-tracker.js?v=7"></script>
   <script defer src="/js/rejchat-profiles.js?v=1"></script>
-  <script defer src="js/community.js?v=2026-11-05-chat-2"></script>
-  <script defer src="/js/rejchat.js?v=6"></script>
+  <script defer src="js/community.js?v=2026-11-05-chat-3"></script>
+  <script defer src="/js/rejchat.js?v=7"></script>
   <script defer src="/js/rejchat-reactions.js?v=1"></script>
-  <script defer src="/js/rejchat-private.js?v=1"></script>
+  <script defer src="/js/rejchat-private.js?v=2"></script>
   <script defer src="/js/rejchat-link-preview.js?v=1"></script>
   <script defer src="/js/rejchat-mute.js?v=1"></script>
   <script defer src="/js/rejchat-notifications.js?v=4"></script><script defer src="/js/premium.js?v=9"></script>

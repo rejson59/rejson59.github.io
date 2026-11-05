@@ -38,6 +38,11 @@ const ID='a47ac10b-58cc-4372-a567-0e02b2c3d479', OWN='a'.repeat(64), SHARE='b'.r
  };
  w.HTMLAnchorElement.prototype.click=function(){downloads.push({href:this.href,download:this.download});};
  w.eval(read('js/rejfile.js'));
+ const image=new w.File([new Uint8Array([137,80,78,71])],'schowek.png',{type:'image/png'});
+ function paste(target,file){const e=new w.Event('paste',{bubbles:true,cancelable:true});Object.defineProperty(e,'clipboardData',{value:{items:[{kind:'file',type:file.type,getAsFile:()=>file}]}});target.dispatchEvent(e);return e;}
+ let event=paste(w.document.body,image);assert.equal(event.defaultPrevented,true);assert.equal(w.document.getElementById('file-label').textContent,'schowek.png');
+ event=paste(w.document.getElementById('recipient'),new w.File(['x'],'inne.png',{type:'image/png'}));assert.equal(event.defaultPrevented,false);assert.equal(w.document.getElementById('file-label').textContent,'schowek.png');
+ w.document.querySelector('[data-share-kind="note"]').click();event=paste(w.document.body,image);assert.equal(event.defaultPrevented,false);w.document.querySelector('[data-share-kind="file"]').click();
  Object.defineProperty(w.document.getElementById('file-input'),'files',{value:[f],configurable:true});w.document.getElementById('file-input').dispatchEvent(new w.Event('change'));
  w.document.getElementById('upload-form').dispatchEvent(new w.Event('submit',{cancelable:true,bubbles:true}));
  async function wait(fn){for(let i=0;i<100;i++){if(fn())return;await new Promise(r=>setTimeout(r,5));}throw new Error('timeout');}
