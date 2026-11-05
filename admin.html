@@ -25,6 +25,7 @@
   <link rel="stylesheet" href="rejson-widgets/css/studio.css?v=3">
   <link rel="stylesheet" href="rejson-widgets/css/admin.css?v=2026-10-31">
   <link rel="stylesheet" href="css/admin-panel.css?v=2026-10-31-overview">
+  <link rel="stylesheet" href="css/rejchat-moderation.css?v=1">
   <link rel="stylesheet" href="css/admin-partner.css?v=1">
   <link rel="stylesheet" href="/css/liquid.css?v=2026-10-30-2">
   <link rel="stylesheet" href="/css/rejchat.css?v=1">
@@ -369,6 +370,28 @@
         </div>
       </div>
 
+      <details class="adm-card rcmod" id="rcmod-panel">
+        <summary><span class="rcmod-icon" aria-hidden="true">✦</span><span><strong>Centrum moderacji RejChat</strong><small>Frazy, blokady pisania i wiadomości publiczne</small></span></summary>
+        <div class="rcmod-content">
+          <p class="rcmod-intro">Zarządzaj nowymi treściami bez usuwania kont. Filtr obejmuje czat, wpisy, komentarze i wiadomości prywatne. Panel nie pokazuje treści prywatnych rozmów.</p>
+          <p class="rcmod-status" id="rcmod-status" role="status" aria-live="polite"></p>
+          <div class="rcmod-grid">
+            <section class="rcmod-section"><h3>Filtr fraz</h3><p>Blokuje fragment tekstu niezależnie od wielkości liter. Zmiany dotyczą nowych wiadomości.</p>
+              <form id="rcmod-phrase-form" class="rcmod-form"><label for="rcmod-phrase">Słowo lub fraza</label><div><input id="rcmod-phrase" maxlength="80" minlength="2" required placeholder="np. niechciana fraza"><button class="btn btn-primary btn-sm" type="submit">Dodaj filtr</button></div></form>
+              <div id="rcmod-phrases" class="rcmod-list"></div>
+            </section>
+            <section class="rcmod-section"><h3>Blokada pisania</h3><p>Blokuje nowe wiadomości, wpisy i komentarze, także w prywatnych rozmowach; nie usuwa konta ani historii.</p>
+              <form id="rcmod-block-form" class="rcmod-form"><label for="rcmod-user">Nazwa konta</label><div><input id="rcmod-user" maxlength="24" required placeholder="Nazwa użytkownika"><select id="rcmod-duration" aria-label="Czas blokady"><option value="1">1 godzina</option><option value="24">24 godziny</option><option value="168">7 dni</option><option value="-1">Bez końca</option><option value="0">Zdejmij blokadę</option></select><button class="btn btn-primary btn-sm" type="submit">Zastosuj</button></div></form>
+              <div id="rcmod-blocks" class="rcmod-list"></div>
+            </section>
+          </div>
+          <section class="rcmod-section rcmod-messages"><div class="rcmod-title"><div><h3>Ostatnie wiadomości publiczne</h3><p>Ostatnie 100 wiadomości. Możesz zaznaczyć kilka i usunąć je jednocześnie.</p></div><button type="button" id="rcmod-refresh" class="btn btn-glass btn-sm">Odśwież</button></div>
+            <div class="rcmod-actions"><label><input type="checkbox" id="rcmod-select-all"> Zaznacz wszystkie</label><button type="button" id="rcmod-delete" class="btn btn-glass btn-sm" disabled>Usuń zaznaczone</button></div>
+            <div id="rcmod-messages" class="rcmod-list"></div>
+          </section>
+        </div>
+      </details>
+
       <section class="adm-card">
         <header class="adm-card-head">
           <span class="adm-card-ico" aria-hidden="true">👥</span>
@@ -607,7 +630,8 @@
   <script src="js/error-reporter.js?v=1" defer></script>
   <script src="js/admin-errors.js?v=1"></script>
   <script src="js/admin-partner.js?v=1"></script>
-  <script src="js/admin-panel.js?v=2026-10-31-overview"></script>
+  <script src="js/admin-rejchat-moderation.js?v=1"></script>
+  <script src="js/admin-panel.js?v=2026-11-05-moderation"></script>
   <script defer src="/js/media-capture.js?v=2"></script>
   <script defer src="/rejson-widgets/widget.js?v=12" data-project="rejson59.github.io"></script>
 </body>

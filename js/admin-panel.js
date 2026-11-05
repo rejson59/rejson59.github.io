@@ -277,6 +277,7 @@
   /* ---------- Logowanie ---------- */
   function showAuth() {
     panelActive = false;
+    if (window.RJAdminRejChat) window.RJAdminRejChat.clear();
     stopRefresh();
     var a = $("panel-auth");
     var d = $("panel-dash");
