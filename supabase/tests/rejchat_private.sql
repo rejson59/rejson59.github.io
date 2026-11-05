@@ -4,7 +4,7 @@ do $$
 declare a uuid:=gen_random_uuid(); b uuid:=gen_random_uuid(); c uuid:=gen_random_uuid();
  ta text:=gen_random_uuid()::text; tb text:=gen_random_uuid()::text; tc text:=gen_random_uuid()::text;
  na text:='T'||substr(replace(a::text,'-',''),1,20); nb text:='T'||substr(replace(b::text,'-',''),1,20); nc text:='T'||substr(replace(c::text,'-',''),1,20);
- tid uuid; mid uuid; pub uuid:=gen_random_uuid(); data jsonb; cursor_id uuid; cursor_at timestamptz;
+ tid uuid; mid uuid; pub uuid:=gen_random_uuid(); data jsonb; cursor_id uuid; cursor_at timestamptz; g integer;
 begin
  insert into public.community_users(id,username,pin_hash) values(a,na,'test'),(b,nb,'test'),(c,nc,'test');
  insert into public.community_sessions(token_hash,user_id) values
@@ -31,8 +31,12 @@ begin
  data:=public.rejchat_reaction_inbox(ta); if (data->>'unread')::int<>1 or data->'items'->0->>'scope'<>'public' then raise exception 'brak powiadomienia publicznego: %',data; end if;
  perform public.rejchat_reaction_read(ta,null); if (public.rejchat_reaction_inbox(ta)->>'unread')::int<>0 then raise exception 'nie oznaczono reakcji'; end if;
  data:=public.rejchat_reactions_list(array[pub],tb); if (data->0->>'count')::int<>1 or (data->0->>'mine')::boolean is not true then raise exception 'błąd reakcji publicznej: %',data; end if;
- insert into public.rejchat_dm_messages(thread_id,author_id,content,created_at)
- select tid,a,'historia '||g,now()-make_interval(secs=>106-g) from generate_series(1,105) g;
+ -- Test stronicowania importuje historyczne dane i resetuje wyłącznie testowy stan limitu.
+ for g in 1..105 loop
+  delete from public.rejchat_antispam_state where user_id=a and kind='dm';
+  insert into public.rejchat_dm_messages(thread_id,author_id,content,created_at)
+  values(tid,a,'historia '||g,now()-make_interval(secs=>106-g));
+ end loop;
  data:=public.rejchat_dm_list(tb,tid); if jsonb_array_length(data->'messages')<>100 then raise exception 'zły rozmiar nowej strony'; end if;
  cursor_id:=(data->'messages'->0->>'id')::uuid; cursor_at:=(data->'messages'->0->>'created_at')::timestamptz;
  data:=public.rejchat_dm_history(tb,tid,cursor_at,cursor_id); if jsonb_array_length(data)<>6 then raise exception 'zły rozmiar historii: %',data; end if;
