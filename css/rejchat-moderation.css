@@ -20,3 +20,7 @@
 .rcmod-row > span { flex:1; min-width:0; overflow-wrap:anywhere; }.rcmod-row small { display:block; color:var(--muted); margin-top:4px; }
 .rcmod-messages { margin-top:14px; }.rcmod-title { justify-content:space-between; }.rcmod-actions { justify-content:space-between; font-size:12px; }.rcmod-status { color:var(--accent-strong); font-size:13px; min-height:1.3em; }
 @media(max-width:760px){.rcmod-grid { grid-template-columns:minmax(0,1fr); }.rcmod-content { padding:0 14px 14px; }.rcmod > summary { padding:16px; }}
+/* Wyciszenia: czytelny formularz i szybki wybór autora z czatu. */
+.rcmod-mute-form { display:grid; grid-template-columns:1fr; gap:7px; }.rcmod-mute-form label { margin:4px 0 0; }.rcmod-mute-form input,.rcmod-mute-form select { width:100%; box-sizing:border-box; }.rcmod-mute-form button { justify-self:start; margin-top:5px; }
+.rcmod-row .rcmod-author-mute { flex:none; }.rcmod-row input[type=checkbox] { flex:none; }.rcmod-row strong { overflow-wrap:anywhere; }
+@media(max-width:480px){ .rcmod-row { flex-wrap:wrap; }.rcmod-row .rcmod-author-mute { margin-left:auto; } }

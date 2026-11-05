@@ -279,3 +279,27 @@ a[data-profile-name]:hover { text-decoration:underline; }
 .rc-link-head { display:flex; align-items:center; gap:10px; width:100%; min-width:0; }.rc-link-icon { flex:none; display:grid; place-items:center; width:34px; height:34px; border-radius:11px; background:color-mix(in srgb,var(--accent) 14%,transparent); color:var(--accent-strong); font-weight:800; }
 .rc-link-labels { min-width:0; }.rc-link-labels strong,.rc-link-labels small { display:block; overflow-wrap:anywhere; }.rc-link-labels strong { font-size:13px; }.rc-link-labels small,.rc-link-path { color:var(--muted); font-size:11px; }
 .rc-link-path { display:block; width:100%; overflow-wrap:anywhere; }.rc-link-open,.rc-link-load { color:var(--accent-strong); font:inherit; font-size:12px; font-weight:700; }.rc-link-open { text-decoration:none; }.rc-link-load { border:0; padding:0; background:none; cursor:pointer; }.rc-link-load:disabled { opacity:.6; }.rc-link-result { width:100%; font-size:12px; overflow-wrap:anywhere; }.rc-link-result:empty { display:none; }.rc-link-result p { margin:5px 0 0; color:var(--muted); }.rc-link-image { display:block; width:100%; max-height:180px; object-fit:cover; border-radius:10px; }
+
+/* RejChat: uporządkowane sekcje, czytelne zasady i stan wyciszenia. */
+.rj-community .comm-hero { display:grid; grid-template-columns:minmax(0,1fr) minmax(250px,360px); column-gap:28px; align-items:start; }
+.rj-community .comm-hero > .rejchat-brow,.rj-community .comm-hero > .comm-title,.rj-community .comm-hero > .comm-lead { grid-column:1; justify-self:start; }
+.rj-community .comm-hero > .rejchat-rules { grid-column:2; grid-row:1 / span 3; align-self:center; width:100%; }
+.rejchat-rules { box-sizing:border-box; border:1px solid color-mix(in srgb,var(--accent) 24%,var(--border)); border-radius:18px; background:var(--bg-elev); overflow:hidden; }
+.rejchat-rules summary { display:flex; gap:12px; align-items:center; padding:14px; cursor:pointer; list-style:none; }
+.rejchat-rules summary::-webkit-details-marker { display:none; }.rejchat-rules summary > span:first-child { display:grid; place-items:center; width:38px; height:38px; flex:none; color:var(--accent-strong); background:color-mix(in srgb,var(--accent) 14%,transparent); border-radius:13px; }
+.rejchat-rules summary > span:nth-child(2) { min-width:0; flex:1; }.rejchat-rules summary strong,.rejchat-rules summary small { display:block; }.rejchat-rules summary small { margin-top:3px; color:var(--muted); font-size:11px; }.rejchat-rules summary:after { content:'+'; color:var(--accent-strong); font-size:22px; }.rejchat-rules[open] summary:after { content:'−'; }
+.rejchat-rules-body { padding:0 16px 16px; font-size:12px; line-height:1.6; color:var(--muted); }.rejchat-rules-body h2 { font-size:13px; color:var(--text); margin:0 0 7px; }.rejchat-rules-body ol { margin:0; padding-left:18px; }.rejchat-rules-body li { padding:2px 0; }.rejchat-rules-body p { margin:10px 0 0; }
+.rejchat-mute-notice { display:flex; gap:13px; align-items:flex-start; margin:0 0 16px; padding:15px 18px; border:1px solid #dfaa5877; border-radius:17px; background:color-mix(in srgb,#ecae4c 12%,var(--bg-elev)); color:var(--text); }
+.rejchat-mute-notice[hidden],.rejchat-mute-notice [hidden] { display:none!important; }.rejchat-mute-notice p { margin:4px 0 0; font-size:12px; line-height:1.55; overflow-wrap:anywhere; }.rejchat-mute-icon { display:grid; place-items:center; width:35px; height:35px; flex:none; border-radius:12px; background:color-mix(in srgb,#ecae4c 20%,transparent); }
+.rj-community .comm-layout { grid-template-columns:minmax(245px,280px) minmax(0,1fr); }
+.rj-community .comm-sidebar { padding:20px 16px; gap:18px; }.rj-community .chat-channel-list { display:grid; gap:8px; }.rj-community .chat-channel:not(.is-active) { border-color:transparent; background:transparent; }.rj-community .chat-channel:not(.is-active):hover { background:var(--bg-elev); }
+.rj-community .comm-primary { min-width:0; }.rj-community .comm-chat-head { min-height:88px; box-sizing:border-box; }.rj-community .comm-chat-list { gap:16px; }.rj-community .comm-chat-form { gap:10px; }
+.rejchat-rules summary:focus-visible,.rejchat-mute-notice a:focus-visible { outline:2px solid var(--accent-strong); outline-offset:-3px; }
+@media(max-width:760px) {
+ .rj-community .comm-hero { grid-template-columns:minmax(0,1fr); gap:0; }
+ .rj-community .comm-hero > .rejchat-rules { grid-column:1; grid-row:auto; margin-top:14px; }
+ .rj-community .comm-layout { grid-template-columns:minmax(0,1fr); }
+ .rj-community .comm-sidebar { padding:0; }.rj-community .chat-channel-list { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
+ .rj-community .chat-channel { min-width:0; align-items:flex-start; }.rj-community .chat-channel small { overflow-wrap:anywhere; }
+ .rj-community .comm-chat-head { min-height:70px; }.rejchat-mute-notice { margin-bottom:12px; }
+}
