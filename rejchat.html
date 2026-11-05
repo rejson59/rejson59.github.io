@@ -244,6 +244,7 @@
   <link rel="stylesheet" href="/css/liquid.css?v=2026-10-30-2">
   <link rel="stylesheet" href="/css/responsive.css?v=1">
   <link rel="stylesheet" href="/css/rejchat.css?v=8">
+  <link rel="stylesheet" href="/css/rejchat-studio.css?v=1">
   <link rel="stylesheet" href="/css/side-ads.css?v=5">
   <script defer src="/js/side-ads.js?v=6"></script>
   <link rel="stylesheet" href="/css/mobile-ads.css?v=5">
@@ -509,35 +510,25 @@
 
   <main class="container comm-main">
 
-    <section class="comm-hero">
-      <p class="rejchat-brow">✦ TWOJE MIEJSCE NA ROZMOWY</p>
-      <h1 class="comm-title"><svg class="page-mark" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#people"></use></svg>RejChat<span class="rejchat-title-dot">.</span></h1>
-      <p class="comm-lead">Wpadnij pogadać, podziel się pomysłem i poznaj innych.</p>
-      <details class="rejchat-rules" id="rejchat-rules">
-        <summary><span aria-hidden="true">✦</span><span><strong>Zasady rozmowy</strong><small>Kilka rzeczy, o których warto pamiętać</small></span></summary>
-        <div class="rejchat-rules-body">
-          <h2>Dbajmy o dobre miejsce do rozmów</h2>
-          <ol>
-            <li>Traktuj innych z szacunkiem. Bez gróźb, nękania, obrażania i dyskryminacji.</li>
-            <li>Nie spamuj ani nie publikuj oszustw, niebezpiecznych linków i niechcianych reklam.</li>
-            <li>Szanuj prywatność: nie publikuj cudzych danych ani haseł; nie wysyłaj też własnych poufnych informacji.</li>
-            <li>Nie udostępniaj treści nielegalnych, przemocy ani materiałów seksualnych z udziałem osób niepełnoletnich.</li>
-            <li>Pisz na temat i szanuj prawa autorów. Spory rozwiązuj spokojnie.</li>
-          </ol>
-          <p>Zasady dotyczą czatu, wpisów, komentarzy i prywatnych rozmów. Administrator może usunąć publiczną treść lub czasowo zablokować pisanie. Filtr fraz sprawdza również wiadomości prywatne; panel moderacji nie wyświetla ich treści.</p>
-        </div>
-      </details>
+    <section class="comm-hero" aria-labelledby="rejchat-heading">
+      <div class="rejchat-hero-copy">
+        <p class="rejchat-brow"><span aria-hidden="true">✦</span> SPOŁECZNOŚĆ REJSONA</p>
+        <h1 class="comm-title" id="rejchat-heading">RejChat<span class="rejchat-title-dot">.</span></h1>
+        <p class="comm-lead">Dobre rozmowy zaczynają się tutaj.<br>Wpadnij, podziel się pomysłem i poznaj innych.</p>
+        <div class="rejchat-hero-tags" aria-label="Dostępne w RejChat"><span>Czat ogólny</span><span>Wpisy</span><span>Rozmowy 1:1</span></div>
+      </div>
+      <div class="rejchat-hero-art" aria-hidden="true"><span class="hero-orbit hero-orbit-one"></span><span class="hero-orbit hero-orbit-two"></span><span class="hero-spark hero-spark-one">✦</span><span class="hero-spark hero-spark-two">✳</span><span class="hero-bubble hero-bubble-back"><i></i><i></i><i></i></span><span class="hero-bubble hero-bubble-front"><i></i><i></i><i></i></span></div>
     </section>
 
     <section class="rejchat-mute-notice" id="rejchat-mute-notice" role="status" aria-live="polite" hidden>
       <span class="rejchat-mute-icon" aria-hidden="true">⏸</span><div><strong>Masz wyciszenie w RejChat</strong><p id="rejchat-mute-detail"></p><p id="rejchat-mute-reason" hidden></p></div>
     </section>
     <div class="comm-layout">
-      <aside class="comm-sidebar" aria-label="Nawigacja i użytkownicy online">
-        <div class="chat-navigation"><div class="chat-navigation-heading"><span class="chat-navigation-mark" aria-hidden="true">✦</span><div><strong>Twoja przestrzeń</strong><small>Rozmowy i wpisy</small></div></div>
+      <aside class="comm-sidebar" aria-label="Nawigacja RejChat">
+        <div class="chat-navigation"><div class="chat-navigation-heading"><span class="chat-navigation-mark" aria-hidden="true">✦</span><div><strong>Twoja przestrzeń</strong><small>Wybierz, co chcesz robić</small></div></div>
           <div class="rejchat-tabs" role="tablist" aria-label="Widoki RejChat">
       <button type="button" role="tab" id="chat-tab" aria-controls="panel-chat" aria-selected="true"><svg class="ui-icon" aria-hidden="true"><use href="/assets/ui-icons.svg?v=2#chat"></use></svg> Czat</button>
-      <button type="button" role="tab" id="posts-tab" aria-controls="panel-posts" aria-selected="false" tabindex="-1">✦ Wpisy</button>
+      <button type="button" role="tab" id="posts-tab" aria-controls="panel-posts" aria-selected="false" tabindex="-1"><span class="rejchat-tab-icon" aria-hidden="true">✦</span> Wpisy</button>
     </div>
         </div>
         <div class="chat-channel-list" aria-label="Dostępne rozmowy">
@@ -545,24 +536,16 @@
           <button type="button" id="channel-general" class="chat-channel is-active" aria-pressed="true" aria-controls="panel-chat"><span class="chat-channel-icon" aria-hidden="true">✦</span><span><strong>Czat ogólny</strong><small>Porozmawiaj ze społecznością</small></span></button>
           <button type="button" id="channel-private" class="chat-channel" aria-pressed="false" aria-controls="panel-chat"><span class="chat-channel-icon" aria-hidden="true">✉</span><span><strong>Prywatne rozmowy</strong><small>Wiadomości między kontami</small></span><span id="dm-nav-unread" class="dm-unread" hidden></span></button>
         </div>
-        <!-- ============ KTO JEST TERAZ ONLINE ============ -->
-        <section class="comm-online-card glass-card" aria-label="Zalogowani użytkownicy online">
-          <h2><span class="comm-online-dot" aria-hidden="true"></span> Zalogowani teraz online</h2>
-          <div class="comm-online" id="comm-online">
-            <span class="comm-online-empty">Ładowanie…</span>
-          </div>
-          <p class="rejchat-online-note">Chcesz przedstawić się innym? Wybierz awatar i dodaj kilka słów na swoim profilu.</p>
-        </section>
       </aside>
       <div class="comm-primary">
         <section id="panel-chat" role="tabpanel" aria-labelledby="chat-tab">
         <!-- ============ CZAT NA ŻYWO ============ -->
         <section class="comm-chat glass-card" id="chat-public-view" aria-label="Czat RejChat">
           <header class="comm-chat-head">
-            <div class="chat-room-heading"><span class="chat-room-mark" aria-hidden="true">✦</span><div><h2>Czat ogólny</h2><p>Publiczna rozmowa społeczności</p></div></div>
+            <div class="chat-room-heading"><span class="chat-room-mark" aria-hidden="true">#</span><div><span class="room-eyebrow">PRZESTRZEŃ PUBLICZNA</span><h2>Czat ogólny</h2><p>Rozmawiaj ze społecznością</p></div></div>
             <span class="comm-chat-hint"><span class="comm-chat-dot" aria-hidden="true"></span> <span id="chat-connection" role="status">Odświeżanie co 2 s</span></span>
           </header>
-          <label class="rejchat-search"><span class="sr-only">Szukaj we wczytanych wiadomościach</span><input class="comm-input" id="chat-search" type="search" maxlength="100" placeholder="Szukaj we wczytanych wiadomościach…"></label>
+          <label class="rejchat-search"><span class="search-mark" aria-hidden="true">⌕</span><span class="sr-only">Szukaj we wczytanych wiadomościach</span><input class="comm-input" id="chat-search" type="search" maxlength="100" placeholder="Szukaj w wiadomościach…"></label>
           <p class="rejchat-search-hint" id="chat-search-status" aria-live="polite">Widoczne są ostatnie wczytane wiadomości.</p>
           <p class="rejchat-search-hint">Wiadomości starsze niż 14 dni są usuwane przy wysłaniu nowej.</p>
           <div class="comm-chat-list" id="chat-list" aria-live="polite">
@@ -575,7 +558,7 @@
             <div><button type="button" class="btn btn-primary btn-sm" id="file-draft-add">Dodaj link do wiadomości</button><button type="button" class="btn btn-ghost btn-sm" id="file-draft-discard">Usuń przygotowany link</button></div>
             <p id="file-draft-status" role="status" aria-live="polite"></p>
           </div>
-          <p class="rejchat-file-shortcut"><a href="/rejfile" target="_blank" rel="noopener">＋ Przygotuj plik lub notatkę w RejFile (nowa karta)</a> · Link możesz potem dodać do wiadomości w tej nowej karcie.</p>
+          <p class="rejchat-file-shortcut"><a href="/rejfile" target="_blank" rel="noopener"><span aria-hidden="true">＋</span> Przygotuj plik lub notatkę w RejFile ↗</a> <span>Link możesz dodać do wiadomości.</span></p>
           <form class="comm-chat-form" id="chat-form" hidden>
             <input class="comm-input" id="chat-input" type="text" maxlength="280" autocomplete="off"
                    placeholder="Napisz coś…" aria-label="Wiadomość na czat">
@@ -653,6 +636,33 @@
 
         </div>
       </div>
+      <aside class="rejchat-info" aria-label="Informacje o społeczności">
+        <div class="rejchat-info-heading"><span>WOKÓŁ ROZMOWY</span><strong>Społeczność</strong></div>
+        <!-- ============ KTO JEST TERAZ ONLINE ============ -->
+        <section class="comm-online-card glass-card" aria-label="Zalogowani użytkownicy online">
+          <h2><span class="comm-online-dot" aria-hidden="true"></span> Zalogowani teraz online</h2>
+          <div class="comm-online" id="comm-online">
+            <span class="comm-online-empty">Ładowanie…</span>
+          </div>
+          <p class="rejchat-online-note">Obecność zależy od aktywności na stronie.</p>
+        </section>
+
+      <details class="rejchat-rules" id="rejchat-rules">
+        <summary><span aria-hidden="true">✦</span><span><strong>Zasady rozmowy</strong><small>Kilka rzeczy, o których warto pamiętać</small></span></summary>
+        <div class="rejchat-rules-body">
+          <h2>Dbajmy o dobre miejsce do rozmów</h2>
+          <ol>
+            <li>Traktuj innych z szacunkiem. Bez gróźb, nękania, obrażania i dyskryminacji.</li>
+            <li>Nie spamuj ani nie publikuj oszustw, niebezpiecznych linków i niechcianych reklam.</li>
+            <li>Szanuj prywatność: nie publikuj cudzych danych ani haseł; nie wysyłaj też własnych poufnych informacji.</li>
+            <li>Nie udostępniaj treści nielegalnych, przemocy ani materiałów seksualnych z udziałem osób niepełnoletnich.</li>
+            <li>Pisz na temat i szanuj prawa autorów. Spory rozwiązuj spokojnie.</li>
+          </ol>
+          <p>Zasady dotyczą czatu, wpisów, komentarzy i prywatnych rozmów. Administrator może usunąć publiczną treść lub czasowo zablokować pisanie. Filtr fraz sprawdza również wiadomości prywatne; panel moderacji nie wyświetla ich treści.</p>
+        </div>
+      </details>
+        <div class="rejchat-info-tip"><span aria-hidden="true">✧</span><p><strong>Twój profil, Twój styl</strong><br>Wybierz awatar i opowiedz coś o sobie.</p><a href="/profil">Zobacz profil <span aria-hidden="true">↗</span></a></div>
+      </aside>
     </div>
   </main>
 
