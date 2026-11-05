@@ -240,3 +240,27 @@ a[data-profile-name]:hover { text-decoration:underline; }
 }
 @media(max-width:360px) { body.rj-community .rj-shared-header .header-right { gap:3px; } }
 @media(max-width:360px) { body.rj-community .rj-shared-header .site-nav { right:4px; } }
+/* Prywatne rozmowy i prawdziwe reakcje na wiadomości. */
+.rj-community .comm-chat[hidden], .dm-view [hidden], .dm-unread[hidden] { display:none!important; }
+.chat-private-start { border:0; background:transparent; color:var(--accent-strong); font-size:16px; cursor:pointer; min-width:32px; min-height:32px; }
+.dm-unread { margin-left:auto; min-width:22px; border-radius:999px; padding:3px 6px; text-align:center; font-size:11px; font-weight:800; background:var(--accent-strong); color:#102b2b; }
+.dm-privacy { margin:12px 20px; color:var(--muted); font-size:12px; line-height:1.5; }
+.dm-new-form { padding:12px 20px; border-bottom:1px solid var(--border); }
+.dm-new-form label { display:block; margin-bottom:7px; font-size:12px; font-weight:700; }
+.dm-new-form div { display:flex; gap:8px; }
+.dm-new-form input { min-width:0; flex:1; }
+.dm-inbox { display:flex; gap:8px; padding:10px 20px; overflow-x:auto; }
+.dm-inbox:empty { display:none; }
+.dm-conversation { flex:none; border:1px solid var(--border); border-radius:999px; padding:7px 12px; background:var(--bg-elev); color:var(--text); font:inherit; cursor:pointer; }
+.dm-conversation[aria-pressed="true"] { border-color:var(--accent-strong); }
+.dm-thread-title { padding:12px 20px 0; margin:0; font-size:14px; }
+.dm-view #dm-messages { min-height:180px; height:clamp(220px,40vh,440px); }
+.dm-length { margin:4px 20px 14px; color:var(--muted); font-size:11px; }
+.dm-view #dm-status { padding:0 20px; color:var(--muted); }
+.dm-view #dm-status:empty { display:none; }
+.rejchat-reactions { display:flex; flex-wrap:wrap; gap:4px; margin-top:8px; }
+.rejchat-reaction { min-width:32px; min-height:30px; padding:3px 5px; border:1px solid var(--border); border-radius:999px; background:transparent; color:var(--text); font:12px/1.2 system-ui,sans-serif; cursor:pointer; }
+.rejchat-reaction[aria-pressed="true"] { border-color:var(--accent-strong); background:color-mix(in srgb,var(--accent) 20%,var(--bg-elev)); }
+.rejchat-reaction:disabled { opacity:.7; cursor:default; }
+.rejchat-reaction:focus-visible,.dm-conversation:focus-visible,.chat-private-start:focus-visible { outline:2px solid var(--accent-strong); outline-offset:2px; }
+.dm-older { display:block; margin:10px 20px 0; padding:6px 10px; color:var(--accent-strong); border:1px solid var(--border); border-radius:999px; background:transparent; font:inherit; font-size:12px; cursor:pointer; }

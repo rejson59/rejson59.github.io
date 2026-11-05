@@ -1338,12 +1338,12 @@
   }
 
   /* ================= CZAT SPOŁECZNOŚCI NA ŻYWO ================= */
-  var CHAT_REFRESH_MS = 5000;
+  var CHAT_REFRESH_MS = 2000;
   var CHAT_MAX_SHOWN = 80;
   var chatLastId = null;      /* id ostatniej wiadomości — dociągamy tylko nowe */
   var chatBusy = false;
   var chatTickCount = 0;
-  var chatRequest = null, chatNeedsFull = false, chatGeneration = 0;
+  var chatRequest = null, chatNeedsFull = false, chatGeneration = 0, chatRenderedSession = null;
 
   function chatMsgHTML(m) {
     var mine = session && session.username === m.author_name;
@@ -1355,6 +1355,7 @@
           '<div class="chat-meta">' +
             '<span class="chat-author">' + profileLink(m.author_name) + authorBadges(m.author_name, m) + "</span>" +
             '<span class="chat-time mono">' + relTime(m.created_at) + "</span>" +
+            (session && !mine ? '<button class="chat-private-start" type="button" data-dm-user="' + esc(m.author_name) + '" aria-label="Prywatna rozmowa z ' + esc(m.author_name) + '">✉</button>' : '') +
             (canDel
               ? '<button class="chat-delete" type="button" data-chat-delete="' + esc(m.id) + '" title="Usuń wiadomość" aria-label="Usuń wiadomość">✕</button>'
               : "") +
@@ -1383,6 +1384,7 @@
   function renderChatAll(rows) {
     var box = chatList();
     if (!box) return;
+    chatRenderedSession = session ? session.token : "";
     if (!rows.length) {
       box.innerHTML = '<p class="comm-chat-empty">Pusto tu… bądź pierwszą osobą na czacie! 👋</p>';
       return;
@@ -1426,11 +1428,11 @@
   function chatConnection(ok) {
     var status = document.getElementById("chat-connection");
     if (!status) return;
-    status.textContent = ok ? "Odświeżanie co 5 s" : "Brak połączenia — ponawiamy";
+    status.textContent = ok ? "Odświeżanie co 2 s" : "Brak połączenia — ponawiamy";
     status.classList.toggle("is-offline", !ok);
   }
 
-  /* pełne przeładowanie (co ~30 s łapie też wiadomości usunięte przez innych) */
+  /* pełne przeładowanie (co ~10 s łapie też wiadomości usunięte przez innych) */
   function loadChatFull() {
     var box = chatList();
     var generation = chatGeneration;
@@ -1441,7 +1443,7 @@
         var stick = chatNearBottom(), prevTop = box ? box.scrollTop : 0;
         var existing = box ? Array.prototype.map.call(box.querySelectorAll("[data-chat-id]"), function (el) { return el.getAttribute("data-chat-id"); }) : [];
         var added = existing.length && rows.some(function (row) { return existing.indexOf(String(row.id)) < 0; });
-        renderChatAll(rows);
+        if (chatRenderedSession !== (session ? session.token : "") || existing.join("|") !== rows.map(function (row) { return String(row.id); }).join("|") || (!rows.length && box && (!box.querySelector(".comm-chat-empty") || box.querySelector(".comm-chat-empty").textContent.indexOf("Pusto tu") !== 0))) renderChatAll(rows);
         chatLastId = rows.length ? rows[rows.length - 1].id : null;
         if (stick) chatScrollBottom(); else if (box) { box.scrollTop = prevTop; if (added) showChatJump(); }
       })
@@ -1484,7 +1486,7 @@
 
   function chatPoll() {
     chatTickCount++;
-    return requestChat(chatTickCount % 6 === 1 || !chatLastId);
+    return requestChat(chatTickCount % 5 === 1 || !chatLastId);
   }
 
   function handleChatSubmit(ev) {
@@ -1544,6 +1546,8 @@
 
     var list = chatList();
     list.addEventListener("click", function (ev) {
+      var dm = ev.target && ev.target.closest ? ev.target.closest("[data-dm-user]") : null;
+      if (dm && session) { window.dispatchEvent(new CustomEvent("rj:dm-open-user", {detail: dm.getAttribute("data-dm-user")})); return; }
       var btn = ev.target && ev.target.closest ? ev.target.closest("[data-chat-delete]") : null;
       if (!btn || !session) return;
       var id = btn.getAttribute("data-chat-delete");

@@ -243,7 +243,7 @@
   <script defer src="/js/liquid-nav.js?v=1"></script>
   <link rel="stylesheet" href="/css/liquid.css?v=2026-10-30-2">
   <link rel="stylesheet" href="/css/responsive.css?v=1">
-  <link rel="stylesheet" href="/css/rejchat.css?v=5">
+  <link rel="stylesheet" href="/css/rejchat.css?v=6">
   <link rel="stylesheet" href="/css/side-ads.css?v=5">
   <script defer src="/js/side-ads.js?v=6"></script>
   <link rel="stylesheet" href="/css/mobile-ads.css?v=5">
@@ -526,6 +526,7 @@
         <div class="chat-channel-list" aria-label="Dostępne rozmowy">
           <span class="chat-channel-label">ROZMOWY</span>
           <button type="button" id="channel-general" class="chat-channel is-active" aria-pressed="true" aria-controls="panel-chat"><span class="chat-channel-icon" aria-hidden="true">✦</span><span><strong>Czat ogólny</strong><small>Porozmawiaj ze społecznością</small></span></button>
+          <button type="button" id="channel-private" class="chat-channel" aria-pressed="false" aria-controls="panel-chat"><span class="chat-channel-icon" aria-hidden="true">✉</span><span><strong>Prywatne rozmowy</strong><small>Wiadomości między kontami</small></span><span id="dm-nav-unread" class="dm-unread" hidden></span></button>
         </div>
         <!-- ============ KTO JEST TERAZ ONLINE ============ -->
         <section class="comm-online-card glass-card" aria-label="Zalogowani użytkownicy online">
@@ -539,10 +540,10 @@
       <div class="comm-primary">
         <section id="panel-chat" role="tabpanel" aria-labelledby="chat-tab">
         <!-- ============ CZAT NA ŻYWO ============ -->
-        <section class="comm-chat glass-card" aria-label="Czat RejChat">
+        <section class="comm-chat glass-card" id="chat-public-view" aria-label="Czat RejChat">
           <header class="comm-chat-head">
             <div class="chat-room-heading"><span class="chat-room-mark" aria-hidden="true">✦</span><div><h2>Czat ogólny</h2><p>Publiczna rozmowa społeczności</p></div></div>
-            <span class="comm-chat-hint"><span class="comm-chat-dot" aria-hidden="true"></span> <span id="chat-connection" role="status">Odświeżanie co 5 s</span></span>
+            <span class="comm-chat-hint"><span class="comm-chat-dot" aria-hidden="true"></span> <span id="chat-connection" role="status">Odświeżanie co 2 s</span></span>
           </header>
           <label class="rejchat-search"><span class="sr-only">Szukaj we wczytanych wiadomościach</span><input class="comm-input" id="chat-search" type="search" maxlength="100" placeholder="Szukaj we wczytanych wiadomościach…"></label>
           <p class="rejchat-search-hint" id="chat-search-status" aria-live="polite">Widoczne są ostatnie wczytane wiadomości.</p>
@@ -566,6 +567,19 @@
           <p class="chat-length" id="chat-length">0 / 280 znaków</p>
           <p id="chat-send-status" class="comm-chat-note" role="status" aria-live="polite"></p>
           <p class="comm-chat-note" id="chat-note"><span>Czytasz jako gość.</span> <button type="button" class="chat-join" id="chat-join" hidden>Dołącz do rozmowy ↗</button><a id="chat-join-fallback" href="logowanie">Dołącz do rozmowy ↗</a></p>
+        </section>
+        <section class="comm-chat glass-card dm-view" id="chat-private-view" aria-label="Prywatne rozmowy" hidden>
+          <header class="comm-chat-head"><div class="chat-room-heading"><span class="chat-room-mark" aria-hidden="true">✉</span><div><h2>Prywatne rozmowy</h2><p>Wiadomości widzą tylko uczestnicy rozmowy.</p></div></div></header>
+          <p class="dm-privacy">Wiadomości są przechowywane na serwerze i nie są szyfrowane end-to-end. Nie wysyłaj haseł ani innych poufnych danych.</p>
+          <p id="dm-guest" class="comm-chat-note">Zaloguj się, aby rozpocząć prywatną rozmowę. <a href="/logowanie">Konto ↗</a></p>
+          <div id="dm-member" hidden>
+            <form id="dm-new-form" class="dm-new-form"><label for="dm-username">Nowa rozmowa — nazwa konta</label><div><input id="dm-username" class="comm-input" autocomplete="off" maxlength="24" placeholder="Nazwa użytkownika" required><button class="btn btn-primary btn-sm" type="submit">Otwórz</button></div></form>
+            <div id="dm-inbox" class="dm-inbox" aria-label="Twoje rozmowy"></div>
+            <p id="dm-status" class="comm-chat-note" role="status" aria-live="polite"></p>
+            <div id="dm-thread" hidden><h3 id="dm-thread-title" class="dm-thread-title"></h3><button type="button" class="dm-older" id="dm-older" hidden>Wczytaj starsze wiadomości</button><div id="dm-messages" class="comm-chat-list" aria-live="polite"></div>
+              <form id="dm-send-form" class="comm-chat-form"><input id="dm-input" class="comm-input" maxlength="1000" autocomplete="off" placeholder="Napisz prywatną wiadomość…" aria-label="Prywatna wiadomość"><button class="btn btn-primary btn-sm" type="submit" id="dm-send">Wyślij</button></form>
+              <p class="dm-length" id="dm-length">0 / 1000 znaków</p></div>
+          </div>
         </section>
 
         </section>
@@ -665,9 +679,11 @@
 
   <script defer src="js/view-tracker.js?v=7"></script>
   <script defer src="/js/rejchat-profiles.js?v=1"></script>
-  <script defer src="js/community.js?v=2026-11-02-rejchat-1"></script>
-  <script defer src="/js/rejchat.js?v=5"></script>
-  <script defer src="/js/rejchat-notifications.js?v=3"></script><script defer src="/js/premium.js?v=9"></script>
+  <script defer src="js/community.js?v=2026-11-05-chat-2"></script>
+  <script defer src="/js/rejchat.js?v=6"></script>
+  <script defer src="/js/rejchat-reactions.js?v=1"></script>
+  <script defer src="/js/rejchat-private.js?v=1"></script>
+  <script defer src="/js/rejchat-notifications.js?v=4"></script><script defer src="/js/premium.js?v=9"></script>
   <script defer src="/js/media-capture.js?v=2"></script>
   <script defer src="/rejson-widgets/widget.js?v=12" data-project="rejson59.github.io"></script>
   <noscript><div class="rj-mobile-ads-spacer" aria-hidden="true"></div><aside id="rj-mobile-ads" aria-label="Mini reklamy i promocje"><span class="rj-mobile-ads-label">mini reklamy i promocje :) <span class="rj-mobile-ads-hint">przesuń →</span></span><div class="rj-mobile-ads-items" tabindex="0" aria-label="Przewijane mini reklamy"><a class="rj-mobile-ad rj-mobile-ad--site" href="/uslugi"><span class="rj-mobile-ad-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01M8 14h8"/></svg></span><span>Masz pomysł na swoją stronę?</span></a><a class="rj-mobile-ad rj-mobile-ad--offer" href="/partnerstwo#propozycja"><span class="rj-mobile-ad-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m4 10 11-5v14L4 14zM4 10v4m3.5 1 1.5 4h3l-1-3.3M18 9l2-2m-2 5h3m-3 3 2 2"/></svg></span><span>Masz coś, czym chcesz się podzielić?</span></a><a class="rj-mobile-ad rj-mobile-ad--house" href="/rejfile"><span class="rj-mobile-ad-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v13H6z"/><path d="M14 3v5h4M12 16V10m-2 2 2-2 2 2"/></svg></span><span>RejFile · wyślij plik</span></a></div></aside></noscript>

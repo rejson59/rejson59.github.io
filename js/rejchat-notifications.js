@@ -22,7 +22,7 @@
   var bell = wrap.querySelector('.rj-chat-bell'), count = wrap.querySelector('.rj-chat-bell-count');
   var panel = wrap.querySelector('.rj-chat-alert-panel'), list = wrap.querySelector('.rj-chat-alert-list');
   var status = wrap.querySelector('.rj-chat-alert-status'), mark = wrap.querySelector('.rj-chat-alert-read');
-  var items = [], unread = 0, serial = 0, busy = false, chatError = '';
+  var items = [], unread = 0, dmItems = [], dmUnread = 0, reactionItems = [], reactionUnread = 0, serial = 0, busy = false, chatError = '';
   function current() { return window.RJProfiles.session(); }
   function same(s) { var now = current(); return s && now && s.token === now.token; }
   function text(value) { return String(value == null ? '' : value).replace(/[&<>"']/g, function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
@@ -35,18 +35,30 @@
     var s = current();
     var errors = [chatError, s && window.RJPremium && typeof window.RJPremium.sourceError === 'function' ? window.RJPremium.sourceError() : ''].filter(Boolean);
     status.textContent = errors.join(' ');
-    var generalItems = s ? general() : [], total = unread + generalItems.length;
+    var generalItems = s ? general() : [], total = unread + dmUnread + reactionUnread + generalItems.length;
     count.hidden = !s || !total;
     count.textContent = total > 99 ? '99+' : String(total);
     bell.setAttribute('aria-label', 'Powiadomienia' + (total ? ', nieprzeczytane: ' + total : ''));
     mark.hidden = !s || !total;
     if (!s) { list.innerHTML = '<p class="rj-chat-alert-empty">Zaloguj się, aby otrzymywać powiadomienia o projektach, zgłoszeniach i RejChat. <a href="/logowanie">Konto</a></p>'; return; }
-    if (!items.length && !generalItems.length) { list.innerHTML = '<p class="rj-chat-alert-empty">Tu pojawią się nowe powiadomienia o projektach, zgłoszeniach i RejChat.</p>'; return; }
+    if (!items.length && !dmItems.length && !reactionItems.length && !generalItems.length) { list.innerHTML = '<p class="rj-chat-alert-empty">Tu pojawią się nowe powiadomienia o projektach, zgłoszeniach i RejChat.</p>'; return; }
     var rows = items.map(function(n) {
       var action = n.kind === 'like' ? 'polubił(a) Twój wpis' : n.kind === 'reply' ? 'odpowiedział(a) na Twój komentarz' : 'skomentował(a) Twój wpis';
       var when = new Date(n.created_at), date = isNaN(when.getTime()) ? '' : when.toLocaleString('pl-PL', {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
       var target = /^\/rejchat(?:\.html)?\/?$/i.test(location.pathname) ? '#powiadomienie=' : '/rejchat#powiadomienie=';
       return {when:n.created_at, html:'<a class="rj-chat-alert-item' + (n.read_at ? '' : ' is-unread') + '" href="' + target + text(n.id) + '" data-notification="' + text(n.id) + '"><span class="rj-chat-alert-symbol" aria-hidden="true">' + (n.kind === 'like' ? '♡' : '💬') + '</span><span><strong>' + text(n.actor_name) + '</strong> ' + action + '<small>RejChat · ' + text(date) + ' · Otwórz wpis</small></span></a>'};
+    });
+    dmItems.forEach(function(n) {
+      if (!n.unread || !/^[0-9a-f-]{36}$/i.test(String(n.id || ''))) return;
+      var target = /^\/rejchat(?:\.html)?\/?$/i.test(location.pathname) ? '#rozmowa=' : '/rejchat#rozmowa=';
+      rows.push({when:n.last_at,html:'<a class="rj-chat-alert-item is-unread" href="' + target + text(n.id) + '" data-dm-notification><span class="rj-chat-alert-symbol" aria-hidden="true">✉</span><span><strong>' + text(n.username) + '</strong> · nowe prywatne wiadomości <small>RejChat · ' + text(n.unread) + ' nieprzeczytanych · Otwórz rozmowę</small></span></a>'});
+    });
+    reactionItems.forEach(function(n) {
+      if (!/^[0-9a-f-]{36}$/i.test(String(n.id || ''))) return;
+      var privateReaction=n.scope==='private' && /^[0-9a-f-]{36}$/i.test(String(n.thread_id||''));
+      var target = privateReaction ? '/rejchat#rozmowa=' + text(n.thread_id) : '/rejchat#czat';
+      if (/^\/rejchat(?:\.html)?\/?$/i.test(location.pathname)) target=target.replace('/rejchat','');
+      rows.push({when:n.created_at,html:'<a class="rj-chat-alert-item is-unread" href="' + target + '" data-reaction-notification="' + text(n.id) + '"><span class="rj-chat-alert-symbol" aria-hidden="true">' + text(n.emoji) + '</span><span><strong>' + text(n.actor_name) + '</strong> zareagował(a) na Twoją wiadomość <small>RejChat · ' + (privateReaction?'Prywatna rozmowa':'Czat ogólny') + '</small></span></a>'});
     });
     generalItems.forEach(function(n) {
       var when = new Date(n.when), date = isNaN(when.getTime()) ? '' : when.toLocaleString('pl-PL', {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
@@ -62,15 +74,30 @@
 
   function refresh() {
     var s = current(), seq = ++serial;
-    if (!s) { items = []; unread = 0; chatError = ''; paint(); return Promise.resolve(); }
-    return window.RJProfiles.rpc('rejchat_notifications_list', {p_token:s.token,p_limit:50}).then(function(data) {
+    if (!s) { items = []; unread = 0; dmItems = []; dmUnread = 0; reactionItems = []; reactionUnread = 0; chatError = ''; paint(); return Promise.resolve(); }
+    return Promise.allSettled([
+      window.RJProfiles.rpc('rejchat_notifications_list', {p_token:s.token,p_limit:50}),
+      window.RJProfiles.rpc('rejchat_dm_inbox', {p_token:s.token}),
+      window.RJProfiles.rpc('rejchat_reaction_inbox', {p_token:s.token})
+    ]).then(function(results) {
       if (seq !== serial || !same(s)) return;
-      if (!data || !Array.isArray(data.items) || typeof data.unread !== 'number') throw new Error('Nieprawidłowa odpowiedź');
-      items = data.items; unread = Math.max(0, data.unread); chatError = ''; paint();
-    }).catch(function() {
-      if (seq !== serial || !same(s)) return;
-      chatError = 'Nie udało się odświeżyć powiadomień RejChat. Spróbuj ponownie.'; paint();
+      var posts=results[0], dm=results[1], reactions=results[2], errors=[];
+      if (posts.status==='fulfilled' && posts.value && Array.isArray(posts.value.items) && typeof posts.value.unread==='number') { items=posts.value.items; unread=Math.max(0,posts.value.unread); }
+      else errors.push('Nie udało się odświeżyć powiadomień RejChat.');
+      if (dm.status==='fulfilled' && Array.isArray(dm.value)) { dmItems=dm.value.filter(function(x){return Number(x.unread)>0;}); dmUnread=dmItems.reduce(function(n,x){return n+Math.max(0,Number(x.unread)||0);},0); }
+      else errors.push('Nie udało się sprawdzić prywatnych rozmów.');
+      if (reactions.status==='fulfilled' && reactions.value && Array.isArray(reactions.value.items) && typeof reactions.value.unread==='number') { reactionItems=reactions.value.items; reactionUnread=Math.max(0,reactions.value.unread); }
+      else errors.push('Nie udało się sprawdzić reakcji.');
+      chatError=errors.join(' '); paint();
     });
+  }
+  function markDmAll() {
+    var s=current(); if(!s)return Promise.resolve();
+    return window.RJProfiles.rpc('rejchat_dm_read_all',{p_token:s.token}).then(function(){if(same(s))return refresh();}).catch(function(){if(same(s)){chatError='Nie udało się oznaczyć prywatnych wiadomości.';paint();}});
+  }
+  function markReaction(ids) {
+    var s=current(); if(!s)return Promise.resolve();
+    return window.RJProfiles.rpc('rejchat_reaction_read',{p_token:s.token,p_ids:ids}).then(function(){if(same(s))return refresh();}).catch(function(){if(same(s)){chatError='Nie udało się oznaczyć powiadomień o reakcjach.';paint();}});
   }
   function markRead(ids) {
     var s = current(); if (!s || busy) return Promise.resolve();
@@ -83,10 +110,12 @@
   bell.addEventListener('click', function(){ var opening = panel.hidden; panel.hidden = !opening; bell.setAttribute('aria-expanded',String(opening)); if(opening) refreshAll(); });
   wrap.querySelector('.rj-chat-alert-close').addEventListener('click',function(){close(true);});
   wrap.querySelector('.rj-chat-alert-refresh').addEventListener('click',refreshAll);
-  mark.addEventListener('click',function(){if(window.RJPremium && typeof window.RJPremium.markRead === 'function')window.RJPremium.markRead(null);markRead(null);});
+  mark.addEventListener('click',function(){if(window.RJPremium && typeof window.RJPremium.markRead === 'function')window.RJPremium.markRead(null);markRead(null);markDmAll();markReaction(null);});
   list.addEventListener('click',function(e){
     var generalLink=e.target.closest('[data-general-notification]');
     if(generalLink) { if(e.button===0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey && window.RJPremium && typeof window.RJPremium.markRead === 'function') { var href=generalLink.href; e.preventDefault(); window.RJPremium.markRead(generalLink.getAttribute('data-general-notification')); window.location.assign(href); } return; }
+    var reaction=e.target.closest('[data-reaction-notification]'); if(reaction){if(e.button!==0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey)return;var href=reaction.href, done=markReaction([reaction.getAttribute('data-reaction-notification')]);e.preventDefault();close(false);Promise.race([done,new Promise(function(resolve){setTimeout(resolve,1200);})]).then(function(){window.location.assign(href);});return;}
+    var dm=e.target.closest('[data-dm-notification]'); if(dm){close(false);return;}
     var a=e.target.closest('[data-notification]'); if(!a)return;
     if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
     var marked=markRead([a.getAttribute('data-notification')]); close(false);
@@ -98,11 +127,13 @@
   });
   document.addEventListener('click',function(e){if(!wrap.contains(e.target) && !panel.hidden)close(false);});
   document.addEventListener('keydown',function(e){if(e.key==='Escape' && !panel.hidden){e.preventDefault();close(true);}});
-  function sessionChanged(){ serial++; items=[]; unread=0; chatError=''; paint(); refresh(); }
+  function sessionChanged(){ serial++; items=[]; unread=0; dmItems=[]; dmUnread=0; reactionItems=[]; reactionUnread=0; chatError=''; paint(); refresh(); }
   window.addEventListener('rj:session-change',sessionChanged);
   window.addEventListener('rj:premium-notifications',paint);
+  window.addEventListener('rj:dm-read',refresh);
   window.addEventListener('storage',function(e){if(e.key==='rejson_community_session_v1'||e.key===null)sessionChanged();});
   document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')refreshAll();});
-  window.setInterval(function(){if(document.visibilityState==='visible' && current()) refreshAll();},30000);
+  window.setInterval(function(){if(document.visibilityState==='visible' && current()) refresh();},8000);
+  window.setInterval(function(){if(document.visibilityState==='visible' && current() && window.RJPremium) window.RJPremium.refresh();},30000);
   paint(); refresh();
 })(window, document);
