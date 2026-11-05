@@ -1,8 +1,8 @@
 /* Lokalne promocje w jednej ramce po prawej, bez śledzenia. */
 (function () {
   'use strict';
-  // Reklamy należą do stron serwisu, nigdy do osobnych projektów.
-  if (!/^\/(?:index|404|admin|logowanie|partnerstwo|profil|konto-demo|rejchat|rejfile|rejsejf|rejtools|tablica-pomyslow|uslugi|widzety)?(?:\.html)?\/?$/i.test(location.pathname)) return;
+  // Reklamy należą do stron serwisu z wyjątkiem panelu admina; nigdy do osobnych projektów.
+  if (!/^\/(?:index|404|logowanie|partnerstwo|profil|konto-demo|rejchat|rejfile|rejsejf|rejtools|tablica-pomyslow|uslugi|widzety)?(?:\.html)?\/?$/i.test(location.pathname)) return;
   try { if (window.top !== window.self) return; } catch (e) { return; }
   if (!document.body || document.querySelector('.rj-side-ads')) return;
   var right = document.createElement('aside');

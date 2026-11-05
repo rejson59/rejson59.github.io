@@ -11,7 +11,7 @@ const service=new JSDOM(read('uslugi.html'),{url:'https://rejson59.github.io/usl
 assert.match(service.window.document.querySelector('h1').textContent,/stronę/);
 assert.equal(service.window.document.querySelectorAll('a[href="partnerstwo?temat=strona#propozycja"]').length,2);
 service.window.eval(read('js/uslugi.js'));const menu=service.window.document.getElementById('services-menu');menu.click();assert.equal(menu.getAttribute('aria-expanded'),'true');service.window.document.getElementById('services-theme').click();assert.equal(service.window.document.documentElement.dataset.theme,'light');service.window.close();
-for(const file of ['index.html','partnerstwo.html','uslugi.html','rejchat.html','rejfile.html','tablica-pomyslow.html','widzety.html','404.html','admin.html','logowanie.html','profil.html','rejtools.html','rejsejf.html','konto-demo.html']) {
+for(const file of ['index.html','partnerstwo.html','uslugi.html','rejchat.html','rejfile.html','tablica-pomyslow.html','widzety.html','404.html','logowanie.html','profil.html','rejtools.html','rejsejf.html','konto-demo.html']) {
  const dom=new JSDOM(read(file),{url:'https://rejson59.github.io/'+file,runScripts:'outside-only',virtualConsole:new VirtualConsole()});
  const w=dom.window;w.sessionStorage.setItem('rj_side_ads_dismissed_v1','1');assert.ok(w.document.querySelector('script[src^="/js/side-ads.js"]'),file);assert.ok(w.document.querySelector('link[href^="/css/side-ads.css"]'),file);
  w.eval(read('js/side-ads.js'));w.eval(read('js/side-ads.js'));
