@@ -72,14 +72,18 @@ const server=http.createServer((req,res)=>{
     await page.locator('#channel-general').click();
     assert.equal(await page.locator('#panel-chat').isVisible(),true);
     assert.equal(await page.locator('#channel-general').getAttribute('aria-pressed'),'true');
-    for(const theme of ['dark','light']) for(const width of [320,375,760,800,1024,1440]) {
+    for(const theme of ['dark','light']) for(const width of [320,375,760,800,1024,1200,1201,1366,1400,1401,1440,1920]) {
       await page.evaluate(t=>document.documentElement.dataset.theme=t,theme);
       await page.setViewportSize({width,height:850});
       const result=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth, chat:document.querySelector('.comm-chat').getBoundingClientRect().width, columns:getComputedStyle(document.querySelector('.comm-layout')).gridTemplateColumns.split(' ').length}));
       assert(result.scroll<=width,`${width}: poziome przewijanie ${result.scroll}`);
       assert(result.chat>0);
-      assert.equal(result.columns,width<=760?1:2,`${width}: kolumny`);
+      assert.equal(result.columns,width<=760?1:width<=1400?2:3,`${width}: kolumny`);
     }
+    await page.setViewportSize({width:1440,height:900});
+    const columns=await page.evaluate(()=>{const r=s=>document.querySelector(s).getBoundingClientRect();const left=r('.comm-sidebar'),middle=r('.comm-primary'),right=r('.rejchat-info');return {left:left.right,middleLeft:middle.left,middleRight:middle.right,right:right.left};});
+    assert(columns.left<=columns.middleLeft && columns.middleRight<=columns.right,'nawigacja, czat i społeczność w osobnych kolumnach');
+    await page.locator('#rejchat-rules summary').click();assert.equal(await page.locator('#rejchat-rules').evaluate(el=>el.open),true);
     await context.close();
     const fresh=await browser.newContext({viewport:{width:375,height:850}});
     let registration=null;
