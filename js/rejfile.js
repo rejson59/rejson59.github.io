@@ -86,6 +86,9 @@
   ['dragenter','dragover'].forEach(function(type){zone.addEventListener(type,function(e){e.preventDefault();zone.classList.add('dragging');});});
   ['dragleave','drop'].forEach(function(type){zone.addEventListener(type,function(e){e.preventDefault();zone.classList.remove('dragging');if(type==='drop')updateFile(e.dataTransfer.files && e.dataTransfer.files[0]);});});
   document.querySelectorAll('input[name="mode"]').forEach(function(el){el.addEventListener('change',function(){var account=document.querySelector('input[name="mode"]:checked').value==='account';$('recipient-wrap').hidden=!account;$('recipient').required=account;});});
+  // Przejście z DM tylko podpowiada odbiorcę. Nie przenosi pliku, sekretu ani sesji w URL.
+  var recipientMatch=location.hash.match(/^#odbiorca=([A-Za-z0-9][A-Za-z0-9_.-]{2,23})$/);
+  if(recipientMatch){var accountMode=document.querySelector('input[name="mode"][value="account"]');accountMode.checked=true;accountMode.dispatchEvent(new Event('change'));$('recipient').value=recipientMatch[1];$('recipient-prefill').hidden=false;}
   function progress(label, done, total) { var value=Math.min(100,Math.max(0,Math.round(done/total*100)));$('progress-wrap').hidden=false;$('progress-label').textContent=label;$('progress-percent').textContent=value+'%';$('progress').value=value; }
   function uploadPart(url, blob, done, total) {
     return new Promise(function(resolve,reject){

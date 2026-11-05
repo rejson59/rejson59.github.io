@@ -1347,9 +1347,9 @@
     chatDrafts = { general: "", links: "" }; chatErrors = { general: "", links: "" };
     var field = document.getElementById("chat-input"), status = document.getElementById("chat-send-status");
     if (field) field.value = ""; if (status) status.textContent = "";
-    chatMode = null; var box=document.getElementById("chat-compose-context"); if(box)box.hidden=true;
+    chatMode = null; if(chatPhotoPicker)chatPhotoPicker.clear(); var box=document.getElementById("chat-compose-context"); if(box)box.hidden=true;
   }
-  var chatMessages = Object.create(null), chatSignature = "", chatMode = null, chatDraftBeforeEdit = "";
+  var chatMessages = Object.create(null), chatSignature = "", chatMode = null, chatDraftBeforeEdit = "", chatPhotoPicker = null;
   var chatLastId = null;      /* id ostatniej wiadomości — dociągamy tylko nowe */
   var chatBusy = false;
   var chatTickCount = 0;
@@ -1372,6 +1372,7 @@
           "</div>" +
           (m.reply ? '<div class="rejchat-reply-quote">↩ ' + esc(m.reply.author_name) + ': ' + esc(m.reply.content) + '</div>' : '') +
           '<p class="chat-text">' + linkify(m.content) + "</p>" +
+          (window.RJChatPhotos ? window.RJChatPhotos.button(m.photo) : "") +
           (m.edited_at ? '<span class="rejchat-edited">Edytowano</span>' : '') +
           (session ? '<button class="rejchat-message-action" type="button" data-chat-reply="' + esc(m.id) + '">Odpowiedz</button>' : '') +
           (mine ? '<button class="rejchat-message-action" type="button" data-chat-edit="' + esc(m.id) + '">Edytuj</button>' : '') +
@@ -1425,7 +1426,8 @@
     var btn = document.getElementById("chat-send");
     var input = document.getElementById("chat-input");
     if (!btn || !input) return;
-    btn.disabled = !session || chatBusy || !(input.value || "").trim();
+    btn.disabled = !session || chatBusy || (!(input.value || "").trim() && !(chatPhotoPicker && chatPhotoPicker.file()));
+    if(chatPhotoPicker)chatPhotoPicker.disabled(chatBusy);
     var length = document.getElementById("chat-length");
     if (length) length.textContent = (input.value || "").length + " / 2000 znaków · Enter — wyślij, Shift+Enter — nowa linia";
   }
@@ -1436,6 +1438,7 @@
     var input = document.getElementById("chat-input");
     if (!form || !note) return;
     form.hidden = !session;
+    var picker=document.getElementById("chat-photo-picker"); if(picker)picker.hidden=!session;
     note.hidden = !!session;
     if (input && session) input.placeholder = "Napisz coś jako " + session.username + "…";
     refreshChatSend();
@@ -1510,21 +1513,26 @@
     if (!session || chatBusy) return;
     var input = document.getElementById("chat-input");
     if (!input) return;
-    var content = (input.value || "").trim();
-    if (!content) return;
+    var content = (input.value || "").trim(), file=chatPhotoPicker && chatPhotoPicker.file();
+    if (!content && !file) return;
+    if(file && chatMode && chatMode.kind === "edit"){ document.getElementById("chat-send-status").textContent="Podczas edycji usuń wybrane nowe zdjęcie. Istniejące zdjęcie pozostanie przy wiadomości."; return; }
     chatBusy = true;
     var sendStatus = document.getElementById("chat-send-status");
     chatErrors[chatRoom] = "";
     if (sendStatus) sendStatus.textContent = "";
     refreshChatSend();
-    var sendingToken = session.token, sendingRoom = chatRoom, mode = chatMode;
+    var sendingToken = session.token, sendingRoom = chatRoom, mode = chatMode, sendingGeneration=chatGeneration;
     var action = mode && mode.kind === "edit" ? "rejchat_message_edit" : "rejchat_room_send_v2";
     var payload = mode && mode.kind === "edit" ? {p_token:sendingToken,p_scope:"public",p_id:mode.id,p_content:content} : {p_token:sendingToken,p_room:sendingRoom,p_content:content,p_reply_to:mode && mode.id || null};
-    rpc(action,payload)
-      .then(function (row) {
+    var sending = file ? window.RJChatPhotos.read(file).then(function(data){
+      if(!session || session.token!==sendingToken || chatRoom!==sendingRoom || chatGeneration!==sendingGeneration) throw new Error("Rozmowa została zmieniona. Zdjęcie nie zostało wysłane.");
+      return rpc("rejchat_send_photo",{p_token:sendingToken,p_scope:"public",p_room:sendingRoom,p_thread_id:null,p_content:content,p_reply_to:mode && mode.id || null,p_mime:data.mime,p_data_base64:data.data});
+    }) : rpc(action,payload);
+    sending.then(function (row) {
         if (!session || session.token !== sendingToken) return;
         if (sendingRoom !== chatRoom) { if (chatDrafts[sendingRoom].trim() === content) chatDrafts[sendingRoom] = ""; return; }
         if (input.value.trim() === content) input.value = mode && mode.kind === "edit" ? chatDraftBeforeEdit : "";
+        if(file && chatPhotoPicker.file() === file)chatPhotoPicker.clear();
         if(chatMode === mode) {chatMode=null;document.getElementById("chat-compose-context").hidden=true;}
         if (row && row.id) {
           appendChat([{
@@ -1554,6 +1562,7 @@
 
   function setupChat() {
     if (!chatList()) return;
+    if(window.RJChatPhotos){chatPhotoPicker=window.RJChatPhotos.picker("chat",refreshChatSend);window.RJChatPhotos.attach(chatList(),"public");}
     refreshChatAuth();
     window.addEventListener("rj:room-change", function (event) {
       var next = event.detail === "links" ? "links" : "general";
@@ -1561,9 +1570,10 @@
       var field = document.getElementById("chat-input");
       if (field) { chatDrafts[chatRoom] = chatMode && chatMode.kind === "edit" ? chatDraftBeforeEdit : field.value; field.value = chatDrafts[next]; }
       chatMode=null;document.getElementById("chat-compose-context").hidden=true;
+      if(chatPhotoPicker)chatPhotoPicker.clear();
       chatRoom = next; chatGeneration++; chatLastId = null; chatRenderedSession = null; chatSignature=""; chatMessages=Object.create(null);
       document.getElementById("chat-room-title").textContent = next === "links" ? "Linki" : "Czat ogólny";
-      document.getElementById("chat-room-description").textContent = next === "links" ? "Podziel się odnośnikiem ze społecznością" : "Rozmawiaj ze społecznością";
+      document.getElementById("chat-room-description").textContent = next === "links" ? "Podziel się odnośnikiem lub zdjęciem ze społecznością" : "Rozmawiaj ze społecznością";
       document.getElementById("chat-send-status").textContent = chatErrors[next];
       document.getElementById("chat-search").value = "";
       chatList().innerHTML = '<p class="comm-chat-empty">Ładowanie czatu…</p>';
