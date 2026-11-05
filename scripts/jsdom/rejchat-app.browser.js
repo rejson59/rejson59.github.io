@@ -25,6 +25,7 @@ const server=http.createServer((req,res)=>{
       if(!url.includes('/rest/v1/rpc/'))return route.abort();
       const fn=url.split('/').pop(),body=route.request().postDataJSON()||{};
       let data=[];
+      if(fn==='community_chat_send' && body.p_content==='Odrzucona treść testowa') return route.fulfill({status:400,json:{message:'Wysyłasz zbyt szybko. Odczekaj chwilę i spróbuj ponownie.'}});
       if(fn==='community_username_status') {
         if(body.p_username==='OldName') await new Promise(r=>{oldResponse=r;});
         data={valid:true,taken:body.p_username==='Tester'};
@@ -61,6 +62,10 @@ const server=http.createServer((req,res)=>{
     assert.equal(await page.locator('#chat-auth-dialog').evaluate(el=>el.open),false);
     assert.equal(await page.locator('#auth-pin').inputValue(),'');
     assert.equal(await page.locator('#chat-input').evaluate(el=>document.activeElement===el),true);
+    await page.locator('#chat-input').fill('Odrzucona treść testowa');
+    await page.locator('#chat-send').click();
+    await page.locator('#chat-send-status').getByText('Wysyłasz zbyt szybko.', {exact:false}).waitFor();
+    assert.equal(await page.locator('#chat-input').inputValue(),'Odrzucona treść testowa');
     await page.locator('#chat-input').fill('Cześć!');
     await page.locator('#chat-send').click();
     await page.locator('.chat-msg.is-mine').waitFor({state:'visible'});
@@ -93,6 +98,7 @@ const server=http.createServer((req,res)=>{
       if(!url.includes('/rest/v1/rpc/')) return route.abort();
       const fn=url.split('/').pop(),body=route.request().postDataJSON()||{};
       let data=[];
+      if(fn==='community_chat_send' && body.p_content==='Odrzucona treść testowa') return route.fulfill({status:400,json:{message:'Wysyłasz zbyt szybko. Odczekaj chwilę i spróbuj ponownie.'}});
       if(fn==='community_username_status') data={valid:true,taken:false};
       if(fn==='community_register') {registration=body;data={username:body.p_username,token:'abcdef0123456789abcdef0123456789'};}
       return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(data)}).catch(()=>{});

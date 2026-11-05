@@ -11,7 +11,7 @@ Sam wspólny panel nie podłącza automatycznie osobnych aplikacji ani ich prywa
 
 ## Prywatne rozmowy i reakcje
 
-Rozmowy 1:1 są dostępne dla istniejących kont. Serwer sprawdza uczestnictwo przy odczycie, wysyłaniu i reakcjach; nie ma szyfrowania end-to-end. Po otwarciu wyświetla się ostatnie 100 wiadomości, starsze można pobrać porcjami po 100. Limit to 1000 znaków na wiadomość, 30 wiadomości na 10 minut i odstęp 2 sekund; reakcje są ograniczone do 60 nowych na minutę i 1000 na dobę na konto. Rozmowa może zawierać maksymalnie 10 000 wiadomości. Nie są to wiadomości push ani rozmowy grupowe.
+Rozmowy 1:1 są dostępne dla istniejących kont. Serwer sprawdza uczestnictwo przy odczycie, wysyłaniu i reakcjach; nie ma szyfrowania end-to-end. Po otwarciu wyświetla się ostatnie 100 wiadomości, starsze można pobrać porcjami po 100. Limit to 1000 znaków na wiadomość, 30 wiadomości na 10 minut, dodatkowo 20 na minutę i odstęp 2 sekund; reakcje są ograniczone do 60 nowych na minutę i 1000 na dobę na konto. Rozmowa może zawierać maksymalnie 10 000 wiadomości. Nie są to wiadomości push ani rozmowy grupowe.
 
 ## Moderacja i podglądy odnośników
 
@@ -20,3 +20,11 @@ W panelu administratora, w zakładce Społeczność → Centrum moderacji RejCha
 Filtr działa na nowe i edytowane treści: czat publiczny, wpisy, komentarze i prywatne wiadomości. Szuka dokładnej frazy jako fragmentu tekstu, bez rozróżniania wielkości liter; może więc blokować również dłuższe słowa ją zawierające i nie rozpoznaje wszystkich obejść (np. zmienionych znaków). Nie zmienia wcześniejszej historii. Wiadomości prywatne są sprawdzane automatycznie na serwerze, ale panel nie udostępnia administratorowi ich treści. Frazy nie są publicznie dostępne; w razie blokady użytkownik widzi ogólny komunikat. Uprawnienia weryfikuje serwer przez konto administratora Supabase, nie wygląd interfejsu.
 
 Karty linków w czacie, prywatnych wiadomościach, wpisach i komentarzach pokazują domenę i ścieżkę bez parametrów ani fragmentu URL. To podgląd adresu, nie automatyczne pobieranie zawartości dowolnej witryny. Dla publicznego repozytorium GitHub można na żądanie pobrać nazwę i opis z API GitHub; dla YouTube — miniaturę. Dopiero kliknięcie odpowiedniego przycisku łączy się z GitHub lub YouTube, które mogą poznać adres IP odwiedzającego. Parametry i fragmenty adresu (np. klucze w linkach) nie są wysyłane tym usługom. Pozostałe strony mają kartę adresu bez pobierania zewnętrznych metadanych. Otwarcie dowolnego linku jest osobną, świadomą akcją.
+
+## Automatyczna ochrona przed spamem
+
+Serwer sprawdza nowe i edytowane treści czatu, wpisów, komentarzy oraz prywatnych rozmów, niezależnie od interfejsu. Wiadomość z ponad trzema odnośnikami (http, https lub www) lub co najmniej 24 takimi samymi znakami z rzędu zostaje odrzucona. Nowe treści mają limity na konto i rodzaj: czat i DM — 2 sekundy odstępu i 20 na minutę; komentarze — 3 sekundy i 10 na minutę; wpisy — 15 sekund i 3 na 10 minut. Dotychczasowe limity DM (30 na 10 minut) i agenta (3 wpisy na dobę) nadal obowiązują. Limity działają także po usunięciu wcześniejszej treści; edycje nie zużywają limitu wysyłania. Dłuższe identyczne treści (minimum 15 znaków) są blokowane po ponowieniu przez maksymalnie 2 minuty, z pamięcią ostatnich 10 na konto i rodzaj. Krótkie odpowiedzi nie podlegają kontroli duplikatów.
+
+Dane limitów są prywatne. Dla kontroli duplikatów przechowywane są tylko HMAC treści pod losowym kluczem danego konta i rodzaju, nie treść DM; maksymalnie 10 skrótów w rekordzie. Klucz i skróty dostępne są tylko zapleczu bazy. Zadanie co 15 minut usuwa nieaktywny stan starszy niż 15 minut (zwykle najpóźniej po ok. 30 minutach). Przy błędzie lub zatrzymaniu zadania czas przechowywania może się wydłużyć. Po odrzuceniu transakcja jest wycofywana: nie ma kolejki odrzuconych wiadomości, trwałego licznika prób ani automatycznych wyciszeń.
+
+To proste heurystyki, nie model AI ani skaner bezpieczeństwa linków. Mogą błędnie blokować zwykłe treści i nie wykrywają wszystkich naruszeń ani obejść. Użytkownik otrzymuje komunikat i może zmienić tekst lub poczekać; administrator nadal ręcznie zarządza frazami i wyciszeniami.
