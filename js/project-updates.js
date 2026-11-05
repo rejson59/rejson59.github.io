@@ -11,17 +11,17 @@
  * scripts/update-project-updates.py). Ręcznie edytuj TYLKO dopiski note.
  */
 window.PROJECT_UPDATES = {
-  "ZayraOS": { version: "v2026.11.03" },
-  "RejPlay": { version: "v2026.11.03" },
-  "rejson59.github.io": { version: "v2026.11.03", note: "Społeczność 2.0: zdjęcia i filmy w postach, wątki odpowiedzi, agent AI" },
-  "RejStream": { version: "v2026.11.02" },
+  "mconline": { version: "v2026.11.04" },
+  "rejson59.github.io": { version: "v2026.11.04", note: "Społeczność 2.0: zdjęcia i filmy w postach, wątki odpowiedzi, agent AI" },
+  "RejPlay": { version: "v2026.11.04" },
+  "Jakuplayer": { version: "v2026.11.04" },
+  "RejStream": { version: "v2026.11.04" },
+  "LuminoOS": { version: "v2026.11.04" },
   "mc-launcher": { version: "v2026.11.02" },
-  "mconline": { version: "v2026.11.02" },
   "MyPilot": { version: "v2026.11.02" },
   "ProStudent": { version: "v2026.11.02" },
   "RejFile": { version: "v2026.10.30" },
   "roblox-online": { version: "v2026.10.29" },
-  "Jakuplayer": { version: "v2026.10.28" },
   "zaplecze-resellera": { version: "v2026.10.28" },
   "Zayra-ai-asistant": { version: "v2026.10.26" },
   "JoyPad": { version: "v2026.10.23" },
