@@ -6,7 +6,7 @@
   if(!tabs[0]||!tabs[1])return;
   function activate(index,focus,updateHash){
     tabs.forEach(function(tab,i){tab.setAttribute('aria-selected',String(i===index));tab.tabIndex=i===index?0:-1;panels[i].hidden=i!==index;});
-    var channel=document.getElementById('channel-general');if(channel){channel.classList.toggle('is-active',index===0);channel.setAttribute('aria-pressed',String(index===0));}
+    var channel=document.getElementById('channel-general'), privateView=document.getElementById('chat-private-view'), priv=document.getElementById('channel-private'), isPrivate=privateView&&!privateView.hidden;if(channel){channel.classList.toggle('is-active',index===0&&!isPrivate);channel.setAttribute('aria-pressed',String(index===0&&!isPrivate));}if(priv){priv.classList.toggle('is-active',index===0&&isPrivate);priv.setAttribute('aria-pressed',String(index===0&&isPrivate));}
     if(focus)tabs[index].focus();
     if(updateHash && history.replaceState){history.replaceState(null,'',location.pathname+location.search+(index?'#wpisy':'#czat'));window.dispatchEvent(new Event('rj:tab-change'));}
   }
@@ -14,10 +14,10 @@
     tab.addEventListener('click',function(){activate(i,false,true);});
     tab.addEventListener('keydown',function(e){if(e.key==='ArrowRight'||e.key==='ArrowLeft'||e.key==='Home'||e.key==='End'){e.preventDefault();activate(e.key==='Home'?0:e.key==='End'?1:1-i,true,true);}});
   });
-  function hash(){activate(location.hash==='#wpisy'||/^#powiadomienie=[0-9a-f-]{36}$/i.test(location.hash)?1:0,false,false);}
+  function hash(){if(location.hash==='#czat'){document.getElementById('chat-private-view').hidden=true;document.getElementById('chat-public-view').hidden=false;}activate(location.hash==='#wpisy'||/^#powiadomienie=[0-9a-f-]{36}$/i.test(location.hash)?1:0,false,false);}
   window.addEventListener('hashchange',hash);hash();
   var channel=document.getElementById('channel-general');
-  if(channel)channel.addEventListener('click',function(){activate(0,false,true);});
+  if(channel)channel.addEventListener('click',function(){document.getElementById('chat-private-view').hidden=true;document.getElementById('chat-public-view').hidden=false;activate(0,false,true);window.dispatchEvent(new Event('rj:dm-hide'));});
   var dialog=document.getElementById('chat-auth-dialog'),join=document.getElementById('chat-join'),fallback=document.getElementById('chat-join-fallback'),close=document.getElementById('chat-auth-close');
   if(dialog && join && typeof dialog.showModal==='function'){
     join.hidden=false;if(fallback)fallback.hidden=true;
