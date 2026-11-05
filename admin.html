@@ -25,7 +25,7 @@
   <link rel="stylesheet" href="rejson-widgets/css/studio.css?v=3">
   <link rel="stylesheet" href="rejson-widgets/css/admin.css?v=2026-10-31">
   <link rel="stylesheet" href="css/admin-panel.css?v=2026-10-31-overview">
-  <link rel="stylesheet" href="css/rejchat-moderation.css?v=1">
+  <link rel="stylesheet" href="css/rejchat-moderation.css?v=2">
   <link rel="stylesheet" href="css/admin-partner.css?v=1">
   <link rel="stylesheet" href="/css/liquid.css?v=2026-10-30-2">
   <link rel="stylesheet" href="/css/rejchat.css?v=1">
@@ -371,7 +371,7 @@
       </div>
 
       <details class="adm-card rcmod" id="rcmod-panel">
-        <summary><span class="rcmod-icon" aria-hidden="true">✦</span><span><strong>Centrum moderacji RejChat</strong><small>Frazy, blokady pisania i wiadomości publiczne</small></span></summary>
+        <summary><span class="rcmod-icon" aria-hidden="true">✦</span><span><strong>Centrum moderacji RejChat</strong><small>Wyciszenia, filtry i wiadomości publiczne</small></span></summary>
         <div class="rcmod-content">
           <p class="rcmod-intro">Zarządzaj nowymi treściami bez usuwania kont. Filtr obejmuje czat, wpisy, komentarze i wiadomości prywatne. Panel nie pokazuje treści prywatnych rozmów.</p>
           <p class="rcmod-status" id="rcmod-status" role="status" aria-live="polite"></p>
@@ -380,8 +380,13 @@
               <form id="rcmod-phrase-form" class="rcmod-form"><label for="rcmod-phrase">Słowo lub fraza</label><div><input id="rcmod-phrase" maxlength="80" minlength="2" required placeholder="np. niechciana fraza"><button class="btn btn-primary btn-sm" type="submit">Dodaj filtr</button></div></form>
               <div id="rcmod-phrases" class="rcmod-list"></div>
             </section>
-            <section class="rcmod-section"><h3>Blokada pisania</h3><p>Blokuje nowe wiadomości, wpisy i komentarze, także w prywatnych rozmowach; nie usuwa konta ani historii.</p>
-              <form id="rcmod-block-form" class="rcmod-form"><label for="rcmod-user">Nazwa konta</label><div><input id="rcmod-user" maxlength="24" required placeholder="Nazwa użytkownika"><select id="rcmod-duration" aria-label="Czas blokady"><option value="1">1 godzina</option><option value="24">24 godziny</option><option value="168">7 dni</option><option value="-1">Bez końca</option><option value="0">Zdejmij blokadę</option></select><button class="btn btn-primary btn-sm" type="submit">Zastosuj</button></div></form>
+            <section class="rcmod-section rcmod-mute"><h3>Wyciszenie · mute</h3><p>Wstrzymuje pisanie na czacie, we wpisach, komentarzach i prywatnych rozmowach. Czasowe wyciszenie wygasa automatycznie; konto i historia zostają.</p>
+              <form id="rcmod-block-form" class="rcmod-form rcmod-mute-form">
+                <label for="rcmod-user">Nazwa konta</label><input id="rcmod-user" maxlength="24" required placeholder="Nazwa użytkownika">
+                <label for="rcmod-duration">Czas wyciszenia</label><select id="rcmod-duration"><option value="5">5 minut</option><option value="15" selected>15 minut</option><option value="30">30 minut</option><option value="60">1 godzina</option><option value="1440">24 godziny</option><option value="10080">7 dni</option><option value="-1">Bez końca</option><option value="0">Zdejmij wyciszenie</option></select>
+                <label for="rcmod-reason">Powód (opcjonalny, widoczny dla użytkownika)</label><input id="rcmod-reason" maxlength="200" placeholder="np. spam lub obrażanie innych">
+                <button class="btn btn-primary btn-sm" type="submit">Zastosuj wyciszenie</button>
+              </form>
               <div id="rcmod-blocks" class="rcmod-list"></div>
             </section>
           </div>
@@ -630,7 +635,7 @@
   <script src="js/error-reporter.js?v=1" defer></script>
   <script src="js/admin-errors.js?v=1"></script>
   <script src="js/admin-partner.js?v=1"></script>
-  <script src="js/admin-rejchat-moderation.js?v=1"></script>
+  <script src="js/admin-rejchat-moderation.js?v=2"></script>
   <script src="js/admin-panel.js?v=2026-11-05-moderation"></script>
   <script defer src="/js/media-capture.js?v=2"></script>
   <script defer src="/rejson-widgets/widget.js?v=12" data-project="rejson59.github.io"></script>

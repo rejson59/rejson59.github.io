@@ -243,7 +243,7 @@
   <script defer src="/js/liquid-nav.js?v=1"></script>
   <link rel="stylesheet" href="/css/liquid.css?v=2026-10-30-2">
   <link rel="stylesheet" href="/css/responsive.css?v=1">
-  <link rel="stylesheet" href="/css/rejchat.css?v=7">
+  <link rel="stylesheet" href="/css/rejchat.css?v=8">
   <link rel="stylesheet" href="/css/side-ads.css?v=5">
   <script defer src="/js/side-ads.js?v=6"></script>
   <link rel="stylesheet" href="/css/mobile-ads.css?v=5">
@@ -513,8 +513,25 @@
       <p class="rejchat-brow">✦ TWOJE MIEJSCE NA ROZMOWY</p>
       <h1 class="comm-title"><svg class="page-mark" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#people"></use></svg>RejChat<span class="rejchat-title-dot">.</span></h1>
       <p class="comm-lead">Wpadnij pogadać, podziel się pomysłem i poznaj innych.</p>
+      <details class="rejchat-rules" id="rejchat-rules">
+        <summary><span aria-hidden="true">✦</span><span><strong>Zasady rozmowy</strong><small>Kilka rzeczy, o których warto pamiętać</small></span></summary>
+        <div class="rejchat-rules-body">
+          <h2>Dbajmy o dobre miejsce do rozmów</h2>
+          <ol>
+            <li>Traktuj innych z szacunkiem. Bez gróźb, nękania, obrażania i dyskryminacji.</li>
+            <li>Nie spamuj ani nie publikuj oszustw, niebezpiecznych linków i niechcianych reklam.</li>
+            <li>Szanuj prywatność: nie publikuj cudzych danych ani haseł; nie wysyłaj też własnych poufnych informacji.</li>
+            <li>Nie udostępniaj treści nielegalnych, przemocy ani materiałów seksualnych z udziałem osób niepełnoletnich.</li>
+            <li>Pisz na temat i szanuj prawa autorów. Spory rozwiązuj spokojnie.</li>
+          </ol>
+          <p>Zasady dotyczą czatu, wpisów, komentarzy i prywatnych rozmów. Administrator może usunąć publiczną treść lub czasowo zablokować pisanie. Filtr fraz sprawdza również wiadomości prywatne; panel moderacji nie wyświetla ich treści.</p>
+        </div>
+      </details>
     </section>
 
+    <section class="rejchat-mute-notice" id="rejchat-mute-notice" role="status" aria-live="polite" hidden>
+      <span class="rejchat-mute-icon" aria-hidden="true">⏸</span><div><strong>Masz wyciszenie w RejChat</strong><p id="rejchat-mute-detail"></p><p id="rejchat-mute-reason" hidden></p></div>
+    </section>
     <div class="comm-layout">
       <aside class="comm-sidebar" aria-label="Nawigacja i użytkownicy online">
         <div class="chat-navigation"><div class="chat-navigation-heading"><span class="chat-navigation-mark" aria-hidden="true">✦</span><div><strong>Twoja przestrzeń</strong><small>Rozmowy i wpisy</small></div></div>
@@ -684,6 +701,7 @@
   <script defer src="/js/rejchat-reactions.js?v=1"></script>
   <script defer src="/js/rejchat-private.js?v=1"></script>
   <script defer src="/js/rejchat-link-preview.js?v=1"></script>
+  <script defer src="/js/rejchat-mute.js?v=1"></script>
   <script defer src="/js/rejchat-notifications.js?v=4"></script><script defer src="/js/premium.js?v=9"></script>
   <script defer src="/js/media-capture.js?v=2"></script>
   <script defer src="/rejson-widgets/widget.js?v=12" data-project="rejson59.github.io"></script>

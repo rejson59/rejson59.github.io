@@ -1,0 +1,21 @@
+/* Test przeglądarkowy bez analizy screenshotów; statusy backendu są mockowane. */
+const assert=require('node:assert/strict'),http=require('node:http'),fs=require('node:fs'),path=require('node:path'),{chromium}=require('playwright-core');
+const root=path.resolve(__dirname,'../..');if(!process.env.CHROME_BIN)throw Error('Set CHROME_BIN');
+const server=http.createServer((req,res)=>{const f=path.resolve(root,'.'+new URL(req.url,'http://localhost').pathname);if(!f.startsWith(root+path.sep)||!fs.existsSync(f)||!fs.statSync(f).isFile())return res.writeHead(404).end();res.writeHead(200,{'content-type':({'.html':'text/html; charset=utf-8','.css':'text/css','.js':'text/javascript','.svg':'image/svg+xml'})[path.extname(f)]||'application/octet-stream'});fs.createReadStream(f).pipe(res);});
+(async()=>{await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin=`http://127.0.0.1:${server.address().port}`,browser=await chromium.launch({executablePath:process.env.CHROME_BIN,headless:true,args:['--no-sandbox','--disable-webgl']});let muted=true,hold=false,release=null;try{
+ const context=await browser.newContext({viewport:{width:375,height:850},serviceWorkers:'block'});await context.addInitScript(()=>localStorage.setItem('rejson_community_session_v1',JSON.stringify({token:'a'.repeat(32),username:'Ala'})));
+ await context.route('**/*',async route=>{const url=route.request().url();if(url.startsWith(origin+'/'))return route.continue();if(!url.includes('/rest/v1/rpc/'))return route.abort();const name=url.split('/').pop(),body=route.request().postDataJSON()||{};let data=[];
+ if(name==='community_whoami')data={username:body.p_token?.startsWith('a')?'Ala':'Bob'};
+ if(name==='rejchat_notifications_list'||name==='rejchat_reaction_inbox')data={items:[],unread:0};
+ if(name==='rejchat_my_mute'){const result=body.p_token.startsWith('a')&&muted?{muted:true,until_at:'2030-11-05T12:00:00Z',reason:'<img src=x> spam'}:{muted:false};if(hold)await new Promise(resolve=>{release=resolve;});data=result;}
+ return route.fulfill({status:200,json:data}).catch(()=>{});});
+ const page=await context.newPage();await page.goto(origin+'/rejchat.html',{waitUntil:'domcontentloaded'});await page.evaluate(()=>document.querySelector('#rj-page-loader')?.remove());
+ await page.locator('#rejchat-mute-notice').waitFor({state:'visible'});assert.match(await page.locator('#rejchat-mute-detail').innerText(),/do .*wygaśnie automatycznie/);assert.match(await page.locator('#rejchat-mute-reason').innerText(),/<img src=x> spam/);assert.equal(await page.locator('#rejchat-mute-notice img').count(),0);
+ await page.locator('#rejchat-rules summary').click();assert.match(await page.locator('#rejchat-rules').innerText(),/szacunkiem/i);assert.match(await page.locator('#rejchat-rules').innerText(),/prywatnych rozmów/i);
+ for(const theme of ['dark','light']){await page.evaluate(theme=>document.documentElement.dataset.theme=theme,theme);for(const width of [320,375,760,1440]){await page.setViewportSize({width,height:850});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),theme+' '+width);}}
+ // Opóźniony status starego konta nie może pokazać się po przełączeniu.
+ hold=true;await page.evaluate(()=>document.dispatchEvent(new Event('visibilitychange')));await page.waitForFunction(()=>true);await new Promise(r=>setTimeout(r,200));assert(release,'odczyt w trakcie');const releaseOld=release;hold=false;
+ await page.evaluate(()=>{localStorage.setItem('rejson_community_session_v1',JSON.stringify({token:'b'.repeat(32),username:'Bob'}));window.dispatchEvent(new Event('rj:session-change'));});await page.locator('#rejchat-mute-notice').waitFor({state:'hidden'});releaseOld();await page.waitForTimeout(200);assert.equal(await page.locator('#rejchat-mute-notice').isVisible(),false);
+ muted=false;await page.evaluate(()=>document.dispatchEvent(new Event('visibilitychange')));await page.waitForTimeout(100);assert.equal(await page.locator('#rejchat-mute-notice').isVisible(),false);
+ await context.close();console.log('PASS: zasady, czas i powód mute, izolacja sesji, opóźnione odpowiedzi, motywy i układ (mock)');
+ }finally{await browser.close();server.close();}})().catch(e=>{console.error(e);server.close();process.exitCode=1});
