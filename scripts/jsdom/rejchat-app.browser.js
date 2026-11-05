@@ -25,17 +25,17 @@ const server=http.createServer((req,res)=>{
       if(!url.includes('/rest/v1/rpc/'))return route.abort();
       const fn=url.split('/').pop(),body=route.request().postDataJSON()||{};
       let data=[];
-      if(fn==='community_chat_send' && body.p_content==='Odrzucona treść testowa') return route.fulfill({status:400,json:{message:'Wysyłasz zbyt szybko. Odczekaj chwilę i spróbuj ponownie.'}});
+      if(fn==='rejchat_room_send_v2' && body.p_content==='Odrzucona treść testowa') return route.fulfill({status:400,json:{message:'Wysyłasz zbyt szybko. Odczekaj chwilę i spróbuj ponownie.'}});
       if(fn==='community_username_status') {
         if(body.p_username==='OldName') await new Promise(r=>{oldResponse=r;});
         data={valid:true,taken:body.p_username==='Tester'};
       } else if(fn==='community_login'||fn==='community_register') {
         loginName=body.p_username; data={username:body.p_username,token:'0123456789abcdef0123456789abcdef'};
       } else if(fn==='community_whoami') data={username:'Tester'};
-      else if(fn==='community_chat_send') {data={id:1,author_name:'Tester',content:body.p_content,created_at:new Date().toISOString()}; chatRows.push(data);}
-      else if(fn==='community_chat_list') data=body.p_after_id ? chatRows.filter(r=>r.id>body.p_after_id) : chatRows;
-      else if(fn==='rejchat_room_list') data=body.p_after_id ? [] : linkRows;
-      else if(fn==='rejchat_link_send') {
+      else if(fn==='rejchat_room_send_v2' && body.p_room==='general') {data={id:1,author_name:'Tester',content:body.p_content,created_at:new Date().toISOString()}; chatRows.push(data);}
+      else if(fn==='rejchat_room_list_v2' && body.p_room==='general') data=body.p_after_id ? chatRows.filter(r=>r.id>body.p_after_id) : chatRows;
+      else if(fn==='rejchat_room_list_v2' && body.p_room==='links') data=body.p_after_id ? [] : linkRows;
+      else if(fn==='rejchat_room_send_v2' && body.p_room==='links') {
         if(!/https?:\/\//.test(body.p_content)) return route.fulfill({status:400,json:{message:'Dodaj do wiadomości link.'}});
         data={id:2,author_name:'Tester',content:body.p_content,created_at:new Date().toISOString()}; linkRows.push(data);
       }
@@ -118,7 +118,7 @@ const server=http.createServer((req,res)=>{
       if(!url.includes('/rest/v1/rpc/')) return route.abort();
       const fn=url.split('/').pop(),body=route.request().postDataJSON()||{};
       let data=[];
-      if(fn==='community_chat_send' && body.p_content==='Odrzucona treść testowa') return route.fulfill({status:400,json:{message:'Wysyłasz zbyt szybko. Odczekaj chwilę i spróbuj ponownie.'}});
+      if(fn==='rejchat_room_send_v2' && body.p_content==='Odrzucona treść testowa') return route.fulfill({status:400,json:{message:'Wysyłasz zbyt szybko. Odczekaj chwilę i spróbuj ponownie.'}});
       if(fn==='community_username_status') data={valid:true,taken:false};
       if(fn==='community_register') {registration=body;data={username:body.p_username,token:'abcdef0123456789abcdef0123456789'};}
       return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(data)}).catch(()=>{});

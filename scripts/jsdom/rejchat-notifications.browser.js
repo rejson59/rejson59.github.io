@@ -15,8 +15,8 @@ const server=http.createServer((req,res)=>{const file=path.resolve(root,'.'+new 
    const fn=u.split('/').pop(),b=route.request().postDataJSON()||{};requests.push({fn,b});let d=[];
    if(fn==='community_whoami')d={username:b.p_token[0]==='a'?'Tester':'Other'};
    if(fn==='community_list_posts')d={posts:[],total:0,available_tags:[]};
-   if(fn==='community_chat_list') {if(!releaseChat){await new Promise(r=>releaseChat=r);d=[];}else d=chat.slice();}
-   if(fn==='community_chat_send'){d={id:'msg-new',author_name:'Tester',content:b.p_content,created_at:new Date().toISOString()};chat.push(d);}
+   if(fn==='rejchat_room_list_v2') {if(!releaseChat){await new Promise(r=>releaseChat=r);d=[];}else d=chat.slice();}
+   if(fn==='rejchat_room_send_v2'){d={id:'msg-new',author_name:'Tester',content:b.p_content,created_at:new Date().toISOString()};chat.push(d);}
    if(fn==='rejchat_notifications_list'){
     if(failed)return route.fulfill({status:503,contentType:'application/json',body:'{"message":"offline"}'});
     if(b.p_token[0]==='a'&&holdA)await new Promise(r=>releaseA=r);

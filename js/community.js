@@ -1347,7 +1347,9 @@
     chatDrafts = { general: "", links: "" }; chatErrors = { general: "", links: "" };
     var field = document.getElementById("chat-input"), status = document.getElementById("chat-send-status");
     if (field) field.value = ""; if (status) status.textContent = "";
+    chatMode = null; var box=document.getElementById("chat-compose-context"); if(box)box.hidden=true;
   }
+  var chatMessages = Object.create(null), chatSignature = "", chatMode = null, chatDraftBeforeEdit = "";
   var chatLastId = null;      /* id ostatniej wiadomości — dociągamy tylko nowe */
   var chatBusy = false;
   var chatTickCount = 0;
@@ -1368,7 +1370,11 @@
               ? '<button class="chat-delete" type="button" data-chat-delete="' + esc(m.id) + '" title="Usuń wiadomość" aria-label="Usuń wiadomość">✕</button>'
               : "") +
           "</div>" +
+          (m.reply ? '<div class="rejchat-reply-quote">↩ ' + esc(m.reply.author_name) + ': ' + esc(m.reply.content) + '</div>' : '') +
           '<p class="chat-text">' + linkify(m.content) + "</p>" +
+          (m.edited_at ? '<span class="rejchat-edited">Edytowano</span>' : '') +
+          (session ? '<button class="rejchat-message-action" type="button" data-chat-reply="' + esc(m.id) + '">Odpowiedz</button>' : '') +
+          (mine ? '<button class="rejchat-message-action" type="button" data-chat-edit="' + esc(m.id) + '">Edytuj</button>' : '') +
         "</div>" +
       "</div>"
     );
@@ -1393,6 +1399,7 @@
     var box = chatList();
     if (!box) return;
     chatRenderedSession = session ? session.token : "";
+    chatMessages = Object.create(null); rows.forEach(function(m){chatMessages[String(m.id)]=m;}); chatSignature=JSON.stringify(rows);
     if (!rows.length) {
       box.innerHTML = '<p class="comm-chat-empty">Pusto tu… bądź pierwszą osobą na czacie! 👋</p>';
       return;
@@ -1408,6 +1415,7 @@
     if (empty) box.innerHTML = "";
     var existing = Array.prototype.map.call(box.querySelectorAll('[data-chat-id]'), function (el) { return el.getAttribute('data-chat-id'); });
     rows = rows.filter(function (row) { return existing.indexOf(String(row.id)) < 0; });
+    rows.forEach(function(m){chatMessages[String(m.id)]=m;}); chatSignature="";
     box.insertAdjacentHTML("beforeend", rows.map(chatMsgHTML).join(""));
     hydrateProfiles(box);
     while (box.children.length > CHAT_MAX_SHOWN) box.removeChild(box.firstChild);
@@ -1419,7 +1427,7 @@
     if (!btn || !input) return;
     btn.disabled = !session || chatBusy || !(input.value || "").trim();
     var length = document.getElementById("chat-length");
-    if (length) length.textContent = (input.value || "").length + " / 2000 znaków";
+    if (length) length.textContent = (input.value || "").length + " / 2000 znaków · Enter — wyślij, Shift+Enter — nowa linia";
   }
 
   function refreshChatAuth() {
@@ -1444,14 +1452,14 @@
   function loadChatFull() {
     var box = chatList();
     var generation = chatGeneration;
-    return rpc(chatRoom === "links" ? "rejchat_room_list" : "community_chat_list", chatRoom === "links" ? { p_room: "links", p_after_id: null, p_limit: 50 } : { p_after_id: null, p_limit: 50 })
+    return rpc("rejchat_room_list_v2", { p_room:chatRoom, p_after_id:null, p_limit:50 })
       .then(function (rows) {
         if (!Array.isArray(rows) || generation !== chatGeneration) return;
         chatConnection(true);
         var stick = chatNearBottom(), prevTop = box ? box.scrollTop : 0;
         var existing = box ? Array.prototype.map.call(box.querySelectorAll("[data-chat-id]"), function (el) { return el.getAttribute("data-chat-id"); }) : [];
         var added = existing.length && rows.some(function (row) { return existing.indexOf(String(row.id)) < 0; });
-        if (chatRenderedSession !== (session ? session.token : "") || existing.join("|") !== rows.map(function (row) { return String(row.id); }).join("|") || (!rows.length && box && (!box.querySelector(".comm-chat-empty") || box.querySelector(".comm-chat-empty").textContent.indexOf("Pusto tu") !== 0))) renderChatAll(rows);
+        if (chatRenderedSession !== (session ? session.token : "") || chatSignature !== JSON.stringify(rows) || (!rows.length && box && (!box.querySelector(".comm-chat-empty") || box.querySelector(".comm-chat-empty").textContent.indexOf("Pusto tu") !== 0))) renderChatAll(rows);
         chatLastId = rows.length ? rows[rows.length - 1].id : null;
         if (stick) chatScrollBottom(); else if (box) { box.scrollTop = prevTop; if (added) showChatJump(); }
       })
@@ -1464,7 +1472,7 @@
 
   function loadChatIncremental() {
     var generation = chatGeneration;
-    return rpc(chatRoom === "links" ? "rejchat_room_list" : "community_chat_list", chatRoom === "links" ? { p_room: "links", p_after_id: chatLastId, p_limit: 50 } : { p_after_id: chatLastId, p_limit: 50 })
+    return rpc("rejchat_room_list_v2", { p_room:chatRoom, p_after_id:chatLastId, p_limit:50 })
       .then(function (rows) {
         if (!Array.isArray(rows) || generation !== chatGeneration) return;
         chatConnection(true);
@@ -1509,12 +1517,15 @@
     chatErrors[chatRoom] = "";
     if (sendStatus) sendStatus.textContent = "";
     refreshChatSend();
-    var sendingToken = session.token, sendingRoom = chatRoom;
-    rpc(sendingRoom === "links" ? "rejchat_link_send" : "community_chat_send", { p_token: sendingToken, p_content: content })
+    var sendingToken = session.token, sendingRoom = chatRoom, mode = chatMode;
+    var action = mode && mode.kind === "edit" ? "rejchat_message_edit" : "rejchat_room_send_v2";
+    var payload = mode && mode.kind === "edit" ? {p_token:sendingToken,p_scope:"public",p_id:mode.id,p_content:content} : {p_token:sendingToken,p_room:sendingRoom,p_content:content,p_reply_to:mode && mode.id || null};
+    rpc(action,payload)
       .then(function (row) {
         if (!session || session.token !== sendingToken) return;
         if (sendingRoom !== chatRoom) { if (chatDrafts[sendingRoom].trim() === content) chatDrafts[sendingRoom] = ""; return; }
-        if (input.value.trim() === content) input.value = "";
+        if (input.value.trim() === content) input.value = mode && mode.kind === "edit" ? chatDraftBeforeEdit : "";
+        if(chatMode === mode) {chatMode=null;document.getElementById("chat-compose-context").hidden=true;}
         if (row && row.id) {
           appendChat([{
             id: row.id,
@@ -1548,8 +1559,9 @@
       var next = event.detail === "links" ? "links" : "general";
       if (next === chatRoom) return;
       var field = document.getElementById("chat-input");
-      if (field) { chatDrafts[chatRoom] = field.value; field.value = chatDrafts[next]; }
-      chatRoom = next; chatGeneration++; chatLastId = null; chatRenderedSession = null;
+      if (field) { chatDrafts[chatRoom] = chatMode && chatMode.kind === "edit" ? chatDraftBeforeEdit : field.value; field.value = chatDrafts[next]; }
+      chatMode=null;document.getElementById("chat-compose-context").hidden=true;
+      chatRoom = next; chatGeneration++; chatLastId = null; chatRenderedSession = null; chatSignature=""; chatMessages=Object.create(null);
       document.getElementById("chat-room-title").textContent = next === "links" ? "Linki" : "Czat ogólny";
       document.getElementById("chat-room-description").textContent = next === "links" ? "Podziel się odnośnikiem ze społecznością" : "Rozmawiaj ze społecznością";
       document.getElementById("chat-send-status").textContent = chatErrors[next];
@@ -1567,10 +1579,24 @@
     if (form) form.addEventListener("submit", handleChatSubmit);
 
     var input = document.getElementById("chat-input");
-    if (input) input.addEventListener("input", refreshChatSend);
+    if (input) { input.addEventListener("input", refreshChatSend); input.addEventListener("keydown", function(e){if(e.key==="Enter" && !e.shiftKey && !e.isComposing && !e.ctrlKey && !e.altKey && !e.metaKey){e.preventDefault();if(form && !document.getElementById("chat-send").disabled)form.requestSubmit();}}); }
 
+    document.getElementById("chat-compose-cancel").addEventListener("click", function(){
+      if(chatMode && chatMode.kind === "edit") input.value=chatDraftBeforeEdit;
+      chatMode=null;document.getElementById("chat-compose-context").hidden=true;refreshChatSend();input.focus();
+    });
     var list = chatList();
     list.addEventListener("click", function (ev) {
+      var action=ev.target.closest("[data-chat-reply], [data-chat-edit]");
+      if(action && session && !chatBusy){
+        var edit=action.hasAttribute("data-chat-edit"),id=action.getAttribute(edit ? "data-chat-edit" : "data-chat-reply"),m=chatMessages[id];
+        if(!m)return;
+        if(chatMode && chatMode.kind === "edit")input.value=chatDraftBeforeEdit;
+        chatMode={kind:edit ? "edit" : "reply",id:id};
+        if(edit){chatDraftBeforeEdit=input.value;input.value=m.content;}
+        document.getElementById("chat-compose-label").textContent=(edit ? "Edytujesz wiadomość" : "Odpowiadasz: "+m.author_name+" — "+m.content.slice(0,100));
+        document.getElementById("chat-compose-context").hidden=false;refreshChatSend();input.focus();return;
+      }
       var dm = ev.target && ev.target.closest ? ev.target.closest("[data-dm-user]") : null;
       if (dm && session) { window.dispatchEvent(new CustomEvent("rj:dm-open-user", {detail: dm.getAttribute("data-dm-user")})); return; }
       var btn = ev.target && ev.target.closest ? ev.target.closest("[data-chat-delete]") : null;

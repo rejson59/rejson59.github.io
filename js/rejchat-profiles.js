@@ -19,7 +19,7 @@
   function safeName(name){return typeof name==='string' && /^[A-Za-z0-9][A-Za-z0-9_.-]{2,23}$/.test(name);}
   function normalized(p) {
     if(!p || !safeName(p.username)) return null;
-    return {username:p.username,avatar:avatars.indexOf(p.avatar)>=0?p.avatar:'comet',color:colors.indexOf(p.color)>=0?p.color:'mint',bio:typeof p.bio==='string'?p.bio.slice(0,240):'',is_bot:p.is_bot===true,is_owner:p.is_owner===true};
+    return {username:p.username,avatar:avatars.indexOf(p.avatar)>=0?p.avatar:'comet',color:colors.indexOf(p.color)>=0?p.color:'mint',bio:typeof p.bio==='string'?p.bio.slice(0,240):'',nickname:typeof p.nickname==='string'?p.nickname.slice(0,64):'',is_bot:p.is_bot===true,is_owner:p.is_owner===true};
   }
   function getMany(names, fresh) {
     var valid=Array.from(new Set(names.filter(safeName).map(function(n){return n.toLowerCase();}))).slice(0,100), waits=[];
@@ -45,7 +45,7 @@
       if(!el.isConnected)return;
       var name=el.getAttribute('data-profile-name')||el.getAttribute('data-profile-avatar');
       var entry=cache[String(name).toLowerCase()];var p=entry && entry.value;if(!p)return;
-      if(el.hasAttribute('data-profile-name'))el.dataset.profileColor=p.color;
+      if(el.hasAttribute('data-profile-name')){el.dataset.profileColor=p.color;el.textContent=p.nickname ? p.nickname+' (@'+p.username+')' : p.username;}
       else if(!p.is_bot){
         var img=el.querySelector('img[data-profile-img]');if(!img){img=document.createElement('img');img.alt='';img.setAttribute('data-profile-img','');el.textContent='';el.appendChild(img);}
         img.src='/assets/avatars/'+p.avatar+'.svg';

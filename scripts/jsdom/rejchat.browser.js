@@ -27,8 +27,8 @@ const server=http.createServer((req,res)=>{
       else if(fn==='community_list_posts')data={posts:[{id:'00000000-0000-4000-8000-000000000010',author_name:'Bob',content:'Stary wpis',created_at:new Date().toISOString(),media:[],tags:[],comments_count:1,likes_count:0}],total:1,available_tags:[]};
       else if(fn==='community_list_comments')data=[{id:'00000000-0000-4000-8000-000000000020',author_name:'Alice',content:'Stary komentarz',created_at:new Date().toISOString()}];
       else if(fn==='community_online_users')data=[{username:'Alice',tabs:1,projects:[]}];
-      else if(fn==='community_chat_list')data=body.p_after_id?[]:chat;
-      else if(fn==='community_chat_send'){if(sendFail){status=400;data={message:'Spróbuj za chwilę'};}else{data={id:'00000000-0000-4000-8000-000000000003',author_name:'Alice',content:body.p_content,created_at:new Date().toISOString()};chat.push(data);}}
+      else if(fn==='rejchat_room_list_v2')data=body.p_after_id?[]:chat;
+      else if(fn==='rejchat_room_send_v2'){if(sendFail){status=400;data={message:'Spróbuj za chwilę'};}else{data={id:'00000000-0000-4000-8000-000000000003',author_name:'Alice',content:body.p_content,created_at:new Date().toISOString()};chat.push(data);}}
       else if(fn==='list_public_board')data=[];
       else if(fn==='community_link_submissions')data={username:'Alice',linked:0};
       else data=[];

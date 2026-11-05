@@ -8,7 +8,7 @@
   api.colors.forEach(function(id){var label=document.createElement('label');label.className='color-option';label.dataset.profileColor=id;var radio=document.createElement('input');radio.type='radio';radio.name='color';radio.value=id;radio.required=true;var span=document.createElement('span');span.textContent=colorNames[id];label.append(radio,span);$('color-options').appendChild(label);});
   function status(text){$('profile-status').hidden=!text;$('profile-status').textContent=text||'';}
   function showProfile(p){
-    current=p;$('profile-view').hidden=false;$('profile-name').textContent=p.username;$('profile-name').dataset.profileColor=p.color;
+    current=p;$('profile-view').hidden=false;$('profile-name').textContent=p.nickname ? p.nickname+' (@'+p.username+')' : p.username;$('profile-name').dataset.profileColor=p.color;
     $('profile-avatar').src=p.is_bot?'/assets/agent-avatar.png':'/assets/avatars/'+p.avatar+'.svg';
     $('profile-bio').textContent=p.bio || 'Tu może pojawić się kilka słów o tej osobie.';
     document.title=p.username+' — konto rejson59.github.io';
@@ -16,7 +16,7 @@
   function editor(p){
     $('profile-editor').hidden=false;
     var a=document.querySelector('input[name="avatar"][value="'+p.avatar+'"]'), c=document.querySelector('input[name="color"][value="'+p.color+'"]');
-    if(a)a.checked=true;if(c)c.checked=true;$('profile-bio-input').value=p.bio;
+    if(a)a.checked=true;if(c)c.checked=true;$('profile-bio-input').value=p.bio;$('nickname-input').value=p.nickname||'';
   }
   async function load(){
     var turn=++seq,s=api.session();confirmed=null;current=null;$('profile-view').hidden=true;$('profile-editor').hidden=true;status('Ładowanie profilu…');
@@ -48,6 +48,15 @@
       showProfile(p);$('profile-result').textContent='Gotowe! Twój profil został zapisany.';api.refreshHeader();
     }catch(err){$('profile-result').textContent=err.message||'Nie udało się zapisać profilu.';}
     finally{button.disabled=false;}
+  });
+  $('nickname-form').addEventListener('submit',async function(e){
+    e.preventDefault();var s=api.session();if(!confirmed||!s||s.token!==confirmed.token){$('nickname-result').textContent='Sesja się zmieniła — odśwież stronę.';return;}
+    var button=$('nickname-save'),nickname=$('nickname-input').value,turn=seq;button.disabled=true;$('nickname-result').textContent='Zapisywanie…';
+    try{await api.rpc('rejchat_set_nickname',{p_token:s.token,p_nickname:nickname});
+      var latest=api.session();if(turn!==seq||!latest||latest.token!==s.token){load();return;}
+      api.invalidate(confirmed.username);var p=(await api.getMany([confirmed.username],true))[0];if(!p)throw new Error('Nie udało się odświeżyć profilu.');
+      if(turn!==seq)return;showProfile(p);$('nickname-input').value=p.nickname||'';$('nickname-result').textContent='Nick zapisany.';
+    }catch(err){if(turn===seq)$('nickname-result').textContent=err.message||'Nie udało się zapisać nicka.';}finally{button.disabled=false;}
   });
   window.addEventListener('storage',function(e){if(e.key==='rejson_community_session_v1'||e.key===null)load();});
   load();
