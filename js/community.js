@@ -56,6 +56,7 @@
   }
 
   function saveSession(s) {
+    var oldToken = session && session.token;
     if (s && s.token && s.username) {
       session = { token: s.token, username: s.username };
       try { localStorage.setItem(SESSION_KEY, JSON.stringify(session)); } catch (e) { /* ignorujemy */ }
@@ -63,6 +64,7 @@
       session = null;
       try { localStorage.removeItem(SESSION_KEY); } catch (e) { /* ignorujemy */ }
     }
+    if (oldToken !== (session && session.token)) clearChatDrafts();
     window.dispatchEvent(new Event("rj:session-change"));
   }
 
@@ -1340,6 +1342,12 @@
   /* ================= CZAT SPOŁECZNOŚCI NA ŻYWO ================= */
   var CHAT_REFRESH_MS = 2000;
   var CHAT_MAX_SHOWN = 80;
+  var chatRoom = "general", chatDrafts = { general: "", links: "" }, chatErrors = { general: "", links: "" };
+  function clearChatDrafts() {
+    chatDrafts = { general: "", links: "" }; chatErrors = { general: "", links: "" };
+    var field = document.getElementById("chat-input"), status = document.getElementById("chat-send-status");
+    if (field) field.value = ""; if (status) status.textContent = "";
+  }
   var chatLastId = null;      /* id ostatniej wiadomości — dociągamy tylko nowe */
   var chatBusy = false;
   var chatTickCount = 0;
@@ -1411,7 +1419,7 @@
     if (!btn || !input) return;
     btn.disabled = !session || chatBusy || !(input.value || "").trim();
     var length = document.getElementById("chat-length");
-    if (length) length.textContent = (input.value || "").length + " / 280 znaków";
+    if (length) length.textContent = (input.value || "").length + " / 2000 znaków";
   }
 
   function refreshChatAuth() {
@@ -1436,7 +1444,7 @@
   function loadChatFull() {
     var box = chatList();
     var generation = chatGeneration;
-    return rpc("community_chat_list", { p_after_id: null, p_limit: 50 })
+    return rpc(chatRoom === "links" ? "rejchat_room_list" : "community_chat_list", chatRoom === "links" ? { p_room: "links", p_after_id: null, p_limit: 50 } : { p_after_id: null, p_limit: 50 })
       .then(function (rows) {
         if (!Array.isArray(rows) || generation !== chatGeneration) return;
         chatConnection(true);
@@ -1456,7 +1464,7 @@
 
   function loadChatIncremental() {
     var generation = chatGeneration;
-    return rpc("community_chat_list", { p_after_id: chatLastId, p_limit: 50 })
+    return rpc(chatRoom === "links" ? "rejchat_room_list" : "community_chat_list", chatRoom === "links" ? { p_room: "links", p_after_id: chatLastId, p_limit: 50 } : { p_after_id: chatLastId, p_limit: 50 })
       .then(function (rows) {
         if (!Array.isArray(rows) || generation !== chatGeneration) return;
         chatConnection(true);
@@ -1498,12 +1506,14 @@
     if (!content) return;
     chatBusy = true;
     var sendStatus = document.getElementById("chat-send-status");
+    chatErrors[chatRoom] = "";
     if (sendStatus) sendStatus.textContent = "";
     refreshChatSend();
-    var sendingToken = session.token;
-    rpc("community_chat_send", { p_token: sendingToken, p_content: content })
+    var sendingToken = session.token, sendingRoom = chatRoom;
+    rpc(sendingRoom === "links" ? "rejchat_link_send" : "community_chat_send", { p_token: sendingToken, p_content: content })
       .then(function (row) {
         if (!session || session.token !== sendingToken) return;
+        if (sendingRoom !== chatRoom) { if (chatDrafts[sendingRoom].trim() === content) chatDrafts[sendingRoom] = ""; return; }
         if (input.value.trim() === content) input.value = "";
         if (row && row.id) {
           appendChat([{
@@ -1524,8 +1534,9 @@
       })
       .catch(function (err) {
         if (!session || session.token !== sendingToken) return;
+        chatErrors[sendingRoom] = (err && err.message) ? err.message : "Nie udało się wysłać wiadomości.";
         var status = document.getElementById("chat-send-status");
-        if (status) status.textContent = (err && err.message) ? err.message : "Nie udało się wysłać wiadomości.";
+        if (status && sendingRoom === chatRoom) status.textContent = chatErrors[sendingRoom];
       })
       .then(function () { chatBusy = false; refreshChatSend(); });
   }
@@ -1533,6 +1544,20 @@
   function setupChat() {
     if (!chatList()) return;
     refreshChatAuth();
+    window.addEventListener("rj:room-change", function (event) {
+      var next = event.detail === "links" ? "links" : "general";
+      if (next === chatRoom) return;
+      var field = document.getElementById("chat-input");
+      if (field) { chatDrafts[chatRoom] = field.value; field.value = chatDrafts[next]; }
+      chatRoom = next; chatGeneration++; chatLastId = null; chatRenderedSession = null;
+      document.getElementById("chat-room-title").textContent = next === "links" ? "Linki" : "Czat ogólny";
+      document.getElementById("chat-room-description").textContent = next === "links" ? "Podziel się odnośnikiem ze społecznością" : "Rozmawiaj ze społecznością";
+      document.getElementById("chat-send-status").textContent = chatErrors[next];
+      document.getElementById("chat-search").value = "";
+      chatList().innerHTML = '<p class="comm-chat-empty">Ładowanie czatu…</p>';
+      refreshChatSend(); requestChat(true);
+    });
+    if (location.hash === "#linki") window.dispatchEvent(new CustomEvent("rj:room-change", {detail:"links"}));
     requestChat(true);
     var jump = document.getElementById("chat-jump");
     if (jump) jump.addEventListener("click", chatScrollBottom);
@@ -1661,7 +1686,9 @@
     // Zmiana konta w innej karcie nie może zostawić starego formularza i przycisków.
     window.addEventListener("storage", function (event) {
       if (event.key !== SESSION_KEY && event.key !== null) return;
+      var oldToken = session && session.token;
       session = loadSession();
+      if (oldToken !== (session && session.token)) clearChatDrafts();
       expandedPosts = {}; openReplyForms = {};
       renderAuthZone(); loadPosts(true); chatGeneration++; requestChat(true);
     });

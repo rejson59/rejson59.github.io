@@ -48,7 +48,7 @@ function chat(value) {
   add.click();assert.match(doc.getElementById('file-draft-status').textContent,/Zaloguj/);assert.equal(field.value,'');assert.ok(w.sessionStorage.getItem(key));
   // Po zalogowaniu modalem form jest odsłonięty; rozpoczęty tekst musi pozostać.
   doc.getElementById('chat-form').hidden=false;
-  field.value='x'.repeat(280);add.click();assert.equal(field.value,'x'.repeat(280));assert.match(doc.getElementById('file-draft-status').textContent,/Skróć/);assert.ok(w.sessionStorage.getItem(key));
+  field.value='x'.repeat(field.maxLength);add.click();assert.equal(field.value,'x'.repeat(field.maxLength));assert.match(doc.getElementById('file-draft-status').textContent,/Skróć/);assert.ok(w.sessionStorage.getItem(key));
   field.value='  Mój tekst  ';add.click();assert.equal(field.value,'  Mój tekst  Plik z RejFile: '+url);assert.equal(inputs,1);assert.equal(submits,0);assert.equal(w.sessionStorage.getItem(key),null);assert.equal(box.hidden,true);
   d.window.close();
 }

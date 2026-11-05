@@ -70,6 +70,19 @@
     report($('error'),'');
   }
   fileInput.addEventListener('change',function(){updateFile(fileInput.files && fileInput.files[0]);});
+  // Wklejenie obrazu wybiera plik, ale nigdy nie wysyła go bez potwierdzenia.
+  document.addEventListener('paste',function(e){
+    if(busy || shareKind!=='file' || form.hidden || !e.clipboardData)return;
+    var target=e.target;
+    if(target && (target.isContentEditable || /^(TEXTAREA|SELECT)$/.test(target.tagName) || (target.tagName==='INPUT' && target.type!=='file')))return;
+    var items=Array.from(e.clipboardData.items||[]), item=items.find(function(x){return x.kind==='file' && /^image\/(png|jpeg|webp|gif)$/i.test(x.type);});
+    if(!item)return;
+    var file=item.getAsFile();if(!file)return;
+    e.preventDefault();
+    if(file.size<1 || file.size>LIMIT){report($('error'),'Obraz musi mieć od 1 bajtu do 100 MB.');return;}
+    if(!file.name)file=new File([file],'obraz-ze-schowka.'+({ 'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif' }[file.type.toLowerCase()]||'png'),{type:file.type});
+    fileInput.value='';updateFile(file);
+  });
   ['dragenter','dragover'].forEach(function(type){zone.addEventListener(type,function(e){e.preventDefault();zone.classList.add('dragging');});});
   ['dragleave','drop'].forEach(function(type){zone.addEventListener(type,function(e){e.preventDefault();zone.classList.remove('dragging');if(type==='drop')updateFile(e.dataTransfer.files && e.dataTransfer.files[0]);});});
   document.querySelectorAll('input[name="mode"]').forEach(function(el){el.addEventListener('change',function(){var account=document.querySelector('input[name="mode"]:checked').value==='account';$('recipient-wrap').hidden=!account;$('recipient').required=account;});});
