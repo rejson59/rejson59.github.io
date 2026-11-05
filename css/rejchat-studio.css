@@ -173,3 +173,10 @@ body.rj-community :is(.rejchat-tabs button,.chat-channel,.rejchat-rules summary,
 .rejchat-edited { font-size:10px; color:var(--rc-sub); }
 body.rj-community .comm-chat-form textarea.comm-input { resize:vertical; min-height:56px; max-height:180px; line-height:1.45; padding:12px 14px; }
 body.rj-community .comm-chat-form { align-items:flex-end; }
+body.rj-community .rejchat-photo-picker { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-top:12px; font-size:12px; color:var(--rc-sub); }
+body.rj-community .rejchat-photo-picker[hidden] { display:none; }
+body.rj-community .rejchat-photo-picker label,body.rj-community .rejchat-photo-picker button,body.rj-community .rejchat-photo-load { cursor:pointer; border:1px solid var(--rc-border, #a1b4ad); background:transparent; color:inherit; border-radius:9px; padding:6px 10px; font:inherit; }
+body.rj-community .rejchat-photo-picker input { position:absolute; width:1px; height:1px; opacity:0; }
+body.rj-community .rejchat-photo-picker input:focus-visible + span { outline:2px solid currentColor; }
+body.rj-community .rejchat-photo-load,body.rj-community .rejchat-photo-expired { display:block; margin:8px 0; font-size:12px; }
+body.rj-community .rejchat-photo { display:block; max-width:min(100%,320px); max-height:320px; width:auto; height:auto; object-fit:contain; border-radius:10px; margin:8px 0; }

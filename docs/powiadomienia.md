@@ -31,7 +31,7 @@ To proste heurystyki, nie model AI ani skaner bezpieczeństwa linków. Mogą bł
 
 ## Kanał linków
 
-Czat „Linki” to oddzielny publiczny pokój RejChat. Wiadomość musi zawierać adres zaczynający się od http://, https:// lub www.; ogólny czat pozostaje osobny. Oba pokoje mają wspólną moderację, wyciszenia, reakcje i limity antyspamowe. Maksymalna długość nowej wiadomości publicznej to 2000 znaków. Historia każdego z nich jest usuwana po 14 dniach przy wysyłaniu nowej wiadomości, a wyszukiwanie obejmuje tylko aktualnie wczytane wiadomości. Pokój nie sprawdza, czy adres jest bezpieczny.
+Czat „Linki” to oddzielny publiczny pokój RejChat. Wiadomość tekstowa musi zawierać adres zaczynający się od http://, https:// lub www.; wiadomość ze zdjęciem może być bez adresu. Ogólny czat pozostaje osobny. Oba pokoje mają wspólną moderację, wyciszenia, reakcje i limity antyspamowe. Maksymalna długość nowej wiadomości publicznej to 2000 znaków. Historia każdego z nich jest usuwana po 14 dniach przy wysyłaniu nowej wiadomości, a wyszukiwanie obejmuje tylko aktualnie wczytane wiadomości. Pokój nie sprawdza, czy adres jest bezpieczny.
 
 RejFile przyjmuje wklejony obraz ze schowka (Ctrl+V), gdy aktywny jest wybór pliku i fokus nie znajduje się w polu tekstowym. Obraz jest jedynie wybierany — użytkownik nadal potwierdza przesłanie i wybraną metodę udostępnienia. Notatki i zwykłe wklejanie tekstu pozostają bez zmian.
 
@@ -42,3 +42,11 @@ Profil może mieć opcjonalny publiczny nick wyświetlany razem z niezmienną na
 ## Odpowiedzi i edycja w rozmowach
 
 Na czacie ogólnym, w Linkach i rozmowach 1:1 zalogowany użytkownik może odpowiadać na wiadomości; odpowiedź pokazuje fragment aktualnej treści oryginału. Po usunięciu oryginału odnośnik do niego znika. Autor może edytować własne wiadomości; zmiana jest oznaczona „Edytowano”. Serwer weryfikuje autora i uczestnictwo w DM, a także stosuje dotychczasowe mute, filtr fraz i reguły antyspamowe. Edycje są ograniczone do jednej na 5 sekund dla danej wiadomości. Historyczny limit znaków DM pozostaje bez zmian; nowsze wpisy, kanały i stare klienty pozostają dostępne.
+
+## Zdjęcia w czacie
+
+W czacie ogólnym, Linkach i DM można wysłać jedno zdjęcie z podpisem lub bez. JPG, PNG i WebP do 10 MiB są w razie potrzeby pomniejszane w przeglądarce do JPG (większe pliki z przezroczystością dostają białe tło); animowany GIF ma limit 1 MiB. Serwer przyjmuje najwyżej 1 MiB po ewentualnym zmniejszeniu. Pliki, które nie wymagają zmniejszenia, mogą zachować metadane, np. lokalizację. Zdjęcia wygasają po 14 dniach, również w DM, a po wygaśnięciu w rozmowie zostaje stosowna informacja. Aktualne limity to 12 zdjęć i 8 MiB na konto przez 24 godziny oraz 64 MiB łącznie. Zdjęcia w Linkach można wysłać bez adresu; zwykła wiadomość nadal wymaga linku.
+
+Zdjęcie jest pobierane dopiero po kliknięciu; zdjęcia z DM nie mają publicznego adresu i są dostępne tylko uczestnikom przez sprawdzaną sesję konta. DM, w tym obrazy, nie są szyfrowane end-to-end. Istniejące blokady pisania, filtry tekstu i limity wiadomości mają zastosowanie do podpisów — **zawartość obrazu nie jest automatycznie moderowana ani skanowana**.
+
+Z otwartej prywatnej rozmowy można przejść do RejFile z wstępnie wybranym odbiorcą i trybem „Konto”. Przesyłka wymaga potwierdzenia w RejFile, trafia do skrzynki odbiorcy i wygasa po trzech dniach. Nie tworzymy automatycznie wiadomości ani publicznego linku w DM.
