@@ -101,6 +101,7 @@ const server=http.createServer((req,res)=>{
     await page.locator('#channel-general').click();
     assert.equal(await page.locator('#panel-chat').isVisible(),true);
     assert.equal(await page.locator('#channel-general').getAttribute('aria-pressed'),'true');
+    await page.locator('#chat-photo').setInputFiles({name:'bardzo-dluga-nazwa-zdjecia-testowego.png',mimeType:'image/png',buffer:Buffer.from('test')});
     for(const theme of ['dark','light']) for(const width of [320,375,760,800,1024,1200,1201,1366,1400,1401,1440,1920]) {
       await page.evaluate(t=>document.documentElement.dataset.theme=t,theme);
       await page.setViewportSize({width,height:850});
@@ -110,7 +111,21 @@ const server=http.createServer((req,res)=>{
       const nav=await page.evaluate(()=>Array.from(document.querySelectorAll('.chat-channel')).map(e=>{const r=e.getBoundingClientRect();return {x:r.x,right:r.right,width:r.width,height:r.height}}));
       assert(nav.every(r=>r.x>=0&&r.right<=width&&r.width>=35&&r.height>=35),`${width}: widoczna i użyteczna nawigacja`);
       assert.equal(result.columns,width<=760?1:2,`${width}: kolumny`);
+      if(theme==='light') {
+        const colors=await page.evaluate(()=>{const active=document.querySelector('#channel-general');return [getComputedStyle(active).backgroundColor,getComputedStyle(active.querySelector('strong')).color];});
+        const luminance=c=>{const [r,g,b]=c.match(/\d+/g).slice(0,3).map(v=>{v=Number(v)/255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4;});return .2126*r+.7152*g+.0722*b;};
+        const values=colors.map(luminance).sort((a,b)=>b-a);assert((values[0]+.05)/(values[1]+.05)>=4.5,`${width}: kontrast aktywnego kanału w jasnym motywie`);
+      }
+      const controls=await page.evaluate(()=>Array.from(document.querySelectorAll('#chat-form .rc-compose-tools > *')).filter(e=>getComputedStyle(e).display!=='none').map(e=>{const r=e.getBoundingClientRect();return {left:r.left,right:r.right,width:r.width}}));
+      assert(controls.every(r=>r.left>=0 && r.right<=width && r.width>0),`${theme} ${width}: narzędzia pisania mieszczą się w widoku`);
+      assert(await page.locator('#chat-photo-name').isVisible(),'nazwa wybranego zdjęcia jest widoczna');
+      await page.locator('#chat-form .rc-emoji-toggle').click();
+      const emoji=await page.locator('#chat-emojis').boundingBox();
+      assert(emoji && emoji.x>=0 && emoji.x+emoji.width<=width,`${theme} ${width}: panel emoji w widoku`);
+      await page.locator('#chat-form .rc-emoji-toggle').click();
     }
+    await page.locator('#chat-photo-clear').click();
+    assert.equal(await page.locator('#chat-photo').inputValue(),'');
     await page.setViewportSize({width:1440,height:900});
     const columns=await page.evaluate(()=>{const r=s=>document.querySelector(s).getBoundingClientRect();const left=r('.comm-sidebar'),middle=r('.comm-primary'),info=r('.rejchat-info');return {left:left.right,middleLeft:middle.left,navBottom:left.bottom,infoTop:info.top,infoRight:info.right};});
     assert(columns.left<=columns.middleLeft && columns.navBottom<=columns.infoTop && columns.infoRight<=columns.middleLeft,'nawigacja i informacje pod sobą obok szerokiego czatu');
