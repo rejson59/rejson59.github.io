@@ -548,11 +548,17 @@
           </header>
           <label class="rejchat-search"><span class="search-mark" aria-hidden="true">⌕</span><span class="sr-only">Szukaj we wczytanych wiadomościach</span><input class="comm-input" id="chat-search" type="search" maxlength="100" placeholder="Szukaj w wiadomościach…"></label>
           <p class="rejchat-search-hint" id="chat-search-status" aria-live="polite">Widoczne są ostatnie wczytane wiadomości.</p>
-          <p class="rejchat-search-hint">Wiadomości starsze niż 14 dni są usuwane przy wysłaniu nowej.</p>
+          <p class="rejchat-search-hint">Wiadomości starsze niż 14 dni są usuwane przy wysłaniu nowej. Kopie zapisane w RejSejfie nie wygasają automatycznie.</p>
           <div class="comm-chat-list" id="chat-list" aria-live="polite">
             <p class="comm-chat-empty">Ładowanie czatu…</p>
           </div>
-          <button type="button" class="chat-jump" id="chat-jump" hidden>↓ Nowe wiadomości</button>
+          <p id="chat-save-status" class="comm-chat-note" role="status" aria-live="polite"></p><button type="button" class="chat-jump" id="chat-jump" hidden>↓ Nowe wiadomości</button>
+          <div class="rejchat-file-draft" id="sejf-draft" hidden>
+            <strong>Notatka z RejSejfu jest gotowa jako szkic</strong>
+            <p>To czat publiczny. Każdy zobaczy treść po wysłaniu. Sprawdź ją przed udostępnieniem; nic nie jest wysyłane automatycznie.</p>
+            <div><button type="button" class="btn btn-primary btn-sm" id="sejf-draft-add">Dodaj tekst do wiadomości</button><button type="button" class="btn btn-ghost btn-sm" id="sejf-draft-discard">Usuń szkic</button></div>
+            <p id="sejf-draft-status" role="status" aria-live="polite"></p>
+          </div>
           <div class="rejchat-file-draft" id="file-draft" hidden>
             <strong>Link do przesyłki z RejFile jest gotowy</strong>
             <p>To czat publiczny — każdy, kto zobaczy link, może otworzyć lub pobrać przesyłkę. Dodaj go tylko, jeśli chcesz go publicznie udostępnić. Wysłanie nastąpi dopiero po kliknięciu „Wyślij”.</p>
@@ -572,13 +578,13 @@
         </section>
         <section class="comm-chat glass-card dm-view" id="chat-private-view" aria-label="Prywatne rozmowy" hidden>
           <header class="comm-chat-head"><div class="chat-room-heading"><span class="chat-room-mark" aria-hidden="true">✉</span><div><h2>Prywatne rozmowy</h2><p>Wiadomości widzą tylko uczestnicy rozmowy.</p></div></div></header>
-          <p class="dm-privacy">Wiadomości i zdjęcia są przechowywane na serwerze i nie są szyfrowane end-to-end. Zdjęcia mogą zawierać metadane, np. lokalizację. Automatyczne reguły antyspamowe i globalny filtr fraz obejmują także rozmowy prywatne; panel moderacji nie pokazuje ich treści. Obrazy nie są automatycznie skanowane. Nie wysyłaj haseł ani innych poufnych danych.</p>
+          <p class="dm-privacy">Wiadomości i zdjęcia są przechowywane na serwerze i nie są szyfrowane end-to-end. Zdjęcia mogą zawierać metadane, np. lokalizację. Automatyczne reguły antyspamowe i globalny filtr fraz obejmują także rozmowy prywatne; panel moderacji nie pokazuje ich treści. Obrazy nie są automatycznie skanowane. Kopie zapisane w RejSejfie nie wygasają automatycznie. Nie wysyłaj haseł ani innych poufnych danych.</p>
           <p id="dm-guest" class="comm-chat-note">Zaloguj się, aby rozpocząć prywatną rozmowę. <a href="/logowanie">Konto ↗</a></p>
           <div id="dm-member" hidden>
             <form id="dm-new-form" class="dm-new-form"><label for="dm-username">Nowa rozmowa — nazwa konta</label><div><input id="dm-username" class="comm-input" autocomplete="off" maxlength="24" placeholder="Nazwa użytkownika" required><button class="btn btn-primary btn-sm" type="submit">Otwórz</button></div></form>
             <div id="dm-inbox" class="dm-inbox" aria-label="Twoje rozmowy"></div>
             <p id="dm-status" class="comm-chat-note" role="status" aria-live="polite"></p>
-            <div id="dm-thread" hidden><h3 id="dm-thread-title" class="dm-thread-title"></h3><p class="rejchat-file-shortcut"><a id="dm-rejfile" href="/rejfile" target="_blank" rel="noopener noreferrer">📎 Przygotuj prywatny plik w RejFile ↗</a> <span>Odbiorca dostanie go do skrzynki RejFile; nic nie wyśle się automatycznie.</span></p><button type="button" class="dm-older" id="dm-older" hidden>Wczytaj starsze wiadomości</button><div id="dm-messages" class="comm-chat-list" aria-live="polite"></div>
+            <div id="dm-thread" hidden><h3 id="dm-thread-title" class="dm-thread-title"></h3><p class="rejchat-file-shortcut"><a id="dm-rejfile" href="/rejfile" target="_blank" rel="noopener noreferrer">📎 Przygotuj prywatny plik w RejFile ↗</a> <span>Odbiorca dostanie go do skrzynki RejFile; nic nie wyśle się automatycznie.</span></p><button type="button" class="dm-older" id="dm-older" hidden>Wczytaj starsze wiadomości</button><div id="dm-messages" class="comm-chat-list" aria-live="polite"></div><p id="dm-save-status" class="comm-chat-note" role="status" aria-live="polite"></p>
               <div class="rejchat-photo-picker" id="dm-photo-picker"><label for="dm-photo">📷 Dodaj zdjęcie</label><input id="dm-photo" type="file" accept="image/jpeg,image/png,image/webp,image/gif"><span id="dm-photo-name">Do 10 MiB (GIF do 1 MiB). Większe zdjęcia zmniejszymy do JPG. Wygasa po 14 dniach.</span><button id="dm-photo-clear" type="button" hidden>Usuń zdjęcie</button></div>
               <div class="rejchat-compose-context" id="dm-compose-context" hidden><span id="dm-compose-label"></span><button type="button" id="dm-compose-cancel">Anuluj</button></div>
               <form id="dm-send-form" class="comm-chat-form"><textarea id="dm-input" class="comm-input" rows="2" maxlength="1000" placeholder="Napisz prywatną wiadomość…" aria-label="Prywatna wiadomość"></textarea><button class="btn btn-primary btn-sm" type="submit" id="dm-send">Wyślij</button></form>
@@ -711,10 +717,11 @@
   <script defer src="js/view-tracker.js?v=7"></script>
   <script defer src="/js/rejchat-profiles.js?v=2"></script>
   <script defer src="/js/rejchat-photos.js?v=1"></script>
-  <script defer src="js/community.js?v=2026-11-06-chat-photos"></script>
+  <script defer src="js/community.js?v=2026-11-06-sejf"></script>
   <script defer src="/js/rejchat.js?v=7"></script>
   <script defer src="/js/rejchat-reactions.js?v=1"></script>
-  <script defer src="/js/rejchat-private.js?v=5"></script>
+  <script defer src="/js/rejchat-private.js?v=6"></script>
+  <script defer src="/js/rejchat-rejsejf.js?v=2"></script>
   <script defer src="/js/rejchat-link-preview.js?v=1"></script>
   <script defer src="/js/rejchat-mute.js?v=1"></script>
   <script defer src="/js/rejchat-notifications.js?v=4"></script><script defer src="/js/premium.js?v=9"></script>

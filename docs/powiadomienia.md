@@ -50,3 +50,9 @@ W czacie ogólnym, Linkach i DM można wysłać jedno zdjęcie z podpisem lub be
 Zdjęcie jest pobierane dopiero po kliknięciu; zdjęcia z DM nie mają publicznego adresu i są dostępne tylko uczestnikom przez sprawdzaną sesję konta. DM, w tym obrazy, nie są szyfrowane end-to-end. Istniejące blokady pisania, filtry tekstu i limity wiadomości mają zastosowanie do podpisów — **zawartość obrazu nie jest automatycznie moderowana ani skanowana**.
 
 Z otwartej prywatnej rozmowy można przejść do RejFile z wstępnie wybranym odbiorcą i trybem „Konto”. Przesyłka wymaga potwierdzenia w RejFile, trafia do skrzynki odbiorcy i wygasa po trzech dniach. Nie tworzymy automatycznie wiadomości ani publicznego linku w DM.
+
+## RejChat ↔ RejSejf
+
+Zalogowana osoba może świadomie skopiować tekst wiadomości albo niewygasłe zdjęcie z czatu ogólnego, Linków lub rozmowy prywatnej do własnego RejSejfu. Serwer ponownie sprawdza sesję i uczestnictwo w DM. Kopia tekstu jest notatką z autorem i czasem, zdjęcia — plikiem. Kopie są prywatne, obowiązują limity RejSejfu i nie wygasają automatycznie wraz z oryginałem.
+
+Zapisana notatka może też zostać przygotowana jako szkic na publicznym czacie ogólnym. Wymaga osobnego potwierdzenia, wstawienia do pola i wysłania — nic nie publikuje się automatycznie. Szkic w pamięci tej karty jest dostępny przez 10 minut, powiązany z bieżącą sesją i usuwany przy zmianie konta, po wstawieniu, po powrocie po wygaśnięciu lub przy opuszczeniu RejChat. Notatki ponad 2000 znaków trzeba najpierw skrócić. RejSejf i DM nie są szyfrowane end-to-end.
