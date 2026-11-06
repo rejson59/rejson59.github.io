@@ -1,0 +1,30 @@
+/* Układ z prawdziwymi kształtami danych: nazwy, odznaki, linki, otwarte zasady; bez zrzutów mobilnych. */
+const assert=require('node:assert/strict'),http=require('node:http'),fs=require('node:fs'),path=require('node:path'),{chromium}=require('playwright-core');
+const root=path.resolve(__dirname,'../..'), token='a'.repeat(32);
+const server=http.createServer((req,res)=>{const file=path.resolve(root,'.'+new URL(req.url,'http://localhost').pathname);if(!file.startsWith(root+path.sep)||!fs.existsSync(file)||!fs.statSync(file).isFile())return res.writeHead(404).end();res.writeHead(200,{'content-type':({'.html':'text/html; charset=utf-8','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml'})[path.extname(file)]||'application/octet-stream'});fs.createReadStream(file).pipe(res)});
+(async()=>{await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin=`http://127.0.0.1:${server.address().port}`;const browser=await chromium.launch({executablePath:process.env.CHROME_BIN,headless:true,args:['--no-sandbox','--disable-webgl']});try{
+const ctx=await browser.newContext({viewport:{width:1440,height:900},serviceWorkers:'block'});await ctx.addInitScript(t=>localStorage.setItem('rejson_community_session_v1',JSON.stringify({username:'Tester',token:t})),token);
+await ctx.route('**/*',async route=>{const url=route.request().url();if(url.startsWith(origin+'/'))return route.continue();if(!url.includes('/rest/v1/rpc/'))return route.abort();const fn=url.split('/').pop(),b=route.request().postDataJSON()||{};let data=[];
+if(fn==='community_whoami')data={username:'Tester'};
+if(fn==='community_online_users')data=[{username:'rejson59',tabs:1,projects:[]},{username:'Agent_AI_Rejsona',tabs:5,projects:['a','b']},{username:'abcdefghijklmnopqrstuvwx',tabs:12,projects:['a','b','c']}];
+if(fn==='rejchat_get_profiles')data=(b.p_names||[]).map(username=>({username}));
+if(fn==='rejchat_room_list_v3')data=b.p_after_id?[]:[{id:'00000000-0000-4000-8000-000000000001',author_name:'rejson59',content:'https://www.google.com/search?q='+('dlugi-link-'.repeat(65)),created_at:new Date().toISOString(),reactions:[]}];
+if(fn==='rejchat_notifications_list'||fn==='rejchat_reaction_inbox')data={items:[],unread:0};return route.fulfill({status:200,json:data}).catch(()=>{});});
+const page=await ctx.newPage();await page.goto(origin+'/rejchat.html',{waitUntil:'domcontentloaded'});await page.evaluate(()=>document.querySelector('#rj-page-loader')?.remove());await page.locator('#comm-online .comm-online-user').nth(2).waitFor();await page.locator('#chat-list .chat-msg').waitFor();await page.addStyleTag({content:'*,*::before,*::after { transition:none !important; animation:none !important; }'});
+for(const theme of ['dark','light'])for(const width of [320,375,760,761,800,900,1024,1200,1280,1440,1920]){
+await page.evaluate(t=>document.documentElement.dataset.theme=t,theme);await page.setViewportSize({width,height:900});
+for(const open of [false,true]) {await page.locator('#rejchat-rules').evaluate((e,v)=>e.open=v,open);
+const result=await page.evaluate(()=>{const rect=e=>{const r=e.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width};};const side=document.querySelector('.rejchat-info'),primary=document.querySelector('.comm-primary');const names=['.rejchat-info-heading','.comm-online-card','.rejchat-rules','.rejchat-info-tip'];return {accent:getComputedStyle(document.body).getPropertyValue('--rc-accent').trim(),activeColor:getComputedStyle(document.querySelector('#channel-general strong')).color,activeBackground:getComputedStyle(document.querySelector('#channel-general')).backgroundColor,ad:document.querySelector('.rj-side-ads')&&getComputedStyle(document.querySelector('.rj-side-ads')).display!=='none'?rect(document.querySelector('.rj-side-ads')):null,scroll:document.documentElement.scrollWidth,side:rect(side),primary:rect(primary),items:names.map(s=>({name:s,...rect(side.querySelector(s))})),users:[...side.querySelectorAll('.comm-online-user')].map(e=>({user:rect(e),parts:[...e.children].map(rect)})),bubble:rect(document.querySelector('.chat-bubble')),list:rect(document.querySelector('#chat-list')),links:[...document.querySelectorAll('.chat-text a')].map(rect)}});
+assert.equal(result.accent,theme==='dark'?'#8bbdff':'#235cb3',`${theme}: niebieski akcent`);
+if(theme==='light')assert.equal(result.activeBackground,'rgb(229, 239, 255)','jasny kanał ma czytelne tło');
+if(result.ad)assert(result.primary.right<=result.ad.left,`${theme} ${width}: reklama zasłania rozmowę`);
+assert(result.scroll<=width,`${theme} ${width}: poziomy scroll ${result.scroll}`);
+for(const item of result.items){assert(item.left>=result.side.left-1&&item.right<=result.side.right+1,`${theme} ${width}: ${item.name} wystaje z panelu (${item.right} > ${result.side.right})`);if(width>760)assert(item.right<=result.primary.left+1,`${theme} ${width}: ${item.name} nachodzi na rozmowę`);}
+const ordered=[...result.items].sort((a,b)=>a.top-b.top);for(let i=1;i<ordered.length;i++)assert(ordered[i-1].bottom<=ordered[i].top+1,`${theme} ${width}: ${ordered[i-1].name} i ${ordered[i].name} na siebie nachodzą`);
+const card=result.items[1];for(const {user,parts} of result.users){assert(user.left>=card.left&&user.right<=card.right+1,`${theme} ${width}: użytkownik wystaje z karty`);for(const part of parts)assert(part.left>=user.left-1&&part.right<=user.right+1&&part.top>=user.top-1&&part.bottom<=user.bottom+1,`${theme} ${width}: nazwa lub odznaka poza użytkownikiem`);}
+assert(result.bubble.left>=result.list.left-1&&result.bubble.right<=result.list.right+1,`${theme} ${width}: wiadomość wystaje`);
+for(const link of result.links) assert(link.left>=result.bubble.left-1&&link.right<=result.bubble.right+1,`${theme} ${width}: długi link wystaje`);
+}
+}
+await ctx.close();console.log('PASS: kolor i układ z użytkownikami online, odznakami, długim linkiem i otwartymi zasadami 320–1920px, oba motywy');
+}finally{await browser.close();server.close();}})().catch(e=>{console.error(e);server.close();process.exitCode=1});
