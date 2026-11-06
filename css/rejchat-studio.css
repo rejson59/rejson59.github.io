@@ -180,3 +180,33 @@ body.rj-community .rejchat-photo-picker input { position:absolute; width:1px; he
 body.rj-community .rejchat-photo-picker input:focus-visible + span { outline:2px solid currentColor; }
 body.rj-community .rejchat-photo-load,body.rj-community .rejchat-photo-expired { display:block; margin:8px 0; font-size:12px; }
 body.rj-community .rejchat-photo { display:block; max-width:min(100%,320px); max-height:320px; width:auto; height:auto; object-fit:contain; border-radius:10px; margin:8px 0; }
+
+/* Wiadomości: reakcje pod treścią, pozostałe czynności w jednym menu. */
+.rc-message-menu { margin-top:8px; position:relative; font-size:12px; }
+.rc-message-menu summary { display:inline-flex; align-items:center; gap:4px; list-style:none; border:1px solid var(--rc-line); border-radius:10px; padding:5px 9px; color:var(--rc-sub); background:var(--rc-surface-raised); cursor:pointer; font-weight:700; }
+.rc-message-menu summary::-webkit-details-marker { display:none; }
+.rc-message-menu[open] summary { color:var(--rc-accent); border-color:var(--rc-accent); }
+.rc-menu-items { display:flex; flex-wrap:wrap; gap:5px; margin-top:7px; padding:8px; border:1px solid var(--rc-line); border-radius:12px; background:var(--rc-surface-soft); }
+.rc-menu-items button,.rc-menu-items .rejchat-message-action,.rc-menu-items .chat-delete { min-height:32px; padding:5px 9px; border:1px solid var(--rc-line); border-radius:8px; background:var(--rc-surface); color:var(--rc-ink); font:inherit; font-size:12px; cursor:pointer; }
+.rc-menu-items button:hover,.rc-menu-items button:focus-visible { border-color:var(--rc-accent); color:var(--rc-accent); }
+.rj-community .rejchat-reactions { margin-top:9px; gap:5px; }
+.rj-community .rejchat-reaction { background:var(--rc-surface-raised); border-color:var(--rc-line); }
+.rc-emoji-wrap { position:relative; flex:none; }
+.rc-emoji-toggle { min-height:44px; padding:0 12px; border:1px solid var(--rc-line); border-radius:12px; background:var(--rc-surface-raised); color:var(--rc-ink); font:inherit; font-size:12px; font-weight:700; cursor:pointer; }
+.rc-emoji-toggle[aria-expanded="true"] { border-color:var(--rc-accent); color:var(--rc-accent); }
+.rc-emoji-panel { position:absolute; z-index:12; bottom:calc(100% + 8px); right:0; width:min(310px,calc(100vw - 42px)); padding:10px; box-sizing:border-box; border:1px solid var(--rc-line); border-radius:15px; background:var(--rc-surface); box-shadow:0 14px 44px #0005; }
+.rc-emoji-panel[hidden] { display:none; }
+.rc-emoji-tabs { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:8px; }
+.rc-emoji-tabs button { border:1px solid var(--rc-line); border-radius:8px; padding:6px 9px; background:var(--rc-surface-raised); color:var(--rc-sub); font:inherit; font-size:12px; cursor:pointer; }
+.rc-emoji-tabs button[aria-pressed="true"] { border-color:var(--rc-accent); color:var(--rc-accent); }
+.rc-emoji-grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); max-height:210px; overflow:auto; gap:3px; }
+.rc-emoji-grid button { min-width:0; min-height:36px; border:0; border-radius:8px; background:transparent; cursor:pointer; font:22px/1.2 system-ui,sans-serif; }
+.rc-emoji-grid button:hover,.rc-emoji-grid button:focus-visible { background:var(--rc-surface-raised); outline:2px solid var(--rc-accent); }
+.rc-emoji-status { margin:4px 2px 0; color:var(--rc-sub); font-size:11px; }.rc-emoji-status:empty { display:none; }
+.rc-message-dialog { width:min(510px,calc(100vw - 32px)); max-height:min(80vh,700px); box-sizing:border-box; padding:22px; border:1px solid var(--rc-line); border-radius:20px; background:var(--rc-surface); color:var(--rc-ink); box-shadow:0 24px 80px #0008; }
+.rc-message-dialog::backdrop { background:#071018aa; }
+.rc-dialog-head { display:flex; justify-content:space-between; align-items:start; gap:16px; }.rc-dialog-head small { color:var(--rc-accent); font-size:10px; font-weight:800; letter-spacing:.1em; }.rc-dialog-head h2 { margin:5px 0; font-size:20px; }
+.rc-dialog-head button { width:36px; height:36px; border:1px solid var(--rc-line); border-radius:10px; background:var(--rc-surface-raised); color:var(--rc-ink); cursor:pointer; }
+.rc-dialog-note,.rc-detail-foot { color:var(--rc-sub); font-size:12px; line-height:1.5; }.rc-message-dialog h3 { margin:18px 0 6px; font-size:14px; }.rc-detail-names { overflow-wrap:anywhere; line-height:1.6; font-size:13px; }
+@media(max-width:600px) { body.rj-community .comm-chat-form { flex-wrap:wrap; } body.rj-community .comm-chat-form textarea.comm-input { flex:1 0 100%; } .comm-chat-form .rc-emoji-wrap { margin-left:auto; } .comm-composer-foot { flex-wrap:wrap; } }
+@media(max-width:600px) { body.rj-community .comm-chat-form { position:relative; } .comm-chat-form .rc-emoji-wrap { position:static; } .comm-chat-form .rc-emoji-panel { right:16px; } }

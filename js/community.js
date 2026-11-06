@@ -1367,18 +1367,19 @@
             '<span class="chat-author">' + profileLink(m.author_name) + authorBadges(m.author_name, m) + "</span>" +
             '<span class="chat-time mono">' + relTime(m.created_at) + "</span>" +
             (session && !mine ? '<button class="chat-private-start" type="button" data-dm-user="' + esc(m.author_name) + '" aria-label="Prywatna rozmowa z ' + esc(m.author_name) + '">✉</button>' : '') +
-            (canDel
-              ? '<button class="chat-delete" type="button" data-chat-delete="' + esc(m.id) + '" title="Usuń wiadomość" aria-label="Usuń wiadomość">✕</button>'
-              : "") +
           "</div>" +
           (m.reply ? '<div class="rejchat-reply-quote">↩ ' + esc(m.reply.author_name) + ': ' + esc(m.reply.content) + '</div>' : '') +
           '<p class="chat-text">' + linkify(m.content) + "</p>" +
           (window.RJChatPhotos ? window.RJChatPhotos.button(m.photo) : "") +
           (m.edited_at ? '<span class="rejchat-edited">Edytowano</span>' : '') +
-          (session ? '<button class="rejchat-message-action" type="button" data-chat-reply="' + esc(m.id) + '">Odpowiedz</button>' : '') +
+          (session ? '<details class="rc-message-menu"><summary aria-label="Opcje wiadomości">⋯ <span>Opcje</span></summary><div class="rc-menu-items">' +
+            '<button type="button" data-message-info="public" data-message-id="' + esc(m.id) + '">Odczyty i reakcje</button>' +
+            '<button class="rejchat-message-action" type="button" data-chat-reply="' + esc(m.id) + '">Odpowiedz</button>' : '') +
           (session ? '<button class="rejchat-message-action" type="button" data-save-sejf="text" data-save-scope="public" data-save-message="' + esc(m.id) + '">Zapisz tekst w RejSejfie</button>' : '') +
           (session && m.photo && Date.parse(m.photo.expires_at)>Date.now() ? '<button class="rejchat-message-action" type="button" data-save-sejf="photo" data-save-scope="public" data-save-message="' + esc(m.id) + '" title="Kopia w Sejfie nie wygaśnie po 14 dniach">Zapisz zdjęcie w RejSejfie</button>' : '') +
           (mine ? '<button class="rejchat-message-action" type="button" data-chat-edit="' + esc(m.id) + '">Edytuj</button>' : '') +
+          (canDel ? '<button class="chat-delete" type="button" data-chat-delete="' + esc(m.id) + '">Usuń wiadomość</button>' : '') +
+          (session ? '</div></details>' : '') +
         "</div>" +
       "</div>"
     );
