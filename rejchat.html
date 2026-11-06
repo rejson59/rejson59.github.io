@@ -245,7 +245,7 @@
   <link rel="stylesheet" href="/css/liquid.css?v=2026-10-30-2">
   <link rel="stylesheet" href="/css/responsive.css?v=1">
   <link rel="stylesheet" href="/css/rejchat.css?v=8">
-  <link rel="stylesheet" href="/css/rejchat-studio.css?v=scroll-1">
+  <link rel="stylesheet" href="/css/rejchat-studio.css?v=details-1">
   <link rel="stylesheet" href="/css/side-ads.css?v=5">
   <script defer src="/js/side-ads.js?v=6"></script>
   <link rel="stylesheet" href="/css/mobile-ads.css?v=5">
@@ -549,6 +549,7 @@
           </header>
           <label class="rejchat-search"><span class="search-mark" aria-hidden="true">⌕</span><span class="sr-only">Szukaj we wczytanych wiadomościach</span><input class="comm-input" id="chat-search" type="search" maxlength="100" placeholder="Szukaj w wiadomościach…"></label>
           <p class="rejchat-search-hint" id="chat-search-status" aria-live="polite">Widoczne są ostatnie wczytane wiadomości.</p>
+          <p class="rejchat-search-hint">Odczyty i reakcje są widoczne dla zalogowanych; w rozmowach prywatnych tylko dla uczestników. Odczyt zapisujemy, gdy wiadomość jest widoczna na ekranie.</p>
           <p class="rejchat-search-hint">Wiadomości starsze niż 14 dni są usuwane przy wysłaniu nowej. Kopie zapisane w RejSejfie nie wygasają automatycznie.</p>
           <div class="comm-chat-list" id="chat-list" aria-live="polite">
             <p class="comm-chat-empty">Zaloguj się, aby zobaczyć rozmowy.</p>
@@ -571,6 +572,7 @@
           <div class="rejchat-compose-context" id="chat-compose-context" hidden><span id="chat-compose-label"></span><button type="button" id="chat-compose-cancel">Anuluj</button></div>
           <form class="comm-chat-form" id="chat-form" hidden>
             <textarea class="comm-input" id="chat-input" rows="2" maxlength="2000" placeholder="Napisz coś…" aria-label="Wiadomość na czat"></textarea>
+            <div class="rc-emoji-wrap"><button class="rc-emoji-toggle" type="button" aria-expanded="false" aria-controls="chat-emojis">☺ Emotki</button><div id="chat-emojis" class="rc-emoji-panel" hidden></div></div>
             <button class="btn btn-primary btn-sm" id="chat-send" type="submit" disabled>Wyślij</button>
           </form>
           <p class="chat-length" id="chat-length">0 / 2000 znaków · Enter — wyślij, Shift+Enter — nowa linia</p>
@@ -588,7 +590,7 @@
             <div id="dm-thread" hidden><h3 id="dm-thread-title" class="dm-thread-title"></h3><p class="rejchat-file-shortcut"><a id="dm-rejfile" href="/rejfile" target="_blank" rel="noopener noreferrer">📎 Przygotuj prywatny plik w RejFile ↗</a> <span>Odbiorca dostanie go do skrzynki RejFile; nic nie wyśle się automatycznie.</span></p><button type="button" class="dm-older" id="dm-older" hidden>Wczytaj starsze wiadomości</button><div id="dm-messages" class="comm-chat-list" aria-live="polite"></div><p id="dm-save-status" class="comm-chat-note" role="status" aria-live="polite"></p>
               <div class="rejchat-photo-picker" id="dm-photo-picker"><label for="dm-photo">📷 Dodaj zdjęcie</label><input id="dm-photo" type="file" accept="image/jpeg,image/png,image/webp,image/gif"><span id="dm-photo-name">Do 10 MiB (GIF do 1 MiB). Większe zdjęcia zmniejszymy do JPG. Wygasa po 14 dniach.</span><button id="dm-photo-clear" type="button" hidden>Usuń zdjęcie</button></div>
               <div class="rejchat-compose-context" id="dm-compose-context" hidden><span id="dm-compose-label"></span><button type="button" id="dm-compose-cancel">Anuluj</button></div>
-              <form id="dm-send-form" class="comm-chat-form"><textarea id="dm-input" class="comm-input" rows="2" maxlength="1000" placeholder="Napisz prywatną wiadomość…" aria-label="Prywatna wiadomość"></textarea><button class="btn btn-primary btn-sm" type="submit" id="dm-send">Wyślij</button></form>
+              <form id="dm-send-form" class="comm-chat-form"><textarea id="dm-input" class="comm-input" rows="2" maxlength="1000" placeholder="Napisz prywatną wiadomość…" aria-label="Prywatna wiadomość"></textarea><div class="rc-emoji-wrap"><button class="rc-emoji-toggle" type="button" aria-expanded="false" aria-controls="dm-emojis">☺ Emotki</button><div id="dm-emojis" class="rc-emoji-panel" hidden></div></div><button class="btn btn-primary btn-sm" type="submit" id="dm-send">Wyślij</button></form>
               <p class="dm-length" id="dm-length">0 / 1000 znaków · Enter — wyślij, Shift+Enter — nowa linia</p></div>
           </div>
         </section>
@@ -618,6 +620,7 @@
                     title="Dodaj zdjęcie (JPG / PNG / WebP / GIF do 6 MB) albo film (MP4 / WebM do 12 MB) — maks. 4 załączniki">
               📎 Zdjęcie / film
             </button>
+            <div class="rc-emoji-wrap" data-target="post-content"><button class="rc-emoji-toggle" type="button" aria-expanded="false" aria-controls="post-emojis">☺ Emotki</button><div id="post-emojis" class="rc-emoji-panel" hidden></div></div>
             <span class="comm-counter mono" id="post-counter">0 / 2000</span>
             <button class="btn btn-primary btn-sm" id="post-submit" type="button" disabled>Opublikuj wpis</button>
           </div>
@@ -719,10 +722,12 @@
   <script defer src="/js/rejchat-profiles.js?v=2"></script>
   <script defer src="/js/rejchat-photos.js?v=2"></script>
   <script defer src="/js/rejchat-scroll.js?v=1"></script>
-  <script defer src="js/community.js?v=2026-11-06-scroll"></script>
+  <script defer src="/js/rejchat-emoji.js?v=1"></script>
+  <script defer src="js/community.js?v=2026-11-06-details"></script>
   <script defer src="/js/rejchat.js?v=7"></script>
-  <script defer src="/js/rejchat-reactions.js?v=2"></script>
-  <script defer src="/js/rejchat-private.js?v=7"></script>
+  <script defer src="/js/rejchat-reactions.js?v=3"></script>
+  <script defer src="/js/rejchat-details.js?v=1"></script>
+  <script defer src="/js/rejchat-private.js?v=8"></script>
   <script defer src="/js/rejchat-rejsejf.js?v=2"></script>
   <script defer src="/js/rejchat-link-preview.js?v=1"></script>
   <script defer src="/js/rejchat-mute.js?v=1"></script>
@@ -730,5 +735,6 @@
   <script defer src="/js/media-capture.js?v=2"></script>
   <script defer src="/rejson-widgets/widget.js?v=12" data-project="rejson59.github.io"></script>
   <noscript><div class="rj-mobile-ads-spacer" aria-hidden="true"></div><aside id="rj-mobile-ads" aria-label="Mini reklamy i promocje"><span class="rj-mobile-ads-label">mini reklamy i promocje :) <span class="rj-mobile-ads-hint">przesuń →</span></span><div class="rj-mobile-ads-items" tabindex="0" aria-label="Przewijane mini reklamy"><a class="rj-mobile-ad rj-mobile-ad--site" href="/uslugi"><span class="rj-mobile-ad-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01M8 14h8"/></svg></span><span>Masz pomysł na swoją stronę?</span></a><a class="rj-mobile-ad rj-mobile-ad--offer" href="/partnerstwo#propozycja"><span class="rj-mobile-ad-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m4 10 11-5v14L4 14zM4 10v4m3.5 1 1.5 4h3l-1-3.3M18 9l2-2m-2 5h3m-3 3 2 2"/></svg></span><span>Masz coś, czym chcesz się podzielić?</span></a><a class="rj-mobile-ad rj-mobile-ad--house" href="/rejfile"><span class="rj-mobile-ad-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v13H6z"/><path d="M14 3v5h4M12 16V10m-2 2 2-2 2 2"/></svg></span><span>RejFile · wyślij plik</span></a></div></aside></noscript>
+<dialog id="rc-message-dialog" class="rc-message-dialog" aria-labelledby="rc-message-title"><div class="rc-dialog-head"><div><small>SZCZEGÓŁY WIADOMOŚCI</small><h2 id="rc-message-title">Odczyty i reakcje</h2></div><button type="button" id="rc-dialog-close" aria-label="Zamknij">✕</button></div><p class="rc-dialog-note">Odczyt oznacza, że wiadomość była widoczna na ekranie — nie jest dowodem, że ktoś przeczytał jej treść.</p><div id="rc-message-details" role="status" aria-live="polite"></div></dialog>
 </body>
 </html>

@@ -62,3 +62,6 @@ Zapisana notatka może też zostać przygotowana jako szkic na czacie ogólnym w
 Czat ogólny i Linki mogą odczytywać wszystkie zalogowane konta witryny; nie są one rozmowami 1:1 ani szyfrowane end-to-end. Zdjęcia i reakcje też wymagają aktywnej sesji. Wpisy i profile nadal są publiczne. Administrator ma dostęp do moderacji wiadomości ogólnych; DM nadal widzą tylko uczestnicy. Każde zalogowane konto może przekazać dalej treść lub link, więc nie należy traktować tych pokoi jak prywatnego sejfu.
 
 Strona RejChat ma znacznik noindex dla współpracujących wyszukiwarek i nie jest wymieniona w sitemapie; inne boty i filtry sieciowe nie muszą respektować tej prośby. Starsze klienty odczytu czatu bez tokenu nie działają po zmianie; wymagany jest nowy klient z sesją konta.
+
+### Odczyty i reakcje w RejChat
+Od wdrożenia nowej funkcji przeglądarka zapisuje potwierdzenie, gdy wiadomość innej osoby jest przez chwilę widoczna w aktywnym widoku i aktywnej karcie. To wskazówka, nie dowód przeczytania. W Opcjach wiadomości można zobaczyć konta, które ją zobaczyły, oraz kto wybrał którą reakcję. W pokojach informacje są widoczne dla zalogowanych, w DM tylko dla uczestników. Stare wiadomości nie mają historycznych potwierdzeń sprzed wdrożenia. Rekordy są usuwane razem z wiadomościami lub kontami; lista szczegółów ogranicza widok do 100 czytelników i 500 reakcji.
