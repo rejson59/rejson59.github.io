@@ -19,7 +19,7 @@
     if(a)a.checked=true;if(c)c.checked=true;$('profile-bio-input').value=p.bio;$('nickname-input').value=p.nickname||'';
   }
   async function load(){
-    var turn=++seq,s=api.session();confirmed=null;current=null;$('profile-view').hidden=true;$('profile-editor').hidden=true;status('Ładowanie profilu…');
+    var turn=++seq,s=api.session();confirmed=null;current=null;$('profile-view').hidden=true;$('profile-editor').hidden=true;status('Ładowanie profilu…');$('profile-report').hidden=true;$('profile-block').hidden=true;
     if(target && !api.safeName(target)){status('Nieprawidłowa nazwa profilu.');return;}
     try {
       if(s){
@@ -35,8 +35,10 @@
       var own=confirmed&&confirmed.username.toLowerCase()===rows[0].username.toLowerCase();
       $('profile-login-link').hidden=!!confirmed;
       if(own)editor(rows[0]);
+      if(confirmed&&!own){$('profile-report').hidden=false;$('profile-report').dataset.reportScope='profile';$('profile-report').dataset.reportUser=rows[0].username;var block=$('profile-block');block.hidden=false;block.disabled=true;try{var state=await api.rpc('rejchat_block_status',{p_token:confirmed.token,p_username:rows[0].username});if(turn!==seq)return;block.dataset.blocked=String(!!state.blocked);block.textContent=state.blocked?'Odblokuj wiadomości':'Blokuj wiadomości';block.disabled=false;}catch(e){if(turn===seq)status('Nie udało się sprawdzić blokady. Odśwież stronę.');}}
     }catch(e){if(turn===seq)status('Nie udało się wczytać profilu. Sprawdź połączenie i spróbuj ponownie.');}
   }
+  $('profile-block').addEventListener('click',async function(){var b=this,s=api.session(),turn=seq;if(!s||!confirmed||s.token!==confirmed.token||!current)return;var next=b.dataset.blocked!=='true';if(!window.confirm(next?'Zablokować nowe wiadomości i reakcje prywatne w obu kierunkach? Dotychczasowa historia i wiadomości publiczne pozostaną widoczne.':'Odblokować wiadomości prywatne? Jeśli druga osoba też Cię zablokowała, nadal nie będzie można pisać.'))return;b.disabled=true;try{await api.rpc('rejchat_block_user',{p_token:s.token,p_username:current.username,p_block:next});if(turn!==seq||!api.session()||api.session().token!==s.token)return;b.dataset.blocked=String(next);b.textContent=next?'Odblokuj wiadomości':'Blokuj wiadomości';status(next?'Blokada aktywna. Historia i publiczne wiadomości pozostają widoczne.':'Blokada zdjęta.');}catch(e){if(turn===seq)status(e.message||'Nie udało się zmienić blokady.');}finally{if(turn===seq)b.disabled=false;}});
   $('profile-form').addEventListener('submit',async function(e){
     e.preventDefault();var s=api.session();if(!confirmed||!s||s.token!==confirmed.token||!current){$('profile-result').textContent='Sesja się zmieniła — odśwież stronę.';return;}
     var a=document.querySelector('input[name="avatar"]:checked'),c=document.querySelector('input[name="color"]:checked');if(!a||!c)return;
@@ -58,6 +60,7 @@
       if(turn!==seq)return;showProfile(p);$('nickname-input').value=p.nickname||'';$('nickname-result').textContent='Nick zapisany.';
     }catch(err){if(turn===seq)$('nickname-result').textContent=err.message||'Nie udało się zapisać nicka.';}finally{button.disabled=false;}
   });
+  window.addEventListener('rj:session-change',load);
   window.addEventListener('storage',function(e){if(e.key==='rejson_community_session_v1'||e.key===null)load();});
   load();
 })();
