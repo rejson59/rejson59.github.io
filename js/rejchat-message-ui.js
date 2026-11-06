@@ -41,7 +41,8 @@
   function position(menu){
     var panel=menu.querySelector('.rc-menu-items'),anchor=menu.querySelector('summary');if(!panel||!anchor)return;
     var r=anchor.getBoundingClientRect(),width=Math.min(280,window.innerWidth-16);panel.style.width=width+'px';
-    var h=panel.getBoundingClientRect().height,left=Math.max(8,Math.min(window.innerWidth-width-8,r.right-width)),below=window.innerHeight-r.bottom-8,top=below>=h||below>=r.top?Math.min(r.bottom+5,window.innerHeight-h-8):Math.max(8,r.top-h-5);
+    var h=panel.getBoundingClientRect().height,left=Math.max(8,Math.min(window.innerWidth-width-8,r.right-width)),below=window.innerHeight-r.bottom-8,above=r.top-8,top;
+    if(below>=h+5)top=r.bottom+5;else if(above>=h+5)top=r.top-h-5;else top=Math.max(8,Math.min(window.innerHeight-h-8,r.top-h/2));
     panel.style.left=left+'px';panel.style.top=Math.max(8,top)+'px';
   }
   document.addEventListener('toggle',function(e){var menu=e.target;if(!menu.matches||!menu.matches('.rc-message-menu'))return;

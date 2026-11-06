@@ -1355,6 +1355,7 @@
   }
   var chatMessages = Object.create(null), chatSignature = "", chatMode = null, chatDraftBeforeEdit = "", chatPhotoPicker = null;
   var chatLastId = null;      /* id ostatniej wiadomości — dociągamy tylko nowe */
+  var chatHighWater = null; /* Najnowsza znana wiadomość (czas i id), także po usunięciu. */
   var chatBusy = false;
   var chatTickCount = 0;
   var chatRequest = null, chatNeedsFull = false, chatGeneration = 0, chatRenderedSession = null, chatScroll = null;
@@ -1391,9 +1392,10 @@
   function chatList() { return document.getElementById("chat-list"); }
   // Usuwamy dane natychmiast, zanim może wrócić opóźniona odpowiedź poprzedniej sesji.
   function resetChatSession() {
-    chatGeneration++; chatLastId=null; chatRenderedSession=null; chatSignature=""; chatMessages=Object.create(null);
+    chatGeneration++; chatLastId=null; chatHighWater=null; chatRenderedSession=null; chatSignature=""; chatMessages=Object.create(null);
     var box=chatList(); if(box)box.innerHTML=session?'<p class="comm-chat-empty">Ładowanie czatu…</p>':'<p class="comm-chat-empty">Zaloguj się, aby zobaczyć rozmowy.</p>';
     if (chatScroll) chatScroll.reset();
+    var jump=document.getElementById("chat-jump");if(jump)jump.hidden=true;
     var status=document.getElementById("chat-connection"); if(status&&!session)status.textContent="Dostęp po zalogowaniu";
   }
 
@@ -1479,6 +1481,22 @@
     return false;
   }
 
+  // Serwer porządkuje wiadomości po czasie i id. Starsze wpisy wracające
+  // po usunięciu albo duplikaty odpowiedzi nie są nowymi wiadomościami.
+  function updateChatHighWater(rows) {
+    var previous=chatHighWater, latest=previous, added=false;
+    rows.forEach(function(row){
+      var raw=String(row.created_at||""), time=Date.parse(raw), fraction=raw.match(/\.(\d+)(?:Z|[+-]\d\d(?::?\d\d)?)$/i), extra=Number(((fraction&&fraction[1])||"").padEnd(9,"0").slice(3,9)), id=String(row.id || "").toLowerCase();
+      if(!Number.isFinite(time)||!id)return;
+      function later(a,b){return !b||a.time>b.time||(a.time===b.time&&(a.extra>b.extra||(a.extra===b.extra&&a.id>b.id)));}
+      var key={time:time,extra:extra,id:id};
+      if(previous&&later(key,previous)&&!Object.prototype.hasOwnProperty.call(chatMessages,String(row.id)))added=true;
+      if(later(key,latest))latest=key;
+    });
+    chatHighWater=latest;
+    return added;
+  }
+
   /* pełne przeładowanie (co ~10 s łapie też wiadomości usunięte przez innych) */
   function loadChatFull() {
     var box = chatList();
@@ -1488,8 +1506,7 @@
         if (!Array.isArray(rows) || generation !== chatGeneration || !session || session.token !== token) return;
         chatConnection(true);
         var position = chatScroll ? chatScroll.capture() : {following:chatNearBottom(),top:box ? box.scrollTop : 0};
-        var existing = box ? Array.prototype.map.call(box.querySelectorAll("[data-chat-id]"), function (el) { return el.getAttribute("data-chat-id"); }) : [];
-        var added = existing.length && rows.some(function (row) { return existing.indexOf(String(row.id)) < 0; });
+        var added = updateChatHighWater(rows);
         if (chatRenderedSession !== (session ? session.token : "") || chatSignature !== JSON.stringify(rows) || (!rows.length && box && (!box.querySelector(".comm-chat-empty") || box.querySelector(".comm-chat-empty").textContent.indexOf("Pusto tu") !== 0))) renderChatAll(rows);
         chatLastId = rows.length ? rows[rows.length - 1].id : null;
         if (chatScroll) chatScroll.restore(position); else if (position.following) chatScrollBottom(); else if (box) box.scrollTop = position.top;
@@ -1511,10 +1528,11 @@
         chatConnection(true);
         if (!rows.length) return;
         var position = chatScroll ? chatScroll.capture() : {following:chatNearBottom(),top:chatList().scrollTop};
+        var added=updateChatHighWater(rows);
         appendChat(rows);
         chatLastId = rows[rows.length - 1].id;
         if (chatScroll) chatScroll.restore(position); else if (position.following) chatScrollBottom();
-        if (!position.following) showChatJump();
+        if (!position.following && added) showChatJump();
       })
       .catch(function (err) { if (!chatSessionFailure(err, generation, token)) chatConnection(false); });
   }
@@ -1605,7 +1623,7 @@
       chatMode=null;document.getElementById("chat-compose-context").hidden=true;
       document.getElementById("chat-save-status").textContent="";
       if(chatPhotoPicker)chatPhotoPicker.clear();
-      chatRoom = next; chatGeneration++; chatLastId = null; chatRenderedSession = null; chatSignature=""; chatMessages=Object.create(null);
+      chatRoom = next; chatGeneration++; chatLastId = null; chatHighWater = null; var jump=document.getElementById("chat-jump");if(jump)jump.hidden=true; chatRenderedSession = null; chatSignature=""; chatMessages=Object.create(null);
       document.getElementById("chat-room-title").textContent = next === "links" ? "Linki" : "Czat ogólny";
       document.getElementById("chat-room-description").textContent = next === "links" ? "Podziel się odnośnikiem lub zdjęciem ze społecznością" : "Rozmawiaj ze społecznością";
       document.getElementById("chat-send-status").textContent = chatErrors[next];

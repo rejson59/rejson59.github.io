@@ -1,0 +1,7 @@
+# Globalny filtr tekstu RejChat
+
+Filtr działa **na serwerze** przy nowych i edytowanych wiadomościach w obu pokojach, w DM, we wpisach i komentarzach oraz przy ustawianiu nicków. Wybrane przez administratora blokady pisania i wcześniejsze frazy nadal obowiązują. Lista w panelu administracyjnym umożliwia usunięcie frazy lub dodanie własnej (dodawane ręcznie frazy zachowują dotychczasowe dopasowanie fragmentu). Wbudowane wpisy to pełne wyrazy, frazy lub odpowiednio długie rdzenie, uwzględniające polskie odmiany; niektóre sformułowania są niejednoznaczne.
+
+Filtr sprawdza różne wielkości liter, formy Unicode i akcenty, typowe podobne znaki, proste zamiany cyfr i symboli, rozdzielanie znakami przestankowymi oraz wydłużanie liter. Normalizacja jest wykorzystywana tylko do sprawdzenia, a nie do zmiany treści. Odrzucona treść nie jest dodatkowo zapisywana, a panel moderacji nie pokazuje zawartości DM.
+
+**Ograniczenia:** reguły słownikowe nie rozumieją kontekstu, mogą odrzucić nieszkodliwą treść lub nie wykryć obraźliwej. Nie ma filtra gwarantującego wykrycie wszystkich obejść. Zestaw obejmuje głównie polski i angielski, ale nie wszystkie języki, slang ani znaki. Nie analizuje obrazów, GIF-ów, treści plików ani stron pod linkami i nie zastępuje zgłoszeń oraz moderacji. Unikamy blokowania neutralnych słów dotyczących tożsamości, zdrowia i edukacji; administrator powinien korygować błędne dopasowania.

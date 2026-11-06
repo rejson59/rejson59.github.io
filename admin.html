@@ -25,7 +25,7 @@
   <link rel="stylesheet" href="rejson-widgets/css/studio.css?v=3">
   <link rel="stylesheet" href="rejson-widgets/css/admin.css?v=2026-10-31">
   <link rel="stylesheet" href="css/admin-panel.css?v=2026-10-31-overview">
-  <link rel="stylesheet" href="css/rejchat-moderation.css?v=2">
+  <link rel="stylesheet" href="css/rejchat-moderation.css?v=3">
   <link rel="stylesheet" href="css/admin-partner.css?v=1">
   <link rel="stylesheet" href="/css/liquid.css?v=2026-10-30-2">
   <link rel="stylesheet" href="/css/rejchat.css?v=1">
@@ -377,8 +377,9 @@
           <p class="rcmod-intro"><strong>Automatyczna ochrona:</strong> limity wysyłania, powtarzane treści, długie ciągi znaków i nadmiar linków sprawdzane są na serwerze we wszystkich rozmowach i wpisach. To reguły, nie AI: mogą się mylić i nie rozpoznają wszystkich naruszeń. Nie nakładają automatycznie wyciszeń ani nie pokazują prywatnych wiadomości w panelu.</p>
           <p class="rcmod-status" id="rcmod-status" role="status" aria-live="polite"></p>
           <div class="rcmod-grid">
-            <section class="rcmod-section"><h3>Filtr fraz</h3><p>Blokuje fragment tekstu niezależnie od wielkości liter. Zmiany dotyczą nowych wiadomości.</p>
+            <section class="rcmod-section"><h3>Filtr fraz</h3><p>Wbudowane reguły sprawdzają słowa i rdzenie wraz z typowymi obejściami. Własne frazy blokują także fragmenty tekstu. Filtr dotyczy nowych i edytowanych treści.</p>
               <form id="rcmod-phrase-form" class="rcmod-form"><label for="rcmod-phrase">Słowo lub fraza</label><div><input id="rcmod-phrase" maxlength="80" minlength="2" required placeholder="np. niechciana fraza"><button class="btn btn-primary btn-sm" type="submit">Dodaj filtr</button></div></form>
+              <label for="rcmod-phrase-search">Szukaj na liście</label><input id="rcmod-phrase-search" type="search" placeholder="Szukaj słowa lub rdzenia…" autocomplete="off"><p id="rcmod-phrase-count" role="status" aria-live="polite"></p>
               <div id="rcmod-phrases" class="rcmod-list"></div>
             </section>
             <section class="rcmod-section rcmod-mute"><h3>Wyciszenie · mute</h3><p>Wstrzymuje pisanie na czacie, we wpisach, komentarzach i prywatnych rozmowach. Czasowe wyciszenie wygasa automatycznie; konto i historia zostają.</p>
@@ -639,7 +640,7 @@
   <script src="js/error-reporter.js?v=1" defer></script>
   <script src="js/admin-errors.js?v=1"></script>
   <script src="js/admin-partner.js?v=1"></script>
-  <script src="js/admin-rejchat-moderation.js?v=3"></script>
+  <script src="js/admin-rejchat-moderation.js?v=4"></script>
   <script src="js/admin-panel.js?v=2026-11-05-moderation"></script>
   <script defer src="/js/media-capture.js?v=2"></script>
   <script defer src="/rejson-widgets/widget.js?v=12" data-project="rejson59.github.io"></script>

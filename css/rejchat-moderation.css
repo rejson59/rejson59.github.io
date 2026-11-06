@@ -24,3 +24,6 @@
 .rcmod-mute-form { display:grid; grid-template-columns:1fr; gap:7px; }.rcmod-mute-form label { margin:4px 0 0; }.rcmod-mute-form input,.rcmod-mute-form select { width:100%; box-sizing:border-box; }.rcmod-mute-form button { justify-self:start; margin-top:5px; }
 .rcmod-row .rcmod-author-mute { flex:none; }.rcmod-row input[type=checkbox] { flex:none; }.rcmod-row strong { overflow-wrap:anywhere; }
 @media(max-width:480px){ .rcmod-row { flex-wrap:wrap; }.rcmod-row .rcmod-author-mute { margin-left:auto; } }
+.rcmod-section > label[for="rcmod-phrase-search"] { display:block; margin-top:14px; font-size:12px; font-weight:700; }
+.rcmod-section > #rcmod-phrase-search { box-sizing:border-box; width:100%; margin-top:6px; padding:9px; border:1px solid var(--border); border-radius:10px; background:var(--bg-elev); color:var(--text); font:inherit; }
+.rcmod-section > #rcmod-phrase-count { margin:6px 0 0; }
