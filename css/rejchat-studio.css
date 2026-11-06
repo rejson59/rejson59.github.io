@@ -86,7 +86,7 @@ body.rj-community .rejchat-search { display:flex; align-items:center; position:r
 .search-mark { position:absolute; left:14px; color:var(--rc-sub); font-size:25px; line-height:1; pointer-events:none; }
 body.rj-community .rejchat-search .comm-input { height:42px; padding-left:41px; border:1px solid var(--rc-line); border-radius:12px; color:var(--rc-ink); background:var(--rc-surface-raised); }
 body.rj-community .rejchat-search-hint { margin:4px 25px; color:var(--rc-sub); font-size:10px; }
-body.rj-community .comm-chat-list { height:clamp(360px,57vh,660px); max-height:660px; min-height:300px; gap:16px; padding:20px 24px; margin-top:12px; border-top:1px solid var(--rc-line); border-bottom:1px solid var(--rc-line); background:var(--rc-surface-soft); }
+body.rj-community .comm-chat-list { overflow-anchor:none; scroll-behavior:auto; height:clamp(360px,57vh,660px); max-height:660px; min-height:300px; gap:16px; padding:20px 24px; margin-top:12px; border-top:1px solid var(--rc-line); border-bottom:1px solid var(--rc-line); background:var(--rc-surface-soft); }
 body.rj-community .chat-msg { gap:10px; }.rj-community .chat-msg .comm-avatar { width:38px; height:38px; border-radius:13px; }
 body.rj-community .chat-bubble { max-width:min(85%,580px); padding:12px 14px; border:1px solid var(--rc-line); border-radius:4px 16px 16px 16px; color:var(--rc-ink); background:var(--rc-surface); box-shadow:none; }
 body.rj-community .chat-msg.is-mine .chat-bubble { border-color:color-mix(in srgb,var(--rc-accent) 30%,var(--rc-line)); border-radius:16px 4px 16px 16px; background:color-mix(in srgb,var(--rc-accent) 12%,var(--rc-surface)); }
