@@ -30,7 +30,8 @@
         var meta=document.createElement('small');var date=new Date(item.updated_at);meta.textContent=(item.kind==='note'?'Notatka':'Plik')+' · '+bytes(item.size)+' · '+(isNaN(date)?'':date.toLocaleString('pl-PL',{dateStyle:'medium',timeStyle:'short'}));row.appendChild(meta);
         var actions=document.createElement('div');actions.className='safe-item-actions';
         actions.appendChild(button(item.kind==='note'?'Otwórz i edytuj':'Pobierz',function(){openItem(item,session,version);}));
-        actions.appendChild(button('Usuń',function(){removeItem(item,session,version);}));row.appendChild(actions);list.appendChild(row);
+        actions.appendChild(button('Usuń',function(){removeItem(item,session,version);}));
+        if(item.kind==='note')actions.appendChild(button('Przygotuj w RejChat',function(){prepareChat(item,session,version);}));row.appendChild(actions);list.appendChild(row);
       });
       $('safe-usage').textContent=items.length+' / 200 elementów · '+bytes(size)+' / 25 MiB';
       if(!items.length){var empty=document.createElement('p');empty.textContent='Na razie jest tu pusto. Dodaj pierwszą notatkę lub plik ✨';list.appendChild(empty);}
@@ -46,6 +47,24 @@
         var url=URL.createObjectURL(new Blob([arr],{type:'application/octet-stream'}));var a=document.createElement('a');a.href=url;a.download=data.title;a.style.display='none';document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(url);},60000);status('Plik jest gotowy do pobrania.');
       } else throw new Error('Nieznany rodzaj elementu.');
     }catch(e){fail(e,session,version);}finally{if(version===epoch)setBusy(false);}
+  }
+  async function prepareChat(item,session,version){
+    if(busy||!current(session,version))return;
+    if(!confirm('Przygotować kopię zapisanej notatki w publicznym czacie RejChat? Nic nie zostanie wysłane automatycznie. Sprawdź treść przed wysłaniem.'))return;
+    setBusy(true);status('Przygotowuję szkic…');
+    try{
+      var data=await rpc('rejsejf_get',{p_id:item.id},session);if(!current(session,version))return;
+      if(!data||data.kind!=='note'||typeof data.content!=='string'||!data.content.trim())throw new Error('Notatka jest pusta lub niedostępna.');
+      if(data.content.length>2000)throw new Error('Notatka jest dłuższa niż 2000 znaków. Skróć kopię przed przygotowaniem w RejChat.');
+      if(!window.crypto||!crypto.subtle)throw new Error('Przeglądarka nie obsługuje bezpiecznego powiązania szkicu z kontem.');
+      var hash=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(session.token));if(!current(session,version))return;
+      var fingerprint=Array.from(new Uint8Array(hash),function(b){return b.toString(16).padStart(2,'0');}).join('');
+      var old=sessionStorage.getItem('rejsejf_chat_draft_v1');
+      if(old&&!confirm('W tej karcie czeka już inny szkic z RejSejfu. Zastąpić go?')){status('Szkic pozostawiono bez zmian.');return;}
+      sessionStorage.setItem('rejsejf_chat_draft_v1',JSON.stringify({content:data.content,fingerprint:fingerprint,at:Date.now()}));
+      if(!current(session,version)){sessionStorage.removeItem('rejsejf_chat_draft_v1');return;}
+      location.assign('/rejchat#czat');
+    }catch(err){fail(err,session,version);}finally{if(version===epoch)setBusy(false);}
   }
   async function removeItem(item,session,version){
     if(busy||!confirm('Usunąć „'+item.title+'”? Tej operacji nie można cofnąć.'))return;setBusy(true);status('Usuwam…');

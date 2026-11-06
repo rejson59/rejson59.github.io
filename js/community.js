@@ -1347,6 +1347,7 @@
     chatDrafts = { general: "", links: "" }; chatErrors = { general: "", links: "" };
     var field = document.getElementById("chat-input"), status = document.getElementById("chat-send-status");
     if (field) field.value = ""; if (status) status.textContent = "";
+    var saveStatus=document.getElementById("chat-save-status"); if(saveStatus)saveStatus.textContent="";
     chatMode = null; if(chatPhotoPicker)chatPhotoPicker.clear(); var box=document.getElementById("chat-compose-context"); if(box)box.hidden=true;
   }
   var chatMessages = Object.create(null), chatSignature = "", chatMode = null, chatDraftBeforeEdit = "", chatPhotoPicker = null;
@@ -1375,6 +1376,8 @@
           (window.RJChatPhotos ? window.RJChatPhotos.button(m.photo) : "") +
           (m.edited_at ? '<span class="rejchat-edited">Edytowano</span>' : '') +
           (session ? '<button class="rejchat-message-action" type="button" data-chat-reply="' + esc(m.id) + '">Odpowiedz</button>' : '') +
+          (session ? '<button class="rejchat-message-action" type="button" data-save-sejf="text" data-save-scope="public" data-save-message="' + esc(m.id) + '">Zapisz tekst w RejSejfie</button>' : '') +
+          (session && m.photo && Date.parse(m.photo.expires_at)>Date.now() ? '<button class="rejchat-message-action" type="button" data-save-sejf="photo" data-save-scope="public" data-save-message="' + esc(m.id) + '" title="Kopia w Sejfie nie wygaśnie po 14 dniach">Zapisz zdjęcie w RejSejfie</button>' : '') +
           (mine ? '<button class="rejchat-message-action" type="button" data-chat-edit="' + esc(m.id) + '">Edytuj</button>' : '') +
         "</div>" +
       "</div>"
@@ -1570,6 +1573,7 @@
       var field = document.getElementById("chat-input");
       if (field) { chatDrafts[chatRoom] = chatMode && chatMode.kind === "edit" ? chatDraftBeforeEdit : field.value; field.value = chatDrafts[next]; }
       chatMode=null;document.getElementById("chat-compose-context").hidden=true;
+      document.getElementById("chat-save-status").textContent="";
       if(chatPhotoPicker)chatPhotoPicker.clear();
       chatRoom = next; chatGeneration++; chatLastId = null; chatRenderedSession = null; chatSignature=""; chatMessages=Object.create(null);
       document.getElementById("chat-room-title").textContent = next === "links" ? "Linki" : "Czat ogólny";
