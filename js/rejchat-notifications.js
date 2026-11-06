@@ -39,9 +39,9 @@
     count.hidden = !s || !total;
     count.textContent = total > 99 ? '99+' : String(total);
     bell.setAttribute('aria-label', 'Powiadomienia' + (total ? ', nieprzeczytane: ' + total : ''));
-    mark.hidden = !s || !total;
+    mark.hidden = !s || !(unread + dmUnread + reactionUnread + generalItems.length);
     if (!s) { list.innerHTML = '<p class="rj-chat-alert-empty">Zaloguj się, aby otrzymywać powiadomienia o projektach, zgłoszeniach i RejChat. <a href="/logowanie">Konto</a></p>'; return; }
-    if (!items.length && !dmItems.length && !reactionItems.length && !generalItems.length) { list.innerHTML = '<p class="rj-chat-alert-empty">Tu pojawią się nowe powiadomienia o projektach, zgłoszeniach i RejChat.</p>'; return; }
+    if (!items.length && !dmItems.length && !reactionItems.length && !warningItems.length && !generalItems.length) { list.innerHTML = '<p class="rj-chat-alert-empty">Tu pojawią się nowe powiadomienia o projektach, zgłoszeniach i RejChat.</p>'; return; }
     var rows = items.map(function(n) {
       var action = n.kind === 'like' ? 'polubił(a) Twój wpis' : n.kind === 'reply' ? 'odpowiedział(a) na Twój komentarz' : 'skomentował(a) Twój wpis';
       var when = new Date(n.created_at), date = isNaN(when.getTime()) ? '' : when.toLocaleString('pl-PL', {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});

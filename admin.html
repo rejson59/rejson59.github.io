@@ -34,7 +34,7 @@
   <link rel="stylesheet" href="/css/shared-topbar.css?v=4">
   <script defer src="/js/shared-topbar.js?v=1"></script>
   <noscript><link rel="stylesheet" href="/css/shared-topbar-nojs.css?v=2"></noscript>
-  <link rel="stylesheet" href="/css/rejchat-notifications.css?v=1">
+  <link rel="stylesheet" href="/css/rejchat-notifications.css?v=2">
 </head>
 <body class="rj-admin">
 
@@ -395,8 +395,8 @@
           <section class="rcmod-section"><h3>Publiczny nick konta</h3><p>Nick jest widoczny obok nazwy konta. Puste pole usuwa nick; użytkownik także może go zmienić.</p>
             <form id="rcmod-nick-form" class="rcmod-form"><label for="rcmod-nick-user">Nazwa konta</label><input id="rcmod-nick-user" maxlength="24" required><label for="rcmod-nick-value">Nowy nick (pusty = usuń)</label><input id="rcmod-nick-value" maxlength="32"><button class="btn btn-primary btn-sm" type="submit">Zapisz nick</button></form>
           </section>
-          <section class="rcmod-section"><h3>Ostrzeżenie</h3><p>Odbiorca zobaczy powód we wspólnym dzwonku i potwierdzi odczyt. Ostrzeżenie nie nakłada kary; jest przechowywane do 180 dni.</p><form id="rcmod-warning-form" class="rcmod-form"><label for="rcmod-warning-user">Nazwa konta</label><input id="rcmod-warning-user" maxlength="24" required><label for="rcmod-warning-reason">Powód</label><input id="rcmod-warning-reason" minlength="3" maxlength="300" required><button class="btn btn-primary btn-sm" type="submit">Wyślij ostrzeżenie</button></form></section>
-          <section class="rcmod-section"><h3>Zgłoszenia</h3><p>Wyłącznie zgłoszone teksty, bez zdjęć. Zgłoszenia usuwane są po 90 dniach. Rozpatrzenie nie nakłada kary.</p><div class="rcmod-actions"><label><input type="checkbox" id="rcmod-reports-all"> Zaznacz wszystkie</label><button type="button" id="rcmod-reports-resolve" class="btn btn-glass btn-sm" disabled>Rozpatrz zaznaczone</button><button type="button" id="rcmod-reports-refresh" class="btn btn-glass btn-sm">Odśwież zgłoszenia</button></div><p id="rcmod-reports-status" role="status"></p><div id="rcmod-reports" class="rcmod-list"></div></section>
+          <section class="rcmod-section"><h3>Ostrzeżenie</h3><p>Odbiorca zobaczy powód we wspólnym dzwonku i potwierdzi odczyt. Ostrzeżenie nie nakłada kary; jest przechowywane około 180 dni.</p><form id="rcmod-warning-form" class="rcmod-form"><label for="rcmod-warning-user">Nazwa konta</label><input id="rcmod-warning-user" maxlength="24" required><label for="rcmod-warning-reason">Powód</label><input id="rcmod-warning-reason" minlength="3" maxlength="300" required><button class="btn btn-primary btn-sm" type="submit">Wyślij ostrzeżenie</button></form></section>
+          <section class="rcmod-section"><h3>Zgłoszenia</h3><p>Wyłącznie zgłoszone teksty, bez zdjęć. Zgłoszenia usuwane są po około 90 dniach. Rozpatrzenie nie nakłada kary.</p><div class="rcmod-actions"><label><input type="checkbox" id="rcmod-reports-all"> Zaznacz wszystkie</label><button type="button" id="rcmod-reports-resolve" class="btn btn-glass btn-sm" disabled>Rozpatrz zaznaczone</button><button type="button" id="rcmod-reports-refresh" class="btn btn-glass btn-sm">Odśwież zgłoszenia</button></div><p id="rcmod-reports-status" role="status"></p><div id="rcmod-reports" class="rcmod-list"></div></section>
           <section class="rcmod-section rcmod-messages"><div class="rcmod-title"><div><h3>Ostatnie wiadomości publiczne</h3><p>Ostatnie 100 wiadomości. Możesz zaznaczyć kilka i usunąć je jednocześnie.</p></div><button type="button" id="rcmod-refresh" class="btn btn-glass btn-sm">Odśwież</button></div>
             <div class="rcmod-actions"><label><input type="checkbox" id="rcmod-select-all"> Zaznacz wszystkie</label><button type="button" id="rcmod-delete" class="btn btn-glass btn-sm" disabled>Usuń zaznaczone</button></div>
             <div id="rcmod-messages" class="rcmod-list"></div>

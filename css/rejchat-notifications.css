@@ -27,3 +27,7 @@
   body .rj-shared-header.rj-alerts-header .rj-home-link, body .rj-shared-header.rj-alerts-header .rj-chat-bell { width:40px; height:40px; }
   body .rj-shared-header.rj-alerts-header .site-nav { right:4px; }
 }
+
+.rj-chat-alert-item [data-warning-ack] { display:inline-block; margin-top:8px; padding:6px 10px; border:1px solid #6799cf; border-radius:8px; background:#e6f1ff; color:#123c68; font:inherit; cursor:pointer; }
+.rj-chat-alert-item [data-warning-ack]:disabled { opacity:.6; cursor:wait; }
+.rj-chat-alert-item small { overflow-wrap:anywhere; }
