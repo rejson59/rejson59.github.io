@@ -3,6 +3,7 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
 const root=path.resolve(__dirname,'../..'),token='0123456789abcdef0123456789abcdef',thread='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa';
 const uid=n=>'00000000-0000-4000-8000-'+String(n).padStart(12,'0');
 const make=(n,scope)=>({id:uid(n),author_name:'Bob',content:scope+' wiadomość '+n+' https://example.org/path',created_at:'2026-11-06T08:00:00Z',mine:false,reactions:[]});
+let duplicateNext=false,fullCalls=0;
 let general=Array.from({length:35},(_,i)=>make(i+1,'Ogólny')),links=Array.from({length:30},(_,i)=>make(i+101,'Linki')),dm=Array.from({length:100},(_,i)=>make(i+201,'DM'));
 const oldFiles=new Set(['/rejchat.html','/js/community.js','/js/rejchat-private.js','/css/rejchat-studio.css']);
 const server=http.createServer((req,res)=>{const url=new URL(req.url,'http://local'),f=path.resolve(root,'.'+url.pathname);if(!f.startsWith(root+path.sep)||!fs.existsSync(f)||!fs.statSync(f).isFile())return res.writeHead(404).end();const type={'.html':'text/html; charset=utf-8','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml'}[path.extname(f)]||'application/octet-stream';res.writeHead(200,{'content-type':type});if(process.env.BASELINE&&oldFiles.has(url.pathname))return res.end(execFileSync('git',['show','HEAD:'+url.pathname.slice(1)],{cwd:root}));fs.createReadStream(f).pipe(res)});
@@ -14,7 +15,7 @@ async function main(width){
  try {const ctx=await browser.newContext({viewport:{width,height:850},serviceWorkers:'block'});await ctx.addInitScript(t=>localStorage.setItem('rejson_community_session_v1',JSON.stringify({username:'Alicja',token:t})),token);
  await ctx.route('**/*',async route=>{const url=route.request().url();if(url.startsWith(origin+'/'))return route.continue();if(!url.includes('/rest/v1/rpc/'))return route.abort();const fn=url.split('/').pop(),b=route.request().postDataJSON()||{};let data=[];
  if(fn==='community_whoami')data={username:'Alicja'};else if(fn==='community_list_posts')data={posts:[],total:0,available_tags:[]};else if(fn==='rejchat_get_profiles')data=(b.p_names||[]).map(username=>({username}));
- else if(fn==='rejchat_room_list_v3'){const rows=b.p_room==='links'?links:general;const i=rows.findIndex(x=>x.id===b.p_after_id);data=b.p_after_id&&i>=0?rows.slice(i+1):rows.slice(-50);}
+ else if(fn==='rejchat_room_list_v3'){const rows=b.p_room==='links'?links:general;const i=rows.findIndex(x=>x.id===b.p_after_id);if(!b.p_after_id)fullCalls++;if(b.p_after_id&&duplicateNext){duplicateNext=false;data=[rows[rows.length-1]];}else data=b.p_after_id&&i>=0?rows.slice(i+1):rows.slice(-50);}
  else if(fn==='rejchat_dm_inbox')data=[{id:thread,username:'Bob',unread:0}];else if(fn==='rejchat_dm_list_v2')data={username:'Bob',messages:dm.slice()};else if(fn==='rejchat_dm_history_v2')data=Array.from({length:10},(_,i)=>make(i+1000,'Historia'));
  else if(fn==='rejchat_notifications_list'||fn==='rejchat_reaction_inbox')data={items:[],unread:0};return route.fulfill({status:200,json:data}).catch(()=>{});});
  const page=await ctx.newPage();await page.goto(origin+'/rejchat.html',{waitUntil:'domcontentloaded'});await page.evaluate(()=>document.querySelector('#rj-page-loader')?.remove());
@@ -24,6 +25,9 @@ async function main(width){
  await page.locator('#chat-list .chat-bubble').first().evaluate(el=>{let x=document.createElement('div');x.style.height='600px';el.append(x)});await page.waitForTimeout(250);await atBottom(page,'#chat-list');
  // Czytający wcześniejsze wiadomości nie jest ściągany na dół.
  await page.locator('#chat-list').hover();await page.mouse.wheel(0,-900);await page.waitForTimeout(150);let before=await measure(page,'#chat-list');assert(before.gap>100,'test musi ustawić pozycję powyżej końca');
+ // Duplikat z ponowionego żądania i powrót starszej wiadomości po usunięciu nie są nowe.
+ assert.equal(await page.locator('#chat-jump').isVisible(),false);duplicateNext=true;await page.waitForFunction(()=>false,null,{timeout:250}).catch(()=>{});for(let i=0;i<30&&duplicateNext;i++)await page.waitForTimeout(250);assert.equal(duplicateNext,false,'test otrzymał duplikat');assert.equal(await page.locator('#chat-jump').isVisible(),false,'duplikat nie jest nową wiadomością');
+ const fullBefore=fullCalls;general.pop();general.unshift(make(0,'Starsza po usunięciu'));for(let i=0;i<60&&fullCalls===fullBefore;i++)await page.waitForTimeout(250);assert(fullCalls>fullBefore,'test doczekał pełnego odświeżenia');await page.waitForTimeout(300);assert.equal(await page.locator('#chat-jump').isVisible(),false,'starsza wiadomość nie jest nową');
  general.push(make(1000+width,'Ogólny nowszy'));await page.waitForFunction(id=>!!document.querySelector('#chat-list [data-chat-id="'+id+'"]'),uid(1000+width),{timeout:6500});await page.waitForTimeout(200);let after=await measure(page,'#chat-list');assert(after.gap>100,'nowa wiadomość nie powinna zabrać czytelnika na dół');assert.equal(await page.locator('#chat-jump').isVisible(),true);
  // Pełne odświeżenie: zachowanie tej samej wiadomości w tym samym miejscu.
  const anchor=await page.locator('#chat-list').evaluate(el=>{const y=el.getBoundingClientRect().top;const c=Array.from(el.children).find(x=>x.dataset.chatId&&x.getBoundingClientRect().bottom>y);return {id:c.dataset.chatId,offset:c.getBoundingClientRect().top-y};});general[0].content+=' zmiana';
