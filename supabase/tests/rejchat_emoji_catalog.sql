@@ -4,6 +4,7 @@ do $$ declare a uuid:=gen_random_uuid();b uuid:=gen_random_uuid();c uuid:=gen_ra
  insert into public.community_users(id,username,pin_hash) values(a,'T'||substr(replace(a::text,'-',''),1,20),'test'),(b,'T'||substr(replace(b::text,'-',''),1,20),'test'),(c,'T'||substr(replace(c::text,'-',''),1,20),'test');
  insert into public.community_sessions(token_hash,user_id) values(encode(extensions.digest('rejson_comm_sess_v1:'||ta,'sha256'),'hex'),a),(encode(extensions.digest('rejson_comm_sess_v1:'||tb,'sha256'),'hex'),b),(encode(extensions.digest('rejson_comm_sess_v1:'||tc,'sha256'),'hex'),c);
  insert into public.community_chat(id,author_id,author_name,content,room) select mid,a,username,'test','general' from public.community_users where id=a;
+ update public.rejchat_antispam_state set last_sent=clock_timestamp()-interval '3 seconds' where user_id=a and kind='chat';
  insert into public.community_chat(id,author_id,author_name,content,room) select lnk,a,username,'test','links' from public.community_users where id=a;
  insert into public.rejchat_dm_threads(id,user_low,user_high) values(tid,least(a,b),greatest(a,b));insert into public.rejchat_dm_messages(id,thread_id,author_id,content) values(dm,tid,a,'test');
  perform set_config('test.ta',ta,true);perform set_config('test.tb',tb,true);perform set_config('test.tc',tc,true);perform set_config('test.mid',mid::text,true);perform set_config('test.lnk',lnk::text,true);perform set_config('test.dm',dm::text,true);perform set_config('test.b',b::text,true);
