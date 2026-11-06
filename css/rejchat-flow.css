@@ -246,10 +246,13 @@ body.rj-community .comm-chat { backdrop-filter:none; -webkit-backdrop-filter:non
 body.rj-community .rc-menu-items :is(button,.rc-reaction-picker,.rc-reaction-full,.rc-emoji-picker-ui,.rc-emoji-tabs,.rc-emoji-grid,.rc-emoji-search) { box-sizing:border-box; min-width:0; max-width:100%; }
 body.rj-community .rc-menu-items > button { margin-left:0; }
 body.rj-community .rc-reaction-picker > button { flex:1 1 0; width:0; }
-body.rj-community .rc-reaction-full,.rc-emoji-picker-ui { min-width:0; width:100%; box-sizing:border-box; }
+body.rj-community .rc-reaction-full { min-width:0; width:100%; box-sizing:border-box; }
 body.rj-community .rc-menu-items:popover-open,body.rj-community .rc-menu-items.rc-menu-fixed { overflow-x:hidden; }
 /* Paski przewijania pasujące do obu motywów; nie chowamy możliwości przewijania. */
 body.rj-community :is(.comm-sidebar,.rejchat-info,.comm-chat-list,.comm-chat,.rc-menu-items,.rc-emoji-tabs,.rc-emoji-grid,.rc-reaction-summary,.dm-inbox) { scrollbar-width:thin; scrollbar-color:var(--rc-line) var(--rc-surface-soft); }
 body.rj-community :is(.comm-sidebar,.rejchat-info,.comm-chat-list,.comm-chat,.rc-menu-items,.rc-emoji-tabs,.rc-emoji-grid,.rc-reaction-summary,.dm-inbox)::-webkit-scrollbar { width:8px; height:8px; }
 body.rj-community :is(.comm-sidebar,.rejchat-info,.comm-chat-list,.comm-chat,.rc-menu-items,.rc-emoji-tabs,.rc-emoji-grid,.rc-reaction-summary,.dm-inbox)::-webkit-scrollbar-track { background:var(--rc-surface-soft); border-radius:8px; }
 body.rj-community :is(.comm-sidebar,.rejchat-info,.comm-chat-list,.comm-chat,.rc-menu-items,.rc-emoji-tabs,.rc-emoji-grid,.rc-reaction-summary,.dm-inbox)::-webkit-scrollbar-thumb { background:var(--rc-line); border-radius:8px; }
+
+/* Widocznych jest pięć pełnych rzędów; pozostałe emoji przewijamy w siatce. */
+.rc-emoji-grid { max-height:192px; overscroll-behavior:contain; }

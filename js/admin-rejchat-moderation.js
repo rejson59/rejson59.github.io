@@ -2,7 +2,7 @@
 (function(window,document){
   'use strict';
   var panel=document.getElementById('rcmod-panel'); if(!panel)return;
-  var $=function(id){return document.getElementById('rcmod-'+id);}, seq=0, busy=false;
+  var $=function(id){return document.getElementById('rcmod-'+id);}, seq=0, busy=false, phraseCache=[];
   function node(tag,cls,text){var el=document.createElement(tag);if(cls)el.className=cls;if(text!=null)el.textContent=text;return el;}
   function rpc(name,args){return window.RejsonCloud.rpc(name,args||{},true);}
   function message(text){$('status').textContent=text||'';}
@@ -11,13 +11,14 @@
   function empty(container,text){container.appendChild(node('p','',text));}
   function render(data){
     var phrases=$('phrases'),blocks=$('blocks'),messages=$('messages');phrases.replaceChildren();blocks.replaceChildren();messages.replaceChildren();$('select-all').checked=false;$('delete').disabled=true;
-    if(!data.phrases.length)empty(phrases,'Brak aktywnych fraz.');
-    data.phrases.forEach(function(f){var row=node('div','rcmod-row'),name=node('span','',f.phrase);row.append(name,button('Usuń',function(){if(window.confirm('Usunąć tę frazę z filtra?'))action('admin_rejchat_phrase',{p_phrase:'',p_delete_id:f.id});}));phrases.appendChild(row);});
+    phraseCache=data.phrases;renderPhrases();
     if(!data.blocks.length)empty(blocks,'Brak aktywnych blokad.');
     data.blocks.forEach(function(b){var row=node('div','rcmod-row'),name=node('span','',b.username),until=b.until_at?new Date(b.until_at).toLocaleString('pl-PL'):'bezterminowo';name.appendChild(node('small','',b.until_at?'Do: '+until:until));if(b.reason)name.appendChild(node('small','','Powód: '+b.reason));row.append(name,button('Zdejmij mute',function(){if(window.confirm('Przywrócić pisanie kontu '+b.username+'?'))action('admin_rejchat_mute',{p_username:b.username,p_minutes:0,p_reason:''});}));blocks.appendChild(row);});
     if(!data.messages.length)empty(messages,'Brak wiadomości publicznych.');
     data.messages.forEach(function(m){var row=node('div','rcmod-row'),check=node('input'),body=node('span','');check.type='checkbox';check.value=m.id;check.dataset.message='';check.setAttribute('aria-label','Zaznacz wiadomość użytkownika '+m.author_name);body.appendChild(node('strong','',m.author_name));body.appendChild(node('small','',new Date(m.created_at).toLocaleString('pl-PL')));body.appendChild(node('div','',m.content));var mute=button('Wycisz',function(){$('user').value=m.author_name;$('user').focus();$('block-form').scrollIntoView({block:'nearest'});});mute.classList.add('rcmod-author-mute');row.append(check,body,mute);messages.appendChild(row);});
   }
+  function renderPhrases(){var phrases=$('phrases'),q=$('phrase-search').value.trim().toLocaleLowerCase('pl'),filtered=phraseCache.filter(function(f){return String(f.phrase).toLocaleLowerCase('pl').includes(q);});phrases.replaceChildren();$('phrase-count').textContent='Widoczne: '+filtered.length+' z '+phraseCache.length+'.';if(!filtered.length)empty(phrases,q?'Nie znaleziono frazy.':'Brak aktywnych fraz.');filtered.forEach(function(f){var row=node('div','rcmod-row'),name=node('span','',f.phrase);row.append(name,button('Usuń',function(){if(window.confirm('Usunąć tę frazę z filtra?'))action('admin_rejchat_phrase',{p_phrase:'',p_delete_id:f.id});}));phrases.appendChild(row);});}
+  $('phrase-search').addEventListener('input',renderPhrases);
   function load(){var generation=++seq;message('Wczytuję moderację…');return rpc('admin_rejchat_overview',{}).then(function(data){if(generation!==seq)return;if(!data||!Array.isArray(data.phrases)||!Array.isArray(data.blocks)||!Array.isArray(data.messages))throw Error('Nieprawidłowa odpowiedź.');render(data);message('Dane aktualne.');}).catch(function(err){if(generation===seq)message(err.message||'Nie udało się wczytać danych.');});}
   panel.addEventListener('toggle',function(){if(panel.open)load();});
   $('refresh').addEventListener('click',load);
@@ -29,5 +30,5 @@
   $('messages').addEventListener('change',selectionChanged);
   $('select-all').addEventListener('change',function(){$('messages').querySelectorAll('[data-message]').forEach(function(c){c.checked=$('select-all').checked;});selectionChanged();});
   $('delete').addEventListener('click',function(){var ids=selected();if(ids.length&&window.confirm('Usunąć '+ids.length+' zaznaczonych wiadomości publicznych? Tej operacji nie można cofnąć.'))action('admin_rejchat_delete_messages',{p_ids:ids});});
-  window.RJAdminRejChat={clear:function(){seq++;panel.open=false;['phrases','blocks','messages'].forEach(function(id){$(id).replaceChildren();});message('');$('phrase-form').reset();$('block-form').reset();$('nick-form').reset();}};
+  window.RJAdminRejChat={clear:function(){seq++;panel.open=false;['phrases','blocks','messages'].forEach(function(id){$(id).replaceChildren();});message('');phraseCache=[];$('phrase-search').value='';$('phrase-count').textContent='';$('phrase-form').reset();$('block-form').reset();$('nick-form').reset();}};
 })(window,document);

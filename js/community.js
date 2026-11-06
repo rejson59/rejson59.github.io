@@ -1490,7 +1490,7 @@
       if(!Number.isFinite(time)||!id)return;
       function later(a,b){return !b||a.time>b.time||(a.time===b.time&&(a.extra>b.extra||(a.extra===b.extra&&a.id>b.id)));}
       var key={time:time,extra:extra,id:id};
-      if(previous&&later(key,previous))added=true;
+      if(previous&&later(key,previous)&&!Object.prototype.hasOwnProperty.call(chatMessages,String(row.id)))added=true;
       if(later(key,latest))latest=key;
     });
     chatHighWater=latest;
