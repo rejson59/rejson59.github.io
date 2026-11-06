@@ -16,7 +16,7 @@ declare me record;result jsonb;begin
  return coalesce(result,'null'::jsonb);
 end $$;
 create function public.rejchat_pin_message(p_token text,p_scope text,p_message_id uuid,p_pin boolean) returns boolean language plpgsql security definer set search_path=public,pg_temp as $$
-declare me record;rm text;tid uuid;n integer;begin
+declare me record;rm text;tid uuid;lo uuid;hi uuid;n integer;begin
  select * into me from public.community_session_user(p_token);if p_pin is null then raise exception 'Nieprawidłowa operacja.';end if;
  if p_scope='public' then
   if not coalesce((select is_owner from public.community_users where id=me.user_id),false) then raise exception 'Tylko właściciel może przypinać wiadomości w pokojach publicznych.';end if;
@@ -26,6 +26,10 @@ declare me record;rm text;tid uuid;n integer;begin
  elsif p_scope='private' then
   select m.thread_id into tid from public.rejchat_dm_messages m join public.rejchat_dm_threads t on t.id=m.thread_id where m.id=p_message_id and me.user_id in (t.user_low,t.user_high);
   if tid is null then raise exception 'Wiadomość jest niedostępna.';end if;
+  if p_pin then
+   select user_low,user_high into lo,hi from public.rejchat_dm_threads where id=tid;perform public.rejchat_pair_lock(lo,hi);
+   if exists(select 1 from public.rejchat_user_blocks b where (b.blocker_id=lo and b.blocked_id=hi) or (b.blocker_id=hi and b.blocked_id=lo)) then raise exception 'Nie można przypiąć wiadomości w tej rozmowie.';end if;
+  end if;
   if p_pin then insert into public.rejchat_dm_pins(thread_id,message_id,pinned_by) values(tid,p_message_id,me.user_id) on conflict(thread_id) do update set message_id=excluded.message_id,pinned_by=excluded.pinned_by,pinned_at=now();return true;
   else delete from public.rejchat_dm_pins where thread_id=tid and message_id=p_message_id;get diagnostics n=row_count;return n>0;end if;
  else raise exception 'Nieznana rozmowa.';end if;

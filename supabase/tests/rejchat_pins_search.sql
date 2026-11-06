@@ -9,6 +9,9 @@ do $$ declare a uuid:=gen_random_uuid();b uuid:=gen_random_uuid();c uuid:=gen_ra
  if not public.rejchat_pin_message(ta,'public',p,true) or public.rejchat_pinned(tb,'public','links',null)->>'id'<>p::text then raise exception 'pin publiczny';end if;
  if public.rejchat_pinned(tb,'public','general',null)<>'null'::jsonb then raise exception 'pin w obcym pokoju';end if;
  if not public.rejchat_pin_message(ta,'private',m,true) or public.rejchat_pinned(tb,'private',null,t)->>'id'<>m::text then raise exception 'pin prywatny';end if;
+ perform public.rejchat_block_user(ta,nb,true);
+ begin perform public.rejchat_pin_message(tb,'private',m,true);raise exception 'pin przy blokadzie';exception when raise_exception then if sqlerrm not like 'Nie można przypiąć%' then raise;end if;end;
+ perform public.rejchat_block_user(ta,nb,false);
  begin perform public.rejchat_pinned(tc,'private',null,t);raise exception 'osoba postronna widzi pin';exception when raise_exception then if sqlerrm not like 'Rozmowa jest niedostępna%' then raise;end if;end;
  begin perform public.rejchat_search_messages(tc,'private',null,t,'tajny');raise exception 'osoba postronna szuka dm';exception when raise_exception then if sqlerrm not like 'Rozmowa jest niedostępna%' then raise;end if;end;
  r:=public.rejchat_search_messages(ta,'private',null,t,'tajny');if jsonb_array_length(r)<>1 or r->0->>'id'<>m::text then raise exception 'wyszukiwanie tekstu';end if;
