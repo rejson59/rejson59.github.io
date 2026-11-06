@@ -40,7 +40,7 @@ declare s text; part text; acc text:=''; result text:='';
 begin
  s:=lower(normalize(coalesce(p_text,''),NFKD));
  s:=translate(s, 'łđðþæœß', 'lddtaos');
- s:=translate(s, 'аесорхукіјѕԁοαεορυχκν', 'aecopxykijsdoaeopyxkv');
+ s:=translate(s, 'аесорхукіјѕԁοαεορυχκν', 'aecopxykijsdoaeopuxkv');
  s:=translate(s, '013457@$!', 'oieastasi');
  s:=regexp_replace(s, '[̀-ͯ]', '', 'g');
  s:=translate(s,chr(173)||chr(8203)||chr(8204)||chr(8205)||chr(8288)||chr(65279)||chr(8234)||chr(8235)||chr(8236)||chr(8237)||chr(8238)||chr(8294)||chr(8295)||chr(8296)||chr(8297),'');
