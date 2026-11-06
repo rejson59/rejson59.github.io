@@ -64,7 +64,7 @@
       session = null;
       try { localStorage.removeItem(SESSION_KEY); } catch (e) { /* ignorujemy */ }
     }
-    if (oldToken !== (session && session.token)) clearChatDrafts();
+    if (oldToken !== (session && session.token)) { clearChatDrafts(); resetChatSession(); }
     window.dispatchEvent(new Event("rj:session-change"));
   }
 
@@ -1385,6 +1385,13 @@
   }
 
   function chatList() { return document.getElementById("chat-list"); }
+  // Usuwamy dane natychmiast, zanim może wrócić opóźniona odpowiedź poprzedniej sesji.
+  function resetChatSession() {
+    chatGeneration++; chatLastId=null; chatRenderedSession=null; chatSignature=""; chatMessages=Object.create(null);
+    var box=chatList(); if(box)box.innerHTML=session?'<p class="comm-chat-empty">Ładowanie czatu…</p>':'<p class="comm-chat-empty">Zaloguj się, aby zobaczyć rozmowy.</p>';
+    var status=document.getElementById("chat-connection"); if(status&&!session)status.textContent="Dostęp po zalogowaniu";
+  }
+
 
   function chatNearBottom() {
     var list = chatList();
@@ -1454,13 +1461,24 @@
     status.classList.toggle("is-offline", !ok);
   }
 
+  function chatSessionFailure(err, generation, token) {
+    if (generation !== chatGeneration || !session || session.token !== token) return true;
+    if (err && /^Sesja wygasła/.test(err.message || "")) {
+      handleLogout();
+      var note = document.getElementById("chat-connection");
+      if (note) note.textContent = "Sesja wygasła — zaloguj się ponownie";
+      return true;
+    }
+    return false;
+  }
+
   /* pełne przeładowanie (co ~10 s łapie też wiadomości usunięte przez innych) */
   function loadChatFull() {
     var box = chatList();
-    var generation = chatGeneration;
-    return rpc("rejchat_room_list_v2", { p_room:chatRoom, p_after_id:null, p_limit:50 })
+    var generation = chatGeneration, token=session && session.token;
+    return rpc("rejchat_room_list_v3", { p_token:token, p_room:chatRoom, p_after_id:null, p_limit:50 })
       .then(function (rows) {
-        if (!Array.isArray(rows) || generation !== chatGeneration) return;
+        if (!Array.isArray(rows) || generation !== chatGeneration || !session || session.token !== token) return;
         chatConnection(true);
         var stick = chatNearBottom(), prevTop = box ? box.scrollTop : 0;
         var existing = box ? Array.prototype.map.call(box.querySelectorAll("[data-chat-id]"), function (el) { return el.getAttribute("data-chat-id"); }) : [];
@@ -1469,7 +1487,8 @@
         chatLastId = rows.length ? rows[rows.length - 1].id : null;
         if (stick) chatScrollBottom(); else if (box) { box.scrollTop = prevTop; if (added) showChatJump(); }
       })
-      .catch(function () {
+      .catch(function (err) {
+        if (chatSessionFailure(err, generation, token)) return;
         chatConnection(false);
         var b2 = chatList();
         if (b2 && !chatLastId) b2.innerHTML = '<p class="comm-chat-empty">Nie udało się pobrać czatu — sprawdź połączenie.</p>';
@@ -1477,10 +1496,10 @@
   }
 
   function loadChatIncremental() {
-    var generation = chatGeneration;
-    return rpc("rejchat_room_list_v2", { p_room:chatRoom, p_after_id:chatLastId, p_limit:50 })
+    var generation = chatGeneration, token=session && session.token;
+    return rpc("rejchat_room_list_v3", { p_token:token, p_room:chatRoom, p_after_id:chatLastId, p_limit:50 })
       .then(function (rows) {
-        if (!Array.isArray(rows) || generation !== chatGeneration) return;
+        if (!Array.isArray(rows) || generation !== chatGeneration || !session || session.token !== token) return;
         chatConnection(true);
         if (!rows.length) return;
         var stick = chatNearBottom();
@@ -1488,7 +1507,7 @@
         chatLastId = rows[rows.length - 1].id;
         if (stick) chatScrollBottom(); else showChatJump();
       })
-      .catch(function () { chatConnection(false); });
+      .catch(function (err) { if (!chatSessionFailure(err, generation, token)) chatConnection(false); });
   }
 
   function showChatJump() {
@@ -1498,6 +1517,7 @@
 
   // Jedno żądanie listy na raz. Wynik sprzed wysłania/usunięcia nie nadpisuje czatu.
   function requestChat(full) {
+    if (!session) return Promise.resolve();
     if (chatRequest) { if (full) chatNeedsFull = true; return chatRequest; }
     chatRequest = (full ? loadChatFull() : loadChatIncremental()).finally(function () {
       chatRequest = null;
@@ -1566,7 +1586,7 @@
   function setupChat() {
     if (!chatList()) return;
     if(window.RJChatPhotos){chatPhotoPicker=window.RJChatPhotos.picker("chat",refreshChatSend);window.RJChatPhotos.attach(chatList(),"public");}
-    refreshChatAuth();
+    refreshChatAuth(); if(!session)resetChatSession();
     window.addEventListener("rj:room-change", function (event) {
       var next = event.detail === "links" ? "links" : "general";
       if (next === chatRoom) return;
@@ -1580,7 +1600,7 @@
       document.getElementById("chat-room-description").textContent = next === "links" ? "Podziel się odnośnikiem lub zdjęciem ze społecznością" : "Rozmawiaj ze społecznością";
       document.getElementById("chat-send-status").textContent = chatErrors[next];
       document.getElementById("chat-search").value = "";
-      chatList().innerHTML = '<p class="comm-chat-empty">Ładowanie czatu…</p>';
+      chatList().innerHTML = session ? '<p class="comm-chat-empty">Ładowanie czatu…</p>' : '<p class="comm-chat-empty">Zaloguj się, aby zobaczyć rozmowy.</p>';
       refreshChatSend(); requestChat(true);
     });
     if (location.hash === "#linki") window.dispatchEvent(new CustomEvent("rj:room-change", {detail:"links"}));
@@ -1728,7 +1748,7 @@
       if (event.key !== SESSION_KEY && event.key !== null) return;
       var oldToken = session && session.token;
       session = loadSession();
-      if (oldToken !== (session && session.token)) clearChatDrafts();
+      if (oldToken !== (session && session.token)) { clearChatDrafts(); resetChatSession(); }
       expandedPosts = {}; openReplyForms = {};
       renderAuthZone(); loadPosts(true); chatGeneration++; requestChat(true);
     });

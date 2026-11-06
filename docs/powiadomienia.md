@@ -31,7 +31,7 @@ To proste heurystyki, nie model AI ani skaner bezpieczeństwa linków. Mogą bł
 
 ## Kanał linków
 
-Czat „Linki” to oddzielny publiczny pokój RejChat. Wiadomość tekstowa musi zawierać adres zaczynający się od http://, https:// lub www.; wiadomość ze zdjęciem może być bez adresu. Ogólny czat pozostaje osobny. Oba pokoje mają wspólną moderację, wyciszenia, reakcje i limity antyspamowe. Maksymalna długość nowej wiadomości publicznej to 2000 znaków. Historia każdego z nich jest usuwana po 14 dniach przy wysyłaniu nowej wiadomości, a wyszukiwanie obejmuje tylko aktualnie wczytane wiadomości. Pokój nie sprawdza, czy adres jest bezpieczny.
+Czat „Linki” to oddzielny pokój RejChat dostępny po zalogowaniu. Wiadomość tekstowa musi zawierać adres zaczynający się od http://, https:// lub www.; wiadomość ze zdjęciem może być bez adresu. Ogólny czat pozostaje osobny. Oba pokoje mają wspólną moderację, wyciszenia, reakcje i limity antyspamowe. Maksymalna długość nowej wiadomości publicznej to 2000 znaków. Historia każdego z nich jest usuwana po 14 dniach przy wysyłaniu nowej wiadomości, a wyszukiwanie obejmuje tylko aktualnie wczytane wiadomości. Pokój nie sprawdza, czy adres jest bezpieczny.
 
 RejFile przyjmuje wklejony obraz ze schowka (Ctrl+V), gdy aktywny jest wybór pliku i fokus nie znajduje się w polu tekstowym. Obraz jest jedynie wybierany — użytkownik nadal potwierdza przesłanie i wybraną metodę udostępnienia. Notatki i zwykłe wklejanie tekstu pozostają bez zmian.
 
@@ -55,4 +55,10 @@ Z otwartej prywatnej rozmowy można przejść do RejFile z wstępnie wybranym od
 
 Zalogowana osoba może świadomie skopiować tekst wiadomości albo niewygasłe zdjęcie z czatu ogólnego, Linków lub rozmowy prywatnej do własnego RejSejfu. Serwer ponownie sprawdza sesję i uczestnictwo w DM. Kopia tekstu jest notatką z autorem i czasem, zdjęcia — plikiem. Kopie są prywatne, obowiązują limity RejSejfu i nie wygasają automatycznie wraz z oryginałem.
 
-Zapisana notatka może też zostać przygotowana jako szkic na publicznym czacie ogólnym. Wymaga osobnego potwierdzenia, wstawienia do pola i wysłania — nic nie publikuje się automatycznie. Szkic w pamięci tej karty jest dostępny przez 10 minut, powiązany z bieżącą sesją i usuwany przy zmianie konta, po wstawieniu, po powrocie po wygaśnięciu lub przy opuszczeniu RejChat. Notatki ponad 2000 znaków trzeba najpierw skrócić. RejSejf i DM nie są szyfrowane end-to-end.
+Zapisana notatka może też zostać przygotowana jako szkic na czacie ogólnym widocznym dla wszystkich zalogowanych. Wymaga osobnego potwierdzenia, wstawienia do pola i wysłania — nic nie publikuje się automatycznie. Szkic w pamięci tej karty jest dostępny przez 10 minut, powiązany z bieżącą sesją i usuwany przy zmianie konta, po wstawieniu, po powrocie po wygaśnięciu lub przy opuszczeniu RejChat. Notatki ponad 2000 znaków trzeba najpierw skrócić. RejSejf i DM nie są szyfrowane end-to-end.
+
+## Dostęp do rozmów i indeksowanie
+
+Czat ogólny i Linki mogą odczytywać wszystkie zalogowane konta witryny; nie są one rozmowami 1:1 ani szyfrowane end-to-end. Zdjęcia i reakcje też wymagają aktywnej sesji. Wpisy i profile nadal są publiczne. Administrator ma dostęp do moderacji wiadomości ogólnych; DM nadal widzą tylko uczestnicy. Każde zalogowane konto może przekazać dalej treść lub link, więc nie należy traktować tych pokoi jak prywatnego sejfu.
+
+Strona RejChat ma znacznik noindex dla współpracujących wyszukiwarek i nie jest wymieniona w sitemapie; inne boty i filtry sieciowe nie muszą respektować tej prośby. Starsze klienty odczytu czatu bez tokenu nie działają po zmianie; wymagany jest nowy klient z sesją konta.

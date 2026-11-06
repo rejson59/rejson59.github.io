@@ -30,7 +30,7 @@ const server=http.createServer((req,res)=>{
    if(fn==='community_login')data={username:'Tester',token:'0123456789abcdef0123456789abcdef'};
    if(fn==='community_whoami')data={username:'Tester'};
    if(fn==='rejchat_room_send_v2'){sent.push(post);data={id:5,author_name:'Tester',content:post.p_content,created_at:new Date().toISOString()};chat.push(data);}
-   if(fn==='rejchat_room_list_v2')data=post.p_after_id?[]:chat;
+   if(fn==='rejchat_room_list_v3')data=post.p_after_id?[]:chat;
    return route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(data)});
   }return route.abort();
  });

@@ -8,7 +8,7 @@ const server=http.createServer((req,res)=>{let p=new URL(req.url,'http://local')
  await ctx.route('**/*',async route=>{const u=route.request().url();if(u.startsWith(base+'/'))return route.continue();if(!u.includes('/rest/v1/rpc/'))return route.abort();const fn=u.split('/').pop(),b=route.request().postDataJSON()||{};calls.push({fn,b});let data=[];
  if(fn==='community_whoami')data={username:b.p_token===token?'Alicja':'Celina'};
  if(fn==='rejchat_get_profiles')data=(b.p_names||[]).map(username=>({username}));
- if(fn==='rejchat_room_list_v2')data=b.p_room==='general'&&!b.p_after_id?[{id:pid,author_name:'Bartek',content:'https://example.org',created_at:created,photo:{id:photo,expires_at:expiry}}]:[];
+ if(fn==='rejchat_room_list_v3')data=b.p_room==='general'&&!b.p_after_id?[{id:pid,author_name:'Bartek',content:'https://example.org',created_at:created,photo:{id:photo,expires_at:expiry}}]:[];
  if(fn==='rejchat_dm_open')data={id:tid,username:'Bartek'};
  if(fn==='rejchat_dm_list_v2')data={username:'Bartek',messages:[{id:did,author_name:'Bartek',mine:false,created_at:created,content:'Sekret DM',photo:{id:photo,expires_at:expiry},reactions:[]}]};
  if(fn==='rejchat_save_to_rejsejf'){if(pendingSave){pendingSave();await new Promise(r=>releaseSave=r);pendingSave=null;}data={id:'88888888-8888-4888-8888-888888888888'};}
