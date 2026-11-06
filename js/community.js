@@ -1354,7 +1354,7 @@
   var chatLastId = null;      /* id ostatniej wiadomości — dociągamy tylko nowe */
   var chatBusy = false;
   var chatTickCount = 0;
-  var chatRequest = null, chatNeedsFull = false, chatGeneration = 0, chatRenderedSession = null;
+  var chatRequest = null, chatNeedsFull = false, chatGeneration = 0, chatRenderedSession = null, chatScroll = null;
 
   function chatMsgHTML(m) {
     var mine = session && session.username === m.author_name;
@@ -1389,6 +1389,7 @@
   function resetChatSession() {
     chatGeneration++; chatLastId=null; chatRenderedSession=null; chatSignature=""; chatMessages=Object.create(null);
     var box=chatList(); if(box)box.innerHTML=session?'<p class="comm-chat-empty">Ładowanie czatu…</p>':'<p class="comm-chat-empty">Zaloguj się, aby zobaczyć rozmowy.</p>';
+    if (chatScroll) chatScroll.reset();
     var status=document.getElementById("chat-connection"); if(status&&!session)status.textContent="Dostęp po zalogowaniu";
   }
 
@@ -1401,7 +1402,7 @@
 
   function chatScrollBottom() {
     var list = chatList();
-    if (list) list.scrollTop = list.scrollHeight;
+    if (chatScroll) chatScroll.bottom(); else if (list) list.scrollTop = list.scrollHeight;
     var jump = document.getElementById("chat-jump");
     if (jump) jump.hidden = true;
   }
@@ -1480,12 +1481,13 @@
       .then(function (rows) {
         if (!Array.isArray(rows) || generation !== chatGeneration || !session || session.token !== token) return;
         chatConnection(true);
-        var stick = chatNearBottom(), prevTop = box ? box.scrollTop : 0;
+        var position = chatScroll ? chatScroll.capture() : {following:chatNearBottom(),top:box ? box.scrollTop : 0};
         var existing = box ? Array.prototype.map.call(box.querySelectorAll("[data-chat-id]"), function (el) { return el.getAttribute("data-chat-id"); }) : [];
         var added = existing.length && rows.some(function (row) { return existing.indexOf(String(row.id)) < 0; });
         if (chatRenderedSession !== (session ? session.token : "") || chatSignature !== JSON.stringify(rows) || (!rows.length && box && (!box.querySelector(".comm-chat-empty") || box.querySelector(".comm-chat-empty").textContent.indexOf("Pusto tu") !== 0))) renderChatAll(rows);
         chatLastId = rows.length ? rows[rows.length - 1].id : null;
-        if (stick) chatScrollBottom(); else if (box) { box.scrollTop = prevTop; if (added) showChatJump(); }
+        if (chatScroll) chatScroll.restore(position); else if (position.following) chatScrollBottom(); else if (box) box.scrollTop = position.top;
+        if (!position.following && added) showChatJump();
       })
       .catch(function (err) {
         if (chatSessionFailure(err, generation, token)) return;
@@ -1502,10 +1504,11 @@
         if (!Array.isArray(rows) || generation !== chatGeneration || !session || session.token !== token) return;
         chatConnection(true);
         if (!rows.length) return;
-        var stick = chatNearBottom();
+        var position = chatScroll ? chatScroll.capture() : {following:chatNearBottom(),top:chatList().scrollTop};
         appendChat(rows);
         chatLastId = rows[rows.length - 1].id;
-        if (stick) chatScrollBottom(); else showChatJump();
+        if (chatScroll) chatScroll.restore(position); else if (position.following) chatScrollBottom();
+        if (!position.following) showChatJump();
       })
       .catch(function (err) { if (!chatSessionFailure(err, generation, token)) chatConnection(false); });
   }
@@ -1585,6 +1588,7 @@
 
   function setupChat() {
     if (!chatList()) return;
+    if (window.RJChatScroll) chatScroll = window.RJChatScroll.create(chatList());
     if(window.RJChatPhotos){chatPhotoPicker=window.RJChatPhotos.picker("chat",refreshChatSend);window.RJChatPhotos.attach(chatList(),"public");}
     refreshChatAuth(); if(!session)resetChatSession();
     window.addEventListener("rj:room-change", function (event) {
@@ -1601,6 +1605,7 @@
       document.getElementById("chat-send-status").textContent = chatErrors[next];
       document.getElementById("chat-search").value = "";
       chatList().innerHTML = session ? '<p class="comm-chat-empty">Ładowanie czatu…</p>' : '<p class="comm-chat-empty">Zaloguj się, aby zobaczyć rozmowy.</p>';
+      if (chatScroll) chatScroll.reset();
       refreshChatSend(); requestChat(true);
     });
     if (location.hash === "#linki") window.dispatchEvent(new CustomEvent("rj:room-change", {detail:"links"}));
