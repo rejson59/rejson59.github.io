@@ -246,6 +246,7 @@
   <link rel="stylesheet" href="/css/responsive.css?v=1">
   <link rel="stylesheet" href="/css/rejchat.css?v=8">
   <link rel="stylesheet" href="/css/rejchat-studio.css?v=details-1">
+  <link rel="stylesheet" href="/css/rejchat-next.css?v=1">
   <link rel="stylesheet" href="/css/side-ads.css?v=5">
   <script defer src="/js/side-ads.js?v=6"></script>
   <link rel="stylesheet" href="/css/mobile-ads.css?v=5">
@@ -512,13 +513,12 @@
   <main class="container comm-main">
 
     <section class="comm-hero" aria-labelledby="rejchat-heading">
-      <div class="rejchat-hero-copy">
-        <p class="rejchat-brow"><span aria-hidden="true">✦</span> SPOŁECZNOŚĆ REJSONA</p>
-        <h1 class="comm-title" id="rejchat-heading">RejChat<span class="rejchat-title-dot">.</span></h1>
-        <p class="comm-lead">Dobre rozmowy zaczynają się tutaj.<br>Wpadnij, podziel się pomysłem i poznaj innych.</p>
-        <div class="rejchat-hero-tags" aria-label="Dostępne w RejChat"><span>Czat ogólny</span><span>Linki</span><span>Wpisy</span><span>Rozmowy 1:1</span></div>
+      <div class="rc-hero-copy">
+        <p class="rc-hero-kicker"><span aria-hidden="true">✳</span> REJCHAT <span class="rc-kicker-divider" aria-hidden="true">/</span> SPOŁECZNOŚĆ REJSONA</p>
+        <h1 id="rejchat-heading">Miejsce na <em>rozmowę.</em></h1>
+        <p>Wymieniaj pomysły, odkrywaj linki i bądź w kontakcie.</p>
       </div>
-      <div class="rejchat-hero-art" aria-hidden="true"><span class="hero-orbit hero-orbit-one"></span><span class="hero-orbit hero-orbit-two"></span><span class="hero-spark hero-spark-one">✦</span><span class="hero-spark hero-spark-two">✳</span><span class="hero-bubble hero-bubble-back"><i></i><i></i><i></i></span><span class="hero-bubble hero-bubble-front"><i></i><i></i><i></i></span></div>
+      <div class="rc-hero-art" aria-hidden="true"><span class="rc-art-orbit"></span><span class="rc-art-window rc-art-window-back"><i></i><i></i><i></i></span><span class="rc-art-window rc-art-window-front"><b>✳</b><i></i><i></i></span><span class="rc-art-spark">✦</span></div>
     </section>
 
     <section class="rejchat-mute-notice" id="rejchat-mute-notice" role="status" aria-live="polite" hidden>
@@ -526,7 +526,7 @@
     </section>
     <div class="comm-layout">
       <aside class="comm-sidebar" aria-label="Nawigacja RejChat">
-        <div class="chat-navigation"><div class="chat-navigation-heading"><span class="chat-navigation-mark" aria-hidden="true">✦</span><div><strong>Twoja przestrzeń</strong><small>Wybierz, co chcesz robić</small></div></div>
+        <div class="chat-navigation"><div class="chat-navigation-heading"><span class="chat-navigation-mark" aria-hidden="true">R.</span><div><strong>RejChat</strong><small>Twoja przestrzeń</small></div></div>
           <div class="rejchat-tabs" role="tablist" aria-label="Widoki RejChat">
       <button type="button" role="tab" id="chat-tab" aria-controls="panel-chat" aria-selected="true"><svg class="ui-icon" aria-hidden="true"><use href="/assets/ui-icons.svg?v=2#chat"></use></svg> Czat</button>
       <button type="button" role="tab" id="posts-tab" aria-controls="panel-posts" aria-selected="false" tabindex="-1"><span class="rejchat-tab-icon" aria-hidden="true">✦</span> Wpisy</button>
@@ -534,7 +534,7 @@
         </div>
         <div class="chat-channel-list" aria-label="Dostępne rozmowy">
           <span class="chat-channel-label">ROZMOWY</span>
-          <button type="button" id="channel-general" class="chat-channel is-active" aria-pressed="true" aria-controls="panel-chat"><span class="chat-channel-icon" aria-hidden="true">✦</span><span><strong>Czat ogólny</strong><small>Porozmawiaj ze społecznością</small></span></button>
+          <button type="button" id="channel-general" class="chat-channel is-active" aria-pressed="true" aria-controls="panel-chat"><span class="chat-channel-icon" aria-hidden="true">#</span><span><strong>Czat ogólny</strong><small>Porozmawiaj ze społecznością</small></span></button>
           <button type="button" id="channel-links" class="chat-channel" aria-pressed="false" aria-controls="panel-chat"><span class="chat-channel-icon" aria-hidden="true">↗</span><span><strong>Linki</strong><small>Odnośniki w jednym miejscu</small></span></button>
           <button type="button" id="channel-private" class="chat-channel" aria-pressed="false" aria-controls="panel-chat"><span class="chat-channel-icon" aria-hidden="true">✉</span><span><strong>Prywatne rozmowy</strong><small>Wiadomości między kontami</small></span><span id="dm-nav-unread" class="dm-unread" hidden></span></button>
         </div>
@@ -549,8 +549,7 @@
           </header>
           <label class="rejchat-search"><span class="search-mark" aria-hidden="true">⌕</span><span class="sr-only">Szukaj we wczytanych wiadomościach</span><input class="comm-input" id="chat-search" type="search" maxlength="100" placeholder="Szukaj w wiadomościach…"></label>
           <p class="rejchat-search-hint" id="chat-search-status" aria-live="polite">Widoczne są ostatnie wczytane wiadomości.</p>
-          <p class="rejchat-search-hint">Odczyty i reakcje są widoczne dla zalogowanych; w rozmowach prywatnych tylko dla uczestników. Odczyt zapisujemy, gdy wiadomość jest widoczna na ekranie.</p>
-          <p class="rejchat-search-hint">Wiadomości starsze niż 14 dni są usuwane przy wysłaniu nowej. Kopie zapisane w RejSejfie nie wygasają automatycznie.</p>
+          <details class="rc-chat-guide"><summary>Prywatność i przechowywanie <span aria-hidden="true">+</span></summary><div><p>Odczyty i reakcje są widoczne dla zalogowanych; w rozmowach prywatnych tylko dla uczestników. Odczyt zapisujemy, gdy wiadomość jest widoczna na ekranie.</p><p>Wiadomości starsze niż 14 dni są usuwane przy wysłaniu nowej. Kopie zapisane w RejSejfie nie wygasają automatycznie.</p></div></details>
           <div class="comm-chat-list" id="chat-list" aria-live="polite">
             <p class="comm-chat-empty">Zaloguj się, aby zobaczyć rozmowy.</p>
           </div>
