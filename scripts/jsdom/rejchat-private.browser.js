@@ -10,7 +10,7 @@ function who(body){return body.p_token?.[0]==='a'?'Alicja':body.p_token?.[0]==='
 async function mock(route){const url=route.request().url();if(url.startsWith(origin+'/'))return route.continue();if(!url.includes('/rest/v1/rpc/'))return route.abort();const fn=url.split('/').pop(),body=route.request().postDataJSON()||{},me=who(body);let d=[];
  if(fn==='community_whoami')d={username:me};
  if(fn==='rejchat_get_profiles')d=(body.p_names||[]).map(username=>({username,avatar:'cat',color:'mint'}));
- if(fn==='rejchat_room_list_v2')d=body.p_after_id?[]:publicRows;
+ if(fn==='rejchat_room_list_v3')d=body.p_after_id?[]:publicRows;
  if(fn==='community_list_posts')d={posts:[],total:0,available_tags:[]};
  if(fn==='rejchat_notifications_list')d={items:[],unread:0};
  if(fn==='rejchat_dm_open') {if(!['Alicja','Bartek'].includes(body.p_username)||body.p_username===me)return route.fulfill({status:400,json:{message:'Nie znaleziono takiego konta.'}});d={id:tid,username:body.p_username};}

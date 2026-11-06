@@ -42,7 +42,7 @@ function chat(value) {
   const d=chat(draft()),w=d.window,doc=w.document;
   const box=doc.getElementById('file-draft'), add=doc.getElementById('file-draft-add'), field=doc.getElementById('chat-input');
   assert.equal(box.hidden,false);
-  assert.match(box.textContent,/czat publiczny/i);assert.match(box.textContent,/każdy/i);assert.match(box.textContent,/dopiero po kliknięciu/i);
+  assert.match(box.textContent,/wszystkie zalogowane konta/i);assert.match(box.textContent,/każdy/i);assert.match(box.textContent,/dopiero po kliknięciu/i);
   assert.ok(!box.textContent.includes(share),'sekret nie jest automatycznie wyświetlany');
   let inputs=0,submits=0;field.addEventListener('input',()=>inputs++);doc.getElementById('chat-form').addEventListener('submit',()=>submits++);
   add.click();assert.match(doc.getElementById('file-draft-status').textContent,/Zaloguj/);assert.equal(field.value,'');assert.ok(w.sessionStorage.getItem(key));

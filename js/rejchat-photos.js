@@ -32,11 +32,11 @@
   function attach(container,scope){
     container.addEventListener('click',function(e){
       var button=e.target.closest('[data-photo-id]');if(!button||button.disabled)return;
-      var s=window.RJProfiles.session(),token=scope==='private'&&s?s.token:null;if(scope==='private'&&!token)return;
+      var s=window.RJProfiles.session(),token=s?s.token:null;if(!token)return;
       var id=button.getAttribute('data-photo-id');if(!/^[0-9a-f-]{36}$/i.test(id))return;
       button.disabled=true;button.textContent='Wczytywanie zdjęcia…';
       window.RJProfiles.rpc('rejchat_get_photo',{p_id:id,p_token:token}).then(function(result){
-        if(!button.isConnected)return;var now=window.RJProfiles.session();if(scope==='private'&&(!now||now.token!==token))return;
+        if(!button.isConnected)return;var now=window.RJProfiles.session();if(!now||now.token!==token)return;
         if(!result||allowed.indexOf(result.mime)<0||typeof result.data!=='string'||result.data.length>1400000||!/^[A-Za-z0-9+/=\r\n]+$/.test(result.data))throw new Error('Nieprawidłowe zdjęcie.');
         var image=document.createElement('img');image.className='rejchat-photo';image.alt='Zdjęcie w wiadomości';image.src='data:'+result.mime+';base64,'+result.data.replace(/[\r\n]/g,'');image.addEventListener('error',function(){image.replaceWith(document.createTextNode('Nie udało się wyświetlić zdjęcia.'));});button.replaceWith(image);
       }).catch(function(err){if(button.isConnected){button.disabled=false;button.textContent=(err&&err.message)||'Nie udało się wczytać zdjęcia.';}});

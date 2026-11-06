@@ -33,8 +33,8 @@ const server=http.createServer((req,res)=>{
         loginName=body.p_username; data={username:body.p_username,token:'0123456789abcdef0123456789abcdef'};
       } else if(fn==='community_whoami') data={username:'Tester'};
       else if(fn==='rejchat_room_send_v2' && body.p_room==='general') {data={id:1,author_name:'Tester',content:body.p_content,created_at:new Date().toISOString()}; chatRows.push(data);}
-      else if(fn==='rejchat_room_list_v2' && body.p_room==='general') data=body.p_after_id ? chatRows.filter(r=>r.id>body.p_after_id) : chatRows;
-      else if(fn==='rejchat_room_list_v2' && body.p_room==='links') data=body.p_after_id ? [] : linkRows;
+      else if(fn==='rejchat_room_list_v3' && body.p_room==='general') data=body.p_after_id ? chatRows.filter(r=>r.id>body.p_after_id) : chatRows;
+      else if(fn==='rejchat_room_list_v3' && body.p_room==='links') data=body.p_after_id ? [] : linkRows;
       else if(fn==='rejchat_room_send_v2' && body.p_room==='links') {
         if(!/https?:\/\//.test(body.p_content)) return route.fulfill({status:400,json:{message:'Dodaj do wiadomości link.'}});
         data={id:2,author_name:'Tester',content:body.p_content,created_at:new Date().toISOString()}; linkRows.push(data);

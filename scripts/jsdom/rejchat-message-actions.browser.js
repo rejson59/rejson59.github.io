@@ -9,7 +9,7 @@ const ctx=await browser.newContext({viewport:{width:1280,height:900},serviceWork
 await ctx.route('**/*',async route=>{let u=route.request().url();if(u.startsWith(origin+'/'))return route.continue();if(!u.includes('/rest/v1/rpc/'))return route.abort();let fn=u.split('/').pop(),b=route.request().postDataJSON()||{};calls.push({fn,b});let data=[];
 if(fn==='community_whoami')data={username:'Alicja'};
 if(fn==='rejchat_get_profiles')data=(b.p_names||[]).map(username=>({username,avatar:'cat',color:'mint'}));
-if(fn==='rejchat_room_list_v2')data=b.p_room==='general'?(b.p_after_id?[]:publicRows):[];
+if(fn==='rejchat_room_list_v3')data=b.p_room==='general'?(b.p_after_id?[]:publicRows):[];
 if(fn==='rejchat_room_send_v2'){let parent=publicRows.find(x=>x.id===b.p_reply_to);data={id:String(n++).padStart(8,'0')+'-4444-4444-8444-444444444444',author_name:'Alicja',content:b.p_content,created_at:new Date().toISOString(),reply:parent?{id:parent.id,author_name:parent.author_name,content:parent.content}:null};publicRows.push(data);}
 if(fn==='rejchat_message_edit'){let row=(b.p_scope==='public'?publicRows:dm).find(x=>x.id===b.p_id);if(!row||row.author_name!=='Alicja')return route.fulfill({status:400,json:{message:'Nie możesz edytować tej wiadomości.'}});row.content=b.p_content;row.edited_at=new Date().toISOString();data=true;}
 if(fn==='rejchat_dm_open')data={id:tid,username:'Bartek'};

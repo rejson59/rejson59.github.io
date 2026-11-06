@@ -50,7 +50,7 @@
   }
   async function prepareChat(item,session,version){
     if(busy||!current(session,version))return;
-    if(!confirm('Przygotować kopię zapisanej notatki w publicznym czacie RejChat? Nic nie zostanie wysłane automatycznie. Sprawdź treść przed wysłaniem.'))return;
+    if(!confirm('Przygotować kopię zapisanej notatki w czacie RejChat widocznym dla wszystkich zalogowanych? Nic nie zostanie wysłane automatycznie. Sprawdź treść przed wysłaniem.'))return;
     setBusy(true);status('Przygotowuję szkic…');
     try{
       var data=await rpc('rejsejf_get',{p_id:item.id},session);if(!current(session,version))return;
