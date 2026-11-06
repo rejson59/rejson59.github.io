@@ -58,7 +58,7 @@ const server=http.createServer((req,res)=>{
   await page.locator('#posts-tab').press('ArrowLeft');assert.equal(await page.locator('#chat-tab').getAttribute('aria-selected'),'true');
   await page.evaluate(()=>{localStorage.removeItem('rejson_community_session_v1');window.dispatchEvent(new StorageEvent('storage',{key:'rejson_community_session_v1'}));});
   await page.waitForFunction(()=>document.getElementById('chat-form').hidden && !document.querySelector('.rj-header-profile'));
-  assert.equal(await page.locator('#chat-note').isVisible(),true);assert.equal(await page.locator('#chat-list .chat-msg').count(),3);
+  assert.equal(await page.locator('#chat-note').isVisible(),true);assert.equal(await page.locator('#chat-list .chat-msg').count(),0,'po wylogowaniu wiadomości czatu nie pozostają widoczne');
   await page.evaluate(t=>{localStorage.setItem('rejson_community_session_v1',JSON.stringify({token:t,username:'Alice'}));window.dispatchEvent(new StorageEvent('storage',{key:'rejson_community_session_v1'}));},token);
   await page.locator('.rj-header-profile').waitFor();await page.waitForFunction(()=>!document.getElementById('chat-form').hidden);
   await page.screenshot({path:'/home/user/rejchat-desktop.png'});
@@ -74,7 +74,7 @@ const server=http.createServer((req,res)=>{
   // Geometria i dostępność profilowego na różnych szerokościach — bez zrzutów mobile.
   const pages=['/index.html','/rejchat.html','/logowanie.html','/profil.html','/partnerstwo.html','/rejfile.html','/tablica-pomyslow.html','/widzety.html','/admin.html','/rejson-widgets/index.html'];
   for(const width of [320,375,760,800,1024,1200,1440]){await page.setViewportSize({width,height:900});for(const url of pages){
-    await page.goto(origin+url,{waitUntil:'domcontentloaded'});await page.evaluate(()=>document.querySelector('#rj-page-loader')?.remove());await page.locator('.rj-header-profile').waitFor({timeout:5000});
+    await page.goto(origin+url,{waitUntil:'domcontentloaded'});if(url==='/logowanie.html')await page.waitForURL('**/profil');await page.evaluate(()=>document.querySelector('#rj-page-loader')?.remove());await page.locator('.rj-header-profile').waitFor({timeout:5000});
     const geometry=await page.evaluate(()=>{const el=document.querySelector('.rj-header-profile'),r=el.getBoundingClientRect();return {scroll:document.documentElement.scrollWidth,left:r.left,right:r.right,top:r.top,visible:!!el.getClientRects().length};});
     assert.ok(geometry.visible && geometry.left>=-1 && geometry.right<=width+1 && geometry.top>=0,`${url} ${width}: profilowy poza ekranem ${JSON.stringify(geometry)}`);
     assert.ok(geometry.scroll<=width,`${url} ${width}: poziomy overflow ${geometry.scroll}`);

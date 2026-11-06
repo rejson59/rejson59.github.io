@@ -9,7 +9,7 @@
   var scroll=window.RJChatScroll?window.RJChatScroll.create(messages):null;
   var composeMode=null, draftBeforeEdit='', photoPicker=window.RJChatPhotos && window.RJChatPhotos.picker('dm');
   if(window.RJChatPhotos)window.RJChatPhotos.attach(messages,'private');
-  var emojis=['👍','❤️','😂','😮','😢'], inbox=[],selected=null,selectionSeq=0,inboxSeq=0,activeToken=null,threadBusy=false,sendBusy=false,reactBusy=false,lastRender='', olderRows=[],latestRows=[],hasOlder=false,historyBusy=false;
+  var emojis=['👍','❤️','😂','😮','😢'], inbox=[],selected=null,selectionSeq=0,inboxSeq=0,activeToken=null,threadBusy=false,sendBusy=false,reactBusy=false,lastRender='', threadError='', olderRows=[],latestRows=[],hasOlder=false,historyBusy=false;
   function session(){return api.session();}
   function same(token){var s=session();return !!s&&s.token===token;}
   function currentToken(){var s=session();return s?s.token:null;}
@@ -34,7 +34,7 @@
   }
   function appendText(el,content){
     var text=String(content||''), regex=/(?:https?:\/\/|www\.)[^\s<>"']+/g,last=0,m;
-    while((m=regex.exec(text))){el.appendChild(document.createTextNode(text.slice(last,m.index)));var raw=m[0],suffix='';while(/[.,!?;:)\]]$/.test(raw)){suffix=raw.slice(-1)+suffix;raw=raw.slice(0,-1);}var a=document.createElement('a');a.className='comm-link';a.href=/^https?:\/\//i.test(raw)?raw:'https://'+raw;a.target='_blank';a.rel='noopener noreferrer nofollow';a.textContent=raw;el.appendChild(a);if(suffix)el.appendChild(document.createTextNode(suffix));last=m.index+m[0].length;}
+    while((m=regex.exec(text))){el.appendChild(document.createTextNode(text.slice(last,m.index)));var raw=m[0],suffix='';while(/[.,!?;:)\]]$/.test(raw)){suffix=raw.slice(-1)+suffix;raw=raw.slice(0,-1);}var a=document.createElement('a');a.className='comm-link';a.href=/^https?:\/\//i.test(raw)?raw:'https://'+raw;a.target='_blank';a.rel='noopener noreferrer nofollow';var label=window.RJChatMessageUI?window.RJChatMessageUI.shortLink(raw):raw;a.textContent=label;if(label!==raw){a.title=raw;a.setAttribute('aria-label','Otwórz link: '+raw);}el.appendChild(a);if(suffix)el.appendChild(document.createTextNode(suffix));last=m.index+m[0].length;}
     el.appendChild(document.createTextNode(text.slice(last)));
   }
   function render(rows){
@@ -43,19 +43,20 @@
     messages.replaceChildren();
     if(!rows.length){var empty=document.createElement('p');empty.className='comm-chat-empty';empty.textContent='Napisz pierwszą wiadomość w tej rozmowie.';messages.appendChild(empty);}
     rows.forEach(function(m){
-      var row=document.createElement('div');row.className='chat-msg'+(m.mine?' is-mine':'');row.dataset.dmMessage=m.id;
+      var row=document.createElement('div');row.className='chat-msg'+(m.mine?' is-mine':'');row.dataset.dmMessage=m.id;row.dataset.messageAuthor=m.author_name;row.dataset.messageTime=Date.parse(m.created_at)||0;
       var bubble=document.createElement('div');bubble.className='chat-bubble';var meta=document.createElement('div');meta.className='chat-meta';var author=document.createElement('strong');author.textContent=m.author_name;author.dataset.profileName=m.author_name;var time=document.createElement('span');time.className='chat-time mono';time.textContent=formatTime(m.created_at);meta.append(author,time);
       if(m.reply){var quote=document.createElement('div');quote.className='rejchat-reply-quote';quote.textContent='↩ '+m.reply.author_name+': '+m.reply.content;bubble.appendChild(quote);}
       var text=document.createElement('p');text.className='chat-text';appendText(text,m.content);bubble.prepend(meta);bubble.appendChild(text);
       if(m.photo && window.RJChatPhotos){var photo=document.createElement('div');photo.innerHTML=window.RJChatPhotos.button(m.photo);bubble.appendChild(photo);}
       if(m.edited_at){var edited=document.createElement('span');edited.className='rejchat-edited';edited.textContent='Edytowano';bubble.appendChild(edited);}
-      var menu=document.createElement('details');menu.className='rc-message-menu';var summary=document.createElement('summary');summary.setAttribute('aria-label','Opcje wiadomości');summary.textContent='⋯ Opcje';var actions=document.createElement('div');actions.className='rc-menu-items';var info=document.createElement('button');info.type='button';info.dataset.messageInfo='private';info.dataset.messageId=m.id;info.textContent='Odczyty i reakcje';actions.appendChild(info);menu.append(summary,actions);bubble.appendChild(menu);
+      var menu=document.createElement('details');menu.className='rc-message-menu';var summary=document.createElement('summary');summary.setAttribute('aria-label','Opcje wiadomości');summary.textContent='⋯';var actions=document.createElement('div');actions.className='rc-menu-items';var info=document.createElement('button');info.type='button';info.dataset.messageInfo='private';info.dataset.messageId=m.id;info.textContent='Odczyty i reakcje';actions.appendChild(info);menu.append(summary,actions);meta.appendChild(menu);
       var reply=document.createElement('button');reply.type='button';reply.className='rejchat-message-action';reply.dataset.dmReply=m.id;reply.textContent='Odpowiedz';actions.appendChild(reply);
       ['text'].concat(m.photo && Date.parse(m.photo.expires_at)>Date.now()?['photo']:[]).forEach(function(part){var save=document.createElement('button');save.type='button';save.className='rejchat-message-action';save.dataset.saveSejf=part;save.dataset.saveScope='private';save.dataset.saveMessage=m.id;save.textContent=part==='photo'?'Zapisz zdjęcie w RejSejfie':'Zapisz tekst w RejSejfie';if(part==='photo')save.title='Kopia w Sejfie nie wygaśnie po 14 dniach';actions.appendChild(save);});
       if(m.mine){var edit=document.createElement('button');edit.type='button';edit.className='rejchat-message-action';edit.dataset.dmEdit=m.id;edit.textContent='Edytuj';actions.appendChild(edit);}
-      var reactions=document.createElement('div');reactions.className='rejchat-reactions';reactions.setAttribute('aria-label','Reakcje na wiadomość');
-      emojis.forEach(function(emoji){var r=(Array.isArray(m.reactions)?m.reactions:[]).find(function(x){return x.emoji===emoji;});var b=document.createElement('button');b.type='button';b.className='rejchat-reaction';b.dataset.dmReaction=emoji;b.setAttribute('aria-pressed',String(!!(r&&r.mine)));b.setAttribute('aria-label','Reakcja '+emoji+(r?' · '+r.count:''));b.textContent=emoji+(r&&r.count?' '+r.count:'');reactions.appendChild(b);});bubble.appendChild(reactions);row.appendChild(bubble);messages.appendChild(row);
+      if(window.RJChatMessageUI)window.RJChatMessageUI.reactions(bubble,m.reactions,'private',true);
+      row.appendChild(bubble);messages.appendChild(row);
     });
+    if(window.RJChatMessageUI)window.RJChatMessageUI.group(messages);
     api.hydrate(messages);
     if(scroll)scroll.restore(position);else if(position.following)messages.scrollTop=messages.scrollHeight;else messages.scrollTop=position.top;
   }
@@ -64,9 +65,9 @@
     var token=s.token,id=selected,seq=selectionSeq;threadBusy=true;
     return api.rpc('rejchat_dm_list_v2',{p_token:token,p_thread_id:id}).then(function(data){
       if(!same(token)||seq!==selectionSeq||id!==selected||!data||!Array.isArray(data.messages))return;
-      title.textContent='Rozmowa z '+data.username;document.getElementById('dm-rejfile').href=api.safeName(data.username)?'/rejfile#odbiorca='+encodeURIComponent(data.username):'/rejfile';threadEl.hidden=false;status.textContent='';if(olderRows.length){var ids=data.messages.map(function(m){return m.id;});var oldIds=olderRows.map(function(m){return m.id;});olderRows=olderRows.concat(latestRows.filter(function(m){return ids.indexOf(m.id)<0 && oldIds.indexOf(m.id)<0;}));}latestRows=data.messages;if(!olderRows.length)hasOlder=latestRows.length===100;document.getElementById('dm-older').hidden=!hasOlder;render(olderRows.concat(latestRows));
+      title.textContent='Rozmowa z '+data.username;document.getElementById('dm-rejfile').href=api.safeName(data.username)?'/rejfile#odbiorca='+encodeURIComponent(data.username):'/rejfile';threadEl.hidden=false;if(status.textContent===threadError)status.textContent='';threadError='';if(olderRows.length){var ids=data.messages.map(function(m){return m.id;});var oldIds=olderRows.map(function(m){return m.id;});olderRows=olderRows.concat(latestRows.filter(function(m){return ids.indexOf(m.id)<0 && oldIds.indexOf(m.id)<0;}));}latestRows=data.messages;if(!olderRows.length)hasOlder=latestRows.length===100;document.getElementById('dm-older').hidden=!hasOlder;render(olderRows.concat(latestRows));
       var unread=inbox.some(function(x){return x.id===id&&Number(x.unread)>0;});if(unread){inbox.forEach(function(x){if(x.id===id)x.unread=0;});paintInbox();notifyBell();}
-    }).catch(function(err){if(same(token)&&seq===selectionSeq)status.textContent=err.message||'Nie udało się wczytać rozmowy.';}).finally(function(){if(seq===selectionSeq)threadBusy=false;});
+    }).catch(function(err){if(same(token)&&seq===selectionSeq){threadError=err.message||'Nie udało się wczytać rozmowy.';status.textContent=threadError;}}).finally(function(){if(seq===selectionSeq)threadBusy=false;});
   }
   function select(id){if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(id||'')))return;selected=id;selectionSeq++;threadBusy=false;historyBusy=false;sendBusy=false;if(photoPicker)photoPicker.disabled(false);reactBusy=false;document.getElementById('dm-send').disabled=false;document.getElementById('dm-older').disabled=false;olderRows=[];latestRows=[];hasOlder=false;lastRender='';document.getElementById('dm-save-status').textContent='';composeMode=null;input.value='';if(photoPicker)photoPicker.clear();document.getElementById('dm-compose-context').hidden=true;messages.replaceChildren();if(scroll)scroll.reset();threadEl.hidden=true;paintInbox();history.replaceState(null,'',location.pathname+location.search+'#rozmowa='+encodeURIComponent(id));loadThread();}
   document.getElementById('dm-older').addEventListener('click',function(){
