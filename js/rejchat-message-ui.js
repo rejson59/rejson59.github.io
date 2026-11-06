@@ -26,17 +26,18 @@
     var picker=menu.querySelector('.rc-reaction-picker'),summary=meta.querySelector('.rc-reaction-summary');
     if(!picker){picker=document.createElement('div');picker.className='rc-reaction-picker';picker.setAttribute('aria-label','Dodaj lub usuń reakcję');menu.prepend(picker);}
     if(!summary){summary=document.createElement('span');summary.className='rc-reaction-summary';summary.setAttribute('aria-label','Dodane reakcje');meta.insertBefore(summary,meta.querySelector('.rc-message-menu')); }
-    var signature=JSON.stringify([rows,enabled,scope]);if(picker.dataset.signature===signature)return;picker.dataset.signature=signature;picker.replaceChildren();summary.replaceChildren();
-    emojis.forEach(function(emoji){
-      var r=rows.find(function(x){return x.emoji===emoji&&Number(x.count)>0;});
-      function button(compact){var b=document.createElement('button');b.type='button';b.className='rejchat-reaction'+(compact?' rc-reaction-count':'');b.dataset[scope==='public'?'reaction':'dmReaction']=emoji;b.setAttribute('aria-pressed',String(!!(r&&r.mine)));b.setAttribute('aria-label','Reakcja '+emoji+(r?' · '+r.count:''));b.disabled=!enabled;b.title=enabled?'Dodaj lub usuń reakcję':'Zaloguj się, aby reagować';b.textContent=emoji+(compact?' '+r.count:'');return b;}
-      picker.appendChild(button(false));if(r)summary.appendChild(button(true));
-    });
+    var signature=JSON.stringify([rows,enabled,scope]);if(picker.dataset.signature===signature)return;picker.dataset.signature=signature;picker.replaceChildren();summary.replaceChildren();var prior=menu.querySelector('.rc-reaction-full');if(prior)prior.remove();
+    function button(emoji,r,compact){var b=document.createElement('button');b.type='button';b.className='rejchat-reaction'+(compact?' rc-reaction-count':'');b.dataset[scope==='public'?'reaction':'dmReaction']=emoji;b.setAttribute('aria-pressed',String(!!(r&&r.mine)));b.setAttribute('aria-label','Reakcja '+emoji+(r?' · '+r.count:''));b.disabled=!enabled;b.title=enabled?'Dodaj lub usuń reakcję':'Zaloguj się, aby reagować';b.textContent=emoji+(compact?' '+r.count:'');return b;}
+    emojis.forEach(function(emoji){var r=rows.find(function(x){return x.emoji===emoji&&Number(x.count)>0;});picker.appendChild(button(emoji,r,false));});
+    var expand=document.createElement('button');expand.type='button';expand.className='rc-reaction-expand';expand.textContent='＋';expand.setAttribute('aria-label','Wybierz inną emotkę');expand.setAttribute('aria-expanded','false');picker.appendChild(expand);
+    var full=document.createElement('div');full.className='rc-reaction-full';full.hidden=true;menu.insertBefore(full,picker.nextSibling);
+    expand.addEventListener('click',function(){full.hidden=!full.hidden;expand.setAttribute('aria-expanded',String(!full.hidden));if(!full.hidden&&window.RJEmojiPicker)window.RJEmojiPicker.mount(full,function(){},{reaction:true,scope:scope});menu.dispatchEvent(new CustomEvent('rj:emoji-picker-resize',{bubbles:true}));});
+    rows.forEach(function(r){if(typeof r.emoji==='string'&&r.emoji.length<=40&&Number(r.count)>0)summary.appendChild(button(r.emoji,r,true));});
     summary.hidden=!summary.children.length;
   }
   /* Popover jest w warstwie górnej — lista wiadomości nie przycina menu. */
   var active=null, supportsPopover=typeof HTMLElement.prototype.showPopover==='function';
-  function close(restoreFocus){if(!active)return;var menu=active,summary=menu.querySelector('summary'),panel=menu.querySelector('.rc-menu-items');active=null;if(supportsPopover&&panel&&panel.matches(':popover-open'))panel.hidePopover();menu.open=false;if(restoreFocus&&summary&&summary.isConnected)summary.focus();}
+  function close(restoreFocus){if(!active)return;var menu=active,summary=menu.querySelector('summary'),panel=menu.querySelector('.rc-menu-items');active=null;if(supportsPopover&&panel&&panel.matches(':popover-open'))panel.hidePopover();if(panel)panel.classList.remove('rc-menu-fixed');menu.open=false;if(restoreFocus&&summary&&summary.isConnected)summary.focus();}
   function position(menu){
     var panel=menu.querySelector('.rc-menu-items'),anchor=menu.querySelector('summary');if(!panel||!anchor)return;
     var r=anchor.getBoundingClientRect(),width=Math.min(280,window.innerWidth-16);panel.style.width=width+'px';
@@ -46,11 +47,12 @@
   document.addEventListener('toggle',function(e){var menu=e.target;if(!menu.matches||!menu.matches('.rc-message-menu'))return;
     if(!menu.open){if(active===menu)close(false);return;}
     if(active&&active!==menu)close(false);active=menu;
-    if(supportsPopover&&menu.isConnected){var panel=menu.querySelector('.rc-menu-items');panel.setAttribute('popover','manual');try{panel.showPopover();position(menu);}catch(_){panel.removeAttribute('popover');}}
+    if(menu.isConnected){var panel=menu.querySelector('.rc-menu-items');if(supportsPopover){panel.setAttribute('popover','manual');try{panel.showPopover();}catch(_){panel.removeAttribute('popover');panel.classList.add('rc-menu-fixed');}}else panel.classList.add('rc-menu-fixed');position(menu);}
   },true);
+  document.addEventListener('rj:emoji-picker-resize',function(){if(active)requestAnimationFrame(function(){if(active)position(active);});});
   document.addEventListener('click',function(e){if(active&&!active.contains(e.target))close(false);});
   document.addEventListener('keydown',function(e){if(e.key!=='Escape')return;var menu=active||document.querySelector('.rc-message-menu[open]');if(menu){active=menu;e.preventDefault();e.stopPropagation();close(true);}},true);
-  window.addEventListener('resize',function(){if(active&&supportsPopover)position(active);});
-  document.addEventListener('scroll',function(e){if(active&&supportsPopover){var r=active.querySelector('summary').getBoundingClientRect(),list=active.closest('.comm-chat-list'),bounds=list&&list.getBoundingClientRect();if(r.bottom<=0||r.top>=window.innerHeight||(bounds&&(r.bottom<=bounds.top||r.top>=bounds.bottom)))close(false);else position(active);}},true);
+  window.addEventListener('resize',function(){if(active)position(active);});
+  document.addEventListener('scroll',function(e){if(active){var r=active.querySelector('summary').getBoundingClientRect(),list=active.closest('.comm-chat-list'),bounds=list&&list.getBoundingClientRect();if(r.bottom<=0||r.top>=window.innerHeight||(bounds&&(r.bottom<=bounds.top||r.top>=bounds.bottom)))close(false);else position(active);}},true);
   window.RJChatMessageUI={shortLink:shortLink,reactions:reactions,group:group};
 })(window,document);

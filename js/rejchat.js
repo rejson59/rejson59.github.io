@@ -73,6 +73,10 @@
     if(window.RJChatMessageUI)window.RJChatMessageUI.group(list);
     status.textContent=q?'Pasuje '+count+' z '+all+' wczytanych wiadomości.':'Widoczne są ostatnie wczytane wiadomości.';
   }
+  var searchToggle=document.getElementById('chat-search-toggle'),searchPanel=document.getElementById('chat-search-panel');
+  function closeSearch(){searchPanel.hidden=true;searchToggle.setAttribute('aria-expanded','false');if(input.value){input.value='';filter();}searchToggle.focus();}
+  searchToggle.addEventListener('click',function(){if(searchPanel.hidden){searchPanel.hidden=false;searchToggle.setAttribute('aria-expanded','true');input.focus();}else closeSearch();});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!searchPanel.hidden&&searchPanel.contains(document.activeElement)){e.preventDefault();closeSearch();}});
   input.addEventListener('input',filter);
   new MutationObserver(filter).observe(list,{childList:true});filter();
 })();

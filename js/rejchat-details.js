@@ -25,7 +25,7 @@
       body.appendChild(text('p','rc-detail-foot','Odczyty zapisują się od wprowadzenia tej funkcji. Lista pokazuje maksymalnie 100 osób i 500 reakcji.'));
     }).catch(function(err){if(seq===serial&&current()===token&&dialog.open)body.replaceChildren(text('p','','Nie udało się pobrać szczegółów. Spróbuj ponownie.'));});
   });
-  document.addEventListener('click',function(e){var menu=e.target.closest('.rc-message-menu');if(menu&&e.target.closest('button'))menu.open=false;});
+  document.addEventListener('click',function(e){var menu=e.target.closest('.rc-message-menu');if(menu&&e.target.closest('button')&&(!e.target.closest('.rc-emoji-picker-ui')&&!e.target.closest('.rc-reaction-expand')||e.target.closest('[data-emoji-choice]')))menu.open=false;});
   document.addEventListener('toggle',function(e){var menu=e.target;if(menu.matches&&menu.matches('.rc-message-menu')&&menu.open)document.querySelectorAll('.rc-message-menu[open]').forEach(function(other){if(other!==menu)other.open=false;});},true);
   function reset(){serial++;if(dialog.open)dialog.close();seenToken=current();seen.clear();since.clear();pending=false;retryAt=0;}
   window.addEventListener('rj:session-change',reset);window.addEventListener('storage',function(e){if(!e.key||e.key==='rejson_community_session_v1')reset();});

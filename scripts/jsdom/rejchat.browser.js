@@ -45,7 +45,7 @@ const server=http.createServer((req,res)=>{
   assert.equal(await page.locator('#panel-chat').isVisible(),true);assert.equal(await page.locator('#panel-posts').isVisible(),false);
   await page.waitForFunction(()=>document.querySelector('.chat-author a')?.dataset.profileColor==='mint');
   assert.match(await page.locator('.chat-msg').first().locator('.comm-avatar img').getAttribute('src'),/comet\.svg$/);
-  await page.locator('#chat-search').fill('koty');assert.equal(await page.locator('.chat-msg:visible').count(),1);
+  await page.locator('#chat-search-toggle').click();await page.locator('#chat-search').fill('koty');assert.equal(await page.locator('.chat-msg:visible').count(),1);
   await page.locator('#chat-search').fill('brak');assert.match(await page.locator('#chat-search-status').textContent(),/Pasuje 0 z 2/);
   await page.locator('#chat-search').fill('');
   sendFail=true;await page.locator('#chat-input').fill('Nie gub mnie');await page.locator('#chat-send').click();await page.waitForFunction(()=>document.getElementById('chat-send-status').textContent.includes('Spróbuj'));
