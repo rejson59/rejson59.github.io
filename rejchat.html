@@ -257,6 +257,7 @@
   <noscript><link rel="stylesheet" href="/css/shared-topbar-nojs.css?v=2"></noscript>
   <link rel="stylesheet" href="/css/rejchat-notifications.css?v=2">
   <link rel="stylesheet" href="/css/rejchat-safety.css?v=1">
+  <link rel="stylesheet" href="/css/rejchat-pins-search.css?v=1">
 </head>
 <body class="rj-community community-page">
   <div id="rj-page-loader" aria-hidden="true">
@@ -546,7 +547,8 @@
             <div class="rc-room-actions"><span class="comm-chat-hint"><span class="comm-chat-dot" aria-hidden="true"></span> <span id="chat-connection" role="status">Dostęp po zalogowaniu</span></span><button type="button" class="rc-search-toggle" id="chat-search-toggle" aria-label="Szukaj w wiadomościach" aria-expanded="false" aria-controls="chat-search-panel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m16 16 4 4"></path></svg></button>
               <details class="rc-chat-guide"><summary><span aria-hidden="true">i</span><span class="rc-guide-label">Prywatność</span></summary><div><p>Odczyty i reakcje są widoczne dla zalogowanych; w rozmowach prywatnych tylko dla uczestników. Odczyt zapisujemy, gdy wiadomość jest widoczna na ekranie.</p><p>Wiadomości starsze niż 14 dni są usuwane przy wysłaniu nowej. Kopie zapisane w RejSejfie nie wygasają automatycznie.</p><p>Zdjęcia w pokojach widzą wszystkie zalogowane konta. Mogą zawierać metadane, np. lokalizację. JPG, PNG i WebP do 10 MiB zmniejszamy w razie potrzeby do JPG, GIF do 1 MiB. Zdjęcia wygasają po 14 dniach.</p></div></details></div>
           </header>
-          <div class="rc-search-panel" id="chat-search-panel" hidden><label class="rejchat-search"><span class="search-mark" aria-hidden="true">⌕</span><span class="sr-only">Szukaj we wczytanych wiadomościach</span><input class="comm-input" id="chat-search" type="search" maxlength="100" placeholder="Szukaj w wiadomościach…"></label><p class="rejchat-search-hint" id="chat-search-status" aria-live="polite">Widoczne są ostatnie wczytane wiadomości.</p></div>
+          <div class="rc-search-panel" id="chat-search-panel" hidden><label class="rejchat-search"><span class="search-mark" aria-hidden="true">⌕</span><span class="sr-only">Szukaj we wczytanych wiadomościach</span><input class="comm-input" id="chat-search" type="search" maxlength="100" placeholder="Szukaj w wiadomościach…"></label><p class="rejchat-search-hint" id="chat-search-status" aria-live="polite">Widoczne są ostatnie wczytane wiadomości.</p><button type="button" class="rc-history-search" data-history-search="public">Szukaj w historii</button></div>
+          <div class="rc-pinned" id="public-pinned" hidden></div>
           <div class="comm-chat-list" id="chat-list" aria-live="polite">
             <p class="comm-chat-empty">Zaloguj się, aby zobaczyć rozmowy.</p>
           </div>
@@ -579,13 +581,13 @@
         </section>
         <section class="comm-chat glass-card dm-view" id="chat-private-view" aria-label="Prywatne rozmowy" hidden>
           <header class="comm-chat-head"><div class="chat-room-heading"><span class="chat-room-mark" aria-hidden="true">✉</span><div><h2>Prywatne rozmowy</h2><p>Wiadomości widzą tylko uczestnicy rozmowy.</p></div></div></header>
-          <details class="rc-dm-privacy"><summary>O prywatności · brak szyfrowania end-to-end</summary><p class="dm-privacy">Wiadomości i zdjęcia są przechowywane na serwerze i nie są szyfrowane end-to-end. Zdjęcia mogą zawierać metadane, np. lokalizację. Automatyczne reguły antyspamowe i globalny filtr fraz obejmują także rozmowy prywatne; panel moderacji nie pokazuje ich treści. Obrazy nie są automatycznie skanowane. JPG, PNG i WebP do 10 MiB zmniejszamy w razie potrzeby do JPG, GIF do 1 MiB. Zdjęcia wygasają po 14 dniach. Plik w RejFile przygotujesz dla odbiorcy — nic nie jest wysyłane automatycznie. Kopie zapisane w RejSejfie nie wygasają automatycznie. Nie wysyłaj haseł ani innych poufnych danych.</p></details>
+          <details class="rc-dm-privacy"><summary>O prywatności · brak szyfrowania end-to-end</summary><p class="dm-privacy">Wiadomości i zdjęcia są przechowywane na serwerze i nie są szyfrowane end-to-end. Zdjęcia mogą zawierać metadane, np. lokalizację. Automatyczne reguły antyspamowe i globalny filtr fraz obejmują także rozmowy prywatne; panel moderacji nie pokazuje rozmów; uczestnik może świadomie zgłosić tekst pojedynczej wiadomości, bez zdjęcia. Obrazy nie są automatycznie skanowane. JPG, PNG i WebP do 10 MiB zmniejszamy w razie potrzeby do JPG, GIF do 1 MiB. Zdjęcia wygasają po 14 dniach. Plik w RejFile przygotujesz dla odbiorcy — nic nie jest wysyłane automatycznie. Kopie zapisane w RejSejfie nie wygasają automatycznie. Nie wysyłaj haseł ani innych poufnych danych.</p></details>
           <p id="dm-guest" class="comm-chat-note">Zaloguj się, aby rozpocząć prywatną rozmowę. <a href="/logowanie">Konto ↗</a></p>
           <div id="dm-member" hidden>
             <form id="dm-new-form" class="dm-new-form"><label for="dm-username">Nowa rozmowa — nazwa konta</label><div><input id="dm-username" class="comm-input" autocomplete="off" maxlength="24" placeholder="Nazwa użytkownika" required><button class="btn btn-primary btn-sm" type="submit">Otwórz</button></div></form>
             <div id="dm-inbox" class="dm-inbox" aria-label="Twoje rozmowy"></div>
             <p id="dm-status" class="comm-chat-note" role="status" aria-live="polite"></p>
-            <div id="dm-thread" hidden><h3 id="dm-thread-title" class="dm-thread-title"></h3><button type="button" class="dm-older" id="dm-older" hidden>Wczytaj starsze wiadomości</button><div id="dm-messages" class="comm-chat-list" aria-live="polite"></div><p id="dm-save-status" class="comm-chat-note" role="status" aria-live="polite"></p>
+            <div id="dm-thread" hidden><h3 id="dm-thread-title" class="dm-thread-title"></h3><button type="button" class="rc-history-search dm-history-search" data-history-search="private">⌕ Szukaj w historii</button><div class="rc-pinned" id="private-pinned" hidden></div><button type="button" class="dm-older" id="dm-older" hidden>Wczytaj starsze wiadomości</button><div id="dm-messages" class="comm-chat-list" aria-live="polite"></div><p id="dm-save-status" class="comm-chat-note" role="status" aria-live="polite"></p>
               <div class="rejchat-compose-context" id="dm-compose-context" hidden><span id="dm-compose-label"></span><button type="button" id="dm-compose-cancel">Anuluj</button></div>
               <form id="dm-send-form" class="comm-chat-form"><textarea id="dm-input" class="comm-input" rows="2" maxlength="1000" placeholder="Napisz prywatną wiadomość…" aria-label="Prywatna wiadomość"></textarea>
                 <div class="rc-compose-tools"><div class="rejchat-photo-picker" id="dm-photo-picker"><label for="dm-photo" aria-label="Dodaj zdjęcie" title="JPG, PNG, WebP do 10 MiB, GIF do 1 MiB; zdjęcie wygasa po 14 dniach">+ <span>Zdjęcie</span></label><input id="dm-photo" type="file" accept="image/jpeg,image/png,image/webp,image/gif"><span id="dm-photo-name" aria-live="polite">Do 10 MiB (GIF do 1 MiB). Większe zdjęcia zmniejszymy do JPG. Wygasa po 14 dniach.</span><button id="dm-photo-clear" type="button" hidden>Usuń zdjęcie</button></div>
@@ -723,12 +725,13 @@
   <script defer src="/js/rejchat-scroll.js?v=2"></script>
   <script defer src="/js/rejchat-emoji.js?v=2"></script>
   <script defer src="/js/rejchat-message-ui.js?v=3"></script>
-  <script defer src="js/community.js?v=2026-11-06-safety"></script>
+  <script defer src="js/community.js?v=2026-11-06-pins"></script>
   <script defer src="/js/rejchat.js?v=9"></script>
   <script defer src="/js/rejchat-reactions.js?v=5"></script>
   <script defer src="/js/rejchat-details.js?v=2"></script>
-  <script defer src="/js/rejchat-private.js?v=10"></script>
+  <script defer src="/js/rejchat-private.js?v=11"></script>
   <script defer src="/js/rejchat-safety.js?v=1"></script>
+  <script defer src="/js/rejchat-pins-search.js?v=1"></script>
   <script defer src="/js/rejchat-rejsejf.js?v=2"></script>
   <script defer src="/js/rejchat-link-preview.js?v=1"></script>
   <script defer src="/js/rejchat-mute.js?v=1"></script>
