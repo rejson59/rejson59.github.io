@@ -1,0 +1,18 @@
+/* Świadome zgłoszenie pojedynczej treści albo profilu. */
+(function(window,document){
+  'use strict';
+  if(!window.RJProfiles)return;
+  var dialog=document.createElement('dialog');dialog.className='rj-safety-dialog';
+  dialog.innerHTML='<form><h2>Zgłoś naruszenie</h2><p class="rj-safety-explain"></p><label>Powód<select name="category" required><option value="">Wybierz powód</option><option value="spam">Spam</option><option value="abuse">Obrażanie lub nękanie</option><option value="sexual">Treści seksualne</option><option value="threat">Groźby</option><option value="other">Inny powód</option></select></label><label>Dodatkowe informacje (opcjonalnie)<textarea name="note" maxlength="500" rows="3"></textarea></label><p role="status" aria-live="polite"></p><div><button type="button" data-cancel>Anuluj</button><button type="submit">Wyślij zgłoszenie</button></div></form>';
+  document.body.appendChild(dialog);var form=dialog.querySelector('form'),status=dialog.querySelector('[role=status]'),explain=dialog.querySelector('.rj-safety-explain'),submit=form.querySelector('[type=submit]'), selected=null;
+  function close(){if(dialog.open){if(typeof dialog.close==='function')dialog.close();else dialog.removeAttribute('open');}selected=null;}
+  dialog.querySelector('[data-cancel]').addEventListener('click',close);
+  dialog.addEventListener('close',function(){selected=null;});
+  document.addEventListener('click',function(e){var button=e.target.closest('[data-report-scope]');if(!button)return;var s=window.RJProfiles.session();if(!s){window.alert('Zaloguj się, aby zgłosić naruszenie.');return;}var scope=button.dataset.reportScope;if(!['public','private','profile'].includes(scope))return;
+    selected={scope:scope,id:button.dataset.reportId||null,user:button.dataset.reportUser||null,token:s.token};form.reset();form.querySelector('[data-cancel]').textContent='Anuluj';status.textContent='';submit.disabled=false;
+    explain.textContent=scope==='profile'?'Administrator otrzyma nazwę zgłoszonego konta, nazwę Twojego konta, wybrany powód i Twój opis. Zgłoszenia przechowujemy około 90 dni.':(scope==='private'?'Administrator otrzyma tekst tylko tej jednej wybranej wiadomości prywatnej, nie całą rozmowę ani zdjęcie. ':'Administrator otrzyma tekst tej wybranej wiadomości, bez zdjęcia. ')+'Otrzyma też nazwę Twojego konta, powód i Twój opis. Zgłoszenia przechowujemy około 90 dni.';
+    if(typeof dialog.showModal==='function')dialog.showModal();else dialog.setAttribute('open','');
+  });
+  form.addEventListener('submit',async function(e){e.preventDefault();if(!selected||submit.disabled)return;var target=selected,s=window.RJProfiles.session();if(!s||s.token!==target.token){status.textContent='Konto się zmieniło. Zamknij okno i spróbuj ponownie.';return;}submit.disabled=true;status.textContent='Wysyłanie…';try{await window.RJProfiles.rpc('rejchat_report',{p_token:target.token,p_scope:target.scope,p_message_id:target.id,p_username:target.user,p_category:form.elements.category.value,p_note:form.elements.note.value});if(selected!==target)return;var now=window.RJProfiles.session();if(!now||now.token!==target.token){close();return;}status.textContent='Zgłoszenie wysłane. Dziękujemy.';submit.disabled=true;form.querySelector('[data-cancel]').textContent='Zamknij';}catch(err){if(selected===target)status.textContent=err.message||'Nie udało się wysłać zgłoszenia.';}finally{if(selected===target && status.textContent!=='Zgłoszenie wysłane. Dziękujemy.')submit.disabled=false;}});
+  window.addEventListener('rj:session-change',close);window.addEventListener('storage',function(e){if(e.key==='rejson_community_session_v1'||e.key===null)close();});
+})(window,document);

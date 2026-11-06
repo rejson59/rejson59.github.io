@@ -1374,6 +1374,7 @@
           (session ? '<details class="rc-message-menu"><summary aria-label="Opcje wiadomości">⋯</summary><div class="rc-menu-items">' +
             '<button type="button" data-message-info="public" data-message-id="' + esc(m.id) + '">Odczyty i reakcje</button>' +
             '<button class="rejchat-message-action" type="button" data-chat-reply="' + esc(m.id) + '">Odpowiedz</button>' : '') +
+          (session && !mine ? '<button class="rejchat-message-action" type="button" data-report-scope="public" data-report-id="' + esc(m.id) + '">Zgłoś wiadomość</button>' : '') +
           (session ? '<button class="rejchat-message-action" type="button" data-save-sejf="text" data-save-scope="public" data-save-message="' + esc(m.id) + '">Zapisz tekst w RejSejfie</button>' : '') +
           (session && m.photo && Date.parse(m.photo.expires_at)>Date.now() ? '<button class="rejchat-message-action" type="button" data-save-sejf="photo" data-save-scope="public" data-save-message="' + esc(m.id) + '" title="Kopia w Sejfie nie wygaśnie po 14 dniach">Zapisz zdjęcie w RejSejfie</button>' : '') +
           (mine ? '<button class="rejchat-message-action" type="button" data-chat-edit="' + esc(m.id) + '">Edytuj</button>' : '') +

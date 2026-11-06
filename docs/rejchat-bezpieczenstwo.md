@@ -1,0 +1,6 @@
+# Bezpieczeństwo RejChat
+
+- Z menu wiadomości lub profilu zalogowana osoba może przesłać zgłoszenie. Przed wysłaniem okno wyjaśnia, co otrzyma administrator. Przy prywatnej wiadomości jest to **tekst tylko wybranej wiadomości**, nazwę konta zgłaszającego, powód i opcjonalny opis — nie zdjęcie ani pozostała rozmowa. Serwer sprawdza uczestnictwo, ogranicza liczbę zgłoszeń i odrzuca duplikaty. Zgłoszenia usuwane są automatycznie po około 90 dniach; rozpatrzenie nie nakłada kary.
+- W panelu moderacji można zaznaczać i rozpatrywać wiele zgłoszeń. Administrator loguje się osobnym kontem Supabase i musi należeć do listy administratorów. Ostrzeżenie zawiera powód, nie nakłada automatycznie kary i pojawia się we wspólnym dzwonku wyłącznie odbiorcy. Odbiorca osobno potwierdza odczyt. Ostrzeżenia usuwane są po około 180 dniach.
+- Blokada na profilu wstrzymuje nowe wiadomości, zdjęcia, edycje i dodawanie reakcji w prywatnej rozmowie w obu kierunkach. Wcześniejsza historia oraz publiczne wiadomości pozostają widoczne; druga osoba może mieć niezależnie własną blokadę. To nie jest globalne wyciszenie (mute).
+- Prywatne rozmowy nie są szyfrowane end-to-end. Reguły egzekwuje baza także dla starszych klientów. Migracja: `supabase/2026-11-06_rejchat_safety.sql`; test transakcyjny: `supabase/tests/rejchat_safety.sql`.
