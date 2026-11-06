@@ -69,7 +69,8 @@
   var input=document.getElementById('chat-search'),list=document.getElementById('chat-list'),status=document.getElementById('chat-search-status');
   function filter(){
     var q=input.value.trim().toLocaleLowerCase('pl'), count=0,all=0;
-    list.querySelectorAll('.chat-msg').forEach(function(row){all++;var show=!q||row.textContent.toLocaleLowerCase('pl').indexOf(q)>=0;row.hidden=!show;if(show)count++;});
+    list.querySelectorAll('.chat-msg').forEach(function(row){all++;var fullLinks=Array.from(row.querySelectorAll('.chat-text a[title]')).map(function(a){return a.title;}).join(' ');var show=!q||(row.textContent+' '+fullLinks).toLocaleLowerCase('pl').indexOf(q)>=0;row.hidden=!show;if(show)count++;});
+    if(window.RJChatMessageUI)window.RJChatMessageUI.group(list);
     status.textContent=q?'Pasuje '+count+' z '+all+' wczytanych wiadomości.':'Widoczne są ostatnie wczytane wiadomości.';
   }
   input.addEventListener('input',filter);

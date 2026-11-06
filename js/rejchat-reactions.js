@@ -10,10 +10,8 @@
   function paint(){
     var s=session();
     list.querySelectorAll('[data-chat-id]').forEach(function(row){
-      var bubble=row.querySelector('.chat-bubble'), id=row.getAttribute('data-chat-id');if(!bubble)return;
-      var box=bubble.querySelector('.rejchat-reactions');if(!box){box=document.createElement('div');box.className='rejchat-reactions';box.setAttribute('aria-label','Reakcje na wiadomość');bubble.appendChild(box);}
-      var signature=JSON.stringify([!!s,cache[id]||[]]);if(box.dataset.signature===signature)return;box.dataset.signature=signature;box.innerHTML='';
-      emojis.forEach(function(emoji){var r=(cache[id]||[]).find(function(x){return x.emoji===emoji;});var b=document.createElement('button');b.type='button';b.className='rejchat-reaction';b.dataset.reaction=emoji;b.setAttribute('aria-pressed',String(!!(r&&r.mine)));b.setAttribute('aria-label','Reakcja '+emoji+(r?' · '+r.count:''));b.disabled=!s;b.title=s?'Dodaj lub usuń reakcję':'Zaloguj się, aby reagować';b.textContent=emoji+(r&&r.count?' '+r.count:'');box.appendChild(b);});
+      var bubble=row.querySelector('.chat-bubble'), id=row.getAttribute('data-chat-id');if(!bubble||!window.RJChatMessageUI)return;
+      window.RJChatMessageUI.reactions(bubble,cache[id]||[],'public',!!s);
     });
   }
   function refresh(){

@@ -141,3 +141,24 @@ body.rj-community .rejchat-info .comm-online-user { flex-wrap:wrap; max-width:10
 body.rj-community .comm-online-user > a { min-width:0; max-width:100%; overflow-wrap:anywhere; }
 body.rj-community .comm-online-user :is(.comm-owner-badge,.comm-bot-badge,.comm-online-count) { margin-left:0; max-width:100%; }
 body.rj-community .chat-bubble { min-width:0; overflow-wrap:anywhere; }
+
+/* Akcje i prawdziwe reakcje w nagłówku wiadomości, nie pod jej treścią. */
+body.rj-community .chat-meta { gap:5px 8px; min-width:0; }
+body.rj-community .chat-author,body.rj-community .chat-meta > strong { min-width:0; overflow-wrap:anywhere; }
+body.rj-community .chat-meta .rc-message-menu { margin:0 0 0 auto; flex:none; }
+body.rj-community .chat-meta .rc-message-menu summary { display:grid; place-items:center; width:34px; height:34px; box-sizing:border-box; padding:0; border:1px solid var(--rc-line); border-radius:10px; font-size:20px; line-height:1; }
+@media (hover:hover) and (pointer:fine) {
+ body.rj-community .chat-msg .rc-message-menu summary { opacity:0; }
+ body.rj-community .chat-msg:hover .rc-message-menu summary,body.rj-community .chat-msg:focus-within .rc-message-menu summary,body.rj-community .rc-message-menu[open] summary { opacity:1; }
+}
+body.rj-community .rc-reaction-summary { display:inline-flex; flex-wrap:wrap; align-items:center; gap:3px; }
+body.rj-community .rc-reaction-summary[hidden] { display:none; }
+body.rj-community .rc-reaction-summary .rc-reaction-count { min-width:0; min-height:26px; padding:2px 6px; font-size:11px; }
+body.rj-community .rc-menu-items { display:flex; flex-direction:column; align-items:stretch; gap:4px; min-width:0; max-width:calc(100vw - 16px); box-sizing:border-box; }
+body.rj-community .rc-menu-items > button { width:100%; text-align:left; }
+body.rj-community .rc-menu-items:popover-open { position:fixed; inset:auto; margin:0; max-height:calc(100vh - 16px); overflow:auto; z-index:100; box-shadow:0 14px 45px #0006; }
+body.rj-community .rc-reaction-picker { display:flex; gap:4px; justify-content:space-between; padding-bottom:7px; border-bottom:1px solid var(--rc-line); }
+body.rj-community .rc-menu-items .rc-reaction-picker .rejchat-reaction { flex:1; min-width:0; min-height:38px; padding:3px; text-align:center; font-size:18px; }
+body.rj-community .rc-menu-items .rc-reaction-picker .rejchat-reaction[aria-pressed="true"] { border-color:var(--rc-accent); background:color-mix(in srgb,var(--rc-accent) 18%,var(--rc-surface)); }
+body.rj-community .chat-msg.is-grouped { margin-top:-9px; }
+body.rj-community .chat-msg.is-grouped > .comm-avatar { visibility:hidden; }

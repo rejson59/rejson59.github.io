@@ -2,15 +2,15 @@
 (function (window) {
   'use strict';
   function create(list) {
-    var following = true, lastHeight = 0, lastClient = 0, frame = 0, intentUntil = 0, reading = null;
+    var following = true, lastHeight = 0, lastClient = 0, frame = 0, intentUntil = 0, reading = null, internalTop = null;
     function nearBottom() { return list.scrollHeight - list.scrollTop - list.clientHeight < 48; }
     function remember() { lastHeight = list.scrollHeight; lastClient = list.clientHeight; }
     function bottom() {
       following = true; reading = null;
-      if (list.clientHeight) list.scrollTop = list.scrollHeight;
+      if (list.clientHeight) { list.scrollTop = list.scrollHeight; internalTop = list.scrollTop; }
       remember();
     }
-    function userIntent() { intentUntil = Date.now() + 600; }
+    function userIntent() { intentUntil = Date.now() + 600; internalTop = null; }
     list.addEventListener('wheel', userIntent, {passive:true});
     list.addEventListener('touchmove', userIntent, {passive:true});
     list.addEventListener('pointerdown', userIntent, {passive:true});
@@ -18,6 +18,9 @@
     // Zmiana wysokości wiadomości nie oznacza, że użytkownik przewinął w górę.
     list.addEventListener('scroll', function () {
       if (!list.clientHeight) return;
+      // Własne przywrócenie pozycji nie jest przewinięciem czytelnika.
+      if (internalTop !== null && Math.abs(list.scrollTop - internalTop) < 1) { internalTop = null; remember(); return; }
+      internalTop = null;
       var changedSize = lastHeight !== list.scrollHeight || lastClient !== list.clientHeight;
       if (!changedSize || Date.now() <= intentUntil) {
         following = nearBottom();
@@ -62,6 +65,7 @@
       });
       if (anchor) list.scrollTop += anchor.getBoundingClientRect().top - list.getBoundingClientRect().top - state.anchor.offset;
       else list.scrollTop = state.top;
+      internalTop = list.scrollTop;
       remember();
     }
     return {capture:capture, restore:restore, bottom:bottom, reset:bottom};

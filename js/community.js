@@ -31,16 +31,19 @@
       .replace(/"/g, "&quot;");
   }
 
-  /* Linki w treści wpisów/komentarzy/czatu stają się automatycznie klikalne.
-     Najpierw esc() (bezpieczeństwo), potem owijamy same adresy URL. */
-  function linkify(s) {
-    return esc(s).replace(/(?:https?:\/\/|www\.)[^\s<>"']+/g, function (raw) {
-      var m = raw, trail = "";
-      /* końcowa interpunkcja nie należy do linku (… https://x.pl! ) */
-      while (/[.,!?;:)\]]+$/.test(m)) { trail = m.slice(-1) + trail; m = m.slice(0, -1); }
-      var href = /^https?:\/\//i.test(m) ? m : "https://" + m;
-      return '<a class="comm-link" href="' + href + '" target="_blank" rel="noopener noreferrer nofollow">' + m + "</a>" + trail;
-    });
+  /* Linki są kodowane dopiero po podziale na tekst i adres; skrót dotyczy tylko czatu. */
+  function linkify(value, shorten) {
+    var text=String(value||''), regex=/(?:https?:\/\/|www\.)[^\s<>"']+/g, last=0, match, html='';
+    while((match=regex.exec(text))){
+      html+=esc(text.slice(last,match.index));var raw=match[0],trail='';
+      while(/[.,!?;:)\]]$/.test(raw)){trail=raw.slice(-1)+trail;raw=raw.slice(0,-1);}
+      var href=/^https?:\/\//i.test(raw)?raw:'https://'+raw;
+      var label=shorten&&window.RJChatMessageUI?window.RJChatMessageUI.shortLink(raw):raw;
+      var title=label!==raw?' title="'+esc(raw)+'" aria-label="Otwórz link: '+esc(raw)+'"':'';
+      html+='<a class="comm-link" href="'+esc(href)+'" target="_blank" rel="noopener noreferrer nofollow"'+title+'>'+esc(label)+'</a>'+esc(trail);
+      last=match.index+match[0].length;
+    }
+    return html+esc(text.slice(last));
   }
 
   function loadSession() {
@@ -1360,19 +1363,14 @@
     var mine = session && session.username === m.author_name;
     var canDel = mine || (session && isOwnerName(session.username));
     return (
-      '<div class="chat-msg' + (mine ? " is-mine" : "") + '" data-chat-id="' + esc(m.id) + '">' +
+      '<div class="chat-msg' + (mine ? " is-mine" : "") + '" data-chat-id="' + esc(m.id) + '" data-message-author="' + esc(m.author_name) + '" data-message-time="' + (Date.parse(m.created_at)||0) + '">' +
         avatarFor(m.author_name, m.is_bot) +
         '<div class="chat-bubble">' +
           '<div class="chat-meta">' +
             '<span class="chat-author">' + profileLink(m.author_name) + authorBadges(m.author_name, m) + "</span>" +
             '<span class="chat-time mono">' + relTime(m.created_at) + "</span>" +
             (session && !mine ? '<button class="chat-private-start" type="button" data-dm-user="' + esc(m.author_name) + '" aria-label="Prywatna rozmowa z ' + esc(m.author_name) + '">✉</button>' : '') +
-          "</div>" +
-          (m.reply ? '<div class="rejchat-reply-quote">↩ ' + esc(m.reply.author_name) + ': ' + esc(m.reply.content) + '</div>' : '') +
-          '<p class="chat-text">' + linkify(m.content) + "</p>" +
-          (window.RJChatPhotos ? window.RJChatPhotos.button(m.photo) : "") +
-          (m.edited_at ? '<span class="rejchat-edited">Edytowano</span>' : '') +
-          (session ? '<details class="rc-message-menu"><summary aria-label="Opcje wiadomości">⋯ <span>Opcje</span></summary><div class="rc-menu-items">' +
+          (session ? '<details class="rc-message-menu"><summary aria-label="Opcje wiadomości">⋯</summary><div class="rc-menu-items">' +
             '<button type="button" data-message-info="public" data-message-id="' + esc(m.id) + '">Odczyty i reakcje</button>' +
             '<button class="rejchat-message-action" type="button" data-chat-reply="' + esc(m.id) + '">Odpowiedz</button>' : '') +
           (session ? '<button class="rejchat-message-action" type="button" data-save-sejf="text" data-save-scope="public" data-save-message="' + esc(m.id) + '">Zapisz tekst w RejSejfie</button>' : '') +
@@ -1380,6 +1378,11 @@
           (mine ? '<button class="rejchat-message-action" type="button" data-chat-edit="' + esc(m.id) + '">Edytuj</button>' : '') +
           (canDel ? '<button class="chat-delete" type="button" data-chat-delete="' + esc(m.id) + '">Usuń wiadomość</button>' : '') +
           (session ? '</div></details>' : '') +
+          "</div>" +
+          (m.reply ? '<div class="rejchat-reply-quote">↩ ' + esc(m.reply.author_name) + ': ' + esc(m.reply.content) + '</div>' : '') +
+          '<p class="chat-text">' + linkify(m.content, true) + "</p>" +
+          (window.RJChatPhotos ? window.RJChatPhotos.button(m.photo) : "") +
+          (m.edited_at ? '<span class="rejchat-edited">Edytowano</span>' : '') +
         "</div>" +
       "</div>"
     );
@@ -1418,6 +1421,7 @@
       return;
     }
     box.innerHTML = rows.map(chatMsgHTML).join("");
+    if(window.RJChatMessageUI)window.RJChatMessageUI.group(box);
     hydrateProfiles(box);
   }
 
@@ -1432,6 +1436,7 @@
     box.insertAdjacentHTML("beforeend", rows.map(chatMsgHTML).join(""));
     hydrateProfiles(box);
     while (box.children.length > CHAT_MAX_SHOWN) box.removeChild(box.firstChild);
+    if(window.RJChatMessageUI)window.RJChatMessageUI.group(box);
   }
 
   function refreshChatSend() {
