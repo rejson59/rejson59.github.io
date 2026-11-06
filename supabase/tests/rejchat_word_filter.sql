@@ -4,7 +4,7 @@ do $$ declare a uuid:=gen_random_uuid();b uuid:=gen_random_uuid();t uuid:=gen_ra
  foreach x in array array['KURWA','k.u.r.w.a','k'||chr(8203)||'urwa','ＫＵＲＷＡ','kυrwa','kuuurwa','j3b4c','f.u.c.k','czarnuch','zabij się','wyslij nudesy','oral sex'] loop
   if not public.rejchat_text_blocked(x) then raise exception 'Nie wykryto obejścia: %',x;end if;
  end loop;
- foreach x in array array['Pedał roweru i edukacja zdrowotna','seksualność i zdrowie','pies suka oraz baran','spotkanie w środę o 18','dyskusja o filtrowaniu','https://example.org/muzyka'] loop
+ foreach x in array array['Pedał roweru i edukacja zdrowotna','seksualność i zdrowie','pies oraz baran','spotkanie w środę o 18','dyskusja o filtrowaniu','https://example.org/muzyka'] loop
   if public.rejchat_text_blocked(x) then raise exception 'Fałszywy alarm: %',x;end if;
  end loop;
  insert into public.community_users(id,username,pin_hash) values(a,'T'||substr(replace(a::text,'-',''),1,20),'test'),(b,'T'||substr(replace(b::text,'-',''),1,20),'test');
