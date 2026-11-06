@@ -5,7 +5,7 @@
   function picker(prefix,onChange){
     var input=document.getElementById(prefix+'-photo'),label=document.getElementById(prefix+'-photo-name'),clear=document.getElementById(prefix+'-photo-clear');
     var hint='Do 10 MiB (GIF do 1 MiB). Większe zdjęcia zmniejszymy do JPG. Wygasa po 14 dniach.';
-    function update(){var file=input.files&&input.files[0];label.textContent=file?file.name+' · '+Math.ceil(file.size/1024)+' KiB':hint;clear.hidden=!file;if(onChange)onChange();}
+    function update(){var file=input.files&&input.files[0];label.textContent=file?file.name+' · '+Math.ceil(file.size/1024)+' KiB':hint;input.closest('.rejchat-photo-picker').classList.toggle('has-file',!!file);clear.hidden=!file;if(onChange)onChange();}
     input.addEventListener('change',update);clear.addEventListener('click',function(){input.value='';update();});
     return {file:function(){return input.files&&input.files[0]||null;},clear:function(){input.value='';update();},disabled:function(value){input.disabled=value;clear.disabled=value;}};
   }
