@@ -4,12 +4,12 @@
  var verbs=window.REJCLASS_VERBS;if(!Array.isArray(verbs)||!verbs.length)return;
  var $=function(id){return document.getElementById(id);},hard=new Set(),known=new Set(),source=$('practice-source'),size=$('practice-size'),mode='cards',progress=window.RJClassProgress,practiceReady=false;
  function updateProgress(info){
-  hard=new Set();known=new Set();Object.keys(info.entries).forEach(function(k){if(info.entries[k]==='hard')hard.add(k);else if(info.entries[k]==='known')known.add(k);});practiceReady=info.ready;
+  hard=new Set();known=new Set();Object.keys(info.entries).forEach(function(k){if(info.entries[k]==='hard')hard.add(k);else if(info.entries[k]==='known')known.add(k);});practiceReady=info.ready&&!info.importing;
   $('progress-count').textContent='Znane: '+known.size+' / '+verbs.length+' · Do powtórki: '+hard.size;
-  $('progress-login').hidden=info.account;$('progress-retry').hidden=!info.account||!info.error;$('progress-import').hidden=!info.account||!info.ready||!info.guestCount;
-  $('progress-import').disabled=info.busy;
+  $('progress-login').hidden=info.account;$('progress-retry').hidden=!info.account||!info.error;$('progress-retry').disabled=info.busy;$('progress-import').hidden=!info.account||!info.ready||!info.guestCount;
+  $('progress-import').disabled=info.busy||!!info.pending;
   var status=info.account?(!info.ready?'Łączenie z kontem…':('Konto '+info.username+' · '+(info.pending?'Oczekuje na zapis: '+info.pending:(info.busy?'Synchronizuję…':'Postępy zapisane na koncie.')))): 'Bez konta: postępy tylko w tej przeglądarce.';
-  if(info.error)status=info.error+(info.pending?(info.storageOK?' Zmiany oczekują na tym urządzeniu.':' Zmiany są tylko w pamięci tej karty.'):'');else if(!info.storageOK&&!info.account)status='Nie udało się zapisać na urządzeniu; postęp pozostanie tylko w tej karcie.';
+  if(info.error)status=info.error+(info.pending?(info.storageOK?' Zmiany oczekują na tym urządzeniu.':' Zmiany są tylko w pamięci tej karty.'):'');else if(info.account&&info.pending&&!info.storageOK)status+=' Nie zamykaj karty do zakończenia zapisu.';else if(!info.storageOK&&!info.account)status='Nie udało się zapisać na urządzeniu; postęp pozostanie tylko w tej karcie.';
   $('sync-status').textContent=status;
   if(info.reset){startCards();startQuiz();}else {if(cards.length){$('card-repeat').disabled=!practiceReady||cardStage<2;$('card-know').disabled=!practiceReady||cardStage<2;}[$('quiz-base'),$('quiz-past'),$('quiz-participle')].forEach(function(el){el.disabled=!practiceReady||checked;});$('quiz-check').disabled=!practiceReady;}
  }
