@@ -91,10 +91,10 @@ const server=http.createServer((req,res)=>{
     await page.locator('#chat-list .chat-text').getByText('Cześć!').waitFor();
     assert.equal(await page.locator('#chat-input').inputValue(),'szkic ogólny');
     assert.equal(await page.locator('#chat-list').getByText('https://example.org/hello').count(),0);
-    await page.locator('.rc-chat-guide summary').click();
-    assert.equal(await page.locator('.rc-chat-guide').getByText('Odczyty i reakcje', {exact:false}).isVisible(),true);
-    await page.locator('.rc-chat-guide summary').click();
-    assert.equal(await page.locator('.rc-chat-guide').getByText('Odczyty i reakcje', {exact:false}).isVisible(),false);
+    assert.equal(await page.locator('.rc-chat-guide').count(),0);
+    await page.locator('#rejchat-rules summary').click();
+    assert.equal(await page.locator('#rejchat-rules').getByText('Odczyty i reakcje', {exact:false}).isVisible(),true);
+    await page.locator('#rejchat-rules summary').click();
     await page.locator('#posts-tab').click();
     assert.equal(await page.locator('#panel-posts').isVisible(),true);
     assert.equal(await page.locator('#channel-general').getAttribute('aria-pressed'),'false');
