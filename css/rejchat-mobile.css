@@ -1,0 +1,57 @@
+/* Telefoniczny układ RejChat. Nie zmienia nagłówka strony ani reklam. */
+@media (max-width:760px) {
+  body.rj-community .comm-main { padding-left:12px; padding-right:12px; }
+  body.rj-community .comm-hero { margin-bottom:8px; }
+  body.rj-community .comm-layout { border-radius:18px; }
+  body.rj-community .comm-sidebar { padding:9px 10px 8px; }
+  body.rj-community .rejchat-tabs { gap:4px; }
+  body.rj-community .rejchat-tabs button { min-height:42px; font-size:13px; }
+  body.rj-community .chat-channel-list { gap:4px; padding-top:7px; }
+  body.rj-community .chat-channel { min-height:44px; padding:5px 4px; gap:5px; border-radius:10px; }
+  body.rj-community .chat-channel strong { font-size:11px; line-height:1.15; overflow-wrap:normal; }
+  body.rj-community .chat-channel-icon { width:24px; height:24px; flex-shrink:0; }
+  body.rj-community .dm-unread { flex:none; }
+
+  /* Status zostaje widoczny, ale nie wypycha przycisków do osobnego wiersza. */
+  body.rj-community #chat-public-view .comm-chat-head { display:grid; grid-template-columns:minmax(0,1fr) 42px 42px; align-items:center; column-gap:6px; row-gap:4px; min-height:0; padding:12px; }
+  body.rj-community #chat-public-view .chat-room-heading { grid-column:1; grid-row:1; min-width:0; gap:9px; }
+  body.rj-community .chat-room-mark { width:34px; height:34px; border-radius:11px; font-size:19px; }
+  body.rj-community .chat-room-heading h2 { font-size:16px; line-height:1.2; }
+  body.rj-community .chat-room-heading p { line-height:1.3; }
+  body.rj-community #chat-public-view .room-eyebrow { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+  body.rj-community #chat-public-view .chat-room-heading > div { min-width:0; }
+  body.rj-community #chat-public-view .chat-room-heading p { overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+  body.rj-community #chat-public-view .rc-room-actions { display:contents; }
+  body.rj-community #chat-public-view .comm-chat-hint { grid-column:1 / -1; grid-row:2; justify-self:start; min-width:0; padding:0 0 0 2px; border:0; background:transparent; font-size:10px; }
+  body.rj-community #chat-public-view .rc-search-toggle { grid-column:2; grid-row:1; width:42px; height:42px; }
+  body.rj-community #chat-public-view .rc-chat-guide { grid-column:3; grid-row:1; margin:0; }
+  body.rj-community #chat-public-view .rc-chat-guide summary { box-sizing:border-box; display:grid; place-items:center; width:42px; min-height:42px; padding:0; }
+  body.rj-community #chat-public-view .rc-chat-guide .rc-guide-label { display:none!important; }
+  body.rj-community #chat-private-view .comm-chat-head { min-height:0; padding:12px; }
+
+  /* Więcej szerokości dla treści, a nie dla pustych marginesów. */
+  body.rj-community .comm-chat-list { padding:12px 10px; gap:12px; }
+  body.rj-community .chat-msg { gap:7px; }
+  body.rj-community .chat-msg .comm-avatar { width:30px; height:30px; border-radius:10px; }
+  body.rj-community .chat-bubble { max-width:calc(100% - 37px); padding:9px 11px; border-radius:6px 15px 15px 15px; }
+  body.rj-community .chat-msg.is-mine .chat-bubble { border-radius:15px 6px 15px 15px; }
+  body.rj-community .chat-text { font-size:14px; line-height:1.48; }
+  body.rj-community .chat-meta .rc-message-menu summary { width:36px; height:36px; }
+  body.rj-community .rc-link-card { gap:5px; margin-top:8px; padding:9px; border-radius:12px; }
+  body.rj-community .rc-link-head { gap:8px; }
+  body.rj-community .rc-link-icon { width:28px; height:28px; border-radius:9px; }
+  body.rj-community .rc-link-labels strong { font-size:12px; }
+  body.rj-community .rc-link-labels small,body.rj-community .rc-link-path { font-size:11px; line-height:1.35; }
+
+  body.rj-community .comm-chat-form { margin:8px 10px 0; padding:6px; border-radius:14px; }
+  body.rj-community .comm-chat-form textarea.comm-input { min-height:44px; padding:10px; font-size:16px; }
+  body.rj-community .comm-chat-form :is(.rc-emoji-toggle,.rc-compose-file,.rejchat-photo-picker label,.btn) { min-height:42px; }
+  body.rj-community .chat-length,body.rj-community .dm-length { padding:5px 12px 10px; line-height:1.4; }
+  body.rj-community .rc-search-panel { padding:10px 12px 0; }
+  body.rj-community .rejchat-compose-context { margin-left:10px; margin-right:10px; }
+  body.rj-community #panel-posts { padding:14px 10px 20px; }
+}
+@media (max-width:380px) {
+  body.rj-community .chat-channel-icon { display:none; }
+  body.rj-community .chat-channel strong { font-size:11px; }
+}
