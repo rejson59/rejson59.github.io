@@ -9,6 +9,12 @@ Pierwsza wizyta dla konta tworzy punkt odniesienia, bez importu wcześniejszej h
 
 Sam wspólny panel nie podłącza automatycznie osobnych aplikacji ani ich prywatnych zdarzeń. Kolejne źródło należy dopiero bezpiecznie zintegrować z prawdziwymi danymi i kontem odbiorcy; nie wysyłać tokenu do obcej domeny i nie generować sztucznych zdarzeń.
 
+## RejFile we wspólnym dzwonku
+
+Po poprawnym zakończeniu przesyłania pliku skierowanego na konkretne konto serwer zapisuje powiadomienie wyłącznie dla tego odbiorcy. Link prowadzi do skrzynki w RejFile; oznaczenie jako przeczytane synchronizuje się między urządzeniami. Powiadomienie znika, jeśli przesyłka została odwołana lub wygasła. Prywatne linki bez wybranego odbiorcy nie tworzą powiadomienia; pliki sprzed włączenia tej funkcji pozostają w skrzynce, ale nie są importowane do dzwonka. RejFile zachowuje dotychczasową retencję 3 dni. Tak jak pozostałe powiadomienia witryny, nie jest to push ani e-mail.
+
+**Nadal ograniczenie:** obserwacje, projektowe powiadomienia, odczyt i ustawienia typów nie są zsynchronizowane z kontem; stare powiązanie zgłoszeń po wpisanym nicku nie jest dowodem autorstwa. Nie obiecujemy synchronizacji tych części, dopóki nie będą bezpiecznie wdrożone.
+
 ## Prywatne rozmowy i reakcje
 
 Rozmowy 1:1 są dostępne dla istniejących kont. Serwer sprawdza uczestnictwo przy odczycie, wysyłaniu i reakcjach; nie ma szyfrowania end-to-end. Po otwarciu wyświetla się ostatnie 100 wiadomości, starsze można pobrać porcjami po 100. Limit to 1000 znaków na wiadomość, 30 wiadomości na 10 minut, dodatkowo 20 na minutę i odstęp 2 sekund; reakcje są ograniczone do 60 nowych na minutę i 1000 na dobę na konto. Rozmowa może zawierać maksymalnie 10 000 wiadomości. Nie są to wiadomości push ani rozmowy grupowe.
