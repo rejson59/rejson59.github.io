@@ -9,7 +9,7 @@
     ['radius','Zaokrąglenie',0,48,1,22,'px','','light'],
     ['reflect','Siła refleksu',0,80,1,20,'%','','light'],
     ['angle','Kierunek światła',0,360,5,135,'°','','light'],
-    ['refraction','Powiększenie soczewki',0,80,1,0,'%','Powiększa całe tło widoczne przez szkło, bez odwracania obrazu.','refraction'],
+    ['refraction','Powiększenie soczewki',0,80,1,0,'%','Subtelny efekt: około 5–10%. Wyższe wartości mocniej powiększają całe tło.','refraction'],
     ['edgeBand','Szerokość krawędzi soczewki',8,70,1,32,'px','Reguluje dodatkowe łagodne załamanie przy brzegu.','refraction'],
     ['convex','Wypukłość powierzchni',0,100,1,30,'%','Modeluje krzywiznę za pomocą światła i cienia.','shape'],
     ['bevel','Grubość szlifowanej krawędzi',0,16,1,3,'px','Jaśniejszy i ciemniejszy brzeg tafli.','shape'],
@@ -31,7 +31,7 @@
     midnight:{color:'#1c2b48',opacity:55,blur:24,saturate:140,border:25,reflect:12,shadow:48,glow:7},
     frost:{color:'#ffffff',opacity:36,blur:42,saturate:110,border:55,reflect:28,shadow:18,glow:9},
     prism:{color:'#c6b5ff',opacity:22,blur:24,saturate:200,border:55,reflect:35,glow:32,glowSize:45},
-    liquid:{color:'#ffffff',opacity:8,blur:1,saturate:160,border:46,reflect:14,convex:22,bevel:5,depth:3,refraction:52,edgeBand:36,motion:'none'},
+    liquid:{color:'#ffffff',opacity:8,blur:1,saturate:115,border:46,reflect:14,convex:22,bevel:5,depth:1,shadow:18,refraction:8,edgeBand:36,motion:'none'},
     lens:{color:'#b6ddff',opacity:20,blur:24,saturate:170,border:58,reflect:30,convex:75,bevel:9,depth:9,shadow:42,tiltX:8,tiltY:-10},
     flat:{color:'#a8cfff',opacity:16,blur:20,convex:0,bevel:0,depth:0,shadow:18}
   };
@@ -58,7 +58,7 @@
     if(typeof data.color==='string' && /^#[0-9a-f]{6}$/i.test(data.color))result.color=data.color;
     if(['none','sweep','float','pulse'].indexOf(data.motion)!==-1)result.motion=data.motion;
     if(typeof data.hover==='boolean')result.hover=data.hover;
-    if(['aurora','night','day','colorful','grid'].indexOf(data.background)!==-1)result.background=data.background;
+    if(['aurora','night','day','colorful','grid','studio'].indexOf(data.background)!==-1)result.background=data.background;
     return result;
   }
   specs.forEach(function(s){
@@ -121,7 +121,7 @@
   function updateLens(){
     if(!state.refraction || !lensSupported || lensFailed){
       lensNodes.forEach(function(node){node.style.removeProperty('--g-backdrop');});
-      lensStatus.textContent=lensFailed || !lensSupported ? 'Ta przeglądarka nie udostępnia filtra SVG tła — pokazujemy zwykłe szkło.' : 'Soczewka wyłączona. Zwiększ siłę załamania lub wybierz Liquid · soczewka.';
+      lensStatus.textContent=lensFailed || !lensSupported ? 'Ta przeglądarka nie udostępnia filtra SVG tła — pokazujemy zwykłe szkło.' : 'Soczewka wyłączona. Zwiększ powiększenie lub wybierz Liquid · soczewka.';
       document.getElementById('lab-svg').textContent='Włącz soczewkę w obsługującej przeglądarce, aby wygenerować SVG.';
       return;
     }
