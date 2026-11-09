@@ -10,6 +10,7 @@ begin
  foreach x in array array['Jestem samotną matką i szukam pracy','Historia antysemityzmu w Europie','We should oppose antisemitism','Podaj kod QR','日本の文化','Привет друг','Hej, widzimy się jutro!','https://example.org/'] loop
   if public.rejchat_text_blocked(x) then raise exception 'Fałszywy alarm: %',x;end if;
  end loop;
+ if public.rejchat_short_fragment('売')<>'売' or public.rejchat_short_fragment('😃')<>'' or not public.rejchat_fragments_blocked(array['売','春','婦'],3) or not public.rejchat_fragments_blocked(array['売','春','婦'],1) then raise exception 'Fragmenty Unicode';end if;
  if not public.rejchat_fragments_blocked(array['k','u','r'],3) or not public.rejchat_fragments_blocked(array['k','u','r'],1) or not public.rejchat_fragments_blocked(array['ku','rwa'],2) or not public.rejchat_fragments_blocked(array['ku','rwa'],1) then raise exception 'Podzielone słowo nie zostało wykryte';end if;
  if public.rejchat_fragments_blocked(array['hej','ok'],2) or public.rejchat_fragments_blocked(array['a','b'],2) or public.rejchat_fragments_blocked(array['k','u','r','ok'],4) then raise exception 'Fałszywy alarm fragmentów';end if;
  insert into public.community_users(id,username,pin_hash) values(a,'T'||left(replace(a::text,'-',''),20),'test'),(b,'T'||left(replace(b::text,'-',''),20),'test'),(c,'T'||left(replace(c::text,'-',''),20),'test');
@@ -23,6 +24,13 @@ begin
  update public.rejchat_antispam_state set last_sent=clock_timestamp()-interval '10 seconds' where user_id=a and kind='chat';
  insert into public.community_chat(author_id,author_name,content,room) select a,username,'R','links' from public.community_users where id=a;
  delete from public.community_chat where author_id in (a,b);
+ update public.rejchat_antispam_state set last_sent=clock_timestamp()-interval '10 seconds' where user_id=a and kind='chat';
+ insert into public.community_chat(author_id,author_name,content,room,created_at) select a,username,'売','general',clock_timestamp()-interval '8 seconds' from public.community_users where id=a;
+ update public.rejchat_antispam_state set last_sent=clock_timestamp()-interval '10 seconds' where user_id=a and kind='chat';
+ insert into public.community_chat(author_id,author_name,content,room,created_at) select a,username,'春','general',clock_timestamp()-interval '4 seconds' from public.community_users where id=a;
+ update public.rejchat_antispam_state set last_sent=clock_timestamp()-interval '10 seconds' where user_id=a and kind='chat';
+ begin insert into public.community_chat(author_id,author_name,content,room) select a,username,'婦','general' from public.community_users where id=a;raise exception 'Fragmenty japońskie przeszły';exception when raise_exception then if sqlerrm not like 'Połącz krótkie fragmenty%' then raise;end if;end;
+ delete from public.community_chat where author_id=a;
  -- Litery z edycji w dowolnej kolejności także są sprawdzane.
  update public.rejchat_antispam_state set last_sent=clock_timestamp()-interval '10 seconds' where user_id=a and kind='chat';
  insert into public.community_chat(id,author_id,author_name,content,room,created_at) select gen_random_uuid(),a,username,'hello','general',clock_timestamp()-interval '12 seconds' from public.community_users where id=a returning id into first_id;
