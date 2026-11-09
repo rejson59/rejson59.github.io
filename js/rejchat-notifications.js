@@ -7,7 +7,7 @@
   if (!wrap) return;
   wrap.innerHTML = '<button type="button" class="rj-chat-bell" aria-label="Powiadomienia" aria-expanded="false" aria-controls="rj-chat-alert-panel" title="Powiadomienia">' +
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-2 7-2 9h16c0-2-2-2-2-9M10 20h4"/></svg><span class="rj-chat-bell-count" hidden></span></button>' +
-    '<section id="rj-chat-alert-panel" class="rj-chat-alert-panel" aria-label="Powiadomienia" hidden><div class="rj-chat-alert-head"><div><strong>Powiadomienia</strong><small>Witryna · projekty · RejChat</small><small>Projekty i zgłoszenia: na tym urządzeniu</small><small>Ostrzeżenia potwierdź osobno</small></div><button type="button" class="rj-chat-alert-close" aria-label="Zamknij powiadomienia">×</button></div><div class="rj-chat-alert-status" role="status"></div><div class="rj-chat-alert-list"></div><div class="rj-chat-alert-actions"><button type="button" class="rj-chat-alert-refresh">Odśwież</button><button type="button" class="rj-chat-alert-read">Oznacz pozostałe jako przeczytane</button></div></section>';
+    '<section id="rj-chat-alert-panel" class="rj-chat-alert-panel" aria-label="Powiadomienia" hidden><div class="rj-chat-alert-head"><div><strong>Powiadomienia</strong><small>Witryna · projekty · RejChat · RejFile</small><small>Projekty i zgłoszenia: na tym urządzeniu</small><small>Ostrzeżenia potwierdź osobno</small></div><button type="button" class="rj-chat-alert-close" aria-label="Zamknij powiadomienia">×</button></div><div class="rj-chat-alert-status" role="status"></div><div class="rj-chat-alert-list"></div><div class="rj-chat-alert-actions"><button type="button" class="rj-chat-alert-refresh">Odśwież</button><button type="button" class="rj-chat-alert-read">Oznacz pozostałe jako przeczytane</button></div></section>';
   // Konto może pojawić się później, zniknąć lub zmienić położenie przy resize.
   function placeBell() {
     var profile = parent.querySelector('.rj-header-profile');
@@ -22,7 +22,7 @@
   var bell = wrap.querySelector('.rj-chat-bell'), count = wrap.querySelector('.rj-chat-bell-count');
   var panel = wrap.querySelector('.rj-chat-alert-panel'), list = wrap.querySelector('.rj-chat-alert-list');
   var status = wrap.querySelector('.rj-chat-alert-status'), mark = wrap.querySelector('.rj-chat-alert-read');
-  var items = [], unread = 0, dmItems = [], dmUnread = 0, reactionItems = [], reactionUnread = 0, warningItems = [], serial = 0, busy = false, chatError = '';
+  var items = [], unread = 0, dmItems = [], dmUnread = 0, reactionItems = [], reactionUnread = 0, warningItems = [], fileItems = [], serial = 0, busy = false, chatError = '';
   function current() { return window.RJProfiles.session(); }
   function same(s) { var now = current(); return s && now && s.token === now.token; }
   function text(value) { return String(value == null ? '' : value).replace(/[&<>"']/g, function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
@@ -35,13 +35,13 @@
     var s = current();
     var errors = [chatError, s && window.RJPremium && typeof window.RJPremium.sourceError === 'function' ? window.RJPremium.sourceError() : ''].filter(Boolean);
     status.textContent = errors.join(' ');
-    var generalItems = s ? general() : [], total = unread + dmUnread + reactionUnread + warningItems.length + generalItems.length;
+    var generalItems = s ? general() : [], total = unread + dmUnread + reactionUnread + warningItems.length + fileItems.length + generalItems.length;
     count.hidden = !s || !total;
     count.textContent = total > 99 ? '99+' : String(total);
     bell.setAttribute('aria-label', 'Powiadomienia' + (total ? ', nieprzeczytane: ' + total : ''));
-    mark.hidden = !s || !(unread + dmUnread + reactionUnread + generalItems.length);
+    mark.hidden = !s || !(unread + dmUnread + reactionUnread + fileItems.length + generalItems.length);
     if (!s) { list.innerHTML = '<p class="rj-chat-alert-empty">Zaloguj się, aby otrzymywać powiadomienia o projektach, zgłoszeniach i RejChat. <a href="/logowanie">Konto</a></p>'; return; }
-    if (!items.length && !dmItems.length && !reactionItems.length && !warningItems.length && !generalItems.length) { list.innerHTML = '<p class="rj-chat-alert-empty">Tu pojawią się nowe powiadomienia o projektach, zgłoszeniach i RejChat.</p>'; return; }
+    if (!items.length && !dmItems.length && !reactionItems.length && !warningItems.length && !fileItems.length && !generalItems.length) { list.innerHTML = '<p class="rj-chat-alert-empty">Tu pojawią się nowe powiadomienia o projektach, zgłoszeniach i RejChat.</p>'; return; }
     var rows = items.map(function(n) {
       var action = n.kind === 'like' ? 'polubił(a) Twój wpis' : n.kind === 'reply' ? 'odpowiedział(a) na Twój komentarz' : 'skomentował(a) Twój wpis';
       var when = new Date(n.created_at), date = isNaN(when.getTime()) ? '' : when.toLocaleString('pl-PL', {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
@@ -59,6 +59,10 @@
       var target = privateReaction ? '/rejchat#rozmowa=' + text(n.thread_id) : '/rejchat#czat';
       if (/^\/rejchat(?:\.html)?\/?$/i.test(location.pathname)) target=target.replace('/rejchat','');
       rows.push({when:n.created_at,html:'<a class="rj-chat-alert-item is-unread" href="' + target + '" data-reaction-notification="' + text(n.id) + '"><span class="rj-chat-alert-symbol" aria-hidden="true">' + text(n.emoji) + '</span><span><strong>' + text(n.actor_name) + '</strong> zareagował(a) na Twoją wiadomość <small>RejChat · ' + (privateReaction?'Prywatna rozmowa':'Czat ogólny') + '</small></span></a>'});
+    });
+    fileItems.forEach(function(n) {
+      if (!/^[0-9a-f-]{36}$/i.test(String(n.id || ''))) return;
+      rows.push({when:n.created_at,html:'<a class="rj-chat-alert-item is-unread" href="/rejfile#skrzynka" data-file-notification="' + text(n.id) + '"><span class="rj-chat-alert-symbol" aria-hidden="true">📁</span><span><strong>Nowy plik w RejFile</strong><small>' + text(n.filename) + (n.sender ? ' · od ' + text(n.sender) : '') + ' · Otwórz skrzynkę</small></span></a>'});
     });
     warningItems.forEach(function(n) {
       if (!/^[0-9a-f-]{36}$/i.test(String(n.id || ''))) return;
@@ -78,12 +82,13 @@
 
   function refresh() {
     var s = current(), seq = ++serial;
-    if (!s) { items = []; unread = 0; dmItems = []; dmUnread = 0; reactionItems = []; reactionUnread = 0; warningItems = []; chatError = ''; paint(); return Promise.resolve(); }
+    if (!s) { items = []; unread = 0; dmItems = []; dmUnread = 0; reactionItems = []; reactionUnread = 0; warningItems = []; fileItems = []; chatError = ''; paint(); return Promise.resolve(); }
     return Promise.allSettled([
       window.RJProfiles.rpc('rejchat_notifications_list', {p_token:s.token,p_limit:50}),
       window.RJProfiles.rpc('rejchat_dm_inbox', {p_token:s.token}),
       window.RJProfiles.rpc('rejchat_reaction_inbox', {p_token:s.token}),
-      window.RJProfiles.rpc('rejchat_my_warnings', {p_token:s.token})
+      window.RJProfiles.rpc('rejchat_my_warnings', {p_token:s.token}),
+      window.RJProfiles.rpc('rejfile_notifications_list', {p_token:s.token})
     ]).then(function(results) {
       if (seq !== serial || !same(s)) return;
       var posts=results[0], dm=results[1], reactions=results[2], errors=[];
@@ -95,8 +100,14 @@
       else errors.push('Nie udało się sprawdzić reakcji.');
       if(results[3].status==='fulfilled' && results[3].value && Array.isArray(results[3].value.items)) warningItems=results[3].value.items;
       else errors.push('Nie udało się sprawdzić ostrzeżeń.');
+      if(results[4].status==='fulfilled' && Array.isArray(results[4].value)) fileItems=results[4].value;
+      else { fileItems=[]; errors.push('Nie udało się sprawdzić powiadomień RejFile.'); }
       chatError=errors.join(' '); paint();
     });
+  }
+  function markFiles(ids) {
+    var s=current(); if(!s)return Promise.resolve();
+    return window.RJProfiles.rpc('rejfile_notifications_read',{p_token:s.token,p_ids:ids}).then(function(){if(same(s))return refresh();}).catch(function(){if(same(s)){chatError='Nie udało się oznaczyć powiadomień RejFile.';paint();}});
   }
   function markDmAll() {
     var s=current(); if(!s)return Promise.resolve();
@@ -117,9 +128,10 @@
   bell.addEventListener('click', function(){ var opening = panel.hidden; panel.hidden = !opening; bell.setAttribute('aria-expanded',String(opening)); if(opening) refreshAll(); });
   wrap.querySelector('.rj-chat-alert-close').addEventListener('click',function(){close(true);});
   wrap.querySelector('.rj-chat-alert-refresh').addEventListener('click',refreshAll);
-  mark.addEventListener('click',function(){if(window.RJPremium && typeof window.RJPremium.markRead === 'function')window.RJPremium.markRead(null);markRead(null);markDmAll();markReaction(null);});
+  mark.addEventListener('click',function(){if(window.RJPremium && typeof window.RJPremium.markRead === 'function')window.RJPremium.markRead(null);markRead(null);markDmAll();markReaction(null);markFiles(null);});
   list.addEventListener('click',function(e){
     var ack=e.target.closest('[data-warning-ack]');if(ack){var s=current();if(!s||ack.disabled)return;ack.disabled=true;window.RJProfiles.rpc('rejchat_ack_warning',{p_token:s.token,p_id:ack.dataset.warningAck}).then(function(ok){if(!same(s))return;if(!ok)throw Error('Nie udało się potwierdzić.');return refresh();}).catch(function(){if(same(s)){chatError='Nie udało się potwierdzić ostrzeżenia.';paint();}});return;}
+    var file=e.target.closest('[data-file-notification]');if(file){if(e.button!==0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey)return;var fileHref=file.href, fileDone=markFiles([file.getAttribute('data-file-notification')]);e.preventDefault();close(false);Promise.race([fileDone,new Promise(function(resolve){setTimeout(resolve,1200);})]).then(function(){window.location.assign(fileHref);});return;}
     var generalLink=e.target.closest('[data-general-notification]');
     if(generalLink) { if(e.button===0 && !e.metaKey && !e.ctrlKey && !e.shiftKey && !e.altKey && window.RJPremium && typeof window.RJPremium.markRead === 'function') { var href=generalLink.href; e.preventDefault(); window.RJPremium.markRead(generalLink.getAttribute('data-general-notification')); window.location.assign(href); } return; }
     var reaction=e.target.closest('[data-reaction-notification]'); if(reaction){if(e.button!==0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey)return;var href=reaction.href, done=markReaction([reaction.getAttribute('data-reaction-notification')]);e.preventDefault();close(false);Promise.race([done,new Promise(function(resolve){setTimeout(resolve,1200);})]).then(function(){window.location.assign(href);});return;}
@@ -135,7 +147,7 @@
   });
   document.addEventListener('click',function(e){if(!wrap.contains(e.target) && !panel.hidden)close(false);});
   document.addEventListener('keydown',function(e){if(e.key==='Escape' && !panel.hidden){e.preventDefault();close(true);}});
-  function sessionChanged(){ serial++; items=[]; unread=0; dmItems=[]; dmUnread=0; reactionItems=[]; reactionUnread=0; warningItems=[]; chatError=''; paint(); refresh(); }
+  function sessionChanged(){ serial++; items=[]; unread=0; dmItems=[]; dmUnread=0; reactionItems=[]; reactionUnread=0; warningItems=[]; fileItems=[]; chatError=''; paint(); refresh(); }
   window.addEventListener('rj:session-change',sessionChanged);
   window.addEventListener('rj:premium-notifications',paint);
   window.addEventListener('rj:dm-read',refresh);
