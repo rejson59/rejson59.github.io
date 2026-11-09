@@ -403,7 +403,12 @@
     Array.prototype.forEach.call(items, function (item) { observer.observe(item); });
   }
 
+  var initialized = false;
+
   function init() {
+    if (initialized) return;
+    initialized = true;
+
     stage = el("stage");
     screen = el("screen");
     peek = el("peek");
