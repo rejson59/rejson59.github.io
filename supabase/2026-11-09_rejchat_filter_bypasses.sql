@@ -2,7 +2,7 @@
 -- i dzielenie słowa na wiadomości. Nie zmieniamy wpisów z listy administratora.
 insert into public.rejchat_blocked_phrases(phrase,match_mode) values
  ('qrw','prefix'),('jebl','prefix'),('cipsk','prefix'),('шлюх','prefix'),('shlyukh','prefix'),('shlyuh','prefix'),
- ('jatɔmuso','word'),('antisemitism is my goal','word'),('popieram antysemityzm','word')
+ ('jatɔmuso','word'),('売春婦','substring'),('antisemitism is my goal','word'),('popieram antysemityzm','word')
 on conflict (lower(phrase)) do nothing;
 
 create or replace function public.rejchat_filter_normalize(p_text text) returns text
@@ -39,7 +39,7 @@ begin
  if mask_text ~ '(^|[^[:alnum:]_])k[#*]{2,4}(wa|a)([^[:alnum:]_]|$)' or
     mask_text ~ '(^|[^[:alnum:]_])q[#*]{2,4}(wa|a)([^[:alnum:]_]|$)' then return true;end if;
  -- Wskazany japoński wyraz, również z odstępami i interpunkcją między znakami.
- if position('売春婦' in unicode_compact)>0 then return true;end if;
+ if position('売春婦' in unicode_compact)>0 and exists(select 1 from public.rejchat_blocked_phrases where lower(phrase)='売春婦') then return true;end if;
  -- Izolowana treść jednoznacznie seksualna; nie blokujemy zdań o edukacji i zdrowiu.
  if normalized in ('seks','sex') then return true;end if;
  -- Połączenie sygnałów, a nie pojedynczych zwykłych słów, ogranicza fałszywe alarmy.
