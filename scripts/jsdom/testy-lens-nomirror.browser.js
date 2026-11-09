@@ -1,7 +1,7 @@
 /* Piksele dowodzą niewielkiego powiększenia i braku odwrócenia w obu osiach. */
 const assert=require('node:assert/strict'),{setup}=require('./studio-browser-helpers');
 (async()=>{const app=await setup();try{
-const ctx=await app.context(),page=await ctx.newPage();await page.goto(app.origin+'/testy');await page.waitForFunction(()=>document.querySelector('.hero-demo').style.getPropertyValue('--lens-filter').includes('url('));
+const ctx=await app.context(),page=await ctx.newPage();await page.goto(app.origin+'/testy');await page.locator('.studio').waitFor();await page.waitForFunction(()=>document.querySelector('.hero-demo').style.getPropertyValue('--lens-filter').includes('url('));
 const data=await page.locator('.hero-demo').evaluate(el=>{const id=el.style.getPropertyValue('--lens-filter').match(/#([^)]*)/)[1],f=document.getElementById(id).cloneNode(true);f.id='measured';return {width:el.offsetWidth,height:el.offsetHeight,svg:'<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute"><defs>'+f.outerHTML+'</defs></svg>'};});
 const m=await ctx.newPage();await m.setContent(`<style>html,body{margin:0}.scene{position:relative;width:${data.width}px;height:${data.height}px}.lens{position:absolute;inset:0;backdrop-filter:url(#measured)}</style>${data.svg}<div class="scene"><div class="lens"></div></div>`);await m.waitForTimeout(200);
 for(const axis of ['x','y']){

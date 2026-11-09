@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict'),{setup}=require('./studio-browser-helpers');
 (async()=>{const app=await setup();try{
-const ctx=await app.context(),p=await ctx.newPage();await p.goto(app.origin+'/testy');await p.locator('#tab-ruch').click();
+const ctx=await app.context(),p=await ctx.newPage();await p.goto(app.origin+'/testy');await p.locator('.studio').waitFor();await p.locator('#tab-ruch').click();
 for(const name of ['sheen','float','press','reveal','glow','slide']){
  const b=p.locator(`[data-motion=${name}]`),object=b.locator('xpath=ancestor::article').locator('[data-motion-object]');
  for(let i=0;i<2;i++){await b.click();assert(await object.evaluate(e=>e.classList.contains('is-playing')),name);assert((await object.evaluate(e=>e.getAnimations({subtree:true}).length))>0,`Brak animacji ${name}`);}
