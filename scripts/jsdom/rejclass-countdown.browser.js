@@ -19,7 +19,7 @@ const assert = require('node:assert/strict');
       for (const width of [320, 375, 760, 1024, 1280, 1600]) {
         await page.setViewportSize({ width, height: 900 });
         const bounds = await page.evaluate(() => {
-          const section = document.querySelector('.rjc-countdown').getBoundingClientRect();
+          const section = document.querySelector('[data-countdown="countdown"]').getBoundingClientRect();
           const clock = document.querySelector('#countdown-clock').getBoundingClientRect();
           return { doc: document.documentElement.scrollWidth, viewport: innerWidth, section: {left: section.left,right: section.right,top: section.top,bottom: section.bottom}, clock: {left: clock.left,right: clock.right,top: clock.top,bottom: clock.bottom} };
         });
