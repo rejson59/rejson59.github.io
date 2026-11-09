@@ -8,7 +8,7 @@ const assert = require('node:assert/strict');
     await ctx.route('**/*', r => r.request().url().startsWith('http://127.0.0.1:8889/') ? r.continue() : r.abort());
     const page = await ctx.newPage();
     await page.clock.install({ time: new Date('2026-11-09T10:08:58Z') });
-    await page.goto('http://127.0.0.1:8889/rejclass.html');
+    await page.goto('http://127.0.0.1:8889/rejclass.html#angielski');
     assert.equal(await page.locator('#countdown-minutes').innerText(), '01');
     assert.equal(await page.locator('#countdown-seconds').innerText(), '02');
     await page.clock.fastForward(2000);
