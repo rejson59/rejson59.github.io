@@ -8,7 +8,7 @@ const js=fs.readFileSync(path.join(root,'js/testy.js'),'utf8');
 const dom=new JSDOM(html,{url:'https://rejson59.github.io/testy',runScripts:'outside-only'});
 const w=dom.window,d=w.document;w.eval(js);
 const click=s=>d.querySelector(s).click();
-assert.equal(d.querySelectorAll('input[type=range]').length,20);
+assert.equal(d.querySelectorAll('input[type=range]').length,22);
 let opacity=d.querySelector('[data-field=opacity]');opacity.value='34';opacity.dispatchEvent(new w.Event('input',{bubbles:true}));
 assert.equal(d.getElementById('lab-stage').style.getPropertyValue('--g-opacity'),'0.34');
 assert(d.getElementById('lab-css').textContent.includes('/ 0.34'));
@@ -20,6 +20,7 @@ assert.equal(d.getElementById('lab-stage').style.getPropertyValue('--g-depth'),'
 assert.equal(d.getElementById('lab-stage').style.getPropertyValue('--g-tilt-x'),'12deg');
 let generated=d.getElementById('lab-css').textContent;assert(generated.includes('inset 0 8px 16px'));assert(generated.includes('0 10px 0 -1px'));assert(generated.includes('perspective(600px) rotateX(12deg) rotateY(-7deg)'));
 click('#lab-save');click('#lab-reset');click('#lab-load');assert.equal(d.querySelector('[data-field=convex]').value,'80');assert.equal(d.querySelector('[data-field=tiltY]').value,'-7');
+click('[data-preset=liquid]');assert.equal(d.querySelector('[data-field=refraction]').value,'52');assert.equal(d.querySelector('[data-field=edgeBand]').value,'36');assert(d.getElementById('lab-css').textContent.includes('rj-liquid-filter'));click('[data-background=grid]');assert.equal(d.getElementById('lab-stage').dataset.background,'grid');click('#lab-save');click('#lab-reset');click('#lab-load');assert.equal(d.querySelector('[data-field=refraction]').value,'52');assert.equal(d.getElementById('lab-stage').dataset.background,'grid');
 click('[data-preset=lens]');assert.equal(d.querySelector('[data-field=convex]').value,'75');click('[data-preset=flat]');assert.equal(d.querySelector('[data-field=depth]').value,'0');
 click('[data-background=day]');assert.equal(d.getElementById('lab-stage').dataset.background,'day');assert.equal(d.querySelector('[data-background=day]').getAttribute('aria-pressed'),'true');
 click('[data-preset=midnight]');assert.equal(d.getElementById('lab-color').value,'#1c2b48');assert.equal(d.getElementById('lab-stage').dataset.background,'day');
