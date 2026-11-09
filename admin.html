@@ -25,7 +25,7 @@
   <link rel="stylesheet" href="rejson-widgets/css/studio.css?v=3">
   <link rel="stylesheet" href="rejson-widgets/css/admin.css?v=2026-10-31">
   <link rel="stylesheet" href="css/admin-panel.css?v=2026-10-31-overview">
-  <link rel="stylesheet" href="css/rejchat-moderation.css?v=3">
+  <link rel="stylesheet" href="css/rejchat-moderation.css?v=4">
   <link rel="stylesheet" href="css/admin-partner.css?v=1">
   <link rel="stylesheet" href="/css/liquid.css?v=2026-10-30-2">
   <link rel="stylesheet" href="/css/rejchat.css?v=1">
@@ -378,7 +378,8 @@
           <p class="rcmod-status" id="rcmod-status" role="status" aria-live="polite"></p>
           <div class="rcmod-grid">
             <section class="rcmod-section"><h3>Filtr fraz</h3><p>Wbudowane reguły sprawdzają słowa i rdzenie wraz z typowymi obejściami. Własne frazy blokują także fragmenty tekstu. Filtr dotyczy nowych i edytowanych treści.</p>
-              <form id="rcmod-phrase-form" class="rcmod-form"><label for="rcmod-phrase">Słowo lub fraza</label><div><input id="rcmod-phrase" maxlength="80" minlength="2" required placeholder="np. niechciana fraza"><button class="btn btn-primary btn-sm" type="submit">Dodaj filtr</button></div></form>
+              <form id="rcmod-phrase-form" class="rcmod-form"><label for="rcmod-phrase">Słowo lub fraza</label><div><input id="rcmod-phrase" maxlength="80" minlength="2" required placeholder="np. niechciana fraza"><button class="btn btn-primary btn-sm" type="submit">Dodaj filtr</button></div><label for="rcmod-phrase-mode">Typ nowej reguły</label><select id="rcmod-phrase-mode"><option value="substring">Fragment tekstu — szeroki</option><option value="word">Całe słowo lub fraza</option><option value="prefix">Początek słowa — rdzeń</option></select><small>Fragment tekstu może blokować także zwykłe, dłuższe słowa zawierające tę frazę.</small></form>
+              <form id="rcmod-filter-test-form" class="rcmod-form rcmod-test"><label for="rcmod-filter-test">Sprawdź przykładową wiadomość</label><textarea id="rcmod-filter-test" maxlength="2000" rows="3" required placeholder="Wpisz własny przykład, nie treść cudzej rozmowy"></textarea><button class="btn btn-glass btn-sm" type="submit">Sprawdź bez zapisywania</button><p id="rcmod-filter-test-result" role="status" aria-live="polite"></p><small>Sprawdza pojedynczy tekst wobec aktywnych reguł i frazy z formularza powyżej. Nie symuluje serii wiadomości ani zdjęć.</small></form>
               <label for="rcmod-phrase-search">Szukaj na liście</label><input id="rcmod-phrase-search" type="search" placeholder="Szukaj słowa lub rdzenia…" autocomplete="off"><p id="rcmod-phrase-count" role="status" aria-live="polite"></p>
               <div id="rcmod-phrases" class="rcmod-list"></div>
             </section>
@@ -642,7 +643,7 @@
   <script src="js/error-reporter.js?v=1" defer></script>
   <script src="js/admin-errors.js?v=1"></script>
   <script src="js/admin-partner.js?v=1"></script>
-  <script src="js/admin-rejchat-moderation.js?v=5"></script>
+  <script src="js/admin-rejchat-moderation.js?v=6"></script>
   <script src="js/admin-panel.js?v=2026-11-05-moderation"></script>
   <script defer src="/js/media-capture.js?v=2"></script>
   <script defer src="/rejson-widgets/widget.js?v=12" data-project="rejson59.github.io"></script>
