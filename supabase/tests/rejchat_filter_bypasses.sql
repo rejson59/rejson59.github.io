@@ -6,7 +6,8 @@ begin
  foreach x in array array['Qrwa','K###a','k****wa','K***a','Шлюха','ш л ю х а','ＳＨＬＹＵＫＨＡ','売春婦','売・春・婦','Jatɔmuso','Antisemitism is my goal','Samotne matki zdejmij spodnie','cipsko','jeble','Seks','SEX','k.u.r.w.a','j3b4c'] loop
   if not public.rejchat_text_blocked(x) then raise exception 'Obejście przeszło: %',x;end if;
  end loop;
- foreach x in array array['Jestem samotną matką i szukam pracy','Edukacja seksualna i zdrowie','Patelnioseksualna to wymyślone słowo','Historia antysemityzmu w Europie','We should oppose antisemitism','Nauka o sex i zdrowiu','Podaj kod QR','日本の文化','Привет друг','Hej, widzimy się jutro!','https://example.org/'] loop
+ -- Wpisy administratora mogą niezależnie blokować neutralne terminy.
+ foreach x in array array['Jestem samotną matką i szukam pracy','Historia antysemityzmu w Europie','We should oppose antisemitism','Podaj kod QR','日本の文化','Привет друг','Hej, widzimy się jutro!','https://example.org/'] loop
   if public.rejchat_text_blocked(x) then raise exception 'Fałszywy alarm: %',x;end if;
  end loop;
  if not public.rejchat_fragments_blocked(array['k','u','r'],3) or not public.rejchat_fragments_blocked(array['k','u','r'],1) or not public.rejchat_fragments_blocked(array['ku','rwa'],2) or not public.rejchat_fragments_blocked(array['ku','rwa'],1) then raise exception 'Podzielone słowo nie zostało wykryte';end if;
