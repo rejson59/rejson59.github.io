@@ -102,3 +102,114 @@ body.rj-class :is(.rjc-bio-lesson,.rjc-bio-quiz,.rjc-bio-summary):not([hidden]) 
   body .rj-shared-header :is(.site-nav a,.nav-more>summary,.theme-toggle,.hamburger-btn,.mobile-account,.rj-home-link,.rj-chat-bell),
   body:is(.rj-tools,.rj-class,.rj-files,.rj-community) :is(.tool-summary,.tool-expand,.tools-filters button,.tool-actions button,.rjc-bio-modes button,.rjc-bio-sidebar nav button,.rjc-secondary,.rjc-primary,.chat-channel,.rejchat-tabs button,.comm-pill-btn,.primary,.secondary) { transition:none; }
 }
+
+/* Wyraźniejsze, żywe szkło: ranty i odbicia jak na pigułce zgłoszeń. */
+:root {
+  --rju-vessel:rgba(16,24,39,.70);
+  --rju-rim-top:rgba(233,245,255,.52);
+  --rju-rim-low:rgba(162,203,255,.22);
+  --rju-reflection:rgba(228,242,255,.25);
+  --rju-glow:rgba(97,157,255,.16);
+}
+html[data-theme="light"] {
+  --rju-vessel:rgba(246,250,255,.76);
+  --rju-rim-top:rgba(255,255,255,.98);
+  --rju-rim-low:rgba(86,129,188,.27);
+  --rju-reflection:rgba(255,255,255,.85);
+  --rju-glow:rgba(82,143,225,.14);
+}
+/* Filtr jest na pseudoelemencie, nie na rodzicu panelu powiadomień fixed. */
+body .rj-shared-header {
+  background:transparent!important;
+  isolation:isolate;
+  border-bottom-color:var(--rju-rim-low)!important;
+}
+body .rj-shared-header::before {
+  content:""; position:absolute; inset:0; z-index:-1; pointer-events:none;
+  background:linear-gradient(120deg,var(--rju-glow),transparent 50%),var(--rju-vessel);
+  -webkit-backdrop-filter:blur(22px) saturate(180%);
+  backdrop-filter:blur(22px) saturate(180%);
+  box-shadow:inset 0 -1px 0 var(--rju-rim-low),0 8px 32px rgba(4,10,24,.18);
+}
+body .rj-shared-header .site-nav,body.rj-home .rj-shared-header .site-nav {
+  border-color:var(--rju-rim-low);
+  background:linear-gradient(145deg,var(--rju-reflection),transparent 55%),var(--rju-vessel);
+  box-shadow:inset 0 1px 1px var(--rju-rim-top),inset 0 -1px 0 var(--rju-rim-low),0 8px 25px rgba(3,12,28,.16);
+}
+body .rj-shared-header :is(.rj-home-link,.rj-chat-bell,.hamburger-btn,.mobile-account,.rj-header-profile) {
+  border-color:var(--rju-rim-low);
+  box-shadow:inset 0 1px 1px var(--rju-rim-top),0 6px 20px rgba(3,12,28,.14);
+}
+/* Duże szkło jest półprzezroczyste tylko z obsługą rozmycia; fallback jest czytelny. */
+@supports ((backdrop-filter:blur(12px)) or (-webkit-backdrop-filter:blur(12px))) {
+  body.rj-home .universe-links a,
+  body.rj-class .rjc-subject,
+  body.rj-account :is(.comm-auth-inner,.account-benefits),
+  body.rj-files :is(.upload.card,.safe-compose),
+  body.rj-partner .partner-form-card {
+    --rju-surface:rgba(16,24,39,.72);
+    -webkit-backdrop-filter:blur(20px) saturate(175%);
+    backdrop-filter:blur(20px) saturate(175%);
+  }
+  html[data-theme="light"] body:is(.rj-home,.rj-class,.rj-account,.rj-files,.rj-partner) :is(.universe-links a,.rjc-subject,.comm-auth-inner,.account-benefits,.upload.card,.safe-compose,.partner-form-card) { --rju-surface:rgba(248,251,255,.78); }
+}
+body.rj-home :is(.profile-card,.project-card .card-inner,.universe-links a),
+body.rj-class .rjc-subject,
+body.rj-tools .tool:not(.tool-more),
+body.rj-files :is(.card,.safety),
+body.rj-account :is(.comm-auth-inner,.account-benefits),
+body.rj-partner :is(.partner-form-card,.partner-option),
+body.rj-services .services-grid article,
+body.rj-widgets :is(.wid-card,.wid-demo,.wid-cta) {
+  border-color:var(--rju-rim-low);
+  background-image:linear-gradient(155deg,var(--rju-reflection),transparent 34%),radial-gradient(ellipse at 100% 0%,var(--rju-glow),transparent 55%);
+  box-shadow:inset 0 1px 1px var(--rju-rim-top),inset 1px 0 0 var(--rju-rim-low),inset 0 -1px 0 var(--rju-rim-low),0 20px 48px rgba(2,9,25,.23);
+}
+html[data-theme="light"] body.rj-files :is(.card,.safety) {
+  background-image:linear-gradient(155deg,var(--rju-reflection),transparent 34%),radial-gradient(ellipse at 100% 0%,var(--rju-glow),transparent 55%);
+  border-color:var(--rju-rim-low);
+  box-shadow:inset 0 1px 1px var(--rju-rim-top),inset 1px 0 0 var(--rju-rim-low),inset 0 -1px 0 var(--rju-rim-low),0 20px 48px rgba(62,87,128,.15);
+}
+/* Bez dodatkowego filtra na kartach 3D ani w obrębie listy wiadomości. */
+body.rj-home .project-card .card-inner { background-color:var(--rju-surface); }
+body.rj-home .universe-links a,body.rj-class .rjc-subject { position:relative; overflow:hidden; }
+body.rj-home .universe-links a::before,body.rj-class .rjc-subject::before {
+  content:""; position:absolute; inset:-40% auto -40% -40%; width:42%; pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(225,240,255,.18),transparent);
+  transform:skewX(-22deg) translateX(-180%);
+  animation:rju-glass-sweep 7s cubic-bezier(.42,0,.18,1) infinite;
+}
+body.rj-home .universe-links a:nth-child(3n+2)::before,body.rj-class .rjc-subject:nth-child(3n+2)::before { animation-delay:-2.3s; }
+body.rj-home .universe-links a:nth-child(3n)::before,body.rj-class .rjc-subject:nth-child(3n)::before { animation-delay:-4.6s; }
+@keyframes rju-glass-sweep { 0%,25% { transform:skewX(-22deg) translateX(-180%); } 70%,100% { transform:skewX(-22deg) translateX(480%); } }
+/* Wyraźniejsze niebieskie szkło RejChatu bez containing block dla pickera. */
+body.rj-community .comm-layout { border-color:rgba(153,195,255,.42); box-shadow:0 24px 60px rgba(2,10,25,.32),inset 0 1px 1px rgba(215,234,255,.35); }
+body.rj-community .comm-sidebar { background:linear-gradient(155deg,rgba(151,194,255,.18),transparent 70%); }
+body.rj-community .comm-chat-head { background:linear-gradient(110deg,rgba(128,179,255,.19),transparent 70%),var(--rc-surface); box-shadow:inset 0 1px 0 rgba(224,240,255,.35),0 8px 25px rgba(6,18,39,.12); }
+body.rj-community .chat-bubble { background:linear-gradient(145deg,rgba(179,213,255,.11),transparent 65%),var(--rc-surface); box-shadow:inset 0 1px 0 rgba(218,236,255,.26),0 6px 18px rgba(4,12,28,.10); }
+body.rj-community .chat-msg.is-mine .chat-bubble { background:linear-gradient(145deg,rgba(151,196,255,.23),transparent 65%),color-mix(in srgb,var(--rc-accent) 11%,var(--rc-surface)); }
+html[data-theme="light"] body.rj-community .comm-layout { border-color:rgba(90,135,196,.36); }
+html[data-theme="light"] body.rj-community .comm-sidebar { background:linear-gradient(155deg,rgba(125,174,241,.20),transparent 70%); }
+html[data-theme="light"] body.rj-community :is(.comm-chat-head,.chat-bubble) { box-shadow:inset 0 1px 1px #fff,0 6px 18px rgba(52,91,144,.10); }
+@media(max-width:760px) {
+  body.rj-home .universe-links a,body.rj-class .rjc-subject { -webkit-backdrop-filter:blur(12px) saturate(150%); backdrop-filter:blur(12px) saturate(150%); }
+}
+@media(prefers-reduced-motion:reduce) {
+  body.rj-home .universe-links a::before,body.rj-class .rjc-subject::before { animation:none; }
+}
+/* Krawędzie bocznego szkła pozostają w obrysie zaokrąglonego RejChatu. */
+body.rj-community .comm-sidebar { border-radius:19px 0 0 0; }
+@media(max-width:900px) { body.rj-community .comm-sidebar { border-radius:19px 19px 0 0; } }
+html[data-theme="light"] body.rj-files :is(.eyebrow,.kicker,.step,.dropzone b) { color:#176b5b; }
+/* Elementy reagują płynnie na wskazanie, bez poruszania całych formularzy. */
+body.rj-home .universe-arrow,body.rj-class .rjc-subject>b,body.rj-tools .tool-summary .tool-icon {
+  transition:transform .38s cubic-bezier(.2,.75,.2,1);
+}
+@media(hover:hover) {
+  body.rj-home .universe-links a:hover .universe-arrow,body.rj-class .rjc-subject:hover>b { transform:translate(4px,-3px); }
+  body.rj-tools .tool-summary:hover .tool-icon { transform:rotate(-7deg) scale(1.08); }
+}
+@media(prefers-reduced-motion:reduce) {
+  body.rj-home .universe-arrow,body.rj-class .rjc-subject>b,body.rj-tools .tool-summary .tool-icon { transition:none; }
+  body.rj-home .universe-links a:hover .universe-arrow,body.rj-class .rjc-subject:hover>b,body.rj-tools .tool-summary:hover .tool-icon { transform:none; }
+}
