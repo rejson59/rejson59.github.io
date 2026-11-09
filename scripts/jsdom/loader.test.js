@@ -48,11 +48,24 @@ const scale = (fill) => {
 const CARD = (i) => `<a class="card-preview" href="x${i}" target="_blank">
   <div class="card-preview-frame"><iframe data-src="https://rejson59.github.io/P${i}/"></iframe></div></a>`;
 
+/* Testy maszyny stanów używają potwierdzonego workera; ochronę audio
+   sprawdza osobny test rzeczywistej przeglądarki. */
+function mockSilentWorker(w) {
+  w.MessageChannel = function () { const port1 = {close(){}}; this.port1 = port1; this.port2 = { reply: data => setTimeout(() => port1.onmessage({data}), 0) }; };
+  Object.defineProperty(w.navigator, 'serviceWorker', {value:{
+    controller:{scriptURL:'https://rejson59.github.io/sw.js?v=2',postMessage(message, ports){ports[0].reply(message);}},
+    getRegistration(){return Promise.resolve({active:{scriptURL:'https://rejson59.github.io/sw.js?v=2'}});},
+    addEventListener(){}, removeEventListener(){},
+    register(){return Promise.resolve({update(){return Promise.resolve();}});}
+  }});
+}
+
 function mk(html, evalBoot, evalLoader) {
   const dom = new JSDOM("<!doctype html><html><body>" + html + "</body></html>", {
     url: "https://rejson59.github.io/", runScripts: "outside-only", pretendToBeVisual: true
   });
   dom.window.Element.prototype.animate = undefined;
+  mockSilentWorker(dom.window);
   if (evalBoot) dom.window.eval(bootCode);
   if (evalLoader !== null) dom.window.eval(evalLoader === undefined ? LOADER_FAST : evalLoader);
   return dom;
@@ -313,6 +326,7 @@ function mk(html, evalBoot, evalLoader) {
       url: "https://rejson59.github.io/", runScripts: "outside-only", pretendToBeVisual: true
     });
     const w = dom.window, doc = w.document;
+    mockSilentWorker(w);
     const freeze = { until: Date.now() + 900 };
     w.requestAnimationFrame = (fn) => setTimeout(() => {
       const left = Math.max(0, freeze.until - Date.now());

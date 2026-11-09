@@ -3,7 +3,7 @@
  * Automatycznie zlicza bezpośrednie wejścia na dowolny projekt w domenie
  * https://rejson59.github.io/<NazwaProjektu>/ oraz wstrzykuje pigułkę
  * rejson-widgets bez konieczności ręcznego dopisywania skryptu w każdym repo.
- * Ignoruje ramki podglądu <iframe> (destination === "iframe").
+ * Oznaczone ramki podglądu otrzymują ochronę przed dźwiękiem.
  */
 
 var SUPABASE_URL = "https://hzbqzfimtroixnldzjeq.supabase.co";
@@ -49,18 +49,64 @@ function registerDirectProjectVisit(slug) {
   });
 }
 
+/* Podglądy projektów są uruchamiane na stronie głównej bez dźwięku.
+   Znacznik dotyczy tylko iframe; zwykła wizyta w projekcie jest nietknięta. */
+self.addEventListener("message", function (event) {
+  if (event.data === "rj-silent-preview-v1" && event.ports && event.ports[0]) {
+    event.ports[0].postMessage("rj-silent-preview-v1");
+  }
+});
+function silentPreviewFallback() {
+  return new Response('<!doctype html><meta charset="utf-8"><style>body{background:#101c2d;color:#d7e7ff;font:16px system-ui;display:grid;place-items:center;min-height:90vh;text-align:center}</style><p>Otwórz projekt, aby zobaczyć podgląd.</p>', {headers:{"content-type":"text/html; charset=utf-8","cache-control":"no-store"}});
+}
+function serveSilentPreview(request, target) {
+  return fetch(target, {credentials:"same-origin"}).then(function (response) {
+    if (!response.ok || response.redirected || !/text\/html/i.test(response.headers.get("content-type") || "")) return silentPreviewFallback();
+    /* Nie obchodzimy polityk projektów: przy CSP pokazujemy bezpieczny fallback. */
+    if (response.headers.has("content-security-policy") || response.headers.has("content-security-policy-report-only")) return silentPreviewFallback();
+    return response.text().then(function (html) {
+      if (/<meta\b[^>]*http-equiv\s*=\s*["']?content-security-policy/i.test(html) || !/<head\b[^>]*>/i.test(html)) return silentPreviewFallback();
+      /* Ochrona musi być gotowa przed pierwszym skryptem projektu. */
+      return fetch('/js/preview-silence.js?v=1').then(function (guard) {
+        if (!guard.ok) return silentPreviewFallback();
+        return guard.text().then(function (code) {
+          if (!code || /<\/script/i.test(code)) return silentPreviewFallback();
+          /* Adres projektu przywracamy przed skryptami, zachowując względne
+             ścieżki i działanie aplikacji. Nawigacja ramki zaczyna się w scope
+             głównego workera, nawet gdy projekt ma już własny worker. */
+          var restore = 'history.replaceState(null,"",' + JSON.stringify(target).replace(/</g, "\\u003c") + ');';
+          var guarded = html.replace(/<head\b[^>]*>/i, function (head) { return head + '<script>' + restore + code + '</script>'; });
+          var headers = new Headers(response.headers);
+          headers.delete("content-length"); headers.delete("content-encoding");
+          headers.set("cache-control", "no-store");
+          return new Response(guarded, {status:response.status,statusText:response.statusText,headers:headers});
+        });
+      }).catch(silentPreviewFallback);
+    });
+  }).catch(silentPreviewFallback);
+}
+
 self.addEventListener("fetch", function (event) {
-  /* Nie wywołujemy event.respondWith() — przeglądarka ładuje stronę
-     natywnie z zerowym opóźnieniem i bez ingerencji w cache projektów. */
+  /* Zwykłe wizyty zachowują dotychczasowe działanie; oznaczone podglądy
+     otrzymują ochronę zanim uruchomi się kod projektu. */
   try {
     var req = event.request;
     if (!req || req.method !== "GET") return;
     if (req.mode !== "navigate") return;
-    /* Wykluczamy podglądy <iframe> na stronie głównej (mają destination === "iframe") */
-    if (req.destination && req.destination !== "document") return;
-
     var url = new URL(req.url);
     if (url.origin !== self.location.origin) return;
+    if (req.destination === "iframe" && url.pathname === "/__rj_silent_preview__") {
+      var target;
+      try { target = new URL(url.searchParams.get("target"), self.location.origin); } catch (e) {}
+      if (!target || target.origin !== self.location.origin || !/^https?:$/.test(target.protocol) || target.pathname === "/__rj_silent_preview__") {
+        event.respondWith(Promise.resolve(silentPreviewFallback()));
+      } else {
+        event.respondWith(serveSilentPreview(req, target.href));
+      }
+      return;
+    }
+    /* Zwykłe ramki nie są podglądami ani wizytami projektów. */
+    if (req.destination && req.destination !== "document") return;
     /* Konto i strony usługowe nie są projektami: żadnych wstrzykniętych skryptów,
        widgetów ani rejestracji wejścia przez service worker. */
     if (/^\/(?:logowanie|partnerstwo|uslugi|rejfile|rejchat|rejtools|rejsejf|konto-demo|spolecznosc|profil)(?:\.html)?\/?$/i.test(url.pathname) || /^\/(?:portal|podroz)(?:\/|$)/i.test(url.pathname)) return;
