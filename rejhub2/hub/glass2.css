@@ -361,3 +361,126 @@ body footer {
   body::before { animation: none; }
   .rjhub-pill { transition: none; }
 }
+
+/* ==========================================================================
+   Ujednolicenie akcentów do palety studia (/testy):
+   #a8c8ff (błękit), #c1bcff (liliowy), #9ff3d1 tylko jako kropka statusu.
+   ========================================================================== */
+:root,
+body,
+body[class] {
+  --accent: #a8c8ff;
+  --accent-2: #c1bcff;
+  --accent-soft: rgba(168, 200, 255, 0.16);
+  --mint: #a8c8ff;
+  --green: #a8c8ff;
+  --teal: #a8c8ff;
+  --lilac: #c1bcff;
+  --purple: #c1bcff;
+  --brand: #a8c8ff;
+  --rj-accent: #a8c8ff;
+}
+
+body :is(h1 em, h1 .accent, .hero em, .kicker, .eyebrow, .rjc-kicker, .brand-mark span, .facts span) {
+  color: #c1bcff !important;
+}
+
+body :is(.brand-mark, .drop-icon, .success-icon) {
+  background: linear-gradient(140deg, #a9b9ff, #5ce1d0) !important;
+  color: #080b16 !important;
+  box-shadow: 0 8px 22px -10px rgba(110, 150, 255, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+}
+
+body :is(.eyebrow span, .live-dot, .status-dot) {
+  background: #9ff3d1 !important;
+  box-shadow: 0 0 12px rgba(131, 242, 206, 0.8) !important;
+}
+
+body :is(.btn-live, .btn-feedback, .primary span, .file-actions button, .text-button) {
+  color: #a8c8ff !important;
+}
+
+body .btn-live,
+body .btn-feedback {
+  background: rgba(168, 200, 255, 0.12) !important;
+  border: 1px solid rgba(168, 200, 255, 0.3) !important;
+  box-shadow: none !important;
+}
+
+body h1 {
+  letter-spacing: -0.045em;
+}
+
+body :is(.hero h1, .rjc-hero h1, .comm-hero h1) em {
+  background: linear-gradient(100deg, #bcc8ff 5%, #7ef0dc 52%, #eab7ff 96%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+}
+
+/* pasek reklam bocznych też w szkle */
+body :is(.side-ads, .ads-rail, .ad-card, .rj-mobile-ads, .mobile-ads) {
+  border-radius: 20px;
+}
+
+body .side-ads :is(a, .ad-slot, aside),
+body :is(.ad-card, .promo-card) {
+  background: linear-gradient(150deg, var(--hub-glass-hi), var(--hub-glass-lo)) !important;
+  border: 1px solid var(--hub-line-soft) !important;
+  border-radius: 18px !important;
+  box-shadow: var(--hub-shadow) !important;
+  backdrop-filter: var(--hub-lens);
+  -webkit-backdrop-filter: var(--hub-lens);
+  color: var(--hub-ink) !important;
+}
+
+/* sekcje i nagłówki sekcji bez starych teł */
+body :is(.section-head, .section-title, .block-head, .rjc-section-label) {
+  border-color: var(--hub-line-soft) !important;
+  color: var(--hub-ink) !important;
+}
+
+/* tabele, listy, separatory */
+body :is(hr, .divider, .sep) {
+  border-color: var(--hub-line-soft) !important;
+}
+
+body :is(table, .table) {
+  border-color: var(--hub-line) !important;
+}
+
+body :is(th, td) {
+  border-color: var(--hub-line-soft) !important;
+}
+
+/* aktywne stany dawnych zielonych/liliowych akcentów */
+body :is([aria-pressed="true"], [aria-selected="true"], .is-active, .is-current) {
+  background: linear-gradient(140deg, #eef3ff, #c6d2ff) !important;
+  border-color: rgba(255, 255, 255, 0.35) !important;
+  color: #0a1122 !important;
+}
+
+body .choice input:checked + span {
+  border-color: rgba(168, 200, 255, 0.6) !important;
+  background: rgba(168, 200, 255, 0.14) !important;
+  color: var(--hub-ink) !important;
+}
+
+body progress {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-radius: 999px;
+}
+body progress::-webkit-progress-bar { background: rgba(255, 255, 255, 0.08) !important; }
+body progress::-webkit-progress-value { background: linear-gradient(90deg, #a8c8ff, #c1bcff) !important; }
+body progress::-moz-progress-bar { background: linear-gradient(90deg, #a8c8ff, #c1bcff) !important; }
+
+body :is(a, button, input, textarea, select, [tabindex]):focus-visible {
+  outline: 2px solid rgba(168, 200, 255, 0.9) !important;
+  outline-offset: 3px !important;
+}
+
+/* pasek „Zgłoś błąd / pomysł” to element serwisu — zostaje, ale w szkle */
+body :is(.rj-feedback, .feedback-dock, .bug-pill) {
+  backdrop-filter: var(--hub-lens);
+  -webkit-backdrop-filter: var(--hub-lens);
+}

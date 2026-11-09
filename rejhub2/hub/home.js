@@ -156,8 +156,11 @@
       var active = Number(button.getAttribute("data-index")) === index;
       button.setAttribute("aria-current", active ? "true" : "false");
       button.setAttribute("aria-selected", active ? "true" : "false");
-      if (active && button.scrollIntoView) {
-        button.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" });
+      if (active) {
+        /* Przewijamy tylko listwę w bok — nigdy całej strony. */
+        var rail = button.parentNode;
+        var target = button.offsetLeft - rail.clientWidth / 2 + button.offsetWidth / 2;
+        if (rail.scrollTo) rail.scrollTo({ left: Math.max(0, target), behavior: "smooth" });
       }
     });
   }
