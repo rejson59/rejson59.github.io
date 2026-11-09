@@ -9,6 +9,12 @@
     ['radius','Zaokrąglenie',0,48,1,22,'px','','light'],
     ['reflect','Siła refleksu',0,80,1,20,'%','','light'],
     ['angle','Kierunek światła',0,360,5,135,'°','','light'],
+    ['convex','Wypukłość powierzchni',0,100,1,30,'%','Modeluje krzywiznę za pomocą światła i cienia.','shape'],
+    ['bevel','Grubość szlifowanej krawędzi',0,16,1,3,'px','Jaśniejszy i ciemniejszy brzeg tafli.','shape'],
+    ['depth','Głębokość warstwy',0,20,1,3,'px','Widoczna grubość pod panelem.','shape'],
+    ['tiltX','Pochylenie w pionie',-18,18,1,0,'°','Obraca dużą kartę pod kątem do podglądu.','shape'],
+    ['tiltY','Pochylenie w poziomie',-18,18,1,0,'°','','shape'],
+    ['perspective','Perspektywa podglądu',400,1600,50,800,'px','Mniejsza wartość daje mocniejszą perspektywę.','shape'],
     ['glow','Siła poświaty',0,80,1,12,'%','','shadow'],
     ['glowSize','Zasięg poświaty',0,80,1,22,'px','','shadow'],
     ['shadow','Siła cienia',0,80,1,30,'%','','shadow'],
@@ -22,7 +28,9 @@
     crystal:{color:'#a8cfff',opacity:16,blur:20,saturate:160,border:45,reflect:20,glow:12},
     midnight:{color:'#1c2b48',opacity:55,blur:24,saturate:140,border:25,reflect:12,shadow:48,glow:7},
     frost:{color:'#ffffff',opacity:36,blur:42,saturate:110,border:55,reflect:28,shadow:18,glow:9},
-    prism:{color:'#c6b5ff',opacity:22,blur:24,saturate:200,border:55,reflect:35,glow:32,glowSize:45}
+    prism:{color:'#c6b5ff',opacity:22,blur:24,saturate:200,border:55,reflect:35,glow:32,glowSize:45},
+    lens:{color:'#b6ddff',opacity:20,blur:24,saturate:170,border:58,reflect:30,convex:75,bevel:9,depth:9,shadow:42,tiltX:8,tiltY:-10},
+    flat:{color:'#a8cfff',opacity:16,blur:20,convex:0,bevel:0,depth:0,shadow:18}
   };
   var state=Object.assign({},defaults), stage=document.getElementById('lab-stage'), status=document.getElementById('lab-status');
   var storageKey='rejson_glass_lab_saved_v1';
@@ -30,6 +38,8 @@
     if(!data || typeof data!=='object')return null;
     var result=Object.assign({},defaults);
     specs.forEach(function(s){var v=Number(data[s[0]]);if(Number.isFinite(v))result[s[0]]=Math.min(s[3],Math.max(s[2],v));});
+    // Zapisy sprzed dodania wypukłości zachowują dawny, płaski materiał.
+    ['convex','bevel','depth'].forEach(function(key){if(!Object.prototype.hasOwnProperty.call(data,key))result[key]=0;});
     if(typeof data.color==='string' && /^#[0-9a-f]{6}$/i.test(data.color))result.color=data.color;
     if(['none','sweep','float','pulse'].indexOf(data.motion)!==-1)result.motion=data.motion;
     if(typeof data.hover==='boolean')result.hover=data.hover;
@@ -45,7 +55,8 @@
   function rgb(hex){return [1,3,5].map(function(i){return parseInt(hex.slice(i,i+2),16);}).join(' ');}
   function cssText(){
     var c=rgb(state.color), s=state;
-    var result='/* Szkło z laboratorium /testy. Dobierz kolor tekstu do tła. */\n.glass {\n  color: inherit;\n  border: '+s.borderWidth+'px solid rgb('+c+' / '+s.border/100+');\n  border-radius: '+s.radius+'px;\n  background: linear-gradient('+s.angle+'deg, rgb(255 255 255 / '+s.reflect/100+'), transparent 45%), rgb('+c+' / '+s.opacity/100+');\n  box-shadow: 0 '+s.shadowY+'px '+s.shadowBlur+'px rgb(0 5 20 / '+s.shadow/100+'), inset 0 1px 0 rgb(255 255 255 / '+s.reflect/100+'), 0 0 '+s.glowSize+'px rgb('+c+' / '+s.glow/100+');\n  -webkit-backdrop-filter: blur('+s.blur+'px) saturate('+s.saturate+'%);\n  backdrop-filter: blur('+s.blur+'px) saturate('+s.saturate+'%);\n}\n@supports not (backdrop-filter: blur(1px)) {\n  .glass { background: #34435d; color: #fff; }\n}\n';
+    var result='/* Szkło z laboratorium /testy. Dobierz kolor tekstu do tła. */\n.glass {\n  color: inherit;\n  border: '+s.borderWidth+'px solid rgb('+c+' / '+s.border/100+');\n  border-radius: '+s.radius+'px;\n  background: radial-gradient(ellipse at 30% 0%, rgb(255 255 255 / '+s.convex/100+') 0%, transparent 70%), linear-gradient(155deg, transparent 45%, rgb(0 5 20 / '+s.convex/250+') 100%), linear-gradient('+s.angle+'deg, rgb(255 255 255 / '+s.reflect/100+'), transparent 45%), rgb('+c+' / '+s.opacity/100+');\n  box-shadow: 0 '+s.shadowY+'px '+s.shadowBlur+'px rgb(0 5 20 / '+s.shadow/100+'), 0 '+s.depth+'px 0 -1px rgb(7 18 35 / .38), inset 0 '+s.bevel+'px '+(s.bevel*2)+'px rgb(255 255 255 / '+s.convex/100+'), inset 0 -'+s.bevel+'px '+(s.bevel*2)+'px rgb(0 5 20 / '+s.convex/250+'), inset 0 1px 0 rgb(255 255 255 / '+s.reflect/100+'), 0 0 '+s.glowSize+'px rgb('+c+' / '+s.glow/100+');\n  -webkit-backdrop-filter: blur('+s.blur+'px) saturate('+s.saturate+'%);\n  backdrop-filter: blur('+s.blur+'px) saturate('+s.saturate+'%);\n}\n@supports not (backdrop-filter: blur(1px)) {\n  .glass { background: #34435d; color: #fff; }\n}\n';
+    result+='\n/* Opcjonalny widok pod kątem: umieść .glass wewnątrz .glass-view. */\n.glass-view { transform: perspective('+s.perspective+'px) rotateX('+s.tiltX+'deg) rotateY('+s.tiltY+'deg); }\n';
     if(s.hover)result+='\n.glass { transition: translate .28s; }\n.glass:hover { translate: 0 -3px; }\n';
     if(s.motion!=='none'){
       if(s.motion==='sweep')result+='\n.glass { position: relative; isolation: isolate; overflow: hidden; }\n.glass::before { content: ""; position: absolute; z-index: -1; inset: -60%; pointer-events: none; background: linear-gradient(105deg, transparent 40%, #ffffff4d 50%, transparent 60%); animation: glass-sweep '+s.duration+'s ease-in-out infinite; }\n@keyframes glass-sweep { 0%,20% { translate: -80% 0; } 75%,100% { translate: 80% 0; } }\n';
@@ -56,7 +67,7 @@
     return result;
   }
   function render(){
-    var values={'rgb':rgb(state.color),'opacity':state.opacity/100,'blur':state.blur+'px','saturate':state.saturate+'%','border':state.border/100,'border-width':state.borderWidth+'px','radius':state.radius+'px','reflect':state.reflect/100,'angle':state.angle+'deg','glow':state.glow/100,'glow-size':state.glowSize+'px','shadow':state.shadow/100,'shadow-y':state.shadowY+'px','shadow-blur':state.shadowBlur+'px','duration':state.duration+'s'};
+    var values={'rgb':rgb(state.color),'opacity':state.opacity/100,'blur':state.blur+'px','saturate':state.saturate+'%','border':state.border/100,'border-width':state.borderWidth+'px','radius':state.radius+'px','reflect':state.reflect/100,'angle':state.angle+'deg','glow':state.glow/100,'glow-size':state.glowSize+'px','shadow':state.shadow/100,'shadow-y':state.shadowY+'px','shadow-blur':state.shadowBlur+'px','duration':state.duration+'s','convex':state.convex/100,'convex-shade':state.convex/250,'bevel':state.bevel+'px','bevel-blur':(state.bevel*2)+'px','depth':state.depth+'px','tilt-x':state.tiltX+'deg','tilt-y':state.tiltY+'deg','perspective':state.perspective+'px'};
     Object.keys(values).forEach(function(k){stage.style.setProperty('--g-'+k,values[k]);});
     stage.dataset.background=state.background;stage.dataset.motion=state.motion;stage.dataset.hover=String(state.hover);
     document.querySelectorAll('[data-field]').forEach(function(input){var field=input.dataset.field;if(input.type==='checkbox')input.checked=state[field];else input.value=state[field];if(input.type==='range'){var spec=specs.find(function(s){return s[0]===field;});input.parentElement.querySelector('output').textContent=state[field]+spec[6];}});
