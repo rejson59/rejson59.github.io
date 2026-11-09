@@ -53,7 +53,7 @@ const server=http.createServer((req,res)=>{const file=path.resolve(root,'.'+new 
   await page.evaluate(()=>{localStorage.setItem('rejson_community_session_v1',JSON.stringify({token:'b'.repeat(32),username:'Other'}));window.dispatchEvent(new Event('rj:session-change'));});
   await page.waitForFunction(()=>document.querySelector('.rj-chat-alert-list').textContent.includes('Tu pojawią'));releaseA();await page.waitForTimeout(150);assert(!/Ania/.test(await page.locator('.rj-chat-alert-list').textContent()),'stara odpowiedź nie może wyciec po zmianie konta');
   failed=true;await page.locator('.rj-chat-alert-refresh').click();await page.waitForFunction(()=>document.querySelector('.rj-chat-alert-status').textContent.includes('Nie udało'));
-  await page.keyboard.press('Escape');assert.equal(await page.locator('.rj-chat-alert-panel').isHidden(),true);
+  await page.keyboard.press('Escape');assert.equal(await page.locator('.rj-chat-bell').getAttribute('aria-expanded'),'false');await page.locator('.rj-chat-alert-panel').waitFor({state:'hidden'});
   await ctx.close();console.log('PASS: dzwonek obok konta, powiadomienia i wpis, izolacja sesji, błąd sieci, wyścig czatu i układ');
  }finally{if(releaseChat)releaseChat();if(releaseA)releaseA();await browser.close();server.close();}
 })().catch(e=>{console.error(e);server.close();process.exitCode=1;});
