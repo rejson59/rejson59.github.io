@@ -9,6 +9,8 @@
     ['radius','Zaokrąglenie',0,48,1,22,'px','','light'],
     ['reflect','Siła refleksu',0,80,1,20,'%','','light'],
     ['angle','Kierunek światła',0,360,5,135,'°','','light'],
+    ['refraction','Siła załamania',0,80,1,0,'px','Odkształca tło, a nie tekst na panelu.','refraction'],
+    ['edgeBand','Szerokość soczewki',8,70,1,32,'px','Określa, jak daleko od brzegu działa załamanie.','refraction'],
     ['convex','Wypukłość powierzchni',0,100,1,30,'%','Modeluje krzywiznę za pomocą światła i cienia.','shape'],
     ['bevel','Grubość szlifowanej krawędzi',0,16,1,3,'px','Jaśniejszy i ciemniejszy brzeg tafli.','shape'],
     ['depth','Głębokość warstwy',0,20,1,3,'px','Widoczna grubość pod panelem.','shape'],
@@ -29,6 +31,7 @@
     midnight:{color:'#1c2b48',opacity:55,blur:24,saturate:140,border:25,reflect:12,shadow:48,glow:7},
     frost:{color:'#ffffff',opacity:36,blur:42,saturate:110,border:55,reflect:28,shadow:18,glow:9},
     prism:{color:'#c6b5ff',opacity:22,blur:24,saturate:200,border:55,reflect:35,glow:32,glowSize:45},
+    liquid:{color:'#ffffff',opacity:8,blur:1,saturate:160,border:46,reflect:14,convex:22,bevel:5,depth:3,refraction:52,edgeBand:36,motion:'none'},
     lens:{color:'#b6ddff',opacity:20,blur:24,saturate:170,border:58,reflect:30,convex:75,bevel:9,depth:9,shadow:42,tiltX:8,tiltY:-10},
     flat:{color:'#a8cfff',opacity:16,blur:20,convex:0,bevel:0,depth:0,shadow:18}
   };
@@ -55,7 +58,7 @@
     if(typeof data.color==='string' && /^#[0-9a-f]{6}$/i.test(data.color))result.color=data.color;
     if(['none','sweep','float','pulse'].indexOf(data.motion)!==-1)result.motion=data.motion;
     if(typeof data.hover==='boolean')result.hover=data.hover;
-    if(['aurora','night','day','colorful'].indexOf(data.background)!==-1)result.background=data.background;
+    if(['aurora','night','day','colorful','grid'].indexOf(data.background)!==-1)result.background=data.background;
     return result;
   }
   specs.forEach(function(s){
@@ -68,6 +71,7 @@
   function cssText(){
     var c=rgb(state.color), s=state;
     var result='/* Szkło z laboratorium /testy. Dobierz kolor tekstu do tła. */\n.glass {\n  color: inherit;\n  border: '+s.borderWidth+'px solid rgb('+c+' / '+s.border/100+');\n  border-radius: '+s.radius+'px;\n  background: radial-gradient(ellipse at 30% 0%, rgb(255 255 255 / '+s.convex/100+') 0%, transparent 70%), linear-gradient(155deg, transparent 45%, rgb(0 5 20 / '+s.convex/250+') 100%), linear-gradient('+s.angle+'deg, rgb(255 255 255 / '+s.reflect/100+'), transparent 45%), rgb('+c+' / '+s.opacity/100+');\n  box-shadow: 0 '+s.shadowY+'px '+s.shadowBlur+'px rgb(0 5 20 / '+s.shadow/100+'), 0 '+s.depth+'px 0 -1px rgb(7 18 35 / .38), inset 0 '+s.bevel+'px '+(s.bevel*2)+'px rgb(255 255 255 / '+s.convex/100+'), inset 0 -'+s.bevel+'px '+(s.bevel*2)+'px rgb(0 5 20 / '+s.convex/250+'), inset 0 1px 0 rgb(255 255 255 / '+s.reflect/100+'), 0 0 '+s.glowSize+'px rgb('+c+' / '+s.glow/100+');\n  -webkit-backdrop-filter: blur('+s.blur+'px) saturate('+s.saturate+'%);\n  backdrop-filter: blur('+s.blur+'px) saturate('+s.saturate+'%);\n}\n@supports not (backdrop-filter: blur(1px)) {\n  .glass { background: #34435d; color: #fff; }\n}\n';
+    if(s.refraction>0)result+='\n/* Soczewka wymaga osobno skopiowanego SVG #rj-liquid-filter; mapa ma rozmiar dużej karty z podglądu. */\n@supports (backdrop-filter: url(#rj-liquid-filter)) {\n  .glass { -webkit-backdrop-filter: url(#rj-liquid-filter) blur('+s.blur+'px) saturate('+s.saturate+'%); backdrop-filter: url(#rj-liquid-filter) blur('+s.blur+'px) saturate('+s.saturate+'%); }\n}\n';
     result+='\n/* Opcjonalny widok pod kątem: umieść .glass wewnątrz .glass-view. */\n.glass-view { transform: perspective('+s.perspective+'px) rotateX('+s.tiltX+'deg) rotateY('+s.tiltY+'deg); }\n';
     if(s.hover)result+='\n.glass { transition: translate .28s; }\n.glass:hover { translate: 0 -3px; }\n';
     if(s.motion!=='none'){
@@ -78,6 +82,68 @@
     }else if(s.hover)result+='@media (prefers-reduced-motion: reduce) { .glass { transition: none; } }\n';
     return result;
   }
+  // Każdy panel ma własny filtr SVG dopasowany do jego rzeczywistego rozmiaru.
+  // Mapa RG wskazuje kierunek załamania, a środek pozostaje neutralny.
+  var lensNodes=Array.prototype.slice.call(stage.querySelectorAll('.lab-glass'));
+  var lensRecords=[], lensFrame=0, lensFailed=false, lensSvg=document.getElementById('lab-lens-defs');
+  var lensStatus=document.getElementById('lab-lens-status');
+  var lensSupported=!!(window.CSS && CSS.supports && (CSS.supports('backdrop-filter','url(#test)') || CSS.supports('-webkit-backdrop-filter','url(#test)')));
+  var ns='http://www.w3.org/2000/svg';
+  function svgNode(tag,attrs){var el=document.createElementNS(ns,tag);Object.keys(attrs).forEach(function(key){el.setAttribute(key,String(attrs[key]));});return el;}
+  function lensMap(width,height,radius,band){
+    var canvas=document.createElement('canvas');
+    var ratio=Math.min(1,256/Math.max(width,height));
+    canvas.width=Math.max(1,Math.round(width*ratio));canvas.height=Math.max(1,Math.round(height*ratio));
+    var context=canvas.getContext('2d');if(!context)throw new Error('canvas unavailable');
+    var image=context.createImageData(canvas.width,canvas.height), pixels=image.data;
+    var r=Math.min(radius,width/2,height/2), bw=width/2-r,bh=height/2-r;
+    for(var y=0;y<canvas.height;y++)for(var x=0;x<canvas.width;x++){
+      var px=(x+.5)*width/canvas.width-width/2,py=(y+.5)*height/canvas.height-height/2;
+      var qx=Math.abs(px)-bw,qy=Math.abs(py)-bh,ox=Math.max(qx,0),oy=Math.max(qy,0),len=Math.hypot(ox,oy);
+      var distance=len+Math.min(Math.max(qx,qy),0)-r;
+      var inward=-distance/band, strength=inward>0 && inward<1 ? Math.pow(1-inward,.65)*Math.min(1,inward*12) : 0;
+      var nx=0,ny=0;
+      if(len>0){nx=ox/len*Math.sign(px);ny=oy/len*Math.sign(py);}else if(qx>qy)nx=Math.sign(px);else ny=Math.sign(py);
+      var i=(y*canvas.width+x)*4;pixels[i]=Math.round(128+127*nx*strength);pixels[i+1]=Math.round(128+127*ny*strength);pixels[i+2]=128;pixels[i+3]=255;
+    }
+    context.putImageData(image,0,0);return canvas.toDataURL('image/png');
+  }
+  function scheduleLens(){
+    if(lensFrame)return;
+    if(!window.requestAnimationFrame){updateLens();return;}
+    lensFrame=window.requestAnimationFrame(function(){lensFrame=0;updateLens();});
+  }
+  function updateLens(){
+    if(!state.refraction || !lensSupported || lensFailed){
+      lensNodes.forEach(function(node){node.style.removeProperty('--g-backdrop');});
+      lensStatus.textContent=lensFailed || !lensSupported ? 'Ta przeglądarka nie udostępnia filtra SVG tła — pokazujemy zwykłe szkło.' : 'Soczewka wyłączona. Zwiększ siłę załamania lub wybierz Liquid · soczewka.';
+      document.getElementById('lab-svg').textContent='Włącz soczewkę w obsługującej przeglądarce, aby wygenerować SVG.';
+      return;
+    }
+    try{
+      lensNodes.forEach(function(node,index){
+        var w=Math.round(node.offsetWidth),h=Math.round(node.offsetHeight);if(!w || !h)return;
+        var radius=node.classList.contains('lab-mock-nav') ? Math.min(w,h)/2 : state.radius;
+        var signature=[w,h,radius,state.edgeBand].join(':');var rec=lensRecords[index];
+        if(!rec){var filter=svgNode('filter',{id:'lab-refraction-'+index,filterUnits:'userSpaceOnUse',x:0,y:0,'color-interpolation-filters':'sRGB'});var image=svgNode('feImage',{x:0,y:0,preserveAspectRatio:'none',result:'lens-map'});var displacement=svgNode('feDisplacementMap',{in:'SourceGraphic',in2:'lens-map',xChannelSelector:'R',yChannelSelector:'G'});filter.append(image,displacement);lensSvg.appendChild(filter);rec=lensRecords[index]={filter:filter,image:image,displacement:displacement};}
+        if(rec.signature!==signature){rec.filter.setAttribute('width',w);rec.filter.setAttribute('height',h);rec.image.setAttribute('width',w);rec.image.setAttribute('height',h);rec.image.setAttribute('href',lensMap(w,h,radius,state.edgeBand));rec.signature=signature;}
+        rec.displacement.setAttribute('scale',state.refraction);
+        node.style.setProperty('--g-backdrop','url(#lab-refraction-'+index+') blur('+state.blur+'px) saturate('+state.saturate+'%)');
+      });
+      lensStatus.textContent='Soczewka eksperymentalna · efekt zależy od przeglądarki. Sprawdź na tle „Siatka”.';
+      var svg=exportLens();document.getElementById('lab-svg').textContent=svg||'Mapa dużej karty nie jest jeszcze gotowa.';
+    }catch(e){lensFailed=true;updateLens();}
+  }
+  function exportLens(){
+    if(!state.refraction || !lensSupported || lensFailed)return '';
+    var index=lensNodes.indexOf(stage.querySelector('.lab-demo-card')),rec=lensRecords[index];
+    if(!rec || !rec.signature)return '';
+    var svg=svgNode('svg',{xmlns:ns,width:0,height:0,'aria-hidden':'true',style:'position:absolute;width:0;height:0;overflow:hidden'});
+    var defs=svgNode('defs',{}),clone=rec.filter.cloneNode(true);clone.setAttribute('id','rj-liquid-filter');defs.appendChild(clone);svg.appendChild(defs);
+    return new XMLSerializer().serializeToString(svg);
+  }
+  if(window.ResizeObserver){var lensObserver=new ResizeObserver(function(){if(state.refraction)scheduleLens();});lensNodes.forEach(function(node){lensObserver.observe(node);});}
+  else window.addEventListener('resize',scheduleLens);
   function render(){
     var values={'rgb':rgb(state.color),'opacity':state.opacity/100,'blur':state.blur+'px','saturate':state.saturate+'%','border':state.border/100,'border-width':state.borderWidth+'px','radius':state.radius+'px','reflect':state.reflect/100,'angle':state.angle+'deg','glow':state.glow/100,'glow-size':state.glowSize+'px','shadow':state.shadow/100,'shadow-y':state.shadowY+'px','shadow-blur':state.shadowBlur+'px','duration':state.duration+'s','convex':state.convex/100,'convex-shade':state.convex/250,'bevel':state.bevel+'px','bevel-blur':(state.bevel*2)+'px','depth':state.depth+'px','tilt-x':state.tiltX+'deg','tilt-y':state.tiltY+'deg','perspective':state.perspective+'px'};
     Object.keys(values).forEach(function(k){stage.style.setProperty('--g-'+k,values[k]);});
@@ -86,6 +152,7 @@
     document.querySelectorAll('[data-background]').forEach(function(button){if(button.tagName==='BUTTON')button.setAttribute('aria-pressed',String(button.dataset.background===state.background));});
     document.getElementById('lab-css').textContent=cssText();
     describeMotion(false);
+    scheduleLens();
   }
   document.addEventListener('input',function(e){var field=e.target.dataset.field;if(!field)return;if(e.target.type==='range')state[field]=Number(e.target.value);else if(field==='color')state.color=e.target.value;else if(field==='motion')state.motion=e.target.value;else if(field==='hover')state.hover=e.target.checked;render();});
   document.getElementById('lab-colors').addEventListener('click',function(e){var b=e.target.closest('[data-color]');if(b){state.color=b.dataset.color;render();}});
@@ -97,6 +164,7 @@
   function copy(text){if(!navigator.clipboard||!navigator.clipboard.writeText){status.textContent='Kopiowanie jest niedostępne. Rozwiń CSS i zaznacz go ręcznie.';return;}navigator.clipboard.writeText(text).then(function(){status.textContent='Skopiowano do schowka.';}).catch(function(){status.textContent='Nie udało się skopiować. Rozwiń CSS i zaznacz go ręcznie.';});}
   document.getElementById('lab-copy').addEventListener('click',function(){copy(cssText());});
   document.getElementById('lab-copy-settings').addEventListener('click',function(){copy(JSON.stringify(state,null,2));});
+  document.getElementById('lab-copy-svg').addEventListener('click',function(){var svg=exportLens();if(svg)copy(svg);else status.textContent='Włącz soczewkę i poczekaj na jej wygenerowanie.';});
   document.getElementById('lab-play').addEventListener('click',function(){
     if(state.motion==='none' || motionBlocked()){describeMotion(false);return;}
     // Zatrzymaj właściwy efekt, wymuś przeliczenie stylu, a potem uruchom go od zera.
