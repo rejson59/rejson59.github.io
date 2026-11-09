@@ -6,10 +6,11 @@ begin
  foreach x in array array['kuurrwa','kkurrwwaa','kυrrwa','Ｋ###а','売・春・婦'] loop
   if not public.rejchat_text_blocked(x) then raise exception 'Obejście przeszło: %',x;end if;
  end loop;
- foreach x in array array['Kawa i herbata','Lekcja historii','Bardzo dobry pomysł','We should oppose antisemitism','Drzewo rośnie w parku','https://example.org/'] loop
+ foreach x in array array['Kawa i herbata','Lekcja historii','Bardzo dobry pomysł','We should oppose antisemitism','Drzewo rośnie w parku','fagot','https://example.org/'] loop
   if public.rejchat_text_blocked(x) then raise exception 'Fałszywy alarm: %',x;end if;
  end loop;
  if not public.rejchat_phrase_matches('xx'||candidate||'yy',candidate,'substring') or public.rejchat_phrase_matches('xx'||candidate||'yy',candidate,'word') or not public.rejchat_phrase_matches(candidate||'yy',candidate,'prefix') then raise exception 'Typy dopasowania';end if;
+ if public.rejchat_phrase_matches('fagot','faggot','word') then raise exception 'Naturalna podwójna litera wywołała fałszywy alarm';end if;
  if has_function_privilege('anon','public.admin_rejchat_filter_check(text,text,text)','execute') or has_function_privilege('anon','public.admin_rejchat_phrase_v2(text,text)','execute') then raise exception 'Anon ma dostęp';end if;
  perform set_config('request.jwt.claims','{}',true);perform set_config('request.jwt.claim.sub','',true);
  begin perform public.admin_rejchat_filter_check('przykład',candidate,'word');raise exception 'brak autoryzacji podglądu';exception when raise_exception then if sqlerrm<>'Brak uprawnień administratora.' then raise;end if;end;
