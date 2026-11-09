@@ -51,6 +51,7 @@
     iframe.setAttribute("aria-hidden", "true");
     iframe.setAttribute("scrolling", "no");
     iframe.referrerPolicy = "no-referrer";
+    iframe.setAttribute("data-preview", "1");
 
     var failedTimer = window.setTimeout(function () {
       if (iframe.getAttribute("data-ready") !== "true" && fallback) {
@@ -67,7 +68,34 @@
     });
 
     screen.appendChild(iframe);
+    fitPreview(screen, iframe);
+    observeScreen(screen);
     return iframe;
+  }
+
+  /* Podgląd renderuje się w szerokości desktopu i jest pomniejszany,
+     żeby cała strona zmieściła się w małej ramce. */
+  var PREVIEW_WIDTH = 1280;
+  var fitted = typeof WeakMap !== "undefined" ? new WeakMap() : null;
+
+  function fitPreview(screen, iframe) {
+    var frame = iframe || screen.querySelector("iframe[data-preview]");
+    if (!frame) return;
+    var width = screen.clientWidth || 640;
+    var height = screen.clientHeight || Math.round(width * 0.625);
+    var scale = Math.min(1, width / PREVIEW_WIDTH);
+    frame.style.width = PREVIEW_WIDTH + "px";
+    frame.style.height = Math.round(height / scale) + "px";
+    frame.style.transform = "scale(" + scale + ")";
+    frame.style.transformOrigin = "top left";
+  }
+
+  function observeScreen(screen) {
+    if (!fitted || typeof ResizeObserver === "undefined") return;
+    if (fitted.has(screen)) return;
+    var observer = new ResizeObserver(function () { fitPreview(screen); });
+    observer.observe(screen);
+    fitted.set(screen, observer);
   }
 
   function tint(screen, project) {
