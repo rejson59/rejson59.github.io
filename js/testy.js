@@ -9,7 +9,7 @@
     ['radius','Zaokrąglenie',0,48,1,22,'px','','light'],
     ['reflect','Siła refleksu',0,80,1,20,'%','','light'],
     ['angle','Kierunek światła',0,360,5,135,'°','','light'],
-    ['refraction','Siła załamania',0,80,1,0,'px','Odkształca tło, a nie tekst na panelu.','refraction'],
+    ['refraction','Siła soczewki',0,80,1,0,'%','Powiększa tło przy krawędzi bez odwracania obrazu.','refraction'],
     ['edgeBand','Szerokość soczewki',8,70,1,32,'px','Określa, jak daleko od brzegu działa załamanie.','refraction'],
     ['convex','Wypukłość powierzchni',0,100,1,30,'%','Modeluje krzywiznę za pomocą światła i cienia.','shape'],
     ['bevel','Grubość szlifowanej krawędzi',0,16,1,3,'px','Jaśniejszy i ciemniejszy brzeg tafli.','shape'],
@@ -83,28 +83,30 @@
     return result;
   }
   // Każdy panel ma własny filtr SVG dopasowany do jego rzeczywistego rozmiaru.
-  // Mapa RG wskazuje kierunek załamania, a środek pozostaje neutralny.
+  // Obie osie są ściskane monotonicznie przy krawędziach: próbkujemy obraz
+  // w kierunku środka, bez odwracania ani próbkowania poza taflą.
   var lensNodes=Array.prototype.slice.call(stage.querySelectorAll('.lab-glass'));
   var lensRecords=[], lensFrame=0, lensFailed=false, lensSvg=document.getElementById('lab-lens-defs');
   var lensStatus=document.getElementById('lab-lens-status');
   var lensSupported=!!(window.CSS && CSS.supports && (CSS.supports('backdrop-filter','url(#test)') || CSS.supports('-webkit-backdrop-filter','url(#test)')));
   var ns='http://www.w3.org/2000/svg';
   function svgNode(tag,attrs){var el=document.createElementNS(ns,tag);Object.keys(attrs).forEach(function(key){el.setAttribute(key,String(attrs[key]));});return el;}
-  function lensMap(width,height,radius,band){
+  function lensMap(width,height,band){
     var canvas=document.createElement('canvas');
     var ratio=Math.min(1,256/Math.max(width,height));
     canvas.width=Math.max(1,Math.round(width*ratio));canvas.height=Math.max(1,Math.round(height*ratio));
     var context=canvas.getContext('2d');if(!context)throw new Error('canvas unavailable');
     var image=context.createImageData(canvas.width,canvas.height), pixels=image.data;
-    var r=Math.min(radius,width/2,height/2), bw=width/2-r,bh=height/2-r;
+    var bx=Math.min(band,width/2),by=Math.min(band,height/2);
     for(var y=0;y<canvas.height;y++)for(var x=0;x<canvas.width;x++){
-      var px=(x+.5)*width/canvas.width-width/2,py=(y+.5)*height/canvas.height-height/2;
-      var qx=Math.abs(px)-bw,qy=Math.abs(py)-bh,ox=Math.max(qx,0),oy=Math.max(qy,0),len=Math.hypot(ox,oy);
-      var distance=len+Math.min(Math.max(qx,qy),0)-r;
-      var inward=-distance/band, strength=inward>0 && inward<1 ? Math.pow(1-inward,.65)*Math.min(1,inward*12) : 0;
-      var nx=0,ny=0;
-      if(len>0){nx=ox/len*Math.sign(px);ny=oy/len*Math.sign(py);}else if(qx>qy)nx=Math.sign(px);else ny=Math.sign(py);
-      var i=(y*canvas.width+x)*4;pixels[i]=Math.round(128+127*nx*strength);pixels[i+1]=Math.round(128+127*ny*strength);pixels[i+2]=128;pixels[i+3]=255;
+      var px=(x+.5)*width/canvas.width,py=(y+.5)*height/canvas.height;
+      var sx=Math.max(0,1-Math.min(px,width-px)/bx);
+      var sy=Math.max(0,1-Math.min(py,height-py)/by);
+      // Łagodne wejście i wyjście ze strefy soczewki, bez ostrych załamań.
+      sx=sx*sx*(3-2*sx);sy=sy*sy*(3-2*sy);
+      var nx=px<width/2?-1:1,ny=py<height/2?-1:1;
+      var i=(y*canvas.width+x)*4;
+      pixels[i]=Math.round(128-127*nx*sx);pixels[i+1]=Math.round(128-127*ny*sy);pixels[i+2]=128;pixels[i+3]=255;
     }
     context.putImageData(image,0,0);return canvas.toDataURL('image/png');
   }
@@ -123,11 +125,13 @@
     try{
       lensNodes.forEach(function(node,index){
         var w=Math.round(node.offsetWidth),h=Math.round(node.offsetHeight);if(!w || !h)return;
-        var radius=node.classList.contains('lab-mock-nav') ? Math.min(w,h)/2 : state.radius;
-        var signature=[w,h,radius,state.edgeBand].join(':');var rec=lensRecords[index];
+        var signature=[w,h,state.edgeBand].join(':');var rec=lensRecords[index];
         if(!rec){var filter=svgNode('filter',{id:'lab-refraction-'+index,filterUnits:'userSpaceOnUse',x:0,y:0,'color-interpolation-filters':'sRGB'});var image=svgNode('feImage',{x:0,y:0,preserveAspectRatio:'none',result:'lens-map'});var displacement=svgNode('feDisplacementMap',{in:'SourceGraphic',in2:'lens-map',xChannelSelector:'R',yChannelSelector:'G'});filter.append(image,displacement);lensSvg.appendChild(filter);rec=lensRecords[index]={filter:filter,image:image,displacement:displacement};}
-        if(rec.signature!==signature){rec.filter.setAttribute('width',w);rec.filter.setAttribute('height',h);rec.image.setAttribute('width',w);rec.image.setAttribute('height',h);rec.image.setAttribute('href',lensMap(w,h,radius,state.edgeBand));rec.signature=signature;}
-        rec.displacement.setAttribute('scale',state.refraction);
+        if(rec.signature!==signature){rec.filter.setAttribute('width',w);rec.filter.setAttribute('height',h);rec.image.setAttribute('width',w);rec.image.setAttribute('height',h);rec.image.setAttribute('href',lensMap(w,h,state.edgeBand));rec.signature=signature;}
+        // Profil smoothstep ma maksymalne nachylenie 1,5; ograniczamy zmianę
+        // współrzędnej do 80% także na małych kapsułkach, bez zawijania obrazu.
+        var scale=(4/3)*Math.min(state.edgeBand,w/2,h/2)*state.refraction/100;
+        rec.displacement.setAttribute('scale',scale.toFixed(3));
         node.style.setProperty('--g-backdrop','url(#lab-refraction-'+index+') blur('+state.blur+'px) saturate('+state.saturate+'%)');
       });
       lensStatus.textContent='Soczewka eksperymentalna · efekt zależy od przeglądarki. Sprawdź na tle „Siatka”.';
