@@ -34,6 +34,18 @@
   };
   var state=Object.assign({},defaults), stage=document.getElementById('lab-stage'), status=document.getElementById('lab-status');
   var storageKey='rejson_glass_lab_saved_v1';
+  var motionStatus=document.getElementById('lab-motion-status');
+  var reduceMotion=window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+  function motionBlocked(){return document.getElementById('lab-test-motion').checked || !!(reduceMotion && reduceMotion.matches);}
+  function describeMotion(replayed){
+    var blocked=motionBlocked(); motionStatus.dataset.blocked=String(blocked || state.motion==='none');
+    var message;
+    if(blocked)message='Animacja jest wyłączona przez ograniczenie ruchu (ustawienie systemu lub test poniżej).';
+    else if(state.motion==='none')message='Wybrano „Bez animacji”. Wybierz rodzaj ruchu, aby go odtworzyć.';
+    else {var target=state.motion==='sweep'?'na wszystkich szklanych panelach':'na dużej karcie';message=(replayed?'Odtwarzam od początku':'Animacja odtwarza się w pętli')+' '+target+' ('+state.duration+' s).';}
+    if(motionStatus.textContent!==message)motionStatus.textContent=message;
+  }
+  if(reduceMotion){if(reduceMotion.addEventListener)reduceMotion.addEventListener('change',function(){describeMotion(false);});else if(reduceMotion.addListener)reduceMotion.addListener(function(){describeMotion(false);});}
   function validate(data){
     if(!data || typeof data!=='object')return null;
     var result=Object.assign({},defaults);
@@ -59,9 +71,9 @@
     result+='\n/* Opcjonalny widok pod kątem: umieść .glass wewnątrz .glass-view. */\n.glass-view { transform: perspective('+s.perspective+'px) rotateX('+s.tiltX+'deg) rotateY('+s.tiltY+'deg); }\n';
     if(s.hover)result+='\n.glass { transition: translate .28s; }\n.glass:hover { translate: 0 -3px; }\n';
     if(s.motion!=='none'){
-      if(s.motion==='sweep')result+='\n.glass { position: relative; isolation: isolate; overflow: hidden; }\n.glass::before { content: ""; position: absolute; z-index: -1; inset: -60%; pointer-events: none; background: linear-gradient(105deg, transparent 40%, #ffffff4d 50%, transparent 60%); animation: glass-sweep '+s.duration+'s ease-in-out infinite; }\n@keyframes glass-sweep { 0%,20% { translate: -80% 0; } 75%,100% { translate: 80% 0; } }\n';
-      if(s.motion==='float')result+='\n.glass { animation: glass-float '+s.duration+'s ease-in-out infinite; }\n@keyframes glass-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }\n';
-      if(s.motion==='pulse')result+='\n.glass { animation: glass-pulse '+s.duration+'s ease-in-out infinite; }\n@keyframes glass-pulse { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.18); } }\n';
+      if(s.motion==='sweep')result+='\n.glass { position: relative; isolation: isolate; overflow: hidden; }\n.glass::before { content: ""; position: absolute; z-index: 0; inset: 0; pointer-events: none; background: linear-gradient(110deg, transparent 25%, #ffffff80 50%, transparent 75%); animation: glass-sweep '+s.duration+'s linear infinite; }\n.glass > * { position: relative; z-index: 1; }\n@keyframes glass-sweep { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }\n';
+      if(s.motion==='float')result+='\n.glass { animation: glass-float '+s.duration+'s ease-in-out infinite; }\n@keyframes glass-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }\n';
+      if(s.motion==='pulse')result+='\n.glass { animation: glass-pulse '+s.duration+'s ease-in-out infinite; }\n@keyframes glass-pulse { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.32); } }\n';
       result+='@media (prefers-reduced-motion: reduce) { .glass, .glass::before { animation: none !important; transition: none !important; } }\n';
     }else if(s.hover)result+='@media (prefers-reduced-motion: reduce) { .glass { transition: none; } }\n';
     return result;
@@ -73,6 +85,7 @@
     document.querySelectorAll('[data-field]').forEach(function(input){var field=input.dataset.field;if(input.type==='checkbox')input.checked=state[field];else input.value=state[field];if(input.type==='range'){var spec=specs.find(function(s){return s[0]===field;});input.parentElement.querySelector('output').textContent=state[field]+spec[6];}});
     document.querySelectorAll('[data-background]').forEach(function(button){if(button.tagName==='BUTTON')button.setAttribute('aria-pressed',String(button.dataset.background===state.background));});
     document.getElementById('lab-css').textContent=cssText();
+    describeMotion(false);
   }
   document.addEventListener('input',function(e){var field=e.target.dataset.field;if(!field)return;if(e.target.type==='range')state[field]=Number(e.target.value);else if(field==='color')state.color=e.target.value;else if(field==='motion')state.motion=e.target.value;else if(field==='hover')state.hover=e.target.checked;render();});
   document.getElementById('lab-colors').addEventListener('click',function(e){var b=e.target.closest('[data-color]');if(b){state.color=b.dataset.color;render();}});
@@ -84,8 +97,16 @@
   function copy(text){if(!navigator.clipboard||!navigator.clipboard.writeText){status.textContent='Kopiowanie jest niedostępne. Rozwiń CSS i zaznacz go ręcznie.';return;}navigator.clipboard.writeText(text).then(function(){status.textContent='Skopiowano do schowka.';}).catch(function(){status.textContent='Nie udało się skopiować. Rozwiń CSS i zaznacz go ręcznie.';});}
   document.getElementById('lab-copy').addEventListener('click',function(){copy(cssText());});
   document.getElementById('lab-copy-settings').addEventListener('click',function(){copy(JSON.stringify(state,null,2));});
-  document.getElementById('lab-play').addEventListener('click',function(){stage.classList.remove('is-replaying');void stage.offsetWidth;stage.classList.add('is-replaying');});
+  document.getElementById('lab-play').addEventListener('click',function(){
+    if(state.motion==='none' || motionBlocked()){describeMotion(false);return;}
+    // Zatrzymaj właściwy efekt, wymuś przeliczenie stylu, a potem uruchom go od zera.
+    stage.dataset.motion='none';
+    var sample=stage.querySelector('.lab-demo-card');
+    if(sample)window.getComputedStyle(sample).animationName;
+    stage.dataset.motion=state.motion;
+    describeMotion(true);
+  });
   document.getElementById('lab-test-fallback').addEventListener('change',function(){stage.dataset.testFallback=String(this.checked);});
-  document.getElementById('lab-test-motion').addEventListener('change',function(){stage.dataset.testMotion=String(this.checked);});
+  document.getElementById('lab-test-motion').addEventListener('change',function(){stage.dataset.testMotion=String(this.checked);describeMotion(false);});
   render();
 })();
