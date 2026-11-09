@@ -3,7 +3,7 @@ begin;
 do $$
 declare a uuid:=gen_random_uuid(); b uuid:=gen_random_uuid(); c uuid:=gen_random_uuid(); t uuid:=gen_random_uuid(); t2 uuid:=gen_random_uuid(); p uuid:=gen_random_uuid(); u uuid; x text; first_id uuid; second_id uuid; third_id uuid;
 begin
- foreach x in array array['Qrwa','K###a','k****wa','K***a','Шлюха','ш л ю х а','ＳＨＬＹＵＫＨＡ','売春婦','売・春・婦','Jatɔmuso','Antisemitism is my goal','Samotne matki zdejmij spodnie','cipsko','jeble','Seks','SEX','k.u.r.w.a','j3b4c'] loop
+ foreach x in array array['Qrwa','K###a','Ｋ###а','k###4','k****wa','K***a','Шлюха','ш л ю х а','ＳＨＬＹＵＫＨＡ','売春婦','売・春・婦','Jatɔmuso','Antisemitism is my goal','Samotne matki zdejmij spodnie','cipsko','jeble','Seks','SEX','k.u.r.w.a','j3b4c'] loop
   if not public.rejchat_text_blocked(x) then raise exception 'Obejście przeszło: %',x;end if;
  end loop;
  -- Wpisy administratora mogą niezależnie blokować neutralne terminy.

@@ -32,11 +32,13 @@ declare normalized text:=public.rejchat_filter_normalize(p_text); compressed tex
 begin
  -- Maskowane formy kontrolujemy osobno; znaki # i * nie są usuwane przed sprawdzeniem.
  mask_text:=lower(normalize(coalesce(p_text,''),NFKC));
- mask_text:=translate(mask_text,chr(173)||chr(8203)||chr(8204)||chr(8205)||chr(8288)||chr(65279),'');
+ mask_text:=translate(mask_text,chr(173)||chr(8203)||chr(8204)||chr(8205)||chr(8288)||chr(65279)||chr(8234)||chr(8235)||chr(8236)||chr(8237)||chr(8238)||chr(8294)||chr(8295)||chr(8296)||chr(8297),'');
+ unicode_compact:=regexp_replace(mask_text,'[[:space:][:punct:]]','','g');
+ mask_text:=translate(mask_text, 'аесорхукіјѕԁοαεορυχκν', 'aecopxykijsdoaeopuxkv');
+ mask_text:=translate(mask_text, '013457@$!', 'oieastasi');
  if mask_text ~ '(^|[^[:alnum:]_])k[#*]{2,4}(wa|a)([^[:alnum:]_]|$)' or
     mask_text ~ '(^|[^[:alnum:]_])q[#*]{2,4}(wa|a)([^[:alnum:]_]|$)' then return true;end if;
  -- Wskazany japoński wyraz, również z odstępami i interpunkcją między znakami.
- unicode_compact:=regexp_replace(mask_text,'[[:space:][:punct:]]','','g');
  if position('売春婦' in unicode_compact)>0 then return true;end if;
  -- Izolowana treść jednoznacznie seksualna; nie blokujemy zdań o edukacji i zdrowiu.
  if normalized in ('seks','sex') then return true;end if;
