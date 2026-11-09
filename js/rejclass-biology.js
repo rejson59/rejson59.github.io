@@ -1,6 +1,15 @@
 (function(window,document){
  'use strict';
  var topics=window.REJCLASS_BIOLOGY,notes=window.REJCLASS_BIOLOGY_NOTES||{},progress=window.RJClassBiologyProgress;if(!Array.isArray(topics)||!topics.length||!progress)return;
+ var visuals={
+  'bio2-1':{file:'elements',alt:'Litery C, H, O, N, P i S wokół symbolu życia.',caption:'CHONPS — sześć pierwiastków biogennych'},
+  'bio2-2':{file:'water',alt:'Uproszczony model cząsteczki wody: jeden atom tlenu i dwa atomy wodoru.',caption:'H₂O — jeden tlen i dwa wodory'},
+  'bio2-3':{file:'carbs',alt:'Liść obok łańcucha połączonych jednostek glukozy.',caption:'Wielocukier może być zbudowany z wielu cząsteczek glukozy'},
+  'bio2-4':{file:'protein',alt:'Kolorowe jednostki połączone w zwinięty łańcuch.',caption:'Aminokwasy łączą się w łańcuch, który przyjmuje określony kształt'},
+  'bio2-5':{file:'protein-test',alt:'Probówka z fioletowym roztworem i probówka poddawana ogrzewaniu.',caption:'Próba biuretowa daje fiolet; wysoka temperatura może denaturować białko'},
+  'bio2-6':{file:'lipids',alt:'Schemat dwuwarstwy fosfolipidowej: główki zwrócone w stronę wody, ogony do wnętrza.',caption:'Fosfolipidy w błonie: główki ku wodzie, ogony do środka'},
+  'bio2-7':{file:'dna',alt:'Uproszczony schemat dwóch nici DNA z parami zasad A–T i C–G.',caption:'W DNA adenina łączy się z tyminą, a cytozyna z guaniną'}
+ };
  var $=function(id){return document.getElementById(id);},current=topics[0],entries={},ready=false,quiz=[],q=0,score=0,checked=false,quizAll=false;
  function node(tag,cls,text){var el=document.createElement(tag);if(cls)el.className=cls;if(text!=null)el.textContent=text;return el;}
  function topicById(id){return topics.find(function(t){return t.id===id;});}
@@ -9,8 +18,10 @@
  function makeCompare(data){var section=node('section','rjc-note-compare'),heading=node('h4','',data.title),scroll=node('div','rjc-note-table-wrap'),table=node('table','rjc-note-table'),caption=node('caption','',data.title),head=node('thead'),hr=node('tr'),body=node('tbody');data.headers.forEach(function(text){var th=node('th','',text);th.scope='col';hr.appendChild(th);});head.appendChild(hr);data.rows.forEach(function(row){var tr=node('tr');row.forEach(function(text,i){var cell=node(i===0?'th':'td','',text);if(i===0)cell.scope='row';cell.dataset.label=data.headers[i];tr.appendChild(cell);});body.appendChild(tr);});table.append(caption,head,body);scroll.appendChild(table);section.append(heading,scroll);return section;}
  function makeReveal(q,a,cls){var item=node('details',cls),summary=node('summary','',q),answer=node('p','',a);item.append(summary,answer);return item;}
  function renderLesson(){
-  renderNav();var box=$('bio-lesson'),article=node('article','rjc-bio-lesson'),extra=notes[current.id],label=node('span','rjc-section-label','TEMAT '+current.number),h=node('h3','',current.title),intro=node('p','',current.intro),grid=node('div','rjc-bio-points');article.append(label,h,intro);
-  if(extra){var hook=node('div','rjc-note-hook');hook.append(node('span','','NA DOBRY POCZĄTEK'),node('p','',extra.hook));var flowSection=node('section','rjc-note-flow'),flowHeading=node('h4','','W jednym spojrzeniu'),flow=node('ol','');extra.flow.forEach(function(step){flow.appendChild(node('li','',step));});flowSection.append(flowHeading,flow);article.append(hook,flowSection);}
+  renderNav();var box=$('bio-lesson'),article=node('article','rjc-bio-lesson'),extra=notes[current.id],visual=visuals[current.id],hero=node('header','rjc-note-hero'),copy=node('div','rjc-note-hero-copy'),label=node('span','rjc-section-label','TEMAT '+current.number),h=node('h3','',current.title),intro=node('p','rjc-note-intro',current.intro),grid=node('div','rjc-bio-points');copy.append(label,h,intro);
+  if(extra){var hook=node('div','rjc-note-hook');hook.append(node('span','','NA DOBRY POCZĄTEK'),node('p','',extra.hook));copy.appendChild(hook);}hero.appendChild(copy);
+  if(visual){var figure=node('figure','rjc-note-visual'),img=node('img',''),caption=node('figcaption','',visual.caption);img.src='/assets/rejclass-biology/'+visual.file+'.svg';img.alt=visual.alt;img.width=680;img.height=360;figure.append(img,caption);hero.appendChild(figure);}article.appendChild(hero);
+  if(extra){var flowSection=node('section','rjc-note-flow'),flowHeading=node('h4','','W jednym spojrzeniu'),flow=node('ol','');extra.flow.forEach(function(step){flow.appendChild(node('li','',step));});flowSection.append(flowHeading,flow);article.append(flowSection);}
   var basics=node('h4','rjc-note-section-title','Najważniejsze pojęcia');current.points.forEach(function(p){var card=node('section','rjc-bio-point');card.append(node('h4','',p[0]),node('p','',p[1]));grid.appendChild(card);});article.append(basics,grid);
   if(extra){article.appendChild(makeCompare(extra.compare));var example=node('section','rjc-note-everyday');example.append(node('span','','ZOBACZ TO W ŻYCIU'),node('h4','',extra.everyday.title),node('p','',extra.everyday.text));var trap=node('section','rjc-note-trap');trap.append(node('strong','','Uwaga, łatwo pomylić'),node('p','',extra.trap));article.append(example,trap);}
   var reminder=node('div','rjc-bio-remember');reminder.append(node('strong','','ZAPAMIĘTAJ'),document.createTextNode(current.takeaway));article.appendChild(reminder);
