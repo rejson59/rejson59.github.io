@@ -3,6 +3,94 @@
   var studio = document.querySelector('.studio');
   if (!studio) return;
 
+  // Zakładki są oddzielnymi panelami, ale stare linki do sekcji nadal działają.
+  var tabNames = ['wyglady', 'ruch', 'loadery'];
+  var tabs = tabNames.map(function (name) { return document.getElementById('tab-' + name); });
+  var panels = tabNames.map(function (name) { return document.getElementById(name); });
+  function tabForHash(hash) {
+    var id = String(hash || '').replace(/^#/, '');
+    return id === 'ruch' || id === 'loadery' ? id : 'wyglady';
+  }
+  function selectTab(name) {
+    if (tabNames.indexOf(name) === -1) name = 'wyglady';
+    tabs.forEach(function (tab, index) {
+      var active = tabNames[index] === name;
+      tab.setAttribute('aria-selected', String(active));
+      tab.tabIndex = active ? 0 : -1;
+      panels[index].hidden = !active;
+    });
+    scheduleLens();
+  }
+  tabs.forEach(function (tab, index) {
+    tab.addEventListener('click', function (event) {
+      event.preventDefault();
+      selectTab(tabNames[index]);
+      try { history.replaceState(null, '', '#' + tabNames[index]); } catch (error) { location.hash = tabNames[index]; }
+    });
+    tab.addEventListener('keydown', function (event) {
+      var next = event.key === 'ArrowRight' ? (index + 1) % tabs.length : event.key === 'ArrowLeft' ? (index + tabs.length - 1) % tabs.length : event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : -1;
+      if (next < 0) return;
+      event.preventDefault(); tabs[next].focus(); tabs[next].click();
+    });
+  });
+  studio.querySelectorAll('a[href="#kierunki"], a[href="#elementy"], a[href="#ruch"]').forEach(function (link) {
+    if (link.getAttribute('role') === 'tab') return;
+    link.addEventListener('click', function () { selectTab(tabForHash(link.getAttribute('href'))); });
+  });
+  window.addEventListener('hashchange', function () { selectTab(tabForHash(location.hash)); });
+
+  // Ulubione numery są zapisywane tylko lokalnie; awaria storage nie psuje galerii.
+  var loaderCards = Array.prototype.slice.call(studio.querySelectorAll('[data-loader-card]'));
+  var loaderIds = loaderCards.map(function (card) { return card.dataset.loaderCard; });
+  var likesKey = 'rejson_studio_liked_loaders_v1', lastKey = 'rejson_studio_last_loader_v1';
+  var liked = [], lastLoader = null, canSave = true;
+  try {
+    var rawLikes = localStorage.getItem(likesKey);
+    lastLoader = localStorage.getItem(lastKey);
+    try {
+      var saved = JSON.parse(rawLikes || '[]');
+      if (Array.isArray(saved)) liked = saved.filter(function (id, i) { return loaderIds.indexOf(id) !== -1 && saved.indexOf(id) === i; });
+    } catch (error) { /* Nieprawidłowe dane traktujemy jak pustą listę. */ }
+  } catch (error) { canSave = false; }
+  function renderLikes() {
+    loaderCards.forEach(function (card) {
+      var button = card.querySelector('[data-loader-like]'), selected = liked.indexOf(card.dataset.loaderCard) !== -1;
+      button.setAttribute('aria-pressed', String(selected));
+      button.setAttribute('aria-label', (selected ? 'Usuń z ulubionych loader ' : 'Polub loader ') + card.dataset.loaderCard + ': ' + card.querySelector('h3').textContent);
+    });
+    var ordered = loaderIds.filter(function (id) { return liked.indexOf(id) !== -1; });
+    document.getElementById('loader-liked').textContent = 'Ulubione: ' + (ordered.length ? ordered.join(', ') : 'brak') + (canSave ? '' : ' · zapis niedostępny w tej przeglądarce');
+  }
+  loaderCards.forEach(function (card) {
+    card.querySelector('[data-loader-like]').addEventListener('click', function () {
+      var id = card.dataset.loaderCard, i = liked.indexOf(id);
+      if (i === -1) liked.push(id); else liked.splice(i, 1);
+      try { localStorage.setItem(likesKey, JSON.stringify(liked)); } catch (error) { canSave = false; }
+      renderLikes();
+    });
+    card.querySelector('[data-loader-open]').addEventListener('click', function () {
+      showLoader(card.dataset.loaderCard);
+      var target = document.getElementById('loader-preview');
+      if (target.scrollIntoView) target.scrollIntoView({behavior: reduced && reduced.matches ? 'auto' : 'smooth', block: 'center'});
+    });
+  });
+  function showLoader(id) {
+    var card = loaderCards.find(function (item) { return item.dataset.loaderCard === id; });
+    if (!card) return;
+    lastLoader = id;
+    var mark = document.getElementById('loader-feature-mark');
+    mark.className = 'loader-mark mark-' + card.dataset.loaderKind;
+    document.getElementById('loader-preview-title').textContent = id + ' / ' + card.querySelector('h3').textContent;
+    loaderCards.forEach(function (item) { item.dataset.selected = String(item === card); });
+    try { localStorage.setItem(lastKey, id); } catch (error) { canSave = false; renderLikes(); }
+  }
+  function shuffleLoader() {
+    var choices = loaderIds.filter(function (id) { return id !== lastLoader; });
+    if (choices.length) showLoader(choices[Math.floor(Math.random() * choices.length)]);
+  }
+  document.getElementById('loader-shuffle').addEventListener('click', shuffleLoader);
+  renderLikes(); shuffleLoader();
+
   // Filtry to tylko wybór widocznych przykładów. Nic nie zmienia witryny.
   var filters = Array.prototype.slice.call(studio.querySelectorAll('[data-filter]'));
   var examples = Array.prototype.slice.call(studio.querySelectorAll('[data-category]'));
@@ -143,5 +231,5 @@
     var observer = new ResizeObserver(scheduleLens);
     lenses.forEach(function (element) { observer.observe(element); });
   } else if (supportsLens) window.addEventListener('resize', scheduleLens);
-  scheduleLens();
+  selectTab(tabForHash(location.hash));
 })();

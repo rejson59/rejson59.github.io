@@ -1,0 +1,25 @@
+const assert=require('node:assert/strict'),{setup}=require('./studio-browser-helpers');
+(async()=>{const app=await setup();try{
+const ctx=await app.context(),p=await ctx.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
+await p.goto(app.origin+'/testy#loadery');assert(await p.locator('#loadery').isVisible());assert(!(await p.locator('#wyglady').isVisible()));
+assert.equal(await p.locator('[data-loader-card]').count(),8);
+for(const card of await p.locator('[data-loader-card]').all()){
+ const id=await card.getAttribute('data-loader-card'),kind=await card.getAttribute('data-loader-kind');
+ assert((await card.locator('.loader-mark').evaluate(el=>el.getAnimations({subtree:true}).length))>0,`loader ${id} nie ma animacji`);
+ await card.locator('[data-loader-open]').click();assert((await p.locator('#loader-preview-title').innerText()).startsWith(id));assert(await p.locator('#loader-feature-mark').evaluate((el,k)=>el.classList.contains('mark-'+k),kind));
+}
+let old=await p.locator('#loader-preview-title').innerText();for(let i=0;i<10;i++){await p.locator('#loader-shuffle').click();let next=await p.locator('#loader-preview-title').innerText();assert.notEqual(next,old);old=next;}
+await p.locator('[data-loader-like="01"]').click();await p.locator('[data-loader-like="08"]').click();assert.match(await p.locator('#loader-liked').innerText(),/01, 08/);await p.reload();assert.equal(await p.locator('[data-loader-like="08"]').getAttribute('aria-pressed'),'true');assert(!(await p.locator('#loader-preview-title').innerText()).startsWith(old.slice(0,2)));
+await p.emulateMedia({reducedMotion:'reduce'});assert.equal(await p.locator('.loader-mark').first().evaluate(el=>el.getAnimations({subtree:true}).length),0);
+await p.locator('#tab-ruch').click();assert(await p.locator('#ruch').isVisible());assert(!(await p.locator('#loadery').isVisible()));await p.locator('#tab-ruch').press('ArrowLeft');assert.equal(await p.evaluate(()=>document.activeElement.id),'tab-wyglady');await p.locator('#tab-wyglady').press('End');assert.equal(await p.evaluate(()=>document.activeElement.id),'tab-loadery');
+for(const hash of ['#kierunki','#elementy','#ruch','#loadery']){await p.goto(app.origin+'/testy'+hash);let target=hash==='#ruch'?'#ruch':hash==='#loadery'?'#loadery':'#wyglady';assert(await p.locator(target).isVisible(),hash)}
+// Materiał, obramowanie i rozmycie odpowiadają dokowi niezależnie od panelu i motywu.
+for(const theme of ['dark','light']){await p.evaluate(t=>document.documentElement.setAttribute('data-theme',t),theme);await p.locator('#tab-wyglady').click();const dock=await p.locator('.sample-dock').evaluate(e=>{const s=getComputedStyle(e);return [s.backgroundImage,s.borderTopColor,s.borderTopWidth]});
+for(const sel of ['.hero-demo','.world-float','.sample-nav','.sample-rail','.sample-project','.sample-widget','.sample-profile','.sample-search','.sample-notice','.sample-tabs','.stack-back','.stack-front','.sample-notification','.sample-main-action','.sample-icon-action']){const v=await p.locator(sel).first().evaluate(e=>{const s=getComputedStyle(e);return [s.backgroundImage,s.borderTopColor,s.borderTopWidth]});assert.deepEqual(v,dock,theme+' '+sel)}
+for(const [tab,sel] of [['#tab-ruch','.motion-object'],['#tab-loadery','.loader-glass']]){await p.locator(tab).click();const v=await p.locator(sel).first().evaluate(e=>{const s=getComputedStyle(e);return [s.backgroundImage,s.borderTopColor,s.borderTopWidth,s.backdropFilter]});assert.deepEqual(v.slice(0,3),dock,theme+' '+sel);assert.match(v[3],/blur\(6px\).*saturate\(1\.3\)/)} }
+for(const width of [320,375,390,768]){await p.setViewportSize({width,height:850});await p.locator('#tab-loadery').click();let g=await p.evaluate(()=>({scroll:document.documentElement.scrollWidth,controls:[...document.querySelectorAll('.loader-like,.loader-open,#loader-shuffle')].map(e=>{let r=e.getBoundingClientRect();return [r.width,r.height]})}));assert(g.scroll<=width,`overflow ${width}: ${g.scroll}`);assert(g.controls.every(x=>x[0]>=44&&x[1]>=44),`przyciski ${width}`)}
+assert(!errors.length,errors.join('\n'));await ctx.close();
+const touch=await app.context({viewport:{width:390,height:844},isMobile:true,hasTouch:true});const phone=await touch.newPage();await phone.goto(app.origin+'/testy');await phone.locator('#tab-loadery').tap();await phone.locator('[data-loader-like="02"]').tap();assert.equal(await phone.locator('[data-loader-like="02"]').getAttribute('aria-pressed'),'true');await phone.locator('[data-loader-open="03"]').tap();assert.match(await phone.locator('#loader-preview-title').innerText(),/^03/);await touch.close();
+const nojs=await app.context({javaScriptEnabled:false});const plain=await nojs.newPage();await plain.goto(app.origin+'/testy');for(const id of ['#wyglady','#ruch','#loadery'])assert(await plain.locator(id).isVisible());await nojs.close();
+console.log('PASS: zakładki, loadery, losowanie, zapis, dostępność, szkło i mobile');
+}finally{await app.close()}})().catch(e=>{console.error(e);process.exitCode=1});
