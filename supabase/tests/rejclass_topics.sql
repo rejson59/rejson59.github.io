@@ -8,7 +8,7 @@ do $$ declare a uuid:=gen_random_uuid();b uuid:=gen_random_uuid();ta text:=gen_r
  perform public.rejclass_topics_set(tb,'{"bio2-1":false}');if public.rejclass_topics_get(ta)->'entries'->>'bio2-1'<>'true' then raise exception 'Nadpisano inne konto';end if;
  begin perform public.rejclass_topics_set(ta,'{"bio2-8":true}');raise exception 'Nieznany temat';exception when raise_exception then if sqlerrm not like 'Nieprawidłowe dane%' then raise;end if;end;
  begin perform public.rejclass_topics_set(ta,'{"bio2-1":"true"}');raise exception 'Nieprawidłowy typ';exception when raise_exception then if sqlerrm not like 'Nieprawidłowe dane%' then raise;end if;end;
- begin perform public.rejclass_topics_get('invalid');raise exception 'Brak sesji';exception when raise_exception then if sqlerrm not like 'Sesja wygasła%' then raise;end if;end;
+ begin perform public.rejclass_topics_get('invalid-token-000000000000000000000000');raise exception 'Brak sesji';exception when raise_exception then if sqlerrm not like 'Sesja wygasła%' then raise;end if;end;
  if has_table_privilege('anon','public.rejclass_topic_progress','select') or has_table_privilege('authenticated','public.rejclass_topic_progress','update') then raise exception 'Nieuprawniony dostęp';end if;
 end $$;
 rollback;
