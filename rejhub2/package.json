@@ -1,0 +1,9 @@
+{
+  "name": "rejhub",
+  "private": true,
+  "type": "module",
+  "description": "RejHub 2.0 — prywatna wersja robocza z serwerową bramą administratora",
+  "scripts": {
+    "check": "node --check api/session.js && node --check middleware.js && node --check assets/app.js"
+  }
+}
