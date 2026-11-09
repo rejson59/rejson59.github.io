@@ -6,10 +6,12 @@ const server=http.createServer((req,res)=>{let u=new URL(req.url,'http://localho
 (async()=>{await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin=`http://127.0.0.1:${server.address().port}`;const browser=await chromium.launch({executablePath:process.env.CHROME_BIN,args:['--no-sandbox']});try{
 const ctx=await browser.newContext({viewport:{width:1500,height:1000},serviceWorkers:'block'});await ctx.route('**/*',r=>r.request().url().startsWith(origin+'/')?r.continue():r.abort());const page=await ctx.newPage();await page.goto(origin+'/testy');await page.locator('[data-preset=liquid]').click();await page.locator('[data-field=refraction]').fill('80');
 // Przenosimy rzeczywisty, aktualny filtr do kontrolowanego tła; nie używamy stylu materiału.
-for(const band of [8,36,70]){
+for(const strength of [25,52,80]){
+ await page.locator('[data-field=refraction]').fill(String(strength));
+ for(const band of [8,36,70]){
  await page.locator('[data-field=edgeBand]').fill(String(band));
  for(const selector of ['.lab-demo-card','.lab-mock-nav']){
-  const data=await page.locator(selector).evaluate(async el=>{await new Promise(requestAnimationFrame);await new Promise(requestAnimationFrame);const id=el.style.getPropertyValue('--g-backdrop').match(/#([^)]*)/)[1],f=document.getElementById(id),clone=f.cloneNode(true);clone.id='measured';return {width:el.offsetWidth,height:el.offsetHeight,svg:'<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute"><defs>'+clone.outerHTML+'</defs></svg>'};});
+  const data=await page.locator(selector).evaluate(async el=>{await new Promise(requestAnimationFrame);await new Promise(requestAnimationFrame);const id=el.style.getPropertyValue('--g-backdrop').match(/#([^)]*)/)[1],f=document.getElementById(id),clone=f.cloneNode(true);clone.id='measured';const svg=el.classList.contains('lab-demo-card')?document.querySelector('#lab-svg').textContent.replace('rj-liquid-filter','measured'):'<svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute"><defs>'+clone.outerHTML+'</defs></svg>';return {width:el.offsetWidth,height:el.offsetHeight,svg};});
   let m=await ctx.newPage();await m.setContent(`<style>html,body{margin:0;background:#fff}.scene{position:relative;width:${data.width}px;height:${data.height}px;overflow:hidden}.lens{position:absolute;inset:0;backdrop-filter:url(#measured)}</style>${data.svg}<div class="scene"><div class="lens"></div></div>`);await m.waitForTimeout(250);
   for(const axis of ['x','y']){
    await m.locator('.scene').evaluate((el,axis)=>{el.style.background=`linear-gradient(to ${axis==='x'?'right':'bottom'},rgb(0,0,0),rgb(255,255,255))`},axis);
@@ -21,11 +23,13 @@ for(const band of [8,36,70]){
     let region=Math.min(band,Math.floor(n/2)),left=Math.max(3,Math.floor(region/4)),right=n-1-left;
     if(row===1)assert(actual[left]>original[left],`Lewa/górna krawędź powinna przybliżać: ${selector} ${band} ${axis} ${actual[left]}/${original[left]}`);
     if(row===1)assert(actual[right]<original[right],`Prawa/dolna krawędź powinna przybliżać: ${selector} ${band} ${axis} ${actual[right]}/${original[right]}`);
-    assert(Math.abs(actual[Math.floor(n/2)]-original[Math.floor(n/2)])<=2,'Środek powinien pozostać neutralny');
+    assert(Math.abs(actual[Math.floor(n/2)]-original[Math.floor(n/2)])<=Math.max(3,Math.ceil(400/n)),`Środek: ${selector} ${band} ${axis} linia ${row}`);
+    if(row===1){const a=Math.floor(n*.375),b=Math.floor(n*.625),delta=actual[b]-actual[a],baseline=original[b]-original[a];const expected=1/(1+strength/100);assert(delta<baseline*(expected+.10) && delta>baseline*(expected-.13),`Cała tafla powinna powiększać w środku: ${selector} ${band} ${axis} ${strength}% ${delta}/${baseline}`);}
    });
   }
   await m.close();
  }
 }
-await ctx.close();console.log('PASS: brak lustrzanego zawijania i powiększenie z obu stron na rzeczywistych pikselach; różne krawędzie i rozmiary');
+}
+await ctx.close();console.log('PASS: powiększenie całej tafli, brak odwróceń w obu osiach, różne siły, szerokości, rozmiary i eksport SVG');
 }finally{await browser.close();server.close()}})().catch(e=>{console.error(e);server.close();process.exitCode=1});

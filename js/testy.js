@@ -9,8 +9,8 @@
     ['radius','Zaokrąglenie',0,48,1,22,'px','','light'],
     ['reflect','Siła refleksu',0,80,1,20,'%','','light'],
     ['angle','Kierunek światła',0,360,5,135,'°','','light'],
-    ['refraction','Siła soczewki',0,80,1,0,'%','Powiększa tło przy krawędzi bez odwracania obrazu.','refraction'],
-    ['edgeBand','Szerokość soczewki',8,70,1,32,'px','Określa, jak daleko od brzegu działa załamanie.','refraction'],
+    ['refraction','Powiększenie soczewki',0,80,1,0,'%','Powiększa całe tło widoczne przez szkło, bez odwracania obrazu.','refraction'],
+    ['edgeBand','Szerokość krawędzi soczewki',8,70,1,32,'px','Reguluje dodatkowe łagodne załamanie przy brzegu.','refraction'],
     ['convex','Wypukłość powierzchni',0,100,1,30,'%','Modeluje krzywiznę za pomocą światła i cienia.','shape'],
     ['bevel','Grubość szlifowanej krawędzi',0,16,1,3,'px','Jaśniejszy i ciemniejszy brzeg tafli.','shape'],
     ['depth','Głębokość warstwy',0,20,1,3,'px','Widoczna grubość pod panelem.','shape'],
@@ -83,8 +83,8 @@
     return result;
   }
   // Każdy panel ma własny filtr SVG dopasowany do jego rzeczywistego rozmiaru.
-  // Obie osie są ściskane monotonicznie przy krawędziach: próbkujemy obraz
-  // w kierunku środka, bez odwracania ani próbkowania poza taflą.
+  // Cała tafla powiększa obraz względem swojego środka. Dodatkowy, łagodny
+  // profil krawędzi pozostaje monotoniczny, aby nie zawijać obrazu w lustro.
   var lensNodes=Array.prototype.slice.call(stage.querySelectorAll('.lab-glass'));
   var lensRecords=[], lensFrame=0, lensFailed=false, lensSvg=document.getElementById('lab-lens-defs');
   var lensStatus=document.getElementById('lab-lens-status');
@@ -98,6 +98,8 @@
     var context=canvas.getContext('2d');if(!context)throw new Error('canvas unavailable');
     var image=context.createImageData(canvas.width,canvas.height), pixels=image.data;
     var bx=Math.min(band,width/2),by=Math.min(band,height/2);
+    var edge=Math.min(band,width/2,height/2)*.3;
+    var range=Math.max(width,height)/2+edge;
     for(var y=0;y<canvas.height;y++)for(var x=0;x<canvas.width;x++){
       var px=(x+.5)*width/canvas.width,py=(y+.5)*height/canvas.height;
       var sx=Math.max(0,1-Math.min(px,width-px)/bx);
@@ -105,8 +107,9 @@
       // Łagodne wejście i wyjście ze strefy soczewki, bez ostrych załamań.
       sx=sx*sx*(3-2*sx);sy=sy*sy*(3-2*sy);
       var nx=px<width/2?-1:1,ny=py<height/2?-1:1;
+      var dx=width/2-px-nx*edge*sx,dy=height/2-py-ny*edge*sy;
       var i=(y*canvas.width+x)*4;
-      pixels[i]=Math.round(128-127*nx*sx);pixels[i+1]=Math.round(128-127*ny*sy);pixels[i+2]=128;pixels[i+3]=255;
+      pixels[i]=Math.round(127.5+127.5*dx/range);pixels[i+1]=Math.round(127.5+127.5*dy/range);pixels[i+2]=128;pixels[i+3]=255;
     }
     context.putImageData(image,0,0);return canvas.toDataURL('image/png');
   }
@@ -128,9 +131,10 @@
         var signature=[w,h,state.edgeBand].join(':');var rec=lensRecords[index];
         if(!rec){var filter=svgNode('filter',{id:'lab-refraction-'+index,filterUnits:'userSpaceOnUse',x:0,y:0,'color-interpolation-filters':'sRGB'});var image=svgNode('feImage',{x:0,y:0,preserveAspectRatio:'none',result:'lens-map'});var displacement=svgNode('feDisplacementMap',{in:'SourceGraphic',in2:'lens-map',xChannelSelector:'R',yChannelSelector:'G'});filter.append(image,displacement);lensSvg.appendChild(filter);rec=lensRecords[index]={filter:filter,image:image,displacement:displacement};}
         if(rec.signature!==signature){rec.filter.setAttribute('width',w);rec.filter.setAttribute('height',h);rec.image.setAttribute('width',w);rec.image.setAttribute('height',h);rec.image.setAttribute('href',lensMap(w,h,state.edgeBand));rec.signature=signature;}
-        // Profil smoothstep ma maksymalne nachylenie 1,5; ograniczamy zmianę
-        // współrzędnej do 80% także na małych kapsułkach, bez zawijania obrazu.
-        var scale=(4/3)*Math.min(state.edgeBand,w/2,h/2)*state.refraction/100;
+        // 80% oznacza 1,8× powiększenia w środku. Profil krawędzi jest
+        // ograniczony tak, by kolejność pikseli pozostała zachowana.
+        var zoom=1+state.refraction/100, compression=1-1/zoom;
+        var scale=2*(Math.max(w,h)/2+.3*Math.min(state.edgeBand,w/2,h/2))*compression;
         rec.displacement.setAttribute('scale',scale.toFixed(3));
         node.style.setProperty('--g-backdrop','url(#lab-refraction-'+index+') blur('+state.blur+'px) saturate('+state.saturate+'%)');
       });
