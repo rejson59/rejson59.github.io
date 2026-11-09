@@ -109,7 +109,7 @@ self.addEventListener("fetch", function (event) {
     if (req.destination && req.destination !== "document") return;
     /* Konto i strony usługowe nie są projektami: żadnych wstrzykniętych skryptów,
        widgetów ani rejestracji wejścia przez service worker. */
-    if (/^\/(?:logowanie|partnerstwo|uslugi|rejfile|rejchat|rejtools|rejsejf|konto-demo|spolecznosc|profil)(?:\.html)?\/?$/i.test(url.pathname) || /^\/(?:portal|podroz)(?:\/|$)/i.test(url.pathname)) return;
+    if (/^\/(?:logowanie|partnerstwo|uslugi|rejfile|rejchat|rejtools|rejsejf|konto-demo|spolecznosc|profil|testy)(?:\.html)?\/?$/i.test(url.pathname) || /^\/(?:portal|podroz)(?:\/|$)/i.test(url.pathname)) return;
 
     var parts = (url.pathname || "/").split("/").filter(function (s) {
       return s && !/\.html?$/i.test(s);
