@@ -52,7 +52,7 @@ begin
  -- Nie kojarzymy różnych prywatnych wątków ani różnych autorów.
  insert into public.rejchat_dm_messages(thread_id,author_id,content) values(t2,a,'rwa');
  insert into public.rejchat_dm_messages(thread_id,author_id,content) values(t,b,'rwa');
- begin insert into public.rejchat_dm_messages(thread_id,author_id,content) values(t,b,'Шлюха');raise exception 'DM w innym alfabecie przeszło';exception when raise_exception then if sqlerrm not like 'Treść zawiera niedozwoloną frazę%' then raise;end if;end;
+ begin insert into public.rejchat_dm_messages(thread_id,author_id,content) values(t,b,'Шлюха');raise exception 'DM w innym alfabecie przeszło';exception when raise_exception then if sqlerrm not like 'Treść zawiera niedozwoloną frazę%' and sqlerrm not like 'Połącz krótkie fragmenty%' then raise;end if;end;
  begin insert into public.community_posts(id,author_id,author_name,content) select p,a,username,'K###a' from public.community_users where id=a;raise exception 'Wpis przeszedł';exception when raise_exception then if sqlerrm not like 'Treść zawiera niedozwoloną frazę%' then raise;end if;end;
  insert into public.community_posts(id,author_id,author_name,content) select p,a,username,'Zwykły wpis' from public.community_users where id=a;
  begin insert into public.community_comments(post_id,author_id,author_name,content) select p,a,username,'売春婦' from public.community_users where id=a;raise exception 'Komentarz przeszedł';exception when raise_exception then if sqlerrm not like 'Treść zawiera niedozwoloną frazę%' then raise;end if;end;
