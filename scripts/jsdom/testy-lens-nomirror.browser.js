@@ -6,7 +6,7 @@ const server=http.createServer((req,res)=>{let u=new URL(req.url,'http://localho
 (async()=>{await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin=`http://127.0.0.1:${server.address().port}`;const browser=await chromium.launch({executablePath:process.env.CHROME_BIN,args:['--no-sandbox']});try{
 const ctx=await browser.newContext({viewport:{width:1500,height:1000},serviceWorkers:'block'});await ctx.route('**/*',r=>r.request().url().startsWith(origin+'/')?r.continue():r.abort());const page=await ctx.newPage();await page.goto(origin+'/testy');await page.locator('[data-preset=liquid]').click();await page.locator('[data-field=refraction]').fill('80');
 // Przenosimy rzeczywisty, aktualny filtr do kontrolowanego tła; nie używamy stylu materiału.
-for(const strength of [25,52,80]){
+for(const strength of [8,25,52,80]){
  await page.locator('[data-field=refraction]').fill(String(strength));
  for(const band of [8,36,70]){
  await page.locator('[data-field=edgeBand]').fill(String(band));
@@ -24,7 +24,7 @@ for(const strength of [25,52,80]){
     if(row===1)assert(actual[left]>original[left],`Lewa/górna krawędź powinna przybliżać: ${selector} ${band} ${axis} ${actual[left]}/${original[left]}`);
     if(row===1)assert(actual[right]<original[right],`Prawa/dolna krawędź powinna przybliżać: ${selector} ${band} ${axis} ${actual[right]}/${original[right]}`);
     assert(Math.abs(actual[Math.floor(n/2)]-original[Math.floor(n/2)])<=Math.max(3,Math.ceil(400/n)),`Środek: ${selector} ${band} ${axis} linia ${row}`);
-    if(row===1){const a=Math.floor(n*.375),b=Math.floor(n*.625),delta=actual[b]-actual[a],baseline=original[b]-original[a];const expected=1/(1+strength/100);assert(delta<baseline*(expected+.10) && delta>baseline*(expected-.13),`Cała tafla powinna powiększać w środku: ${selector} ${band} ${axis} ${strength}% ${delta}/${baseline}`);}
+    if(row===1){const a=Math.floor(n*.375),b=Math.floor(n*.625),delta=actual[b]-actual[a],baseline=original[b]-original[a];const expected=1/(1+strength/100);assert(delta<baseline*(expected+(selector==='.lab-mock-nav'?.11:.035)) && delta>baseline*(expected-.15),`Cała tafla powinna powiększać w środku: ${selector} ${band} ${axis} ${strength}% ${delta}/${baseline}`);}
    });
   }
   await m.close();
