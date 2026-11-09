@@ -213,3 +213,42 @@ body.rj-home .universe-arrow,body.rj-class .rjc-subject>b,body.rj-tools .tool-su
   body.rj-home .universe-arrow,body.rj-class .rjc-subject>b,body.rj-tools .tool-summary .tool-icon { transition:none; }
   body.rj-home .universe-links a:hover .universe-arrow,body.rj-class .rjc-subject:hover>b,body.rj-tools .tool-summary:hover .tool-icon { transform:none; }
 }
+
+/* Cały wspólny topbar jest jedną pływającą szklaną kapsułką.
+   Rozmywamy tylko tło, nie rodzica panelu powiadomień. */
+body .rj-shared-header {
+  width:min(1372px,calc(100% - 32px));
+  margin:10px auto 0;
+  top:8px;
+  box-sizing:border-box;
+  border:1px solid var(--rju-rim-low)!important;
+  border-radius:999px;
+  box-shadow:0 14px 38px rgba(1,8,22,.25),inset 0 1px 0 var(--rju-rim-top);
+}
+body .rj-shared-header::before {
+  border-radius:inherit;
+  background:linear-gradient(135deg,var(--rju-reflection),transparent 38%),linear-gradient(115deg,var(--rju-glow),transparent 68%),var(--rju-vessel);
+  box-shadow:inset 0 1px 1px var(--rju-rim-top),inset 0 -1px 0 var(--rju-rim-low);
+}
+body .rj-shared-header .rj-shared-inner { width:calc(100% - 28px); min-height:71px!important; }
+/* Wewnętrzna nawigacja nie jest już osobną dużą pigułką. */
+@media(min-width:1201px) {
+  body .rj-shared-header .site-nav,body.rj-home .rj-shared-header .site-nav {
+    background:transparent; border-color:transparent; box-shadow:none;
+  }
+}
+@media(max-width:1200px) {
+  body .rj-shared-header { width:calc(100% - 24px); margin-top:8px; top:6px; }
+  body .rj-shared-header .rj-shared-inner { width:calc(100% - 20px); min-height:62px!important; }
+  body .rj-shared-header .site-nav { top:calc(100% + 10px); }
+}
+@media(max-width:360px) {
+  body .rj-shared-header.rj-alerts-header .rj-shared-inner { width:calc(100% - 16px); }
+}
+.rj-chat-alert-panel { top:92px; }
+@media(max-width:1200px) { .rj-chat-alert-panel { top:82px; } }
+@media (min-width:361px) and (max-width:480px) {
+  body .rj-shared-header .header-right { gap:12px!important; }
+}
+body .rj-shared-header .rj-shared-inner { flex-wrap:nowrap; }
+body.rj-home .card-preview.is-safe-fallback .rj-fallback-retry { display:none; }

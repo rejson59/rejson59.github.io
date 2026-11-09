@@ -336,6 +336,7 @@
       var strong = document.createElement("strong");
       strong.textContent = label;
       var span = document.createElement("span");
+      span.className = "rj-fallback-message";
       span.textContent = "Podgląd chwilowo niedostępny";
       var hint = document.createElement("span");
       hint.className = "rj-fallback-hint";
@@ -437,13 +438,13 @@
       var desired = iframe.getAttribute("data-src");
       var current = "";
       try { current = iframe.contentWindow.location.href; } catch (e) { current = ""; }
-      if (desired && (!current || current === "about:blank")) {
+      if (!document.body.classList.contains("rj-home") && desired && (!current || current === "about:blank")) {
         try { iframe.src = desired; } catch (e) { /* ignorujemy */ }
       }
     }
   }
 
-  function settlePreview(preview, ok) {
+  function settlePreview(preview, ok, safeFallback) {
     if (preview._rjSettled) return;
     preview._rjSettled = true;
     preview._rjMounting = false;
@@ -453,10 +454,13 @@
     preview.classList.remove("is-loading");
     preview.classList.toggle("is-loaded", !!ok);
     preview.classList.toggle("is-failed", !ok);
+    preview.classList.toggle("is-safe-fallback", !!safeFallback);
+    var message = preview.querySelector(".rj-fallback-message");
+    if (message) message.textContent = safeFallback ? "Podgląd dostępny po otwarciu projektu" : "Podgląd chwilowo niedostępny";
 
     /* Sygnał dla cichego łapacza błędów (js/error-reporter.js):
        nieudany podgląd to dokładnie ten rodzaj usterki, o której użytkownik milczy */
-    if (!ok) {
+    if (!ok && !safeFallback) {
       try {
         var broken = preview.querySelector("iframe");
         document.dispatchEvent(new CustomEvent("rj:preview-failed", {
@@ -466,6 +470,44 @@
         }));
       } catch (e) { /* bardzo stare przeglądarki — trudno */ }
     }
+  }
+
+  /* Nigdy nie ładuj aktywnej miniatury, dopóki worker nie potwierdzi, że
+     potrafi wyciszyć ją przed wykonaniem kodu projektu. Bez workera zostaje
+     dostępny link i fallback; osobne projekty nie zmieniają swoich ustawień. */
+  var silentWorkerReady = null;
+  function ensureSilentPreviewWorker() {
+    if (silentWorkerReady) return silentWorkerReady;
+    silentWorkerReady = new Promise(function (resolve) {
+      if (!navigator.serviceWorker || typeof MessageChannel !== "function") { resolve(false); return; }
+      var done = false, timer;
+      function finish(ok) {
+        if (done) return;
+        done = true; clearTimeout(timer);
+        navigator.serviceWorker.removeEventListener("controllerchange", check);
+        resolve(ok);
+      }
+      function check() {
+        var controller = navigator.serviceWorker.controller;
+        if (!controller || done) return;
+        var channel = new MessageChannel();
+        channel.port1.onmessage = function (event) {
+          channel.port1.close();
+          if (event.data === "rj-silent-preview-v1") finish(true);
+        };
+        try { controller.postMessage("rj-silent-preview-v1", [channel.port2]); } catch (e) { channel.port1.close(); }
+      }
+      navigator.serviceWorker.addEventListener("controllerchange", check);
+      timer = setTimeout(function () { finish(false); }, 8000);
+      check();
+      navigator.serviceWorker.register("/sw.js?v=2", { scope:"/", updateViaCache:"none" }).then(function (reg) {
+        if (reg && reg.update) reg.update().catch(function () {});
+        check();
+      }).catch(function () { finish(false); });
+    });
+    var task = silentWorkerReady;
+    task.then(function (ok) { if (!ok && silentWorkerReady === task) silentWorkerReady = null; });
+    return task;
   }
 
   /* Jedno wejście do montowania: wybiera żywą ramkę albo zostawia statyczny zrzut.
@@ -521,6 +563,7 @@
     }
 
     preview._rjSuspended = false;
+    var mountToken = preview._rjMountToken = (preview._rjMountToken || 0) + 1;
     preview._rjMounting = true;
     preview._rjMounted = true;
     preview._rjSettled = false;
@@ -536,9 +579,9 @@
     /* druga próba idzie ze świeżym adresem — omija cache przeglądarki */
     var url = attempt > 0 ? base + (base.indexOf("?") === -1 ? "?" : "&") + "rjretry=" + Date.now() : base;
 
-    function finish(ok) {
+    function finish(ok, safeFallback) {
       if (preview._rjSettled) return;
-      settlePreview(preview, ok);
+      settlePreview(preview, ok, safeFallback);
     }
 
     var retried = false; /* licznik prób w ramach TEGO montowania */
@@ -605,14 +648,43 @@
       });
     }
 
-    try {
-      iframe.src = url;
-    } catch (e) {
-      finish(false);
-      return;
+    function loadPreview() {
+      if (!document.body.classList.contains("rj-home")) {
+        iframe.src = url; armWatchdog();
+        if (retentionObserver) retentionObserver.observe(preview);
+        return;
+      }
+      var target;
+      try { target = new URL(url, location.href); } catch (e) { finish(false); return; }
+      if (target.origin !== location.origin || !/^https?:$/.test(target.protocol)) { finish(false, true); return; }
+      iframe.name = "rejson-card-preview";
+      iframe.setAttribute("allow", "autoplay 'none'");
+      var proxy = new URL("/__rj_silent_preview__", location.origin);
+      proxy.searchParams.set("target", target.href);
+      var proxyUrl = proxy.href;
+      ensureSilentPreviewWorker().then(function (ready) {
+        if (!document.documentElement.contains(preview) || !preview._rjMounting || preview._rjMountToken !== mountToken) return;
+        if (preview._rjNear === false) {
+          preview._rjMounting = preview._rjMounted = false;
+          preview._rjSuspended = true;
+          preview.classList.remove("is-loading");
+          stopPreviewDough(preview);
+          return;
+        }
+        if (!ready) { finish(false, true); return; }
+        /* Adres pośredni znajduje się w scope głównego workera, również gdy
+           prawdziwy projekt ma już własny, węższy service worker. */
+        navigator.serviceWorker.getRegistration(proxyUrl).then(function (registration) {
+          if (!preview._rjMounting || preview._rjMountToken !== mountToken) return;
+          var controller = navigator.serviceWorker.controller;
+          if (!registration || !registration.active || !controller || registration.active.scriptURL !== controller.scriptURL) { finish(false, true); return; }
+          try { iframe.src = proxyUrl; } catch (e) { finish(false); return; }
+          armWatchdog();
+          if (retentionObserver) retentionObserver.observe(preview);
+        }).catch(function () { finish(false, true); });
+      });
     }
-    armWatchdog();
-    if (retentionObserver) retentionObserver.observe(preview);
+    try { loadPreview(); } catch (e) { finish(false); }
   }
 
   /* Zwolnienie zachowuje link, geometrię karty, błędy i sprawdzone migawki.

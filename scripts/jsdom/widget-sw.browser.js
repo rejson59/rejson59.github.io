@@ -33,8 +33,8 @@ const server=http.createServer((req,res)=>{
     await page.locator('#rejson-liquid-widget-root').waitFor({state:'attached',timeout:10000});
     assert.equal(await page.evaluate(()=>window.RejsonWidget.getState().config.project),'Project');
     await page.setViewportSize({width:375,height:750});
-    assert.equal(await page.locator('#rj-mobile-ads').isVisible(),true,'centralny worker dołącza reklamy na zgodnej stronie projektu');
-    assert.ok(requests.some(r=>r.startsWith('/js/mobile-ads.js?v=5')));
+    assert.equal(await page.locator('#rj-mobile-ads').count(),0,'projekty nie dostają reklam głównej witryny');
+    assert.ok(!requests.some(r=>r.startsWith('/js/mobile-ads.js')));
     assert.ok(requests.some(r=>r.startsWith('/rejson-widgets/widget.js?v=12')),'komentarz nie blokuje dodania');
     requests.length=0;
     await page.goto(origin+'/OldVersion/');
