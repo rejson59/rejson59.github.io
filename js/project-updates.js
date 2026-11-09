@@ -11,8 +11,8 @@
  * scripts/update-project-updates.py). Ręcznie edytuj TYLKO dopiski note.
  */
 window.PROJECT_UPDATES = {
-  "mconline": { version: "v2026.11.07" },
-  "rejson59.github.io": { version: "v2026.11.07", note: "Społeczność 2.0: zdjęcia i filmy w postach, wątki odpowiedzi, agent AI" },
+  "rejson59.github.io": { version: "v2026.11.08", note: "Społeczność 2.0: zdjęcia i filmy w postach, wątki odpowiedzi, agent AI" },
+  "mconline": { version: "v2026.11.08" },
   "Zayra-ai-asistant": { version: "v2026.11.06" },
   "RejVoice": { version: "v2026.11.06" },
   "RejPlay": { version: "v2026.11.05" },
