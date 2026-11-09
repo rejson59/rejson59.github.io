@@ -16,7 +16,7 @@ const {chromium}=require('playwright-core'),assert=require('assert');
     assert.equal(await page.locator('.rjc-note-answer').count(),3);
     assert.equal(await page.locator('.rjc-note-table tbody tr').count(),i===3?5:4);
     assert.equal(await page.locator('.rjc-note-answer').first().evaluate(el=>el.open),false);
-    assert(await page.locator('.rjc-note-hook').isVisible());
+    assert(await page.locator('.rjc-note-hook').isVisible());assert((await page.locator('.rjc-definition').count())>=5);assert(await page.locator('.rjc-note-definitions').isVisible());
     const img=page.locator('.rjc-note-visual img');await img.evaluate(el=>el.decode());
     const image=await img.evaluate(el=>({src:el.getAttribute('src'),alt:el.alt,width:el.naturalWidth}));
     assert(image.alt&&image.width>0);files.add(image.src);
@@ -28,7 +28,7 @@ const {chromium}=require('playwright-core'),assert=require('assert');
    const contrast=await page.evaluate(()=>{
     const rgb=s=>s.match(/\d+(?:\.\d+)?/g).slice(0,3).map(Number);
     const lum=c=>{c=c.map(v=>{v/=255;return v<=.04045?v/12.92:((v+.055)/1.055)**2.4});return .2126*c[0]+.7152*c[1]+.0722*c[2]};
-    return ['.rjc-note-hook p','.rjc-bio-point:nth-child(1) p','.rjc-bio-point:nth-child(2) p','.rjc-bio-point:nth-child(3) p','.rjc-bio-point:nth-child(4) p','.rjc-note-everyday p','.rjc-note-trap p'].map(sel=>{const el=document.querySelector(sel),fg=lum(rgb(getComputedStyle(el).color)),bg=lum(rgb(getComputedStyle(el.parentElement).backgroundColor));return {sel,ratio:(Math.max(fg,bg)+.05)/(Math.min(fg,bg)+.05)};});
+    return ['.rjc-definition dd','.rjc-note-hook p','.rjc-bio-point:nth-child(1) p','.rjc-bio-point:nth-child(2) p','.rjc-bio-point:nth-child(3) p','.rjc-bio-point:nth-child(4) p','.rjc-note-everyday p','.rjc-note-trap p'].map(sel=>{const el=document.querySelector(sel),fg=lum(rgb(getComputedStyle(el).color)),bg=lum(rgb(getComputedStyle(el.parentElement).backgroundColor));return {sel,ratio:(Math.max(fg,bg)+.05)/(Math.min(fg,bg)+.05)};});
    });
    contrast.forEach(c=>assert(c.ratio>=4.5,JSON.stringify({theme,...c})));
    await page.locator('#bio-topics button').nth(2).click();await page.locator('.rjc-note-answer summary').first().click();
