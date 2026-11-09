@@ -18,7 +18,7 @@ begin
  update public.rejchat_antispam_state set last_sent=clock_timestamp()-interval '10 seconds' where user_id=a and kind='chat';
  insert into public.community_chat(id,author_id,author_name,content,room,created_at) select gen_random_uuid(),a,username,'U','general',clock_timestamp()-interval '8 seconds' from public.community_users where id=a;
  update public.rejchat_antispam_state set last_sent=clock_timestamp()-interval '10 seconds' where user_id=a and kind='chat';
- begin insert into public.community_chat(author_id,author_name,content,room,created_at) select a,username,'R','general',clock_timestamp()-interval '4 seconds' from public.community_users where id=a;raise exception 'Trzecia litera przeszła';exception when raise_exception then if sqlerrm not like 'Połącz krótkie fragmenty%' then raise;end if;end;
+ begin insert into public.community_chat(author_id,author_name,content,room,created_at) select a,username,'R','general',clock_timestamp()-interval '4 seconds' from public.community_users where id=a;raise exception 'Trzecia litera przeszła';exception when raise_exception then if sqlerrm not like 'Wykryto serię krótkich fragmentów%' then raise;end if;end;
  -- Inny autor albo inny pokój nie dokłada się do sekwencji.
  insert into public.community_chat(author_id,author_name,content,room) select b,username,'R','general' from public.community_users where id=b;
  update public.rejchat_antispam_state set last_sent=clock_timestamp()-interval '10 seconds' where user_id=a and kind='chat';
@@ -29,7 +29,7 @@ begin
  update public.rejchat_antispam_state set last_sent=clock_timestamp()-interval '10 seconds' where user_id=a and kind='chat';
  insert into public.community_chat(author_id,author_name,content,room,created_at) select a,username,'春','general',clock_timestamp()-interval '4 seconds' from public.community_users where id=a;
  update public.rejchat_antispam_state set last_sent=clock_timestamp()-interval '10 seconds' where user_id=a and kind='chat';
- begin insert into public.community_chat(author_id,author_name,content,room) select a,username,'婦','general' from public.community_users where id=a;raise exception 'Fragmenty japońskie przeszły';exception when raise_exception then if sqlerrm not like 'Połącz krótkie fragmenty%' then raise;end if;end;
+ begin insert into public.community_chat(author_id,author_name,content,room) select a,username,'婦','general' from public.community_users where id=a;raise exception 'Fragmenty japońskie przeszły';exception when raise_exception then if sqlerrm not like 'Wykryto serię krótkich fragmentów%' then raise;end if;end;
  delete from public.community_chat where author_id=a;
  -- Litery z edycji w dowolnej kolejności także są sprawdzane.
  update public.rejchat_antispam_state set last_sent=clock_timestamp()-interval '10 seconds' where user_id=a and kind='chat';
@@ -39,20 +39,20 @@ begin
  update public.rejchat_antispam_state set last_sent=clock_timestamp()-interval '10 seconds' where user_id=a and kind='chat';
  insert into public.community_chat(id,author_id,author_name,content,room,created_at) select gen_random_uuid(),a,username,'tak','general',clock_timestamp()-interval '4 seconds' from public.community_users where id=a returning id into third_id;
  update public.community_chat set content='r' where id=third_id;update public.community_chat set content='u' where id=second_id;
- begin update public.community_chat set content='k' where id=first_id;raise exception 'Edycja od tyłu przeszła';exception when raise_exception then if sqlerrm not like 'Połącz krótkie fragmenty%' then raise;end if;end;
+ begin update public.community_chat set content='k' where id=first_id;raise exception 'Edycja od tyłu przeszła';exception when raise_exception then if sqlerrm not like 'Wykryto serię krótkich fragmentów%' then raise;end if;end;
  delete from public.community_chat where author_id=a;
  update public.rejchat_antispam_state set last_sent=clock_timestamp()-interval '10 seconds' where user_id=a and kind='chat';
  insert into public.community_chat(author_id,author_name,content,room,created_at) select a,username,'ku','general',clock_timestamp()-interval '5 seconds' from public.community_users where id=a;
  update public.rejchat_antispam_state set last_sent=clock_timestamp()-interval '10 seconds' where user_id=a and kind='chat';
- begin insert into public.community_chat(author_id,author_name,content,room) select a,username,'rwa','general' from public.community_users where id=a;raise exception 'Dwa fragmenty przeszły';exception when raise_exception then if sqlerrm not like 'Połącz krótkie fragmenty%' then raise;end if;end;
+ begin insert into public.community_chat(author_id,author_name,content,room) select a,username,'rwa','general' from public.community_users where id=a;raise exception 'Dwa fragmenty przeszły';exception when raise_exception then if sqlerrm not like 'Wykryto serię krótkich fragmentów%' then raise;end if;end;
  insert into public.rejchat_dm_threads(id,user_low,user_high) values(t,least(a,b),greatest(a,b)),(t2,least(a,c),greatest(a,c));
  insert into public.rejchat_dm_messages(thread_id,author_id,content,created_at) values(t,a,'ku',clock_timestamp()-interval '6 seconds');
  update public.rejchat_antispam_state set last_sent=clock_timestamp()-interval '10 seconds' where user_id=a and kind='dm';
- begin insert into public.rejchat_dm_messages(thread_id,author_id,content) values(t,a,'rwa');raise exception 'Fragmenty DM przeszły';exception when raise_exception then if sqlerrm not like 'Połącz krótkie fragmenty%' then raise;end if;end;
+ begin insert into public.rejchat_dm_messages(thread_id,author_id,content) values(t,a,'rwa');raise exception 'Fragmenty DM przeszły';exception when raise_exception then if sqlerrm not like 'Wykryto serię krótkich fragmentów%' then raise;end if;end;
  -- Nie kojarzymy różnych prywatnych wątków ani różnych autorów.
  insert into public.rejchat_dm_messages(thread_id,author_id,content) values(t2,a,'rwa');
  insert into public.rejchat_dm_messages(thread_id,author_id,content) values(t,b,'rwa');
- begin insert into public.rejchat_dm_messages(thread_id,author_id,content) values(t,b,'Шлюха');raise exception 'DM w innym alfabecie przeszło';exception when raise_exception then if sqlerrm not like 'Treść zawiera niedozwoloną frazę%' and sqlerrm not like 'Połącz krótkie fragmenty%' then raise;end if;end;
+ begin insert into public.rejchat_dm_messages(thread_id,author_id,content) values(t,b,'Шлюха');raise exception 'DM w innym alfabecie przeszło';exception when raise_exception then if sqlerrm not like 'Treść zawiera niedozwoloną frazę%' and sqlerrm not like 'Wykryto serię krótkich fragmentów%' then raise;end if;end;
  begin insert into public.community_posts(id,author_id,author_name,content) select p,a,username,'K###a' from public.community_users where id=a;raise exception 'Wpis przeszedł';exception when raise_exception then if sqlerrm not like 'Treść zawiera niedozwoloną frazę%' then raise;end if;end;
  insert into public.community_posts(id,author_id,author_name,content) select p,a,username,'Zwykły wpis' from public.community_users where id=a;
  begin insert into public.community_comments(post_id,author_id,author_name,content) select p,a,username,'売春婦' from public.community_users where id=a;raise exception 'Komentarz przeszedł';exception when raise_exception then if sqlerrm not like 'Treść zawiera niedozwoloną frazę%' then raise;end if;end;

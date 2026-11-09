@@ -27,3 +27,12 @@
 .rcmod-section > label[for="rcmod-phrase-search"] { display:block; margin-top:14px; font-size:12px; font-weight:700; }
 .rcmod-section > #rcmod-phrase-search { box-sizing:border-box; width:100%; margin-top:6px; padding:9px; border:1px solid var(--border); border-radius:10px; background:var(--bg-elev); color:var(--text); font:inherit; }
 .rcmod-section > #rcmod-phrase-count { margin:6px 0 0; }
+/* Typ reguły i bezpieczny podgląd przykładowej wiadomości. */
+#rcmod-phrase-form > label:not(:first-child) { margin-top:12px; }
+#rcmod-phrase-form select,.rcmod-test textarea { box-sizing:border-box; width:100%; }
+.rcmod-form small { display:block; margin-top:7px; color:var(--muted); line-height:1.5; }
+.rcmod-test { display:grid; gap:8px; margin-top:18px; padding-top:16px; border-top:1px solid var(--border); }
+.rcmod-test label { margin:0; }
+.rcmod-test textarea { min-width:0; padding:10px; border:1px solid var(--border); border-radius:10px; background:var(--bg-elev); color:var(--text); font:inherit; resize:vertical; }
+.rcmod-test button { justify-self:start; }
+.rcmod-test #rcmod-filter-test-result { margin:0; color:var(--text); }
