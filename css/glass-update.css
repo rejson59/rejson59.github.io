@@ -252,3 +252,76 @@ body .rj-shared-header .rj-shared-inner { width:calc(100% - 28px); min-height:71
 }
 body .rj-shared-header .rj-shared-inner { flex-wrap:nowrap; }
 body.rj-home .card-preview.is-safe-fallback .rj-fallback-retry { display:none; }
+
+/* Jeden język ruchu dla rozwijanych powierzchni: jak w pigułce zgłoszeń,
+   bez przesuwania całych kart 3D i bez opóźniania ich interakcji. */
+.rj-more-icon { display:inline-flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; width:18px; height:18px; flex:none; }
+.rj-shared-header .rj-more-icon .hamburger-bar { width:15px; height:2px; }
+@keyframes rju-pop-in {
+  from { opacity:0; translate:0 5px; scale:.98; filter:blur(4px); }
+  to { opacity:1; translate:0 0; scale:1; filter:blur(0); }
+}
+@keyframes rju-pop-in-no-filter {
+  from { opacity:0; translate:0 5px; scale:.98; }
+  to { opacity:1; translate:0 0; scale:1; }
+}
+/* Elementy details, także tworzone dynamicznie, bez zmiany ich logiki. */
+body details[open]:not(.rc-message-menu) > :not(summary):not([hidden]),
+body :is(dialog[open],.rj-chat-alert-panel:not([hidden]),.metric-tooltip-popover:not([hidden]),.metric-online-popover:not([hidden]),.rc-emoji-panel:not([hidden]),.rc-reaction-full:not([hidden]),.rc-search-panel:not([hidden])) {
+  animation:rju-pop-in .28s cubic-bezier(.22,1,.36,1);
+}
+/* Menu wiadomości może korzystać z top-layer lub position:fixed: filtr
+   tworzyłby nowy containing block dla jego zawartości, dlatego tylko ruch. */
+body.rj-community .rc-message-menu[open] > .rc-menu-items,
+body.rj-community :is(.rc-menu-items:popover-open,.rc-menu-items.rc-menu-fixed) {
+  animation:rju-pop-in-no-filter .28s cubic-bezier(.22,1,.36,1);
+}
+body.rj-tools .tool[open] .tool-content { animation:rju-pop-in .28s cubic-bezier(.22,1,.36,1); }
+@media(max-width:1200px) {
+  body .rj-shared-header .site-nav.is-open { animation:rju-pop-in .28s cubic-bezier(.22,1,.36,1); }
+}
+/* W nowszych przeglądarkach również chowanie menu i dzwonka płynnie zanika;
+   starsze zachowują natychmiastowe, dostępne zamknięcie. */
+@supports (transition-behavior:allow-discrete) {
+  body .rj-chat-alert-panel {
+    animation:none!important;
+    transition:opacity .18s ease,translate .18s ease,scale .18s ease,display .18s allow-discrete;
+    opacity:1; translate:0 0; scale:1;
+  }
+  body .rj-chat-alert-panel[hidden] { opacity:0; translate:0 5px; scale:.98; pointer-events:none; }
+  @starting-style { body .rj-chat-alert-panel:not([hidden]) { opacity:0; translate:0 5px; scale:.98; } }
+  @media(max-width:1200px) {
+    body .rj-shared-header .site-nav { transition:opacity .2s ease,translate .2s ease,scale .2s ease,display .2s allow-discrete; opacity:0; translate:0 -5px; scale:.98; }
+    body .rj-shared-header .site-nav.is-open { animation:none; opacity:1; translate:0 0; scale:1; }
+    @starting-style { body .rj-shared-header .site-nav.is-open { opacity:0; translate:0 -5px; scale:.98; } }
+  }
+}
+@media(prefers-reduced-motion:reduce) {
+  body .rj-chat-alert-panel,body .rj-shared-header .site-nav,
+  body details[open]:not(.rc-message-menu) > :not(summary):not([hidden]),
+  body :is(dialog[open],.rj-chat-alert-panel:not([hidden]),.metric-tooltip-popover:not([hidden]),.metric-online-popover:not([hidden]),.rc-emoji-panel:not([hidden]),.rc-reaction-full:not([hidden]),.rc-search-panel:not([hidden])),
+  body.rj-community .rc-message-menu[open] > .rc-menu-items,
+  body.rj-community :is(.rc-menu-items:popover-open,.rc-menu-items.rc-menu-fixed),
+  body.rj-tools .tool[open] .tool-content,body .rj-shared-header .site-nav.is-open { animation:none!important; transition:none!important; }
+}
+/* Natywne details w nowoczesnych przeglądarkach zachowuje zawartość na czas
+   zamknięcia. W starszych menu po prostu zamyka się natychmiast. */
+@supports selector(details::details-content) and (transition-behavior:allow-discrete) {
+  body .rj-shared-header .nav-more::details-content {
+    content-visibility:hidden;
+    transition:content-visibility .18s allow-discrete;
+  }
+  body .rj-shared-header .nav-more[open]::details-content { content-visibility:visible; transition:none; }
+  body .rj-shared-header .nav-more > .nav-more-panel {
+    opacity:0; translate:0 -5px; scale:.98; pointer-events:none;
+    transition:opacity .18s ease,translate .18s ease,scale .18s ease;
+  }
+  body .rj-shared-header .nav-more[open] > .nav-more-panel {
+    animation:none; opacity:1; translate:0 0; scale:1; pointer-events:auto;
+  }
+  @starting-style { body .rj-shared-header .nav-more[open] > .nav-more-panel { opacity:0; translate:0 -5px; scale:.98; } }
+  @media(prefers-reduced-motion:reduce) {
+    body .rj-shared-header .nav-more::details-content,
+    body .rj-shared-header .nav-more > .nav-more-panel { transition:none!important; }
+  }
+}
