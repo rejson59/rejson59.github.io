@@ -64,14 +64,14 @@
     });
   });
 
-  // Rzeczywista, delikatna soczewka na wybranych próbkach. Każda mapa ma
+  // Rzeczywista, delikatna soczewka na wszystkich szklanych próbkach. Każda mapa ma
   // rozmiar tafli; SVG/CSS może nie działać w niektórych przeglądarkach.
   // Wtedy zostaje zwykłe półprzezroczyste szkło z blur (lub kryjący fallback).
   var ns = 'http://www.w3.org/2000/svg';
   var defs = document.getElementById('studio-lens-defs');
   var lenses = Array.prototype.slice.call(studio.querySelectorAll('[data-lens]'));
   var supportsLens = !!(window.CSS && CSS.supports && (CSS.supports('backdrop-filter', 'url(#test)') || CSS.supports('-webkit-backdrop-filter', 'url(#test)')));
-  var lensFrame = 0, failed = false;
+  var lensFrame = 0, failed = false, mapCache = new Map();
   function svg(tag, attributes) {
     var node = document.createElementNS(ns, tag);
     Object.keys(attributes).forEach(function (key) { node.setAttribute(key, String(attributes[key])); });
@@ -122,11 +122,15 @@
         var image = filter.firstElementChild, displacement = filter.lastElementChild;
         filter.setAttribute('width', width); filter.setAttribute('height', height);
         image.setAttribute('width', width); image.setAttribute('height', height);
-        image.setAttribute('href', mapFor(width, height));
+        if (!mapCache.has(signature)) {
+          if (mapCache.size >= 32) mapCache.clear();
+          mapCache.set(signature, mapFor(width, height));
+        }
+        image.setAttribute('href', mapCache.get(signature));
         var edge = .3 * Math.min(36, width / 2, height / 2);
         var scale = 2 * (Math.max(width, height) / 2 + edge) * (1 - 1 / 1.08);
         displacement.setAttribute('scale', scale.toFixed(3));
-        element.style.setProperty('--lens-filter', 'url(#' + id + ') blur(6px) saturate(130%)');
+        element.style.setProperty('--lens-filter', 'url(#' + id + ') blur(1px) saturate(115%)');
         element.dataset.lensSize = signature;
       });
     } catch (error) {
