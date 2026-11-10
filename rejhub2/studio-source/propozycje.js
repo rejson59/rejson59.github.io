@@ -313,6 +313,7 @@
   function layoutDevice(name) {
     if (!frame || !screen || !wrap) return;
     var dev = DEVICES[name] || DEVICES.desktop;
+    if (!wrap.clientWidth) return; /* panel ukryty — zmierzymy po pokazaniu */
     var available = Math.max(280, wrap.clientWidth - 40);
     var visualWidth = Math.min(available, dev.w);
     var scale = visualWidth / dev.w;
@@ -350,6 +351,16 @@
   if (frame) {
     if (!frame.getAttribute("srcdoc")) frame.srcdoc = demoDoc;
     layoutDevice("desktop");
+
+    /* Zakładka „Nowości” startuje ukryta — po pokazaniu mierzymy ponownie. */
+    if (window.ResizeObserver) {
+      new ResizeObserver(function () {
+        if (wrap && wrap.clientWidth > 60) {
+          var on = studio.querySelector(".sx-device-bar [data-sx-device].is-on");
+          layoutDevice(on ? on.getAttribute("data-sx-device") : "desktop");
+        }
+      }).observe(wrap);
+    }
 
     studio.querySelectorAll("[data-sx-device]").forEach(function (button) {
       button.addEventListener("click", function () {
