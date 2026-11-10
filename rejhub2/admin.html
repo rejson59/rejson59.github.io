@@ -58,11 +58,14 @@
   <link rel="stylesheet" href="/css/shared-topbar.css?v=4">
   <script defer src="/js/shared-topbar.js?v=1"></script>
   <noscript><link rel="stylesheet" href="/css/shared-topbar-nojs.css?v=2"></noscript>
-  <link rel="stylesheet" href="/css/rejchat-notifications.css?v=2">
+  <link rel="stylesheet" href="/css/rejchat-notifications.css?v=3">
   <link rel="stylesheet" href="/css/glass-update.css?v=5">
   <link rel="stylesheet" href="/hub/glass2.css?v=8" />
   <link rel="stylesheet" href="/hub/loader.css?v=1">
   <link rel="stylesheet" href="/css/panic.css?v=1" />
+  <link rel="stylesheet" href="/css/text-filter.css?v=1" />
+  <link rel="stylesheet" href="/css/push.css?v=1" />
+  <link rel="stylesheet" href="/css/admin-server.css?v=1" />
 </head>
 <body class="rj-admin">
   <div id="rj-page-loader" aria-hidden="true">
@@ -146,6 +149,7 @@
       <button type="button" class="adm-tab" id="tab-btn-submissions" data-tab="submissions" role="tab" aria-selected="false">Zgłoszenia</button>
       <button type="button" class="adm-tab" id="tab-btn-community" data-tab="community" role="tab" aria-selected="false">Społeczność</button>
       <button type="button" class="adm-tab" id="tab-btn-visitors" data-tab="visitors" role="tab" aria-selected="false">Identyfikatory <span class="adm-tab-note">profile</span></button>
+      <button type="button" class="adm-tab" id="tab-btn-server" data-tab="server" role="tab" aria-selected="false">Serwer <span class="adm-tab-note" aria-hidden="true">▤</span></button>
       <button type="button" class="adm-tab" id="tab-btn-errors" data-tab="errors" role="tab" aria-selected="false">Błędy <span class="adm-tab-note" id="errors-tab-note">auto</span></button>
     </nav>
 
@@ -674,6 +678,53 @@
 
     </section>
 
+
+    <section id="tab-server" role="tabpanel" aria-label="Serwer i pojemność danych" hidden>
+      <div class="adm-section-head">
+        <div>
+          <h2 class="adm-section-title">🖥 Serwer i pojemność</h2>
+          <p class="adm-section-sub">Baza, tabele, magazyn kont i kolejka powiadomień — wszystko liczone na żywo.</p>
+        </div>
+        <button type="button" class="adm-refresh" id="srv-refresh" title="Odśwież" aria-label="Odśwież statystyki serwera">↻</button>
+      </div>
+
+      <div class="srv-kpis" id="srv-kpis"><div class="pa-empty">Wczytywanie statystyk…</div></div>
+
+      <section class="adm-card">
+        <header class="adm-card-head">
+          <span class="adm-card-ico" aria-hidden="true">▤</span>
+          <div class="adm-card-titles"><h2>Największe tabele</h2><p class="adm-card-sub">Rozmiar razem z indeksami.</p></div>
+        </header>
+        <div class="srv-tables" id="srv-tables"></div>
+      </section>
+
+      <section class="adm-card">
+        <header class="adm-card-head">
+          <span class="adm-card-ico" aria-hidden="true">👥</span>
+          <div class="adm-card-titles"><h2>Miejsce na kontach</h2><p class="adm-card-sub">Jeden wspólny limit profilu: RejChat, RejSejf i RejFile razem.</p></div>
+        </header>
+        <div class="srv-accounts" id="srv-accounts"></div>
+      </section>
+
+      <section class="adm-card">
+        <header class="adm-card-head">
+          <span class="adm-card-ico" aria-hidden="true">🪪</span>
+          <div class="adm-card-titles">
+            <h2>Tożsamości do uporządkowania</h2>
+            <p class="adm-card-sub">Scal dwie nazwy w jedną historię albo usuń identyfikator konta, którego już nie ma.</p>
+          </div>
+        </header>
+        <div class="srv-merge">
+          <input type="text" id="srv-merge-from" class="ctrl-input ctrl-input--sm" placeholder="stara nazwa" aria-label="Stara nazwa">
+          <span aria-hidden="true">→</span>
+          <input type="text" id="srv-merge-into" class="ctrl-input ctrl-input--sm" placeholder="nazwa docelowa" aria-label="Nazwa docelowa">
+          <button type="button" class="btn btn-glass btn-sm" id="srv-merge-btn">Scal historię</button>
+          <button type="button" class="btn btn-glass btn-sm" id="srv-forget-btn" title="Usuwa identyfikator i odłącza go od historii">Zapomnij nazwę</button>
+        </div>
+        <p class="srv-status" id="srv-merge-status" role="status" aria-live="polite"></p>
+        <div class="srv-identities" id="srv-identities"></div>
+      </section>
+    </section>
   </main>
 
   <div class="toast-banner" id="admin-toast" hidden></div>
@@ -686,11 +737,14 @@
   <script src="js/admin-partner.js?v=1"></script>
   <script src="js/admin-rejchat-moderation.js?v=6"></script>
   <script src="js/admin-panel.js?v=2026-11-05-moderation"></script>
+  <script defer src="/js/admin-server.js?v=1"></script>
   <script defer src="/js/media-capture.js?v=2"></script>
   <script defer src="/rejson-widgets/widget.js?v=14" data-project="rejson59.github.io"></script>
   <script src="/hub/hub-shell.js?v=1" defer></script>
   <script src="/hub/loader.js?v=1" defer></script>
   <p class="license-line" role="contentinfo">© 2026 rejson59 — <strong>wszystkie prawa zastrzeżone</strong>. Kopiowanie, modyfikowanie i ponowne użycie bez pisemnej zgody są zabronione. <a href="/licencja">Licencja</a> · <a href="/ai.txt">ai.txt</a></p>
+  <script defer src="/js/text-filter.js?v=1"></script>
   <script defer src="/js/panic.js?v=1"></script>
+  <script defer src="/js/push.js?v=1"></script>
 </body>
 </html>

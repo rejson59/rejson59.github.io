@@ -228,7 +228,8 @@
     partnership: "tab-partnership",
     community: "tab-community",
     visitors: "tab-visitors",
-    errors: "tab-errors"
+    errors: "tab-errors",
+    server: "tab-server"
   };
 
   function bindTabs() {
@@ -251,6 +252,7 @@
           if (tab === "community") fetchCommunity();
           if (tab === "visitors") fetchVisitorList();
           if (tab === "errors" && window.RJAdminErrors) window.RJAdminErrors.load();
+          if (tab === "server" && window.RJAdminServer) window.RJAdminServer.load();
         });
       })(btns[i]);
     }

@@ -1,0 +1,19 @@
+/* © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved. */
+/* Filtr tekstu — notka pod polem i stan błędu (wszystkie strony RejHuba). */
+.rj-text-filter-note {
+  display: block;
+  margin: 6px 0 0;
+  color: #ffb3bd;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.is-rj-filter-blocked {
+  border-color: rgba(255, 120, 135, 0.7) !important;
+  box-shadow: 0 0 0 3px rgba(255, 120, 135, 0.14) !important;
+}
+
+[data-theme="light"] .is-rj-filter-blocked {
+  border-color: #d6455b !important;
+  box-shadow: 0 0 0 3px rgba(214, 69, 91, 0.12) !important;
+}

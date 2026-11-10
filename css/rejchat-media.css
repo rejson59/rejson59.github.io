@@ -1,0 +1,46 @@
+/* © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved. */
+/* RejChat — tryb „bez obrazów” (oko w nagłówku czatu). */
+
+.rj-media-toggle {
+  position: relative;
+}
+
+.rj-media-toggle .rj-media-slash {
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+
+.rj-media-toggle.is-on {
+  color: #ffd9de;
+  border-color: rgba(255, 150, 160, 0.45);
+}
+
+.rj-media-toggle.is-on .rj-media-slash {
+  opacity: 1;
+}
+
+html.rj-hide-media .rejchat-photo,
+html.rj-hide-media .rc-link-image {
+  display: none !important;
+}
+
+html.rj-hide-media .rejchat-photo-load {
+  font-size: 0;
+  color: rgba(214, 226, 246, 0.75);
+  border-style: dashed;
+}
+
+html.rj-hide-media .rejchat-photo-load::after {
+  content: "🔒 Obraz ukryty — oko w nagłówku czatu pokaże zdjęcia";
+  font-size: 11.5px;
+}
+
+html.rj-hide-media .rc-link-preview {
+  background-image: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rj-media-toggle .rj-media-slash {
+    transition: none;
+  }
+}
