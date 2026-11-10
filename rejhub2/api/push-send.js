@@ -42,11 +42,32 @@ async function rest(path, options = {}) {
   return text ? JSON.parse(text) : null;
 }
 
+/* Nagłówki i parametry czytamy niezależnie od tego, czy środowisko podaje
+   zwykły obiekt Node (req.headers["x-push-key"]), obiekt Headers z metodą
+   get(), czy tylko pełny adres w request.url. Bez tego krycie się kończyło
+   na 401 mimo poprawnego sekretu. */
+function header(request, name) {
+  const headers = request.headers || {};
+  if (typeof headers.get === "function") return String(headers.get(name) || "");
+  const lower = name.toLowerCase();
+  return String(headers[lower] || headers[name] || "");
+}
+
+function queryParam(request, name) {
+  if (request.query && typeof request.query[name] === "string") return request.query[name];
+  try {
+    const url = new URL(request.url || "", "https://rejhub.vercel.app");
+    return url.searchParams.get(name) || "";
+  } catch (error) {
+    return "";
+  }
+}
+
 function authorized(request) {
   const secret = process.env.PUSH_SEND_SECRET;
   if (!secret) return false;
-  const given = request.headers["x-push-key"] || (request.query && request.query.key);
-  if (!given || typeof given !== "string") return false;
+  const given = header(request, "x-push-key") || queryParam(request, "key");
+  if (!given) return false;
   const a = Buffer.from(given);
   const b = Buffer.from(secret);
   return a.length === b.length && crypto.timingSafeEqual(a, b);
