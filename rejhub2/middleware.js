@@ -21,7 +21,16 @@ const PUBLIC_PATHS = new Set([
   "/login.html",
   "/favicon.ico",
   "/favicon.svg",
-  "/robots.txt"
+  "/robots.txt",
+  /* Licencja i nota dla agentów AI muszą być publiczne — inaczej nikt
+     (także wyszukiwarki i asystenci) nie przeczyta zasad korzystania. */
+  "/licencja",
+  "/licencja.html",
+  "/LICENSE",
+  "/ai.txt",
+  "/humans.txt",
+  "/NOTICE",
+  "/AI-POLICY.md"
 ]);
 const PUBLIC_PREFIXES = ["/api/session"];
 /* Zasoby statyczne nie zawierają prywatnych treści — puszczamy je bez sesji,

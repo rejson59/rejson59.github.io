@@ -327,7 +327,7 @@ html[data-theme="light"] .rj-premium {
    Sekcja „Premium za darmo” na stronie głównej
    ========================================================================== */
 
-/* pod hero, obok zachęt do tablicy i społeczności */
+/* pod hero, obok zachęty do RejChat */
 .rj-club { padding: 28px 0 4px; }
 .rj-club-card .rj-premium__inner { padding: 24px 26px; }
 .rj-club-title { margin: 0 0 8px; font-size: clamp(21px, 2.4vw, 26px); letter-spacing: -.02em; }

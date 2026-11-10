@@ -1,0 +1,18 @@
+/* TEAM */
+  Autor i właściciel: rejson59
+  GitHub: https://github.com/rejson59
+  Kontakt: https://rejson59.github.io/partnerstwo
+  Projekt: RejHub — strony, narzędzia i aplikacje webowe
+  Miasto: Katowice, Polska
+
+/* SITE */
+  Język: polski
+  Standardy: HTML5, CSS3, JavaScript (bez frameworka)
+  Hosting: GitHub Pages + Vercel
+  Ostatnia aktualizacja: 2026-10-19
+
+/* PRAWA */
+  © 2026 rejson59 — wszystkie prawa zastrzeżone.
+  Kopiowanie, modyfikowanie i ponowne użycie bez pisemnej zgody zabronione.
+  Licencja: https://rejson59.github.io/licencja
+  Agenci AI: https://rejson59.github.io/ai.txt

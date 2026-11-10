@@ -43,3 +43,11 @@ Brak ukrywania w DOM i brak sprawdzania po stronie przeglądarki: decyduje serwe
 ```bash
 npm run check
 ```
+
+## Licencja
+
+© 2026 rejson59 — wszystkie prawa zastrzeżone. Ten katalog jest częścią
+chronionego projektu RejHub: kopiowanie kodu i wyglądu bez pisemnej zgody jest
+zabronione. Pliki: [LICENSE](LICENSE), [ai.txt](ai.txt), [NOTICE](NOTICE).
+Strona `/licencja` jest publiczna mimo bramy administratora — inaczej nikt nie
+przeczytałby zasad korzystania.

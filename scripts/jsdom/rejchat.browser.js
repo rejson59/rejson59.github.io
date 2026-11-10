@@ -29,7 +29,6 @@ const server=http.createServer((req,res)=>{
       else if(fn==='community_online_users')data=[{username:'Alice',tabs:1,projects:[]}];
       else if(fn==='rejchat_room_list_v3')data=body.p_after_id?[]:chat;
       else if(fn==='rejchat_room_send_v2'){if(sendFail){status=400;data={message:'Spróbuj za chwilę'};}else{data={id:'00000000-0000-4000-8000-000000000003',author_name:'Alice',content:body.p_content,created_at:new Date().toISOString()};chat.push(data);}}
-      else if(fn==='list_public_board')data=[];
       else if(fn==='community_link_submissions')data={username:'Alice',linked:0};
       else data=[];
       return route.fulfill({status,headers:{'Access-Control-Allow-Origin':'*','content-type':'application/json'},body:JSON.stringify(data)});
@@ -72,7 +71,7 @@ const server=http.createServer((req,res)=>{
   await page.reload();await page.locator('#profile-editor').waitFor();assert.equal(await page.locator('input[name=avatar]:checked').inputValue(),'cat');
   await page.goto(origin+'/profil.html?u=Bob');await page.locator('#profile-view').waitFor();assert.equal(await page.locator('#profile-editor').isVisible(),false);assert.equal(await page.locator('#profile-bio').textContent(),'Bob tu jest');
   // Geometria i dostępność profilowego na różnych szerokościach — bez zrzutów mobile.
-  const pages=['/index.html','/rejchat.html','/logowanie.html','/profil.html','/partnerstwo.html','/rejfile.html','/tablica-pomyslow.html','/widzety.html','/admin.html','/rejson-widgets/index.html'];
+  const pages=['/index.html','/rejchat.html','/logowanie.html','/profil.html','/partnerstwo.html','/rejfile.html','/.html','/widzety.html','/admin.html','/rejson-widgets/index.html'];
   for(const width of [320,375,760,800,1024,1200,1440]){await page.setViewportSize({width,height:900});for(const url of pages){
     await page.goto(origin+url,{waitUntil:'domcontentloaded'});if(url==='/logowanie.html')await page.waitForURL('**/profil');await page.evaluate(()=>document.querySelector('#rj-page-loader')?.remove());await page.locator('.rj-header-profile').waitFor({timeout:5000});
     const geometry=await page.evaluate(()=>{const el=document.querySelector('.rj-header-profile'),r=el.getBoundingClientRect();return {scroll:document.documentElement.scrollWidth,left:r.left,right:r.right,top:r.top,visible:!!el.getClientRects().length};});

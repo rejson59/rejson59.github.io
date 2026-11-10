@@ -1,33 +1,56 @@
-/* Wspólne, prawdziwe źródła — mock backendu i GitHuba, bez zrzutów. */
+/* Wspólne, prawdziwe źródła — mock backendu i GitHuba, bez zrzutów.
+ *
+ * Po usunięciu publicznej tablicy (2026-10-19) powiadomienia mają dwa
+ * prawdziwe źródła: aktualizacja obserwowanego projektu (GitHub) i zdarzenia
+ * z RejChat. Ten test pilnuje, że panel ich nie gubi, nie dubluje, przeżywa
+ * przejście na inną podstronę i nie miesza kont.
+ */
 const assert=require('node:assert/strict'),http=require('node:http'),fs=require('node:fs'),path=require('node:path'),{chromium}=require('playwright-core');
 const root=path.resolve(__dirname,'../..');
-const server=http.createServer((req,res)=>{let u=new URL(req.url,'http://localhost').pathname;if(u==='/')u='/index.html';else if(!path.extname(u)&&fs.existsSync(path.join(root,u+'.html')))u+='.html';let f=path.resolve(root,'.'+u);if(!f.startsWith(root+path.sep)||!fs.existsSync(f)||!fs.statSync(f).isFile())return res.writeHead(404).end();res.writeHead(200,{'content-type':({'.html':'text/html; charset=utf-8','.css':'text/css','.js':'text/javascript','.svg':'image/svg+xml'})[path.extname(f)]||'application/octet-stream'});fs.createReadStream(f).pipe(res)});
-(async()=>{await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin=`http://127.0.0.1:${server.address().port}`,browser=await chromium.launch({executablePath:process.env.CHROME_BIN,headless:true,args:['--no-sandbox','--disable-webgl']});let releaseBoard;
+const server=http.createServer((req,res)=>{let u=new URL(req.url,'http://localhost').pathname;if(u==='/')u='/index.html';else if(!path.extname(u)&&fs.existsSync(path.join(root,u+'.html')))u+='.html';let f=path.resolve(root,'.'+u);if(!f.startsWith(root+path.sep)||!fs.existsSync(f)||!fs.statSync(f).isFile())return res.writeHead(404).end();res.writeHead(200,{'content-type':({'.html':'text/html; charset=utf-8','.css':'text/css','.js':'text/javascript','.svg':'image/svg+xml','.json':'application/json'})[path.extname(f)]||'application/octet-stream'});fs.createReadStream(f).pipe(res)});
+(async()=>{await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin=`http://127.0.0.1:${server.address().port}`,browser=await chromium.launch({executablePath:process.env.CHROME_BIN,headless:true,args:['--no-sandbox','--disable-webgl']});
 try{
- const ctx=await browser.newContext({viewport:{width:320,height:850},serviceWorkers:'block'}),id='11111111-1111-4111-8111-111111111111',nid='33333333-3333-4333-8333-333333333333';
- await ctx.addInitScript(({id})=>{if(!localStorage.getItem('rejson_community_session_v1'))localStorage.setItem('rejson_community_session_v1',JSON.stringify({username:'Tester',token:'a'.repeat(32)}));localStorage.setItem('rj_following_v1',JSON.stringify(['mconline']));localStorage.setItem('rj_board_hide_done','1');if(!localStorage.getItem('rj_seen_v1:tester'))localStorage.setItem('rj_seen_v1:tester',JSON.stringify({user:'Tester',projects:{mconline:'2026-10-01T00:00:00Z'},subs:{[id]:{s:'new',r:''}},at:'2026-10-01T00:00:00Z'}));},{id});
- let notes=[{id:'22222222-2222-4222-8222-222222222222',kind:'comment',actor_name:'Ania',created_at:'2026-11-02T10:00:00Z',read_at:null}],failBoard=false,holdBoard=false,board=[{id,project_slug:'mconline',project_name:'mconline',title:'Mój pomysł',type:'idea',author_name:'Tester',status:'completed',admin_replied_at:'2026-11-01T10:00:00Z',admin_reply:'Gotowe!',updated_at:'2026-11-01T10:00:00Z',created_at:'2026-10-01T00:00:00Z',upvotes_count:0},{id:nid,project_slug:'mconline',project_name:'mconline',title:'Nowy pomysł',type:'idea',author_name:'Ania',status:'new',created_at:'2026-11-01T10:00:00Z',updated_at:'2026-11-01T10:00:00Z',upvotes_count:0}];
+ const ctx=await browser.newContext({viewport:{width:320,height:850},serviceWorkers:'block'}),id='11111111-1111-4111-8111-111111111111';
+ await ctx.addInitScript(({id})=>{if(!localStorage.getItem('rejson_community_session_v1'))localStorage.setItem('rejson_community_session_v1',JSON.stringify({username:'Tester',token:'a'.repeat(32)}));localStorage.setItem('rj_following_v1',JSON.stringify(['mconline']));
+   /* punkt odniesienia z przeszłości — projekt od tego czasu naprawdę się zmienił */
+   if(!localStorage.getItem('rj_seen_v1:tester'))localStorage.setItem('rj_seen_v1:tester',JSON.stringify({user:'Tester',projects:{mconline:'2026-10-01T00:00:00Z'},at:'2026-10-01T00:00:00Z'}));
+ },{id});
+ let notes=[{id:'22222222-2222-4222-8222-222222222222',kind:'comment',actor_name:'Ania',created_at:'2026-11-02T10:00:00Z',read_at:null}];
  await ctx.route('**/*',async r=>{let u=r.request().url();if(u.startsWith(origin+'/'))return r.continue();if(u.startsWith('https://api.github.com/'))return r.fulfill({json:[{name:'mconline',homepage:'https://rejson59.github.io/mconline/',pushed_at:'2026-11-01T00:00:00Z'}]});if(!u.includes('/rest/v1/rpc/'))return r.abort();let fn=u.split('/').pop(),b=r.request().postDataJSON()||{},d=[];
- if(fn==='community_whoami')d={username:b.p_token[0]==='a'?'Tester':'Other'};if(fn==='rejchat_get_profiles')d=[{username:'Tester',avatar:'cat',color:'mint'}];
- if(fn==='list_public_board'){if(holdBoard){holdBoard=false;await new Promise(resolve=>releaseBoard=resolve);}if(failBoard)return r.fulfill({status:503,json:{message:'offline'}}).catch(()=>{});d=board;}
- if(fn==='rejchat_notifications_list')d=b.p_token[0]==='a'?{items:notes,unread:notes.filter(n=>!n.read_at).length}:{items:[],unread:0};
- if(fn==='rejchat_notifications_read'){notes=notes.map(n=>({...n,read_at:'2026-11-02T12:00:00Z'}));d={marked:1};}
- if(fn==='get_ecosystem_summary')d={};if(fn==='community_list_posts')d={posts:[],total:0,available_tags:[]};return r.fulfill({json:d}).catch(()=>{});
+   if(fn==='community_whoami')d={username:b.p_token[0]==='a'?'Tester':'Other'};if(fn==='rejchat_get_profiles')d=[{username:'Tester',avatar:'cat',color:'mint'}];
+   if(fn==='rejchat_notifications_list')d=b.p_token[0]==='a'?{items:notes,unread:notes.filter(n=>!n.read_at).length}:{items:[],unread:0};
+   if(fn==='rejchat_notifications_read'){notes=notes.map(n=>({...n,read_at:'2026-11-02T12:00:00Z'}));d={marked:1};}
+   if(fn==='get_ecosystem_summary')d={};if(fn==='community_list_posts')d={posts:[],total:0,available_tags:[]};return r.fulfill({json:d}).catch(()=>{});
  });
- const p=await ctx.newPage();await p.goto(origin+'/rejfile',{waitUntil:'domcontentloaded'});await p.evaluate(()=>document.querySelector('#rj-page-loader')?.remove());await p.waitForFunction(()=>document.querySelector('.rj-chat-bell-count')?.textContent==='5');assert.equal(await p.locator('.rj-chat-bell').count(),1);assert.equal(await p.locator('#rj-bell').count(),0);
- await p.locator('.rj-chat-bell').click();const panel=p.locator('.rj-chat-alert-list');for(const t of ['Ania','skomentował','mconline','Wdrożone','Nowa odpowiedź Rejsona','Nowe zgłoszenie'])assert((await panel.innerText()).includes(t),t);
- assert.match(await p.locator('.rj-chat-bell').getAttribute('aria-label'),/Powiadomienia, nieprzeczytane: 5/);
- // Odświeżenie i przejście między stronami zachowuje lokalne i serwerowe zdarzenia.
- await p.reload({waitUntil:'domcontentloaded'});await p.evaluate(()=>document.querySelector('#rj-page-loader')?.remove());await p.waitForFunction(()=>document.querySelector('.rj-chat-bell-count')?.textContent==='5');
- await p.goto(origin+'/rejtools',{waitUntil:'domcontentloaded'});await p.evaluate(()=>document.querySelector('#rj-page-loader')?.remove());await p.waitForFunction(()=>document.querySelector('.rj-chat-bell-count')?.textContent==='5');await p.locator('.rj-chat-bell').click();
- await p.locator('[data-general-notification^="status:"]').click();await p.waitForURL(new RegExp('/tablica-pomyslow#'+id));await p.locator('[id="'+id+'"]').waitFor();assert.match(await p.locator('[id="'+id+'"]').innerText(),/Mój pomysł/);await p.waitForFunction(()=>document.querySelector('.rj-chat-bell-count')?.textContent==='4');
- // Awaria listy nie wymazuje migawki ani już zebranych zdarzeń.
- const before=await p.evaluate(()=>localStorage.getItem('rj_seen_v1:tester'));failBoard=true;await p.evaluate(()=>window.RJPremium.refresh());const after=await p.evaluate(()=>localStorage.getItem('rj_seen_v1:tester'));assert.deepEqual(JSON.parse(after).subs,JSON.parse(before).subs);assert.equal(JSON.parse(after).at,JSON.parse(before).at);assert.match(await p.locator('.rj-chat-alert-status').innerText(),/Nie udało się sprawdzić zgłoszeń/);failBoard=false;
- // Odczyt w drugiej karcie nie zostaje cofnięty przez opóźnione odświeżenie.
- releaseBoard=null;holdBoard=true;await p.evaluate(()=>{window.RJPremium.refresh();});await p.waitForTimeout(100);assert.equal(typeof releaseBoard,'function');
- const p2=await ctx.newPage();await p2.goto(origin+'/rejtools',{waitUntil:'domcontentloaded'});await p2.waitForFunction(()=>window.RJPremium&&window.RJPremium.notifications().some(n=>n.kind==='reply'));await p2.evaluate(()=>window.RJPremium.markRead(window.RJPremium.notifications().find(n=>n.kind==='reply').id));releaseBoard();await p.waitForTimeout(150);assert(!(await p.evaluate(()=>window.RJPremium.notifications())).some(n=>n.kind==='reply'));await p2.close();
- await p.locator('.rj-chat-bell').click();await p.locator('.rj-chat-alert-read').click();await p.waitForFunction(()=>document.querySelector('.rj-chat-bell-count').hidden);assert.equal(notes[0].read_at!==null,true);assert.equal((await p.evaluate(()=>JSON.parse(localStorage.getItem('rj_general_notifications_v1:tester')))).length,0);
+ const p=await ctx.newPage();await p.goto(origin+'/rejfile',{waitUntil:'domcontentloaded'});await p.evaluate(()=>document.querySelector('#rj-page-loader')?.remove());
+ await p.waitForFunction(()=>window.RJPremium&&window.RJPremium.notifications().some(n=>n.kind==='update'));
+ assert.equal(await p.locator('.rj-chat-bell').count(),1);assert.equal(await p.locator('#rj-bell').count(),0);
+ const titles=await p.evaluate(()=>window.RJPremium.notifications().map(n=>n.kind+':'+n.title));
+ assert(titles.some(t=>/^update:mconline/.test(t)),titles.join(' | '));
+ assert(!titles.some(t=>/^(status|reply|new_submission)/.test(t)),'po tablicy nie ma śladu: '+titles.join(' | '));
+ const stored=await p.evaluate(()=>localStorage.getItem('rj_seen_v1:tester'));
+ assert.equal(JSON.parse(stored).subs,undefined,'migawka bez pola subs');
+ // Zdarzenia z RejChat żyją obok lokalnych, ale mają własny panel.
+ await p.locator('.rj-chat-bell').click();
+ const panel=p.locator('.rj-chat-alert-list');
+ for(const t of ['Ania','skomentował'])assert((await panel.innerText()).includes(t),t);
+ assert.match(await p.locator('.rj-chat-bell').getAttribute('aria-label'),/nieprzeczytane: 1/);
+ // Odświeżenie i przejście między stronami nie gubi zdarzeń.
+ await p.reload({waitUntil:'domcontentloaded'});await p.evaluate(()=>document.querySelector('#rj-page-loader')?.remove());
+ await p.waitForFunction(()=>document.querySelector('.rj-chat-bell-count')?.textContent==='1');
+ await p.goto(origin+'/rejtools',{waitUntil:'domcontentloaded'});await p.evaluate(()=>document.querySelector('#rj-page-loader')?.remove());
+ await p.waitForFunction(()=>window.RJPremium&&window.RJPremium.notifications().some(n=>n.kind==='update'));
+ await p.locator('.rj-chat-bell').click();await p.locator('.rj-chat-alert-read').click();
+ await p.waitForFunction(()=>document.querySelector('.rj-chat-bell-count').hidden);
+ assert.equal(notes[0].read_at!==null,true);
+ assert.equal((await p.evaluate(()=>JSON.parse(localStorage.getItem('rj_general_notifications_v1:tester')||'[]'))).length,1,'lokalne zdarzenie zostaje po odczycie RejChat');
  // Spóźniona odpowiedź poprzedniego konta nie może pojawić się nowemu.
- releaseBoard=null;holdBoard=true;await p.evaluate(()=>{window.RJPremium.refresh();});await p.waitForTimeout(100);assert.equal(typeof releaseBoard,'function');await p.evaluate(()=>{localStorage.setItem('rejson_community_session_v1',JSON.stringify({username:'Other',token:'b'.repeat(32)}));window.dispatchEvent(new Event('rj:session-change'));});releaseBoard();await p.waitForTimeout(250);assert.equal((await p.evaluate(()=>window.RJPremium.notifications())).length,0);assert(!/Mój pomysł|Ania/.test(await panel.innerText()));
- await ctx.close();console.log('PASS: wspólny panel, cztery źródła zdarzeń, odczyt, przejście do zgłoszenia, trwałość, awaria i izolacja kont');
-}finally{if(releaseBoard)releaseBoard();await browser.close();server.close();}})().catch(e=>{console.error(e);server.close();process.exitCode=1});
+ const p2=await ctx.newPage();
+ await p2.goto(origin+'/rejtools',{waitUntil:'domcontentloaded'});
+ await p2.waitForFunction(()=>window.RJPremium&&window.RJPremium.notifications().length>0);
+ await p.evaluate(()=>{localStorage.setItem('rejson_community_session_v1',JSON.stringify({username:'Other',token:'b'.repeat(32)}));window.dispatchEvent(new Event('rj:session-change'));});
+ await p.waitForTimeout(250);
+ assert.equal(await p.evaluate(()=>window.RJPremium.notifications().filter(n=>/mconline/.test(n.title)).length),0,'cudze zdarzenia nie przeciekają');
+ await p2.close();
+ await ctx.close();console.log('PASS: dwa prawdziwe źródła powiadomień, trwałość, odczyt i izolacja kont');
+}finally{await browser.close();server.close();}})().catch(e=>{console.error(e);server.close();process.exitCode=1});

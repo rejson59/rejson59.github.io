@@ -3259,3 +3259,15 @@ html[data-theme="light"] body.rj-profile-page :is(.profile-eyebrow, .profile-bac
 html[data-theme="light"] body.rj-profile-page .profile-status {
   background: rgba(255, 255, 255, 0.72);
 }
+
+/* ---------- Stopka licencyjna (© 2026 rejson59) ---------- */
+.license-line {
+  margin: 0;
+  padding: 18px 20px 26px;
+  text-align: center;
+  font-size: 12.5px;
+  line-height: 1.6;
+  opacity: 0.85;
+}
+.license-line a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.license-line strong { font-weight: 600; }

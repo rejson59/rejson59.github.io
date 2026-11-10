@@ -1191,7 +1191,7 @@ html.rj-tilt-off .project-card.is-tilting .card-preview-frame { will-change:auto
 .board-cta-text #board-cta-counts { color: var(--faint); }
 .board-cta-text #board-cta-counts strong.mono { color: var(--accent-strong); }
 
-/* Dwie zachęty obok siebie: tablica pomysłów + społeczność */
+/* Dwie zachęty obok siebie: społeczność + kontakt */
 .cta-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1213,3 +1213,17 @@ html.rj-tilt-off .project-card.is-tilting .card-preview-frame { will-change:auto
 @media (max-width: 560px) {
   .board-cta-inner .btn { width: 100%; justify-content: center; }
 }
+
+/* ---------- Stopka licencyjna (© 2026 rejson59) ---------- */
+.license-line {
+  margin: 0;
+  padding: 18px 20px 26px;
+  text-align: center;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+}
+.license-line a { color: var(--accent-strong); text-decoration: none; }
+.license-line a:hover { text-decoration: underline; }
+.license-line strong { color: var(--text); font-weight: 600; }

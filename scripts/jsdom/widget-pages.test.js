@@ -8,7 +8,7 @@ const root = path.resolve(__dirname, '../..');
 const read = p => fs.readFileSync(path.join(root, p), 'utf8');
 const widget = read('rejson-widgets/widget.js');
 const media = read('js/media-capture.js');
-const pages = ['index.html','404.html','admin.html','logowanie.html','partnerstwo.html','uslugi.html','profil.html','rejchat.html','rejfile.html','tablica-pomyslow.html','widzety.html','rejson-widgets/index.html','rejtools.html','konto-demo.html'];
+const pages = ['index.html','404.html','admin.html','logowanie.html','partnerstwo.html','uslugi.html','profil.html','rejchat.html','rejfile.html','widzety.html','rejson-widgets/index.html','rejtools.html','konto-demo.html'];
 const wait = () => new Promise(resolve => setTimeout(resolve, 30));
 async function main() {
   for (const page of pages) {
@@ -78,23 +78,23 @@ async function main() {
     listeners.fetch(event); assert.ok(result); return result;
   }
   let res = await response(), html = await res.text();
-  assert.equal((html.match(/src="\/rejson-widgets\/widget\.js\?v=12"/g)||[]).length,1);
+  assert.equal((html.match(/src="\/rejson-widgets\/widget\.js\?v=13"/g)||[]).length,1);
   assert.equal((html.match(/src="\/js\/media-capture\.js\?v=2"/g)||[]).length,1);
   assert.equal((html.match(/mobile-ads\.js/g)||[]).length,0, 'SW nie dodaje reklam do projektów');
   assert.equal(res.headers.get('content-security-policy'),"default-src 'self'");
   pageHtml='<html><head></head><body><script src="/js/media-capture.js?v=1"></script><script src="/rejson-widgets/widget.js?v=8"></script></body></html>';
   res=await response(); html=await res.text();
-  assert.equal((html.match(/src="\/rejson-widgets\/widget\.js\?v=12"/g)||[]).length,1);
+  assert.equal((html.match(/src="\/rejson-widgets\/widget\.js\?v=13"/g)||[]).length,1);
   assert.equal((html.match(/src="\/js\/media-capture\.js\?v=2"/g)||[]).length,1);
   pageHtml='<html><head></head><body><script src="/rejson-widgets/widget.js?v=10"></script></body></html>';
   res=await response(); html=await res.text();
-  assert.equal((html.match(/src="\/rejson-widgets\/widget\.js\?v=12"/g)||[]).length,1,'aktualizuje pigułkę v10');
+  assert.equal((html.match(/src="\/rejson-widgets\/widget\.js\?v=13"/g)||[]).length,1,'aktualizuje pigułkę v10');
   pageHtml='<html><head></head><body><script src="/rejson-widgets/widget.js?v=11"></script></body></html>';
   res=await response(); html=await res.text();
-  assert.equal((html.match(/src="\/rejson-widgets\/widget\.js\?v=12"/g)||[]).length,1,'aktualizuje v11 bez duplikatu');
-  pageHtml='<html><head></head><body><script src="/rejson-widgets/widget.js?v=12"></script></body></html>';
+  assert.equal((html.match(/src="\/rejson-widgets\/widget\.js\?v=13"/g)||[]).length,1,'aktualizuje v11 bez duplikatu');
+  pageHtml='<html><head></head><body><script src="/rejson-widgets/widget.js?v=13"></script></body></html>';
   res=await response(); html=await res.text();
-  assert.equal((html.match(/src="\/rejson-widgets\/widget\.js\?v=12"/g)||[]).length,1,'nie duplikuje bieżącej wersji');
+  assert.equal((html.match(/src="\/rejson-widgets\/widget\.js\?v=13"/g)||[]).length,1,'nie duplikuje bieżącej wersji');
   console.log('PASS: service worker dodaje/aktualizuje skrypty bez duplikatu i nie osłabia CSP');
 }
 main().catch(err => {console.error(err);process.exitCode=1;});
