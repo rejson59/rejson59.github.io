@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pl" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Soczewka — porównanie (narzędzie robocze)</title>
+<meta name="robots" content="noindex,nofollow">
+<!-- Narzędzie robocze: pokazuje różnicę między starym mlecznym szkłem a nową
+     soczewką z js/glass-lens.js. Nie jest linkowane ze strony. -->
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font: 15px/1.5 "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+    color: #eaf1ff;
+    background:
+      radial-gradient(60% 50% at 8% 0%, #4d6bff 0%, transparent 62%),
+      radial-gradient(70% 60% at 92% 12%, #b23bff 0%, transparent 60%),
+      radial-gradient(70% 70% at 60% 100%, #ff8a3d 0%, transparent 62%),
+      linear-gradient(160deg, #0a1230 0%, #1a1240 45%, #2a1030 100%);
+    background-attachment: fixed;
+    padding: 28px clamp(16px, 4vw, 52px) 64px;
+  }
+  h1 { font-size: clamp(22px, 3vw, 32px); letter-spacing: -.03em; margin: 0 0 6px; }
+  p.lead { margin: 0 0 28px; max-width: 70ch; color: #c9d6f2; }
+  .grid {
+    display: grid;
+    gap: 22px;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    align-items: start;
+  }
+  .cell > h2 {
+    font-size: 12px; letter-spacing: .16em; text-transform: uppercase;
+    color: #b9c9ea; margin: 0 0 10px; font-weight: 600;
+  }
+  .pane {
+    position: relative;
+    isolation: isolate;
+    min-height: 260px;
+    padding: 22px;
+    border-radius: 26px;
+    border: 1px solid rgba(255,255,255,.24);
+    background: linear-gradient(158deg, rgba(255,255,255,.13), rgba(255,255,255,.028));
+    box-shadow: 0 30px 64px -32px rgba(2,6,18,.9), inset 0 1px 0 rgba(255,255,255,.36);
+  }
+  /* 1. stare szkło: mleczna płyta */
+  .old { backdrop-filter: blur(26px) saturate(170%); -webkit-backdrop-filter: blur(26px) saturate(170%); }
+  /* 2. nowe szkło: lekki blur */
+  .new { backdrop-filter: blur(11px) saturate(190%); -webkit-backdrop-filter: blur(11px) saturate(190%); }
+  /* 3. nowe szkło + soczewka (data-glass-lens dodaje refleks krawędzi) */
+  .lens { backdrop-filter: blur(11px) saturate(190%); -webkit-backdrop-filter: blur(11px) saturate(190%); }
+  .pane h3 { margin: 0 0 8px; font-size: 18px; letter-spacing: -.02em; }
+  .pane p { margin: 0 0 14px; color: #dbe6fb; font-size: 13.5px; }
+  .dots { display: flex; gap: 8px; }
+  .dots span {
+    width: 26px; height: 26px; border-radius: 50%;
+    background: rgba(255,255,255,.5); border: 1px solid rgba(255,255,255,.6);
+  }
+  .note { margin-top: 26px; font-size: 13px; color: #b9c9ea; max-width: 80ch; }
+  code { background: rgba(255,255,255,.12); padding: 1px 6px; border-radius: 6px; font-size: 12.5px; }
+
+  /* refleks krawędzi — ten sam, który dokłada arkusz strony */
+  [data-glass-lens] { position: relative; isolation: isolate; }
+  [data-glass-lens]::after {
+    content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1px;
+    pointer-events: none; z-index: 4;
+    background: linear-gradient(145deg, rgba(255,255,255,.72) 0%, rgba(255,255,255,.22) 16%, rgba(255,255,255,0) 40%, rgba(255,255,255,0) 62%, rgba(255,255,255,.16) 86%, rgba(255,255,255,.44) 100%);
+    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor; mask-composite: exclude;
+    opacity: .8;
+  }
+  @supports (backdrop-filter: url(#probe)) {
+    [data-lens="on"] {
+      backdrop-filter: var(--glass-lens) blur(6px) saturate(195%) !important;
+      -webkit-backdrop-filter: var(--glass-lens) blur(6px) saturate(195%) !important;
+    }
+  }
+</style>
+</head>
+<body>
+  <h1>Soczewka czy mgła?</h1>
+  <p class="lead">Trzy taflę na tej samej tapecie. Stara wersja (26&nbsp;px blura) mleje — tapeta znika. Nowa (11&nbsp;px) przepuszcza kolor, a trzecia dokłada prawdziwe załamanie krawędzi z <code>js/glass-lens.js</code>.</p>
+
+  <div class="grid">
+    <div class="cell">
+      <h2>1. Stare szkło — 26 px</h2>
+      <div class="pane old">
+        <h3>Mleczna płyta</h3>
+        <p>Tak wyglądało <code>/licencja</code> i reszta podstron z RejHub 2.0.</p>
+        <div class="dots"><span></span><span></span><span></span></div>
+      </div>
+    </div>
+    <div class="cell">
+      <h2>2. Nowe szkło — 11 px</h2>
+      <div class="pane new">
+        <h3>Widać tapetę</h3>
+        <p>To baza. Kolor tła przechodzi przez taflę, krawędź ma refleks.</p>
+        <div class="dots"><span></span><span></span><span></span></div>
+      </div>
+    </div>
+    <div class="cell">
+      <h2>3. Soczewka + refleks</h2>
+      <div class="pane lens" data-glass-lens>
+        <h3>Załamanie krawędzi</h3>
+        <p>Na krawędzi tło się ugina (bevel), środek zostaje czysty — jak w Liquid Glass.</p>
+        <div class="dots"><span></span><span></span><span></span></div>
+      </div>
+    </div>
+  </div>
+
+  <p class="note">Jeśli w trzeciej tafli krawędź jest tylko jaśniejsza, a tło pod nią nie faluje, przeglądarka nie obsługuje <code>backdrop-filter: url()</code> (tak robi Safari i Firefox) — wtedy zostaje samo lekkie szkło z refleksem, celowo, bez błędu.</p>
+
+  <script src="/js/glass-lens.js?v=1" defer></script>
+</body>
+</html>

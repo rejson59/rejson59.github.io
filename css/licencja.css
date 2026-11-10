@@ -1,4 +1,4 @@
-/* Licencja — strona praw autorskich. Liquid glass, bez reklam. */
+/* Licencja — strona praw autorskich. Liquid glass w duchu Apple, bez reklam. */
 
 .rj-license {
   --lic-radius: 26px;
@@ -8,34 +8,93 @@
   padding: 44px 0 10px;
 }
 
-.lic-hero {
+/* ---------- Soczewka: mniej blura, prawdziwe załamanie krawędzi ----------
+   Baza to lekkie rozmycie (9 px) + mocna saturacja. Gdy przeglądarka potrafi
+   `backdrop-filter: url(...)`, js/glass-lens.js dokłada mapę bevela i krawędź
+   naprawdę załamuje tło — jak Liquid Glass Apple, bez mlecznej mgły. */
+.lic-hero,
+.lic-card {
   position: relative;
-  overflow: hidden;
-  border-radius: var(--lic-radius);
-  padding: 40px clamp(20px, 4vw, 52px) 44px;
-  border: 1px solid rgba(163, 190, 255, 0.22);
-  background:
-    radial-gradient(120% 140% at 12% 0%, rgba(122, 160, 255, 0.24), transparent 62%),
-    radial-gradient(110% 130% at 92% 8%, rgba(214, 148, 255, 0.2), transparent 60%),
-    linear-gradient(165deg, rgba(22, 31, 54, 0.72), rgba(12, 18, 33, 0.62));
-  box-shadow:
-    0 34px 80px -46px rgba(3, 8, 20, 0.95),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(26px) saturate(140%);
-  -webkit-backdrop-filter: blur(26px) saturate(140%);
   isolation: isolate;
+  border: 1px solid rgba(255, 255, 255, 0.17);
+  background:
+    radial-gradient(120% 130% at 14% -8%, rgba(150, 182, 255, 0.16), transparent 56%),
+    linear-gradient(165deg, rgba(17, 25, 43, 0.34), rgba(9, 14, 27, 0.24));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.44),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 28px 64px -42px rgba(2, 6, 18, 0.92);
+  backdrop-filter: blur(9px) saturate(190%);
+  -webkit-backdrop-filter: blur(9px) saturate(190%);
 }
 
-.lic-hero::after {
+/* Gdy soczewka jest gotowa, url() załamuje krawędź, a blur tylko domyka tło. */
+@supports (backdrop-filter: url(#rj-lens-probe)) {
+  .lic-hero[data-lens="on"],
+  .lic-card[data-lens="on"] {
+    backdrop-filter: var(--glass-lens) blur(7px) saturate(195%);
+    -webkit-backdrop-filter: var(--glass-lens) blur(7px) saturate(195%);
+  }
+}
+
+/* Krawędź: cienki, nierówny refleks światła (góra-lewo jasna, dół stonowany). */
+.rj-license .lic-hero::before,
+.rj-license .lic-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  pointer-events: none;
+  z-index: 3;
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.85) 0%,
+    rgba(255, 255, 255, 0.28) 14%,
+    rgba(255, 255, 255, 0) 38%,
+    rgba(255, 255, 255, 0) 62%,
+    rgba(255, 255, 255, 0.2) 86%,
+    rgba(255, 255, 255, 0.5) 100%
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.85;
+}
+
+/* Kaustyka: rozproszone światło pod szybą, bez zalewania treści. */
+.rj-license .lic-hero::after,
+.rj-license .lic-card::after {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  background: linear-gradient(120deg, rgba(255, 255, 255, 0.14), transparent 38%, transparent 62%, rgba(255, 255, 255, 0.07));
-  opacity: 0.7;
+  z-index: 0;
+  background:
+    radial-gradient(64% 52% at 8% -6%, rgba(255, 255, 255, 0.2), transparent 62%),
+    radial-gradient(58% 48% at 96% 104%, rgba(178, 206, 255, 0.12), transparent 66%);
   mix-blend-mode: screen;
+  opacity: 0.7;
+}
+
+.lic-hero > *,
+.lic-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.lic-hero {
+  overflow: hidden;
+  border-radius: var(--lic-radius);
+  padding: 40px clamp(20px, 4vw, 52px) 44px;
+}
+
+.lic-card {
+  border-radius: 22px;
+  padding: 24px 24px 26px;
 }
 
 .lic-kicker {
@@ -77,8 +136,8 @@
   color: var(--s-ink, #edf3ff);
   border: 1px solid rgba(255, 255, 255, 0.18);
   background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(6px) saturate(180%);
+  -webkit-backdrop-filter: blur(6px) saturate(180%);
 }
 
 .lic-grid {
@@ -86,17 +145,6 @@
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 16px;
   margin: 22px 0 0;
-}
-
-.lic-card {
-  position: relative;
-  border-radius: 22px;
-  padding: 24px 24px 26px;
-  border: 1px solid rgba(176, 199, 255, 0.16);
-  background: linear-gradient(160deg, rgba(24, 33, 57, 0.6), rgba(13, 19, 35, 0.5));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 22px 50px -40px rgba(0, 0, 0, 0.9);
-  backdrop-filter: blur(20px) saturate(135%);
-  -webkit-backdrop-filter: blur(20px) saturate(135%);
 }
 
 .lic-card h2,
@@ -112,10 +160,11 @@
 .lic-card ol { margin: 0; padding-left: 20px; line-height: 1.72; color: var(--s-muted, #9aa9c1); }
 .lic-card li + li { margin-top: 8px; }
 .lic-card strong { color: var(--s-ink, #edf3ff); }
+.lic-card a { color: var(--s-accent, #a8c8ff); text-decoration: underline; text-underline-offset: 2px; }
 
-.lic-card--ok { border-color: rgba(159, 243, 209, 0.26); }
-.lic-card--no { border-color: rgba(255, 145, 170, 0.26); }
-.lic-card--ai { border-color: rgba(168, 200, 255, 0.32); }
+.lic-card--ok { border-color: rgba(159, 243, 209, 0.3); }
+.lic-card--no { border-color: rgba(255, 145, 170, 0.3); }
+.lic-card--ai { border-color: rgba(168, 200, 255, 0.36); }
 
 .lic-badge {
   display: inline-flex;
@@ -138,7 +187,9 @@
   padding: 16px 18px;
   border-radius: 16px;
   border: 1px solid rgba(168, 200, 255, 0.3);
-  background: rgba(10, 16, 30, 0.5);
+  background: rgba(10, 16, 30, 0.34);
+  backdrop-filter: blur(6px) saturate(170%);
+  -webkit-backdrop-filter: blur(6px) saturate(170%);
   font-size: 14.5px;
   line-height: 1.65;
   color: var(--s-ink, #edf3ff);
@@ -182,7 +233,9 @@
   background: rgba(255, 255, 255, 0.03);
 }
 
+.lic-contact h2 { margin: 0 0 10px; font-size: 19px; }
 .lic-contact p { margin: 0 0 10px; line-height: 1.68; color: var(--s-muted, #9aa9c1); }
+.lic-contact a { color: var(--s-accent, #a8c8ff); }
 
 .lic-foot-note {
   margin: 26px 0 8px;
@@ -197,14 +250,38 @@
   .lic-badges span { font-size: 11px; }
 }
 
-/* Tryb jasny */
-html[data-theme="light"] .lic-hero {
-  border-color: rgba(63, 116, 201, 0.24);
+/* ---------- Tryb jasny: jasna soczewka, nie mleczna płyta ---------- */
+html[data-theme="light"] .lic-hero,
+html[data-theme="light"] .lic-card {
+  border-color: rgba(63, 116, 201, 0.22);
   background:
-    radial-gradient(120% 140% at 12% 0%, rgba(63, 116, 201, 0.16), transparent 62%),
-    radial-gradient(110% 130% at 92% 8%, rgba(193, 139, 255, 0.16), transparent 60%),
-    linear-gradient(165deg, rgba(255, 255, 255, 0.9), rgba(238, 244, 255, 0.82));
-  box-shadow: 0 26px 60px -46px rgba(28, 52, 96, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    radial-gradient(120% 130% at 14% -8%, rgba(63, 116, 201, 0.12), transparent 56%),
+    linear-gradient(165deg, rgba(255, 255, 255, 0.62), rgba(238, 244, 255, 0.46));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.55),
+    0 24px 54px -44px rgba(28, 52, 96, 0.55);
+}
+
+html[data-theme="light"] .rj-license .lic-hero::before,
+html[data-theme="light"] .rj-license .lic-card::before {
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.98) 0%,
+    rgba(255, 255, 255, 0.5) 16%,
+    rgba(63, 116, 201, 0) 40%,
+    rgba(63, 116, 201, 0) 62%,
+    rgba(255, 255, 255, 0.6) 88%,
+    rgba(255, 255, 255, 0.95) 100%
+  );
+}
+
+html[data-theme="light"] .rj-license .lic-hero::after,
+html[data-theme="light"] .rj-license .lic-card::after {
+  background:
+    radial-gradient(64% 52% at 8% -6%, rgba(255, 255, 255, 0.7), transparent 62%),
+    radial-gradient(58% 48% at 96% 104%, rgba(63, 116, 201, 0.1), transparent 66%);
+  opacity: 0.55;
 }
 
 html[data-theme="light"] .lic-kicker { color: #3f74c9; }
@@ -216,12 +293,10 @@ html[data-theme="light"] .lic-contact p,
 html[data-theme="light"] .lic-foot-note { color: #4a5a72; }
 html[data-theme="light"] .lic-card h2,
 html[data-theme="light"] .lic-card h3,
-html[data-theme="light"] .lic-card strong { color: #16223a; }
-html[data-theme="light"] .lic-card {
-  border-color: rgba(63, 116, 201, 0.18);
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.92), rgba(240, 245, 255, 0.78));
-  box-shadow: 0 18px 44px -38px rgba(28, 52, 96, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.95);
-}
+html[data-theme="light"] .lic-card strong,
+html[data-theme="light"] .lic-contact h2 { color: #16223a; }
+html[data-theme="light"] .lic-card a,
+html[data-theme="light"] .lic-contact a { color: #2f63b8; }
 html[data-theme="light"] .lic-badges span,
 html[data-theme="light"] .lic-badge,
 html[data-theme="light"] .lic-files a { color: #16223a; border-color: rgba(63, 116, 201, 0.24); background: rgba(63, 116, 201, 0.07); }

@@ -3273,3 +3273,126 @@ html[data-theme="light"] body.rj-profile-page .profile-status {
 }
 .license-line a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
 .license-line strong { font-weight: 600; }
+
+/* ==========================================================================
+   SOCZEWKA zamiast mgły (2026-10-19)
+   Do tej pory każde szkło miało blur 22–28 px — na tapecie z kroplami dawało
+   to mleczną płytę, a nie szkło jak w /testy. Teraz:
+     • baza to 9–12 px blura i mocniejsza saturacja (tło dalej widać),
+     • krawędź jest podkreślona (refleks), a tam gdzie przeglądarka potrafi
+       `backdrop-filter: url(...)`, js/glass-lens.js dokłada prawdziwe
+       załamanie (bevel + feDisplacementMap) — soczewka jak w Liquid Glass.
+   Elementy z soczewką mają atrybut data-glass-lens i po starcie [data-lens="on"].
+   ========================================================================== */
+
+:root {
+  --g-lens: blur(11px) saturate(185%);
+  --g-lens-soft: blur(7px) saturate(175%);
+  --g-lens-deep: blur(13px) saturate(190%);
+}
+
+html[data-theme="light"] {
+  --g-lens: blur(10px) saturate(165%);
+  --g-lens-soft: blur(6px) saturate(155%);
+  --g-lens-deep: blur(12px) saturate(170%);
+}
+
+/* Największe taflę: mniej mgły, więcej tapety. */
+body.rj-home .hero,
+body:is(.rj-community, .rj-board, .rj-tools, .rj-file, .rj-class, .rj-chat) :is(.comm-hero, .tools-hero, .rjc-hero, .safe-hero) {
+  backdrop-filter: blur(12px) saturate(190%);
+  -webkit-backdrop-filter: blur(12px) saturate(190%);
+}
+
+body.rj-home .profile-card,
+body.rj-home .rj-account-mini,
+body.rj-home .rj-account-mini-card,
+body .rj-premium__inner,
+body .rjc-stage {
+  backdrop-filter: blur(11px) saturate(195%);
+  -webkit-backdrop-filter: blur(11px) saturate(195%);
+}
+
+/* Drobniejsze powierzchnie: jeszcze mniej blura — one są małe, mają być ostre. */
+body :is(input, textarea, select, .comm-input),
+body :is(.btn-ghost, .secondary, .btn-secondary, .account-link, .btn-journey),
+body .rj-side-ad,
+body :is(.rjc-note-hook, .rjc-note-definitions, .rjc-note-exam, .rjc-note-everyday,
+  .rjc-note-trap, .rjc-bio-remember, .rjc-definition, .rjc-bio-point, .comm-composer) {
+  backdrop-filter: blur(8px) saturate(175%);
+  -webkit-backdrop-filter: blur(8px) saturate(175%);
+}
+
+/* Element z gotową soczewką: załamanie krawędzi + delikatny blur resztek. */
+@supports (backdrop-filter: url(#rj-lens-probe)) {
+  body [data-lens="on"] {
+    backdrop-filter: var(--glass-lens) blur(6px) saturate(195%) !important;
+    -webkit-backdrop-filter: var(--glass-lens) blur(6px) saturate(195%) !important;
+  }
+
+  html[data-theme="light"] body [data-lens="on"] {
+    backdrop-filter: var(--glass-lens) blur(6px) saturate(175%) !important;
+    -webkit-backdrop-filter: var(--glass-lens) blur(6px) saturate(175%) !important;
+  }
+}
+
+/* Refleks na krawędzi tafli — cienka, nierówna linia światła. */
+body [data-glass-lens] {
+  position: relative;
+  isolation: isolate;
+}
+
+body [data-glass-lens]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  pointer-events: none;
+  z-index: 4;
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.7) 0%,
+    rgba(255, 255, 255, 0.22) 16%,
+    rgba(255, 255, 255, 0) 40%,
+    rgba(255, 255, 255, 0) 62%,
+    rgba(255, 255, 255, 0.16) 86%,
+    rgba(255, 255, 255, 0.42) 100%
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.75;
+}
+
+/* Telefony: soczewka zostaje, blur schodzi niżej — inaczej scroll ciąży. */
+@media (max-width: 720px) {
+  :root {
+    --g-lens: blur(9px) saturate(175%);
+    --g-lens-soft: blur(6px) saturate(165%);
+    --g-lens-deep: blur(10px) saturate(180%);
+  }
+
+  body.rj-home .hero,
+  body.rj-home .profile-card,
+  body.rj-home .rj-account-mini,
+  body.rj-home .rj-account-mini-card,
+  body .rj-premium__inner {
+    backdrop-filter: blur(9px) saturate(185%);
+    -webkit-backdrop-filter: blur(9px) saturate(185%);
+  }
+}
+
+/* Użytkownik prosi o mniej przezroczystości — bez soczewki i bez blura. */
+@media (prefers-reduced-transparency: reduce) {
+  body [data-lens="on"],
+  body [data-glass-lens] {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  body [data-glass-lens]::after {
+    display: none;
+  }
+}
