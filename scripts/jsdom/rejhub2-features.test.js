@@ -167,4 +167,89 @@ check('narzędzia nie są jedną długą kolumną', () => {
     'siatka narzędzi ma się układać w kolumny');
 });
 
+
+console.log('=== TOPBAR „DWIE TAFLĘ” ===');
+check('każda strona ze wspólnym topbarem ma nowy wariant', () => {
+  pages.forEach((file) => {
+    const html = read('rejhub2/' + file);
+    if (!html.includes('rj-shared-header')) return;
+    assert.ok(html.includes('/css/topbar-split.css?v=1'), 'brak topbar-split.css w ' + file);
+    assert.ok(html.includes('/js/topbar-split.js?v=1'), 'brak topbar-split.js w ' + file);
+  });
+});
+
+check('taflę są dwie, a po przewinięciu jedna', () => {
+  const css = read('css/topbar-split.css');
+  assert.ok(css.includes('.rj-shared-header .brand::before'), 'marka ma własną taflę');
+  assert.ok(css.includes('.rj-shared-header .header-right::before'), 'nawigacja ma własną taflę');
+  assert.ok(css.includes('.is-merged::before'), 'scalona tafla po przewinięciu');
+  assert.ok(css.includes('.is-merged .brand::before'), 'taflę gasną po scaleniu');
+});
+
+check('scalanie reaguje na przewijanie', () => {
+  const dom = new JSDOM('<!doctype html><html><body><header class="rj-shared-header"></header></body></html>', {
+    url: 'https://rejhub.vercel.app/', runScripts: 'outside-only', pretendToBeVisual: true, virtualConsole
+  });
+  const w = dom.window;
+  w.eval(read('js/topbar-split.js'));
+  const header = w.document.querySelector('.rj-shared-header');
+  assert.equal(header.classList.contains('is-merged'), false, 'na starcie dwie taflę');
+  Object.defineProperty(w, 'pageYOffset', { value: 120, configurable: true });
+  w.RejTopbar.refresh();
+  assert.equal(header.classList.contains('is-merged'), true, 'po przewinięciu jedna tafla');
+  Object.defineProperty(w, 'pageYOffset', { value: 0, configurable: true });
+  w.RejTopbar.refresh();
+  assert.equal(header.classList.contains('is-merged'), false, 'po powrocie na górę znów dwie');
+});
+
+console.log('=== WEJŚCIE STRONY ===');
+check('każda strona z loaderem ma falę wejścia', () => {
+  pages.forEach((file) => {
+    const html = read('rejhub2/' + file);
+    if (!html.includes('rj-page-loader')) return;
+    assert.ok(html.includes('/js/page-reveal.js?v=1'), 'brak page-reveal.js w ' + file);
+    assert.ok(html.includes('/css/page-reveal.css?v=1'), 'brak page-reveal.css w ' + file);
+  });
+});
+
+check('fala idzie od prawego górnego do lewego dolnego rogu i dzieli tekst na litery', () => {
+  const html = '<!doctype html><html><body>' +
+    '<main><h2 id="head">Szkło i światło</h2>' +
+    '<button id="a" class="rj-cta">A</button>' +
+    '<button id="b" class="rj-cta">B</button>' +
+    '<button id="c" class="rj-cta">C</button></main></body></html>';
+  const dom = new JSDOM(html, { url: 'https://rejhub.vercel.app/', runScripts: 'outside-only', pretendToBeVisual: true, virtualConsole });
+  const w = dom.window;
+  const places = {
+    a: { top: 100, left: 40 },
+    b: { top: 20, left: 900 },
+    c: { top: 400, left: 120 },
+    head: { top: 10, left: 400 }
+  };
+  w.Element.prototype.getBoundingClientRect = function () {
+    const spot = places[this.id] || { top: 200, left: 200 };
+    return { top: spot.top, left: spot.left, width: 160, height: 44, bottom: spot.top + 44, right: spot.left + 160, x: spot.left, y: spot.top };
+  };
+  const played = [];
+  w.Element.prototype.animate = function (frames, options) {
+    played.push({ el: this, options: options, frames: frames });
+    return { onfinish: null, oncancel: null, cancel: function () {} };
+  };
+  w.eval(read('js/page-reveal.js'));
+  w.RejReveal.start();
+
+  const order = played.filter((entry) => entry.el.tagName === 'BUTTON').map((entry) => entry.el.id);
+  assert.deepEqual(order, ['b', 'a', 'c'], 'kolejność: prawy górny → lewy dolny');
+  assert.ok(played.some((entry) => entry.el.classList && entry.el.classList.contains('rj-letter')), 'litery mają własną animację');
+  assert.ok(w.document.querySelectorAll('.rj-letter').length >= 10, 'nagłówek rozbity na litery');
+  assert.equal(w.document.getElementById('head').textContent, 'Szkło i światło', 'treść nagłówka bez zmian');
+});
+
+check('studio używa tego samego logo, bez własnej płytki', () => {
+  const html = read('rejhub2/studio-source/propozycje.html');
+  assert.ok(!/<i>R<\/i>/.test(html), 'brak wymyślonej płytki „R”');
+  assert.ok(html.includes('/hub/brand-mark.svg'), 'to samo logo co w topbarze');
+  assert.ok(!/sx-brand i \{/.test(read('rejhub2/studio-source/propozycje.css')), 'brak stylu starej płytki');
+});
+
 console.log('\nWYNIK: wszystkie sprawdzenia RejHub 2.0 przeszły ✔');

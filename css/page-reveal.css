@@ -1,0 +1,14 @@
+/* © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
+   Litery nagłówków rozbijane przez js/page-reveal.js. Każde słowo jest
+   nierozdzielne (żeby nie łamało się w środku), litery mogą się ruszać
+   niezależnie. */
+
+.rj-word {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.rj-letter {
+  display: inline-block;
+  transform-origin: 50% 82%;
+}
