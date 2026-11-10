@@ -1,0 +1,145 @@
+/* © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved. */
+/* Banner „RejHub 2.0” — pasek pod menu na starej stronie (tylko informacja). */
+
+.rj-hub-banner-wrap {
+  width: min(1180px, calc(100% - 32px));
+  margin: 14px auto 0;
+}
+
+.rj-hub-banner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 0;
+  padding: 11px 16px 11px 14px;
+  border: var(--rj-glass-border);
+  border-radius: 16px;
+  background:
+    linear-gradient(120deg, rgba(106, 166, 255, 0.16), rgba(168, 86, 255, 0.12) 52%, rgba(63, 182, 139, 0.14)),
+    var(--rj-glass-bg);
+  box-shadow: var(--rj-glass-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  backdrop-filter: var(--rj-glass-blur);
+  -webkit-backdrop-filter: var(--rj-glass-blur);
+  color: var(--text);
+  font-size: 13.5px;
+  line-height: 1.45;
+  overflow: hidden;
+}
+
+.rj-hub-banner::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--rj-glass-sheen);
+  pointer-events: none;
+}
+
+.rj-hub-banner-dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #6aa6ff;
+  box-shadow: 0 0 0 4px rgba(106, 166, 255, 0.18);
+  animation: rj-hub-banner-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes rj-hub-banner-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(106, 166, 255, 0.16); }
+  50% { box-shadow: 0 0 0 6px rgba(106, 166, 255, 0.05); }
+}
+
+.rj-hub-banner-text {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 260px;
+  min-width: 0;
+  color: var(--muted);
+}
+
+.rj-hub-banner-text strong {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.rj-hub-banner-link {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 13px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  background: linear-gradient(158deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.06));
+  color: var(--text);
+  font-size: 12.5px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: transform 0.18s ease, background 0.18s ease;
+}
+
+.rj-hub-banner-link svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.rj-hub-banner-link:hover,
+.rj-hub-banner-link:focus-visible {
+  transform: translateY(-1px);
+  background: linear-gradient(158deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1));
+}
+
+[data-theme="light"] .rj-hub-banner {
+  background:
+    linear-gradient(120deg, rgba(106, 166, 255, 0.22), rgba(168, 86, 255, 0.14) 52%, rgba(63, 182, 139, 0.2)),
+    rgba(255, 255, 255, 0.72);
+  box-shadow: 0 14px 34px -20px rgba(15, 23, 42, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+[data-theme="light"] .rj-hub-banner-text {
+  color: #3c4757;
+}
+
+[data-theme="light"] .rj-hub-banner-text strong {
+  color: #131a24;
+}
+
+[data-theme="light"] .rj-hub-banner-link {
+  border-color: rgba(15, 23, 42, 0.16);
+  background: rgba(255, 255, 255, 0.85);
+  color: #131a24;
+}
+
+@media (max-width: 620px) {
+  .rj-hub-banner-wrap {
+    width: calc(100% - 20px);
+    margin-top: 10px;
+  }
+
+  .rj-hub-banner {
+    padding: 10px 12px;
+    gap: 9px;
+    font-size: 12.5px;
+  }
+
+  .rj-hub-banner-link {
+    padding: 6px 11px;
+    font-size: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rj-hub-banner-dot { animation: none; }
+  .rj-hub-banner-link { transition: none; }
+}
