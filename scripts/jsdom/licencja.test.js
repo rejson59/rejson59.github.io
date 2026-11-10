@@ -8,6 +8,7 @@ const { JSDOM } = require('jsdom');
 const root = path.resolve(__dirname, '../..');
 const pages = ['licencja.html', 'rejhub2/licencja.html'];
 const css = fs.readFileSync(path.join(root, 'css/licencja.css'), 'utf8');
+const LOGOS = { 'licencja.html': '/favicon.svg', 'rejhub2/licencja.html': '/hub/brand-mark.svg?v=1' };
 
 let pass = 0, fail = 0;
 function check(name, fn) {
@@ -18,13 +19,19 @@ function check(name, fn) {
 for (const file of pages) {
   console.log('\n=== ' + file + ' ===');
   const html = fs.readFileSync(path.join(root, file), 'utf8');
+  const LOGO = LOGOS[file];
   const dom = new JSDOM(html, { url: 'https://example.org/licencja' });
   const d = dom.window.document;
 
   check('dokładnie jedna marka w nagłówku',
     () => assert.equal(d.querySelectorAll('.rj-shared-header .brand').length, 1));
-  check('logo jest SVG w linii (nie może się nie wczytać)',
-    () => assert.equal(d.querySelectorAll('.rj-shared-header .brand img').length, 0));
+  check('logo to oryginalny obrazek marki (nie podmieniony SVG)',
+    () => assert.equal(d.querySelectorAll('.rj-shared-header .brand img.brand-mark').length, 1));
+  check('logo wskazuje plik marki tej witryny',
+    () => assert.equal(d.querySelector('.rj-shared-header .brand img').getAttribute('src'), LOGO));
+  check('nazwa marki bez zmian',
+    () => assert.equal(d.querySelector('.rj-shared-header .brand-text').textContent.trim().split('.')[0],
+      file === 'licencja.html' ? 'rejson59' : 'RejHub'));
   check('dokładnie jeden link „Przejdź do treści”',
     () => assert.equal(d.querySelectorAll('a.services-skip').length, 1));
   check('link prowadzi do treści',
@@ -42,7 +49,7 @@ for (const file of pages) {
   check('hero i karty mają data-glass-lens',
     () => assert.ok(d.querySelectorAll('[data-glass-lens]').length >= 6));
   check('arkusz licencji w świeżej wersji',
-    () => assert.match(html, /licencja\.css\?v=3/));
+    () => assert.match(html, /licencja\.css\?v=4/));
   check('nota licencyjna w stopce',
     () => assert.match(html, /wszystkie prawa zastrzeżone/i));
 }
