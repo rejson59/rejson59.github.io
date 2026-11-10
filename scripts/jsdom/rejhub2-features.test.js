@@ -173,17 +173,19 @@ check('każda strona ze wspólnym topbarem ma nowy wariant', () => {
   pages.forEach((file) => {
     const html = read('rejhub2/' + file);
     if (!html.includes('rj-shared-header')) return;
-    assert.ok(html.includes('/css/topbar-split.css?v=1'), 'brak topbar-split.css w ' + file);
-    assert.ok(html.includes('/js/topbar-split.js?v=1'), 'brak topbar-split.js w ' + file);
+    assert.ok(html.includes('/css/topbar-split.css?v=2'), 'brak topbar-split.css w ' + file);
+    assert.ok(html.includes('/js/topbar-split.js?v=2'), 'brak topbar-split.js w ' + file);
   });
 });
 
 check('taflę są dwie, a po przewinięciu jedna', () => {
   const css = read('css/topbar-split.css');
-  assert.ok(css.includes('.rj-shared-header .brand::before'), 'marka ma własną taflę');
-  assert.ok(css.includes('.rj-shared-header .header-right::before'), 'nawigacja ma własną taflę');
-  assert.ok(css.includes('.is-merged::before'), 'scalona tafla po przewinięciu');
-  assert.ok(css.includes('.is-merged .brand::before'), 'taflę gasną po scaleniu');
+  /* Jak w studiu: jedna szeroka kapsuła + mniejsza tafla z logo w środku. */
+  assert.ok(/\.rj-shared-header::before\s*\{[^}]*border-radius: inherit/s.test(css), 'kapsuła topbaru ma szkło');
+  assert.ok(css.includes('.rj-shared-header .brand::before'), 'logo ma własną mniejszą taflę');
+  assert.ok(css.includes('.is-merged .brand::before'), 'mniejsza tafla rozpływa się po scaleniu');
+  assert.ok(!css.includes('.header-right::before'), 'prawa strona nie jest osobną taflą — to był błąd');
+  assert.ok(css.includes('order: 1'), 'nawigacja wraca na środek kapsuły');
 });
 
 check('scalanie reaguje na przewijanie', () => {
@@ -207,8 +209,8 @@ check('każda strona z loaderem ma falę wejścia', () => {
   pages.forEach((file) => {
     const html = read('rejhub2/' + file);
     if (!html.includes('rj-page-loader')) return;
-    assert.ok(html.includes('/js/page-reveal.js?v=1'), 'brak page-reveal.js w ' + file);
-    assert.ok(html.includes('/css/page-reveal.css?v=1'), 'brak page-reveal.css w ' + file);
+    assert.ok(html.includes('/js/page-reveal.js?v=2'), 'brak page-reveal.js w ' + file);
+    assert.ok(html.includes('/css/page-reveal.css?v=2'), 'brak page-reveal.css w ' + file);
   });
 });
 
@@ -250,6 +252,57 @@ check('studio używa tego samego logo, bez własnej płytki', () => {
   assert.ok(!/<i>R<\/i>/.test(html), 'brak wymyślonej płytki „R”');
   assert.ok(html.includes('/hub/brand-mark.svg'), 'to samo logo co w topbarze');
   assert.ok(!/sx-brand i \{/.test(read('rejhub2/studio-source/propozycje.css')), 'brak stylu starej płytki');
+});
+
+
+console.log('=== JEDNO LOGO W CAŁYM REJHUBIE ===');
+check('nigdzie nie ma własnej płytki ani litery „R” zamiast logo', () => {
+  pages.forEach((file) => {
+    const html = read('rejhub2/' + file);
+    assert.ok(!/<span class="brand-mark">R<\/span>/.test(html), 'stara płytka w ' + file);
+    assert.ok(!/<span class="mark">R<\/span>/.test(html), 'stara płytka w ' + file);
+  });
+});
+
+check('każde widoczne logo to ten sam plik marki', () => {
+  pages.forEach((file) => {
+    const html = read('rejhub2/' + file);
+    const marks = html.match(/class="(?:brand-mark|mark)"/g) || [];
+    if (!marks.length) return;
+    const sources = html.match(/src="[^"]*brand-mark\.svg[^"]*"/g) || [];
+    assert.ok(sources.length, 'brak pliku marki w ' + file);
+    assert.ok(!/src="\/?rejson-widgets\/favicon\.svg"/.test(html), 'obca ikona w ' + file);
+  });
+});
+
+check('favicon to ten sam znak co logo', () => {
+  assert.equal(read('rejhub2/favicon.svg').trim(), read('rejhub2/hub/brand-mark.svg').trim(),
+    'favicon musi być tym samym znakiem');
+});
+
+console.log('=== NIC NIE PRZEŚWITUJE PRZEZ LOADER ===');
+check('każda strona z loaderem chowa treść przed pierwszym malowaniem', () => {
+  pages.forEach((file) => {
+    const html = read('rejhub2/' + file);
+    if (!html.includes('rj-page-loader')) return;
+    assert.ok(html.includes("classList.add('rj-booting')"), 'brak schowania treści w ' + file);
+  });
+});
+
+check('arkusz chowa treść pod nakładką i ma bezpiecznik', () => {
+  const css = read('css/page-reveal.css');
+  assert.ok(css.includes('html.rj-booting body >'), 'brak reguły chowającej treść');
+  assert.ok(css.includes('rj-boot-failsafe'), 'brak bezpiecznika na wypadek błędu skryptu');
+  assert.ok(read('rejhub2/hub/loader.js').includes('remove("rj-booting")'), 'loader musi zdejmować schowanie');
+  assert.ok(read('js/loader.js').includes('remove("rj-booting")'), 'stary loader też musi zdejmować schowanie');
+});
+
+check('topbar zjeżdża z góry, reklamy z prawej, mobilne z dołu', () => {
+  const js = read('js/page-reveal.js');
+  assert.ok(js.includes('translate3d(0,-110%,0)'), 'topbar ma się wysuwać z góry');
+  assert.ok(js.includes('translate3d(120%,0,0)'), 'mini reklamy mają wchodzić z prawej');
+  assert.ok(js.includes('translate3d(0,120%,0)'), 'mobilne reklamy mają wchodzić z dołu');
+  assert.ok(/duration: 9\d\d/.test(js), 'wejście ma być dłuższe niż wcześniej');
 });
 
 console.log('\nWYNIK: wszystkie sprawdzenia RejHub 2.0 przeszły ✔');

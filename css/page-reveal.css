@@ -12,3 +12,20 @@
   display: inline-block;
   transform-origin: 50% 82%;
 }
+
+/* ============================================================================
+   Pod loaderem nic nie ma prawa być widoczne.
+   Klasę `rj-booting` ustawia mały skrypt w <head> (przed pierwszym malowaniem),
+   a zdejmuje ją page-reveal.js dokładnie w klatce, w której startuje animacja
+   wejścia. Bez JavaScriptu klasa nigdy nie powstaje, więc treść jest widoczna.
+   ========================================================================== */
+
+html.rj-booting body > :not(#rj-page-loader):not(script):not(style):not(link):not(noscript):not(template) {
+  visibility: hidden;
+  /* Bezpiecznik: gdyby skrypt się nie wykonał, po 9 s treść i tak wraca. */
+  animation: rj-boot-failsafe 0.01s linear 9s forwards;
+}
+
+@keyframes rj-boot-failsafe {
+  to { visibility: visible; }
+}

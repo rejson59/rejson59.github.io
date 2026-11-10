@@ -150,6 +150,9 @@
     function doHide() {
       el.classList.remove("is-shown");
       el.classList.add("is-hidden");
+      /* Treść była schowana pod nakładką — pokazuje ją dopiero animacja
+         wejścia (js/page-reveal.js), która zdejmuje tę klasę w tej samej klatce. */
+      document.documentElement.classList.remove("rj-booting");
       markPageReady();
       /* Po zaniknięciu wyjmujemy nakładkę z układu. To twardsze niż pauzowanie
          animacji (i nie ma jak zablokować zanikania): display:none zatrzymuje
@@ -295,6 +298,7 @@
     el.style.display = "";          /* nakładka wraca do układu */
     el.classList.add("is-shown");   /* pokazanie NATYCHMIAST (bez delayu visibility) */
     el.classList.remove("is-hidden");
+    document.documentElement.classList.add("rj-booting");
     /* Pasek NIE startuje od zera — cofnięcie do 0 wyglądało jak błąd.
        Zostaje pełny, bo przejście na inną stronę to koniec tej strony. */
     var pr = progressApi();

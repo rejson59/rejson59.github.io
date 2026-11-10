@@ -114,18 +114,12 @@
         text-transform: uppercase;
         color: var(--muted);
       }
+      /* Jedno logo RejHuba — ten sam plik co w topbarze, bez płytki. */
       .brand-mark {
+        display: block;
         width: 26px;
         height: 26px;
-        border-radius: 9px;
-        display: grid;
-        place-items: center;
-        background: linear-gradient(140deg, #8ea2ff, #5ce1d0);
-        color: #080b16;
-        font-weight: 800;
-        letter-spacing: 0;
-        font-size: 14px;
-        box-shadow: 0 6px 18px rgba(94, 140, 255, 0.45);
+        object-fit: contain;
       }
       h1 {
         margin: 24px 0 12px;
@@ -222,7 +216,7 @@
     <div class="grain" aria-hidden="true"></div>
     <main class="wrap">
       <section class="card">
-        <div class="brand"><span class="brand-mark">R</span> RejHub</div>
+        <div class="brand"><img class="brand-mark" src="/hub/brand-mark.svg?v=1" alt="" width="26" height="26"> RejHub</div>
         <h1>Szykuje się <span class="accent">wielka aktualizacja</span> 👀</h1>
         <p>
           Buduję nową wersję RejHub od środka — spokojniejsze tło, prawdziwe szkło
