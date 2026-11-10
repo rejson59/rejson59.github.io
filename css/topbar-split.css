@@ -14,6 +14,9 @@
 /* ---------- 1. Zewnętrzna kapsuła ---------- */
 
 body .rj-shared-header {
+  /* Własny kontekst nakładania: szkło z ::before (z-index:-1) musi zostać
+     nad tłem strony, a pod treścią paska. */
+  isolation: isolate;
   background: transparent !important;
   border-color: transparent !important;
   box-shadow: none !important;
@@ -56,7 +59,7 @@ body .rj-shared-header .brand {
   display: inline-flex;
   align-items: center;
   gap: 9px;
-  font-size: 15.5px;
+  font-size: 15.5px !important;
   padding: 6px 14px 6px 8px;
   border-radius: 999px;
   border: 0;
@@ -208,7 +211,29 @@ body .rj-shared-header .header-right {
   }
 }
 
-/* ---------- 5. Świadome wyłączenie ruchu ---------- */
+/* ---------- 5. Bez rozmycia: pełniejsze, czytelne szkło ---------- */
+
+@supports not ((backdrop-filter: blur(2px)) or (-webkit-backdrop-filter: blur(2px))) {
+  body .rj-shared-header::before {
+    background:
+      linear-gradient(150deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.03)),
+      rgba(16, 24, 39, 0.94);
+  }
+  body .rj-shared-header .brand::before {
+    background: rgba(26, 38, 58, 0.9);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+  html[data-theme="light"] body .rj-shared-header::before {
+    background:
+      linear-gradient(150deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.62)),
+      rgba(246, 250, 255, 0.98);
+  }
+  html[data-theme="light"] body .rj-shared-header .brand::before {
+    background: rgba(255, 255, 255, 0.86);
+  }
+}
+
+/* ---------- 6. Świadome wyłączenie ruchu ---------- */
 
 html[data-motion-force="off"] body .rj-shared-header,
 html[data-motion-force="off"] body .rj-shared-header::before,
