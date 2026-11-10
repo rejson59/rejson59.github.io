@@ -1,18 +1,28 @@
-/* RejHub 2.0 — wspólny element podstron: powrót do huba i drobne poprawki. */
+/* RejHub 2.0 — wspólny element podstron: awaryjne zamknięcie i drobne poprawki. */
 (function () {
   "use strict";
 
+  /* Wcześniej w tym miejscu był link „RejHub ↗” prowadzący na stronę główną.
+     Był rzadko używany, więc jego miejsce zajmuje szybka autodestrukcja:
+     ta sama pigułka, ten sam róg, ale realna funkcja awaryjna. */
   function addPill() {
     if (document.querySelector(".rjhub-pill")) return;
-    var pill = document.createElement("a");
-    pill.className = "rjhub-pill";
-    pill.href = "/";
-    pill.setAttribute("aria-label", "Wróć do RejHub 2.0");
+    /* Strony-przekierowania (podroz, portal) nie potrzebują pigułki —
+       znikają z ekranu w ułamku sekundy. */
+    if (document.querySelector(".rj-legacy-home")) return;
+    var pill = document.createElement("button");
+    pill.type = "button";
+    pill.className = "rjhub-pill rjhub-pill--panic";
+    pill.setAttribute("data-rj-panic", "");
+    pill.title = "Szybka autodestrukcja — zamyka wszystkie karty RejHubu (Ctrl+Shift+X)";
+    pill.setAttribute("aria-label", "Szybka autodestrukcja: zamknij wszystkie karty RejHubu");
     pill.innerHTML =
-      '<span class="rjhub-pill-mark" aria-hidden="true">R</span>' +
-      "<span>RejHub</span>" +
-      '<span class="rjhub-pill-arrow" aria-hidden="true">↗</span>';
+      '<span class="rjhub-pill-mark" aria-hidden="true">' +
+        '<svg viewBox="0 0 24 24" focusable="false"><path d="M12 3v9" /><path d="M6.5 6.5a7.5 7.5 0 1 0 11 0" /></svg>' +
+      "</span>" +
+      "<span>Autodestrukcja</span>";
     document.body.appendChild(pill);
+    if (window.RejPanic && typeof window.RejPanic.mount === "function") window.RejPanic.mount();
   }
 
   /* Strona główna RejHub 2.0 nie ma się rejestrować w starym service workerze. */
