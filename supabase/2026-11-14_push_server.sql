@@ -251,3 +251,15 @@ select cron.schedule('rejhub-net-cleanup', '17 * * * *', $cron$
   delete from net._http_response where created < now() - interval '1 day';
   delete from public.push_outbox where sent_at is not null and sent_at < now() - interval '14 days';
 $cron$);
+
+-- Weryfikacja klucza wysyłki po stronie bazy.
+-- Funkcja Vercel sprawdza najpierw PUSH_SEND_SECRET z env, a jeśli ten się
+-- nie zgadza (albo został zmieniony w panelu), pyta bazę. Dzięki temu zmiana
+-- klucza w push_config nie wymaga ponownego wdrożenia.
+create or replace function public.push_auth(p_secret text)
+returns boolean language sql stable security definer set search_path to 'public' as $fn$
+  select coalesce(p_secret, '') <> ''
+     and p_secret = (select send_secret from public.push_config where id = 1);
+$fn$;
+
+grant execute on function public.push_auth(text) to anon, authenticated;
