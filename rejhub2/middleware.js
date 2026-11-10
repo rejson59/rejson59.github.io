@@ -32,7 +32,11 @@ const PUBLIC_PATHS = new Set([
   "/NOTICE",
   "/AI-POLICY.md"
 ]);
-const PUBLIC_PREFIXES = ["/api/session"];
+/* `/api/push-send` ma własną kontrolę dostępu (nagłówek `x-push-key`
+   porównywany z sekretem w bazie), więc brama cookie musi je przepuścić —
+   inaczej harmonogram z bazy dostawał 401 od middleware, zanim żądanie
+   w ogóle dotarło do funkcji. */
+const PUBLIC_PREFIXES = ["/api/session", "/api/push-send"];
 /* Zasoby statyczne nie zawierają prywatnych treści — puszczamy je bez sesji,
    żeby brama nigdy nie odpowiadała HTML-em na żądanie CSS/JS/obrazka
    (inaczej strona „w budowie” i logowanie gubiłyby swoje pliki). */
