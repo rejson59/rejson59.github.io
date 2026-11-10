@@ -1,88 +1,132 @@
 /* ==========================================================================
-   RejHub 2.0 — liquid glass, warstwa wspólna dla wszystkich podstron.
-   Inspiracja: szklane studio /testy (ciemne granatowe tło, cienka krawędź,
-   wewnętrzne odbicie, blur 8px + saturacja 135%, akcent #a8c8ff).
-   Ładowana PO arkuszach strony, więc nadpisuje stary wygląd.
+   RejHub 2.0 — jeden język wizualny dla całego serwisu.
+   Wzorowany na prywatnym studiu /testy: granatowe tło, cienka krawędź,
+   wewnętrzne odbicie, blur + saturacja, akcent #a8c8ff.
+   Tapeta: krople i wstęgi szkła (hub/wallpaper.webp).
+   Arkusz ładowany PO arkuszach strony, więc nadpisuje stary wygląd.
    ========================================================================== */
 
 :root {
-  --hub-bg: #070b16;
+  /* paleta studia */
+  --s-bg: #080d19;
+  --s-panel: #111a2b;
+  --s-ink: #edf3ff;
+  --s-muted: #9aa9c1;
+  --s-line: #ffffff18;
+  --s-accent: #a8c8ff;
+  --s-accent-2: #c1bcff;
+  --s-live: #9ff3d1;
+
+  /* aliasy zgodne ze starymi podstronami */
+  --hub-bg: var(--s-bg);
   --hub-bg-2: #0a1122;
-  --hub-ink: #eef3ff;
-  --hub-muted: #a2afc6;
+  --hub-ink: var(--s-ink);
+  --hub-muted: var(--s-muted);
   --hub-dim: #7e8ba3;
-  --hub-line: rgba(255, 255, 255, 0.13);
-  --hub-line-soft: rgba(255, 255, 255, 0.07);
-  --hub-accent: #a8c8ff;
-  --hub-accent-2: #8ff0dc;
-  --hub-glass-hi: rgba(255, 255, 255, 0.16);
-  --hub-glass-lo: rgba(255, 255, 255, 0.035);
-  --hub-lens: blur(18px) saturate(140%);
-  --hub-radius: 24px;
-  --hub-shadow: 0 26px 60px -30px rgba(0, 0, 0, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  --hub-line: rgba(255, 255, 255, 0.16);
+  --hub-line-soft: rgba(255, 255, 255, 0.08);
+  --hub-accent: var(--s-accent);
+  --hub-accent-2: var(--s-accent-2);
+
+  /* szkło — jedna recepta dla całego serwisu */
+  --g-hi: rgba(255, 255, 255, 0.12);
+  --g-lo: rgba(255, 255, 255, 0.025);
+  --g-edge: rgba(255, 255, 255, 0.26);
+  --g-lens: blur(22px) saturate(165%);
+  --g-shadow: 0 30px 70px -34px rgba(2, 6, 18, 0.95), 0 2px 8px rgba(2, 6, 18, 0.35);
+  --g-inset: inset 0 1px 0 rgba(255, 255, 255, 0.34), inset 0 -1px 0 rgba(255, 255, 255, 0.12);
+  --hub-lens: var(--g-lens);
+  --hub-shadow: var(--g-shadow), var(--g-inset);
+  --hub-glass-hi: var(--g-hi);
+  --hub-glass-lo: var(--g-lo);
+  --hub-radius: 22px;
   --hub-ease: cubic-bezier(0.22, 0.72, 0.2, 1);
   color-scheme: dark;
 }
 
 html[data-theme="light"] {
-  --hub-bg: #eef2fa;
-  --hub-bg-2: #e6ecf8;
-  --hub-ink: #17233a;
-  --hub-muted: #56637a;
-  --hub-dim: #6d7a92;
-  --hub-line: rgba(23, 42, 74, 0.14);
-  --hub-line-soft: rgba(23, 42, 74, 0.08);
-  --hub-glass-hi: rgba(255, 255, 255, 0.85);
-  --hub-glass-lo: rgba(255, 255, 255, 0.42);
-  --hub-shadow: 0 22px 48px -28px rgba(30, 51, 84, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  --s-bg: #eef2fa;
+  --s-panel: #ffffff;
+  --s-ink: #16223a;
+  --s-muted: #5b6883;
+  --s-line: #14284a1f;
+  --hub-ink: var(--s-ink);
+  --hub-muted: var(--s-muted);
+  --hub-dim: #6b7893;
+  --hub-line: rgba(20, 40, 74, 0.16);
+  --hub-line-soft: rgba(20, 40, 74, 0.08);
+  --g-hi: rgba(255, 255, 255, 0.72);
+  --g-lo: rgba(255, 255, 255, 0.34);
+  --g-edge: rgba(255, 255, 255, 0.9);
+  --g-shadow: 0 26px 60px -34px rgba(28, 48, 84, 0.5);
+  --g-inset: inset 0 1px 0 #ffffff, inset 0 -1px 0 rgba(20, 40, 74, 0.06);
   color-scheme: light;
 }
 
-/* ---------- tło: spokojny granat + trzy odległe światła ---------- */
-html,
-body {
-  background: var(--hub-bg) !important;
-  color: var(--hub-ink);
-}
-
-/* Tło malujemy tylko na <html>, żeby świecące plamy (body::before) nie
-   chowały się pod nieprzezroczystym tłem <body>. */
+/* ---------- tło: tapeta + granatowa zasłona ---------- */
 html {
-  background: var(--hub-bg) !important;
-}
-body {
-  background: transparent !important;
+  background: #05080f;
+  min-height: 100%;
+  scroll-behavior: smooth;
 }
 
+body {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  background: transparent !important;
+  color: var(--s-ink);
+  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* tapeta siedzi na stałe pod całą stroną */
 body::before {
   content: "";
   position: fixed;
-  inset: -20%;
+  inset: 0;
   z-index: -2;
   pointer-events: none;
+  background-color: #070a12;
+  background-image: url("/hub/wallpaper-1280.webp");
+  background-size: cover;
+  background-position: center;
+  filter: saturate(112%) brightness(0.92);
+  transform: translateZ(0);
+}
+
+/* zasłona: przyciemnia tapetę tak, żeby tekst zawsze był czytelny */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
   background:
-    radial-gradient(36% 36% at 18% 6%, rgba(92, 118, 255, 0.24), transparent 70%),
-    radial-gradient(30% 30% at 84% 4%, rgba(0, 205, 184, 0.15), transparent 72%),
-    radial-gradient(48% 48% at 64% 98%, rgba(150, 92, 255, 0.17), transparent 74%),
-    radial-gradient(24% 24% at 6% 94%, rgba(255, 118, 172, 0.09), transparent 70%);
-  filter: blur(42px) saturate(130%);
-  animation: hub-drift 34s ease-in-out infinite alternate;
+    radial-gradient(120% 90% at 50% -10%, rgba(8, 13, 25, 0.42), transparent 70%),
+    radial-gradient(90% 70% at 50% 108%, rgba(8, 13, 25, 0.72), transparent 72%),
+    linear-gradient(180deg, rgba(6, 10, 20, 0.58), rgba(6, 10, 20, 0.7) 42%, rgba(5, 8, 16, 0.86));
+}
+
+@media (max-width: 700px) {
+  body::before {
+    background-image: url("/hub/wallpaper-mobile.webp");
+    background-position: center top;
+    filter: saturate(108%) brightness(0.82);
+  }
 }
 
 html[data-theme="light"] body::before {
+  filter: saturate(104%) brightness(1.02) contrast(0.97);
+}
+html[data-theme="light"] body::after {
   background:
-    radial-gradient(34% 34% at 16% 6%, rgba(120, 150, 255, 0.28), transparent 70%),
-    radial-gradient(30% 30% at 86% 8%, rgba(80, 214, 200, 0.22), transparent 72%),
-    radial-gradient(44% 44% at 62% 98%, rgba(168, 128, 255, 0.18), transparent 74%);
-  opacity: 0.9;
+    radial-gradient(120% 90% at 50% -10%, rgba(255, 255, 255, 0.62), transparent 70%),
+    linear-gradient(180deg, rgba(238, 242, 250, 0.84), rgba(238, 242, 250, 0.9) 46%, rgba(232, 238, 249, 0.96));
 }
 
-@keyframes hub-drift {
-  from { transform: translate3d(-1.5%, -1%, 0) scale(1); }
-  to { transform: translate3d(1.5%, 1.5%, 0) scale(1.06); }
-}
-
-/* wyłączamy stare pełnoekranowe dekoracje stron */
+/* stare pełnoekranowe dekoracje nie są już potrzebne */
 body .backdrop,
 body .grain-overlay,
 body > .aurora {
@@ -90,144 +134,127 @@ body > .aurora {
 }
 
 /* ---------- typografia ---------- */
-body,
-body * {
-  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
-}
-
 body h1,
 body h2,
+body h3,
+body h4 {
+  color: var(--s-ink);
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+body h1 {
+  font-size: clamp(34px, 5.2vw, 62px);
+  line-height: 1.02;
+  font-weight: 700;
+}
+
+body h2 {
+  font-size: clamp(24px, 3vw, 36px);
+  line-height: 1.08;
+  font-weight: 700;
+}
+
 body h3 {
-  color: var(--hub-ink);
-  letter-spacing: -0.025em;
+  font-size: clamp(17px, 1.6vw, 20px);
+  line-height: 1.22;
+  font-weight: 650;
 }
 
 body p,
 body small,
 body li,
 body label {
-  color: var(--hub-muted);
+  color: var(--s-muted);
 }
 
 body a {
-  color: var(--hub-accent);
+  color: var(--s-accent);
 }
 
-/* ---------- nagłówek: szkło bez zmiany geometrii ----------
-   Szerokość i wysokość paska zostają takie jak w starym serwisie (dzięki
-   temu nic się nie zawija i nie ucina), zmienia się tylko powierzchnia:
-   rozmycie, półprzezroczystość i cienka krawędź. */
+body .mono {
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing: 0.01em;
+}
+
+/* ---------- nagłówek: tylko powierzchnia, geometria bez zmian ---------- */
 body .site-header,
 body .topbar,
 body .rj-shared-header {
   background:
-    radial-gradient(120% 160% at 12% -40%, rgba(146, 172, 255, 0.22), transparent 62%),
-    linear-gradient(180deg, rgba(30, 42, 68, 0.72), rgba(10, 16, 29, 0.72)) !important;
-  border-color: rgba(173, 198, 255, 0.19) !important;
-  box-shadow:
-    0 20px 46px -30px rgba(0, 0, 0, 0.95),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2),
-    inset 0 -1px 0 rgba(120, 150, 255, 0.08) !important;
-  backdrop-filter: var(--hub-lens);
-  -webkit-backdrop-filter: var(--hub-lens);
+    linear-gradient(158deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.035)) !important;
+  border-color: var(--g-edge) !important;
+  box-shadow: var(--g-shadow), var(--g-inset) !important;
+  backdrop-filter: var(--g-lens);
+  -webkit-backdrop-filter: var(--g-lens);
 }
 
 body .site-nav,
 body .topbar nav {
-  background: rgba(255, 255, 255, 0.045) !important;
+  background: rgba(255, 255, 255, 0.055) !important;
   border: 1px solid var(--hub-line-soft);
   border-radius: 999px;
   padding: 4px;
   gap: 2px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
 
 body :is(.site-nav a, .topbar nav a, .nav-more > summary, .rj-home-link, .mobile-account, .theme-toggle, .hamburger-btn, .rj-chat-bell) {
   border-radius: 999px !important;
-  transition: background 0.2s var(--hub-ease), color 0.2s var(--hub-ease);
+  transition: background 0.22s var(--hub-ease), color 0.22s var(--hub-ease), transform 0.22s var(--hub-ease);
 }
 
 body :is(.site-nav a, .topbar nav a, .nav-more > summary):hover {
-  background: rgba(255, 255, 255, 0.1) !important;
-  color: var(--hub-ink) !important;
+  background: rgba(255, 255, 255, 0.11) !important;
+  color: var(--s-ink) !important;
 }
 
 body :is(.site-nav a[aria-current="page"], .site-nav a.is-active, .site-nav a.active) {
-  background: linear-gradient(140deg, #eef2ff, #c3cfff) !important;
+  background: linear-gradient(140deg, #f4f8ff, #c9dcff) !important;
   color: #0a1122 !important;
   font-weight: 650;
+  box-shadow: inset 0 1px 0 #fff, 0 8px 18px -10px rgba(0, 0, 0, 0.7);
 }
 
 body :is(.nav-more-panel, .rj-chat-alert-panel, .rj-header-profile, .mobile-menu) {
-  background: linear-gradient(160deg, rgba(24, 32, 52, 0.96), rgba(12, 18, 32, 0.96)) !important;
-  border: 1px solid var(--hub-line) !important;
-  border-radius: 20px !important;
-  box-shadow: 0 28px 60px -28px rgba(0, 0, 0, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
-  backdrop-filter: var(--hub-lens);
-  -webkit-backdrop-filter: var(--hub-lens);
+  background: linear-gradient(158deg, rgba(24, 33, 52, 0.84), rgba(10, 16, 29, 0.9)) !important;
+  border: 1px solid var(--g-edge) !important;
+  border-radius: 22px !important;
+  box-shadow: var(--g-shadow), var(--g-inset) !important;
+  backdrop-filter: var(--g-lens);
+  -webkit-backdrop-filter: var(--g-lens);
 }
 
-/* ---------- wszystkie karty i panele ---------- */
-body .card,
-body .panel,
-body .safety,
-body .tool,
-body .tools-notice,
-body .board-toolbar,
-body .kpi-card,
-body .partner-option,
-body .partner-form-card,
-body .partner-note,
-body .wid-card,
-body .wid-demo,
-body .wid-cta,
-body .auth-card,
-body .adm-card,
-body .adm-kpi,
-body .toolbar-card,
-body .inspector-card,
-body .comm-auth-inner,
-body .account-benefits,
-body .profile-card,
-body .profile-card-view,
-body .profile-editor,
-body .comm-card,
-body .comm-chat,
-body .comm-thread,
-body .comm-compose,
-body .rjc-subject,
-body .rjc-workspace,
-body .rjc-countdown,
-body .rjc-bio-progress,
-body .rjc-bio-sidebar,
-body .rjc-bio-lesson,
-body .rjc-bio-quiz,
-body .rjc-bio-summary,
-body .service-card,
-body .services-grid > article,
-body .contacts-card,
-body .dropzone,
-body .success,
-body .file-item,
-body .store-card,
-body .timeline-card {
-  background: linear-gradient(155deg, var(--hub-glass-hi), var(--hub-glass-lo)) !important;
-  border: 1px solid var(--hub-line) !important;
+/* ---------- wspólna tafla ---------- */
+body :is(
+  .card, .panel, .safety, .tool, .tools-notice, .board-toolbar, .kpi-card,
+  .partner-option, .partner-form-card, .partner-note, .wid-card, .wid-demo,
+  .wid-cta, .auth-card, .adm-card, .adm-kpi, .toolbar-card, .inspector-card,
+  .comm-auth-inner, .account-benefits, .profile-card, .profile-card-view,
+  .profile-editor, .comm-card, .comm-chat, .comm-thread, .comm-compose,
+  .rjc-subject, .rjc-workspace, .rjc-countdown, .rjc-bio-progress,
+  .rjc-bio-sidebar, .rjc-bio-lesson, .rjc-bio-quiz, .rjc-bio-summary,
+  .service-card, .services-grid > article, .contacts-card, .dropzone,
+  .success, .file-item, .store-card, .timeline-card
+) {
+  background: linear-gradient(158deg, var(--g-hi), var(--g-lo)) !important;
+  border: 1px solid var(--g-edge) !important;
   border-radius: var(--hub-radius) !important;
-  box-shadow: var(--hub-shadow) !important;
-  backdrop-filter: var(--hub-lens);
-  -webkit-backdrop-filter: var(--hub-lens);
+  box-shadow: var(--g-shadow), var(--g-inset) !important;
+  backdrop-filter: var(--g-lens);
+  -webkit-backdrop-filter: var(--g-lens);
 }
 
 body .dropzone {
   border-style: dashed !important;
-  border-color: rgba(168, 200, 255, 0.35) !important;
+  border-color: rgba(168, 200, 255, 0.4) !important;
 }
 
 body .dropzone:hover,
 body .dropzone.dragging,
 body .dropzone:focus-within {
-  background: linear-gradient(155deg, rgba(168, 200, 255, 0.2), rgba(255, 255, 255, 0.05)) !important;
-  border-color: var(--hub-accent) !important;
+  background: linear-gradient(158deg, rgba(168, 200, 255, 0.2), rgba(255, 255, 255, 0.03)) !important;
+  border-color: var(--s-accent) !important;
 }
 
 /* ---------- przyciski ---------- */
@@ -240,27 +267,29 @@ body .board-toolbar button,
 body .share-kind button,
 body .note-toolbar button,
 body .note-toolbar select {
-  border-radius: 13px !important;
+  border-radius: 999px !important;
   border: 1px solid var(--hub-line) !important;
-  transition: transform 0.16s var(--hub-ease), background 0.16s var(--hub-ease), box-shadow 0.16s var(--hub-ease);
+  transition: transform 0.18s var(--hub-ease), background 0.18s var(--hub-ease), box-shadow 0.18s var(--hub-ease), filter 0.18s var(--hub-ease);
 }
 
-body :is(.btn, .primary, .rjc-primary, .btn-primary) {
-  background: linear-gradient(140deg, #f0f4ff, #c4d1ff) !important;
+body :is(.btn, .primary, .rjc-primary, .btn-primary, .btn-live) {
+  background: linear-gradient(160deg, #f6faff, #cfdfff) !important;
   color: #0a1122 !important;
   font-weight: 650 !important;
-  box-shadow: 0 14px 32px -16px rgba(140, 165, 255, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+  box-shadow: inset 0 1px 0 #fff, 0 14px 30px -16px rgba(130, 165, 255, 0.9) !important;
 }
 
-body :is(.btn-ghost, .secondary, .btn-secondary, .account-link) {
-  background: rgba(255, 255, 255, 0.07) !important;
-  color: var(--hub-ink) !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+body :is(.btn-ghost, .secondary, .btn-secondary, .account-link, .btn-journey) {
+  background: rgba(255, 255, 255, 0.075) !important;
+  color: var(--s-ink) !important;
+  border-color: var(--g-edge) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24) !important;
+  backdrop-filter: blur(14px) saturate(150%);
 }
 
 body :is(.btn, .primary, .secondary, .rjc-primary):hover {
   transform: translateY(-1px);
-  filter: brightness(1.04);
+  filter: brightness(1.03);
 }
 
 body :is(.btn, .primary, .secondary, .rjc-primary):disabled {
@@ -270,59 +299,538 @@ body :is(.btn, .primary, .secondary, .rjc-primary):disabled {
 
 /* ---------- pola formularzy ---------- */
 body :is(input[type="text"], input[type="email"], input[type="password"], input[type="search"], input[type="number"], input[type="url"], input[type="tel"], textarea, select, .comm-input) {
-  background: rgba(6, 10, 22, 0.55) !important;
+  background: rgba(8, 13, 25, 0.42) !important;
   border: 1px solid var(--hub-line) !important;
-  border-radius: 13px !important;
-  color: var(--hub-ink) !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  border-radius: 14px !important;
+  color: var(--s-ink) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
 }
 
 html[data-theme="light"] body :is(input, textarea, select, .comm-input) {
-  background: rgba(255, 255, 255, 0.72) !important;
+  background: rgba(255, 255, 255, 0.7) !important;
 }
 
 body :is(input, textarea, select, .comm-input):focus,
 body :is(input, textarea, select, .comm-input):focus-visible {
   outline: none !important;
-  border-color: rgba(168, 200, 255, 0.75) !important;
-  box-shadow: 0 0 0 4px rgba(120, 145, 255, 0.16) !important;
+  border-color: rgba(168, 200, 255, 0.8) !important;
+  box-shadow: 0 0 0 4px rgba(120, 145, 255, 0.18) !important;
 }
 
 body ::placeholder {
-  color: rgba(162, 175, 198, 0.7) !important;
+  color: rgba(154, 169, 193, 0.72) !important;
 }
 
 /* ---------- odznaki, etykiety, pigułki ---------- */
-body :is(.pill, .chip, .kicker, .eyebrow, .badge, .rjc-kicker, .file-tag, .tool-status, .facts span, .tag) {
+body :is(.pill, .chip, .kicker, .eyebrow, .badge, .rjc-kicker, .file-tag, .tool-status, .facts span, .tag, .metric-badge, .live-badge) {
   border-radius: 999px !important;
   border: 1px solid var(--hub-line-soft) !important;
-  background: rgba(255, 255, 255, 0.06) !important;
-  color: var(--hub-accent) !important;
+  background: rgba(255, 255, 255, 0.07) !important;
+  color: var(--s-accent) !important;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 5px 10px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+/* ==========================================================================
+   STRONA GŁÓWNA
+   ========================================================================== */
+
+/* --- powiadomienia i statystyki nad nagłówkiem --- */
+body.rj-home .rj-home-stats {
+  border: 1px solid var(--g-edge) !important;
+  border-radius: 18px !important;
+  background: linear-gradient(158deg, var(--g-hi), var(--g-lo)) !important;
+  box-shadow: var(--g-shadow), var(--g-inset) !important;
+  backdrop-filter: var(--g-lens);
+  -webkit-backdrop-filter: var(--g-lens);
+}
+
+/* --- hero --- */
+body.rj-home .hero {
+  display: grid;
+  gap: clamp(24px, 3vw, 44px);
+  align-items: center;
+  padding: clamp(26px, 3.4vw, 48px) !important;
+  margin-top: clamp(20px, 2.6vw, 34px);
+  border: 1px solid var(--g-edge);
+  border-radius: 30px;
+  background:
+    radial-gradient(120% 120% at 0% 0%, rgba(168, 200, 255, 0.16), transparent 58%),
+    linear-gradient(158deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.02));
+  box-shadow: var(--g-shadow), var(--g-inset);
+  backdrop-filter: blur(28px) saturate(170%);
+  -webkit-backdrop-filter: blur(28px) saturate(170%);
+  overflow: hidden;
+}
+
+body.rj-home .hero .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--s-accent) !important;
+  font-size: 10px;
+  font-weight: 750;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24);
+}
+
+body.rj-home .hero .eyebrow-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--s-live) !important;
+  box-shadow: 0 0 0 4px rgba(159, 243, 209, 0.18);
+}
+
+body.rj-home .hero h1 {
+  margin: 16px 0 14px;
+  letter-spacing: -0.045em;
+  text-shadow: 0 2px 24px rgba(4, 8, 18, 0.4);
+}
+
+body.rj-home .hero h1 .accent {
+  background: linear-gradient(120deg, #ffffff, var(--s-accent) 45%, var(--s-accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+  -webkit-text-fill-color: transparent;
+}
+
+body.rj-home .hero-lead {
+  max-width: 52ch;
+  font-size: clamp(14px, 1.15vw, 16px);
+  line-height: 1.65;
+  color: rgba(233, 240, 255, 0.78) !important;
+}
+
+body.rj-home .hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+body.rj-home .hero-actions .btn {
+  min-height: 46px;
+  padding: 0 20px;
+  font-size: 13px;
+}
+
+/* karta profilu — najgrubszy kawałek szkła na stronie */
+body.rj-home .profile-card {
+  position: relative;
+  padding: 22px !important;
+  border-radius: 26px !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  background: linear-gradient(158deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.03)) !important;
+  box-shadow: 0 34px 70px -34px rgba(2, 6, 18, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.42), inset 0 -1px 0 rgba(255, 255, 255, 0.14) !important;
+  backdrop-filter: blur(26px) saturate(175%) !important;
+  -webkit-backdrop-filter: blur(26px) saturate(175%) !important;
+  overflow: hidden;
+}
+
+body.rj-home .profile-card .card-sheen {
+  opacity: 0.5;
+  background: radial-gradient(140% 80% at 10% -10%, rgba(255, 255, 255, 0.35), transparent 60%);
+}
+
+body.rj-home .profile-top .avatar-ring {
+  padding: 3px;
+  border-radius: 50%;
+  background: conic-gradient(from 210deg, #a8c8ff, #c1bcff, #9ff3d1, #a8c8ff);
+  box-shadow: 0 12px 30px -14px rgba(120, 160, 255, 0.9);
+}
+
+body.rj-home .profile-top .avatar {
+  display: block;
+  border-radius: 50%;
+  border: 2px solid rgba(8, 13, 25, 0.7);
+}
+
+body.rj-home .profile-name {
+  color: var(--s-ink) !important;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+body.rj-home :is(.profile-login, .profile-since) {
+  color: rgba(200, 214, 240, 0.62) !important;
+  font-size: 11px;
+}
+
+body.rj-home .profile-card .stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 18px 0 0;
+  padding: 0;
+}
+
+body.rj-home .profile-card .stat {
+  padding: 12px 10px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  text-align: center;
+}
+
+body.rj-home .profile-card .stat dt {
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(200, 214, 240, 0.72) !important;
+  font-weight: 700;
+}
+
+body.rj-home .profile-card .stat dd {
+  margin: 6px 0 0;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: #fff !important;
+  font-variant-numeric: tabular-nums;
+}
+
+body.rj-home .profile-card .profile-note {
+  margin: 12px 0 0;
+  font-size: 9px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  font-size: 10.5px;
-  padding: 5px 10px;
+  color: rgba(200, 214, 240, 0.5) !important;
 }
 
-/* ---------- karty projektów i siatki ---------- */
-body .project-card,
-body .project-card .card-inner {
-  background: linear-gradient(155deg, var(--hub-glass-hi), var(--hub-glass-lo)) !important;
-  border: 1px solid var(--hub-line) !important;
+/* --- pasek „w twoim zasięgu” --- */
+body.rj-home .universe-nav {
+  margin-top: 18px;
+  padding: 14px 16px !important;
+  border: 1px solid var(--g-edge);
+  border-radius: 22px;
+  background: linear-gradient(158deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02));
+  box-shadow: var(--g-shadow), var(--g-inset);
+  backdrop-filter: var(--g-lens);
+  -webkit-backdrop-filter: var(--g-lens);
+}
+
+body.rj-home .universe-label {
+  color: rgba(210, 222, 245, 0.7) !important;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  font-weight: 750;
+}
+
+body.rj-home .universe-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+body.rj-home .universe-links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 44px;
+  padding: 0 15px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  color: var(--s-ink) !important;
+  font-size: 12.5px;
+  font-weight: 650;
+  text-decoration: none !important;
+  transition: background 0.22s var(--hub-ease), transform 0.22s var(--hub-ease), border-color 0.22s var(--hub-ease);
+}
+
+body.rj-home .universe-links a:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.34);
+  transform: translateY(-1px);
+}
+
+body.rj-home .universe-icon {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 9px;
+  background: rgba(168, 200, 255, 0.16);
+  border: 1px solid rgba(168, 200, 255, 0.28);
+  color: var(--s-accent);
+}
+
+body.rj-home .universe-icon svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* --- konto / premium --- */
+body.rj-home .rj-account-mini-card,
+body.rj-home .rj-premium {
   border-radius: 26px !important;
-  box-shadow: var(--hub-shadow) !important;
-  backdrop-filter: var(--hub-lens);
-  -webkit-backdrop-filter: var(--hub-lens);
+  border: 1px solid var(--g-edge) !important;
+  background:
+    radial-gradient(120% 120% at 100% 0%, rgba(193, 188, 255, 0.2), transparent 58%),
+    linear-gradient(158deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.02)) !important;
+  box-shadow: var(--g-shadow), var(--g-inset) !important;
+  backdrop-filter: var(--g-lens);
+  -webkit-backdrop-filter: var(--g-lens);
 }
 
-/* ---------- stopka ---------- */
-body footer {
+body.rj-home .rj-account-mini-label {
+  color: var(--s-accent) !important;
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  font-weight: 800;
+}
+
+body.rj-home #rj-account-mini-title {
+  color: var(--s-ink) !important;
+  font-size: 20px;
+  letter-spacing: -0.03em;
+}
+
+body.rj-home #rj-account-mini-open,
+body.rj-home .rj-cta {
+  border-radius: 999px !important;
+  border: 1px solid rgba(255, 255, 255, 0.24) !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: var(--s-ink) !important;
+  font-weight: 650;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.26) !important;
+}
+
+/* --- nagłówki sekcji --- */
+body.rj-home :is(.showcase-kicker, .projects .showcase-kicker) {
+  color: var(--s-accent) !important;
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+body.rj-home .showcase-heading h2,
+body.rj-home .projects h2 {
+  margin: 6px 0 6px;
+}
+
+body.rj-home .showcase-heading p {
+  max-width: 60ch;
+  font-size: 13.5px;
+}
+
+body.rj-home .showcase-heading > a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 0 15px;
+  border-radius: 999px;
+  border: 1px solid var(--g-edge);
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--s-ink) !important;
+  font-size: 12px;
+  font-weight: 650;
+  text-decoration: none !important;
+  white-space: nowrap;
+}
+
+/* --- karty projektów --- */
+body.rj-home .project-card,
+body.rj-home .project-card .card-inner {
+  background: linear-gradient(158deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.02)) !important;
+  border: 1px solid rgba(255, 255, 255, 0.24) !important;
+  border-radius: 24px !important;
+  box-shadow: var(--g-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.3), inset 0 -1px 0 rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: var(--g-lens);
+  -webkit-backdrop-filter: var(--g-lens);
+  overflow: hidden;
+  transition: transform 0.28s var(--hub-ease), box-shadow 0.28s var(--hub-ease), border-color 0.28s var(--hub-ease);
+}
+
+body.rj-home .project-card:hover,
+body.rj-home .project-card:focus-within {
+  transform: translateY(-3px);
+  border-color: rgba(168, 200, 255, 0.45) !important;
+  box-shadow: 0 40px 80px -36px rgba(2, 6, 18, 1), 0 0 0 1px rgba(168, 200, 255, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.38) !important;
+}
+
+body.rj-home .project-card .card-inner {
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  backdrop-filter: none;
+}
+
+body.rj-home .project-card .card-top {
+  padding: 16px 18px 0;
+}
+
+body.rj-home .project-card .card-index {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: rgba(200, 214, 240, 0.5) !important;
+}
+
+body.rj-home .project-card .card-title,
+body.rj-home .showcase-item .card-title {
+  font-size: 19px;
+  letter-spacing: -0.03em;
+  margin: 8px 0 6px;
+}
+
+body.rj-home .project-card .card-title a,
+body.rj-home .showcase-item .card-title a {
+  color: var(--s-ink) !important;
+  text-decoration: none !important;
+}
+
+body.rj-home .project-card .card-title a:hover {
+  color: var(--s-accent) !important;
+}
+
+body.rj-home .project-card .card-desc {
+  color: rgba(203, 216, 240, 0.72) !important;
+  font-size: 12.5px;
+  line-height: 1.6;
+}
+
+body.rj-home .project-card .card-preview {
+  border-radius: 16px !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  background: rgba(6, 10, 20, 0.55) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+body.rj-home .project-card .card-preview-topbar {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+body.rj-home .project-card .card-preview-url {
+  color: rgba(200, 214, 240, 0.62) !important;
+}
+
+body.rj-home .project-card .card-preview-hint {
+  background: rgba(8, 13, 25, 0.74) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  border-radius: 999px !important;
+  color: rgba(233, 240, 255, 0.86) !important;
+}
+
+body.rj-home .project-card :is(.card-topics span, .card-topics a) {
+  border-radius: 999px !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: rgba(214, 226, 248, 0.8) !important;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+
+body.rj-home .project-card .card-meta {
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
+  color: rgba(190, 204, 230, 0.66) !important;
+  font-size: 10.5px;
+}
+
+body.rj-home .project-card .card-actions {
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
+  padding: 12px 18px 16px;
+}
+
+body.rj-home .project-card details.showcase-story > summary {
+  color: var(--s-accent) !important;
+  font-size: 11.5px;
+  font-weight: 650;
+}
+
+body.rj-home .project-card details.showcase-story .showcase-story-body {
+  color: rgba(200, 214, 240, 0.72) !important;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+/* --- siatka „pozostałe projekty” --- */
+body.rj-home .projects-toolbar {
+  border: 1px solid var(--g-edge);
+  border-radius: 18px;
+  background: linear-gradient(158deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.02));
+  box-shadow: var(--g-inset);
+  backdrop-filter: var(--g-lens);
+  -webkit-backdrop-filter: var(--g-lens);
+}
+
+body.rj-home .projects .project-card {
+  border-radius: 20px !important;
+}
+
+body.rj-home .projects .project-card .card-top {
+  padding: 14px 16px 16px;
+}
+
+body.rj-home .projects .project-card .card-title {
+  font-size: 16.5px;
+}
+
+body.rj-home .projects .project-card .card-desc {
+  font-size: 12px;
+}
+
+/* --- bloki zachęty (tablica, społeczność) --- */
+body.rj-home :is(.board-cta, .comm-cta) {
+  border: 1px solid var(--g-edge) !important;
+  border-radius: 24px !important;
+  background:
+    radial-gradient(120% 120% at 0% 0%, rgba(168, 200, 255, 0.18), transparent 60%),
+    linear-gradient(158deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.02)) !important;
+  box-shadow: var(--g-shadow), var(--g-inset) !important;
+  backdrop-filter: var(--g-lens);
+  -webkit-backdrop-filter: var(--g-lens);
+}
+
+body.rj-home .comm-cta {
+  background:
+    radial-gradient(120% 120% at 100% 0%, rgba(193, 188, 255, 0.2), transparent 60%),
+    linear-gradient(158deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.02)) !important;
+}
+
+body.rj-home .board-cta-icon,
+body.rj-home .comm-cta-icon {
+  border-radius: 16px !important;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: var(--s-accent) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.26);
+}
+
+/* --- stopka --- */
+body footer,
+body .site-footer {
   border-top: 1px solid var(--hub-line-soft) !important;
-  color: var(--hub-dim) !important;
+  color: rgba(160, 174, 200, 0.75) !important;
   background: transparent !important;
 }
 
-/* ---------- pływający powrót do RejHub ---------- */
+body footer a,
+body .site-footer a {
+  color: rgba(200, 214, 240, 0.86) !important;
+}
+
+/* --- pływający powrót do RejHub --- */
 .rjhub-pill {
   position: fixed;
   left: 16px;
@@ -333,18 +841,23 @@ body footer {
   gap: 9px;
   padding: 9px 15px 9px 10px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: linear-gradient(150deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.05));
-  box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.3);
-  backdrop-filter: var(--hub-lens);
-  -webkit-backdrop-filter: var(--hub-lens);
-  color: var(--hub-ink) !important;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: linear-gradient(158deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.05));
+  box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.34);
+  backdrop-filter: var(--g-lens);
+  -webkit-backdrop-filter: var(--g-lens);
+  color: var(--s-ink) !important;
   font-size: 12.5px;
   font-weight: 600;
   text-decoration: none !important;
   transition: transform 0.18s var(--hub-ease), background 0.18s var(--hub-ease);
 }
-.rjhub-pill:hover { transform: translateY(-1px); background: linear-gradient(150deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.08)); }
+
+.rjhub-pill:hover {
+  transform: translateY(-1px);
+  background: linear-gradient(158deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.09));
+}
+
 .rjhub-pill .rjhub-pill-mark {
   width: 24px;
   height: 24px;
@@ -354,23 +867,25 @@ body footer {
   font-size: 13px;
   font-weight: 800;
   color: #080b16;
-  background: linear-gradient(140deg, #a9b9ff, #5ce1d0);
+  background: linear-gradient(140deg, #cfe1ff, #a8c8ff);
+  box-shadow: inset 0 1px 0 #fff;
 }
-.rjhub-pill .rjhub-pill-arrow { opacity: 0.6; font-weight: 500; }
+
+.rjhub-pill .rjhub-pill-arrow {
+  opacity: 0.6;
+  font-weight: 500;
+}
 
 @media (max-width: 720px) {
-  .rjhub-pill { left: 12px; bottom: 12px; padding: 8px 12px 8px 8px; font-size: 12px; }
+  .rjhub-pill {
+    left: 12px;
+    bottom: 12px;
+    padding: 8px 12px 8px 8px;
+    font-size: 12px;
+  }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  body::before { animation: none; }
-  .rjhub-pill { transition: none; }
-}
-
-/* ==========================================================================
-   Ujednolicenie akcentów do palety studia (/testy):
-   #a8c8ff (błękit), #c1bcff (liliowy), #9ff3d1 tylko jako kropka statusu.
-   ========================================================================== */
+/* ---------- akcenty i drobne elementy ---------- */
 :root,
 body,
 body[class] {
@@ -390,232 +905,681 @@ body :is(h1 em, h1 .accent, .hero em, .kicker, .eyebrow, .rjc-kicker, .brand-mar
   color: #c1bcff !important;
 }
 
+/* gradientowy akcent w nagłówku hero nie ma sensu w trybie jasnym */
+html[data-theme="light"] body.rj-home .hero h1 .accent {
+  background: linear-gradient(120deg, #24406e, #4a6fae);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
 body :is(.brand-mark, .drop-icon, .success-icon) {
-  background: linear-gradient(140deg, #a9b9ff, #5ce1d0) !important;
+  background: linear-gradient(140deg, #cfe1ff, #a8c8ff) !important;
   color: #080b16 !important;
-  box-shadow: 0 8px 22px -10px rgba(110, 150, 255, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+  box-shadow: 0 8px 22px -10px rgba(120, 160, 255, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
 }
 
 body :is(.eyebrow span, .live-dot, .status-dot) {
   background: #9ff3d1 !important;
-  box-shadow: 0 0 12px rgba(131, 242, 206, 0.8) !important;
 }
 
-body :is(.btn-live, .btn-feedback, .primary span, .file-actions button, .text-button) {
-  color: #a8c8ff !important;
+/* ---------- dostępność ---------- */
+body :is(a, button, summary, input, textarea, select):focus-visible {
+  outline: 2px solid rgba(168, 200, 255, 0.85);
+  outline-offset: 3px;
 }
 
-body .btn-live,
-body .btn-feedback {
-  background: rgba(168, 200, 255, 0.12) !important;
-  border: 1px solid rgba(168, 200, 255, 0.3) !important;
-  box-shadow: none !important;
+@media (prefers-reduced-motion: reduce) {
+  body::before {
+    animation: none;
+  }
+  body.rj-home .project-card,
+  .rjhub-pill {
+    transition: none;
+  }
+  html {
+    scroll-behavior: auto;
+  }
 }
 
-body h1 {
-  letter-spacing: -0.045em;
-}
-
-body :is(.hero h1, .rjc-hero h1, .comm-hero h1) em {
-  background: linear-gradient(100deg, #bcc8ff 5%, #7ef0dc 52%, #eab7ff 96%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent !important;
-}
-
-/* pasek reklam bocznych też w szkle */
-body :is(.side-ads, .ads-rail, .ad-card, .rj-mobile-ads, .mobile-ads) {
-  border-radius: 20px;
-}
-
-body .side-ads :is(a, .ad-slot, aside),
-body :is(.ad-card, .promo-card) {
-  background: linear-gradient(150deg, var(--hub-glass-hi), var(--hub-glass-lo)) !important;
-  border: 1px solid var(--hub-line-soft) !important;
-  border-radius: 18px !important;
-  box-shadow: var(--hub-shadow) !important;
-  backdrop-filter: var(--hub-lens);
-  -webkit-backdrop-filter: var(--hub-lens);
-  color: var(--hub-ink) !important;
-}
-
-/* sekcje i nagłówki sekcji bez starych teł */
-body :is(.section-head, .section-title, .block-head, .rjc-section-label) {
-  border-color: var(--hub-line-soft) !important;
-  color: var(--hub-ink) !important;
-}
-
-/* tabele, listy, separatory */
-body :is(hr, .divider, .sep) {
-  border-color: var(--hub-line-soft) !important;
-}
-
-body :is(table, .table) {
-  border-color: var(--hub-line) !important;
-}
-
-body :is(th, td) {
-  border-color: var(--hub-line-soft) !important;
-}
-
-/* aktywne stany dawnych zielonych/liliowych akcentów */
-body :is([aria-pressed="true"], [aria-selected="true"], .is-active, .is-current) {
-  background: linear-gradient(140deg, #eef3ff, #c6d2ff) !important;
-  border-color: rgba(255, 255, 255, 0.35) !important;
-  color: #0a1122 !important;
-}
-
-body .choice input:checked + span {
-  border-color: rgba(168, 200, 255, 0.6) !important;
-  background: rgba(168, 200, 255, 0.14) !important;
-  color: var(--hub-ink) !important;
-}
-
-body progress {
-  background: rgba(255, 255, 255, 0.08) !important;
-  border-radius: 999px;
-}
-body progress::-webkit-progress-bar { background: rgba(255, 255, 255, 0.08) !important; }
-body progress::-webkit-progress-value { background: linear-gradient(90deg, #a8c8ff, #c1bcff) !important; }
-body progress::-moz-progress-bar { background: linear-gradient(90deg, #a8c8ff, #c1bcff) !important; }
-
-body :is(a, button, input, textarea, select, [tabindex]):focus-visible {
-  outline: 2px solid rgba(168, 200, 255, 0.9) !important;
-  outline-offset: 3px !important;
-}
-
-/* pasek „Zgłoś błąd / pomysł” to element serwisu — zostaje, ale w szkle */
-body :is(.rj-feedback, .feedback-dock, .bug-pill) {
-  backdrop-filter: var(--hub-lens);
-  -webkit-backdrop-filter: var(--hub-lens);
+/* Telefony: mniej rozmycia, żeby scroll został płynny. */
+@media (max-width: 720px) {
+  :root {
+    --g-lens: blur(16px) saturate(150%);
+  }
+  body.rj-home .hero {
+    padding: 22px !important;
+    border-radius: 24px;
+  }
+  body.rj-home .profile-card {
+    border-radius: 22px !important;
+  }
 }
 
 /* ==========================================================================
-   Strona główna (dawny układ, nowe szkło)
+   WARSTWA 2 — powierzchnie, które stare arkusze trzymały kryjące.
+   Wszystko dostaje tę samą receptę szkła, żeby tapeta prześwitywała.
    ========================================================================== */
-body.rj-home {
-  /* na stronie głównej szkło jest ciemniejsze i bardziej „mokre” —
-     mniej mlecznej bieli, więcej granatu i wewnętrznego odbicia */
-  --hub-glass-hi: rgba(255, 255, 255, 0.075);
-  --hub-glass-lo: rgba(255, 255, 255, 0.014);
-  --hub-shadow: 0 26px 60px -34px rgba(0, 0, 0, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+
+/* layouty i puste „opakowania” nie malują już własnego tła */
+body :is(.comm-layout, .comm-primary, .comm-chat-head, .comm-chat-list,
+  .comm-chat-note, .comm-chat-empty, .rj-premium__inner, .board-cta-inner,
+  .comm-cta-inner, .origins-note) {
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
-body.rj-home .backdrop { display: none !important; }
-
-body.rj-home :is(.hero-copy h1, .rj-club h2, .origins h2, .projects h2) {
-  color: var(--hub-ink);
+body .comm-chat-head {
+  border-bottom: 1px solid var(--hub-line-soft) !important;
 }
 
-body.rj-home :is(.hero-copy h1, .rj-club h2) :is(.accent, em) {
-  background: linear-gradient(100deg, #bcc8ff 5%, #7ef0dc 52%, #eab7ff 96%);
+body :is(.comm-chat-note, .origins-note) {
+  color: rgba(190, 204, 230, 0.66) !important;
+  font-size: 11.5px;
+}
+
+body .comm-chat-empty {
+  border: 1px solid var(--hub-line) !important;
+  border-radius: 20px !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  box-shadow: var(--g-inset);
+  padding: 22px !important;
+}
+
+/* pełnoekranowe dekoracje tła — teraz to tapeta */
+body :is(.backdrop, .studio-backdrop) {
+  background: transparent !important;
+  opacity: 0 !important;
+}
+
+/* panele boczne reklam: kontener przezroczysty, kartki ze szkła */
+body .rj-side-ads {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+body .rj-side-ads-title,
+body .rj-side-ads-hint {
+  color: rgba(190, 204, 230, 0.55) !important;
+  font-size: 9.5px !important;
+  letter-spacing: 0.12em;
+}
+
+body .rj-side-ad {
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 18px !important;
+  background:
+    linear-gradient(158deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.025)) !important;
+  box-shadow: 0 20px 44px -26px rgba(2, 6, 18, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.28) !important;
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  color: var(--s-ink) !important;
+  transition: transform 0.22s var(--hub-ease), border-color 0.22s var(--hub-ease), background 0.22s var(--hub-ease);
+}
+
+body .rj-side-ad:hover {
+  transform: translateY(-2px);
+  border-color: rgba(168, 200, 255, 0.5) !important;
+}
+
+body .rj-side-ad--offer {
+  border-style: dashed !important;
+  border-color: rgba(168, 200, 255, 0.34) !important;
+}
+
+body .rj-side-ad--chat {
+  background: linear-gradient(158deg, rgba(180, 176, 255, 0.16), rgba(255, 255, 255, 0.02)) !important;
+}
+
+body .rj-side-ad--file {
+  background: linear-gradient(158deg, rgba(159, 243, 209, 0.14), rgba(255, 255, 255, 0.02)) !important;
+}
+
+body .rj-side-ad-icon {
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 12px !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24);
+}
+
+body .rj-side-ad-tag {
+  border-radius: 999px !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  background: rgba(255, 255, 255, 0.07) !important;
+  color: rgba(214, 226, 248, 0.72) !important;
+}
+
+/* --- RejChat: karty wokół czatu --- */
+body :is(.comm-online-card, .rejchat-rules, .rejchat-info-tip, .comm-auth-inner) {
+  background: linear-gradient(158deg, var(--g-hi), var(--g-lo)) !important;
+  border: 1px solid var(--g-edge) !important;
+  border-radius: 20px !important;
+  box-shadow: var(--g-shadow), var(--g-inset) !important;
+  backdrop-filter: var(--g-lens);
+  -webkit-backdrop-filter: var(--g-lens);
+}
+
+body .rejchat-rules > summary {
+  color: var(--s-ink) !important;
+  font-weight: 650;
+}
+
+/* --- RejClass: notatki i karty lekcji --- */
+body :is(.rjc-note-hook, .rjc-note-definitions, .rjc-note-exam, .rjc-note-everyday,
+  .rjc-note-trap, .rjc-bio-remember, .rjc-definition, .rjc-bio-point, .comm-composer) {
+  background: linear-gradient(158deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.02)) !important;
+  border: 1px solid var(--hub-line) !important;
+  border-radius: 18px !important;
+  box-shadow: var(--g-inset) !important;
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+}
+
+body .rjc-note-hook {
+  border-left: 2px solid rgba(168, 200, 255, 0.6) !important;
+}
+
+/* --- RejTools / Tablica / Widżety: paski narzędzi --- */
+body :is(.toolbar, .projects-toolbar, .board-toolbar) {
+  background: linear-gradient(158deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02)) !important;
+  border: 1px solid var(--g-edge) !important;
+  border-radius: 18px !important;
+  box-shadow: var(--g-inset) !important;
+  backdrop-filter: var(--g-lens);
+  -webkit-backdrop-filter: var(--g-lens);
+}
+
+/* --- Usługi: okno podglądu --- */
+body :is(.services-window, .services-window-top) {
+  background: linear-gradient(158deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.03)) !important;
+  border: 1px solid var(--g-edge) !important;
+  box-shadow: var(--g-shadow), var(--g-inset) !important;
+  backdrop-filter: var(--g-lens);
+  -webkit-backdrop-filter: var(--g-lens);
+}
+
+/* --- podglądy stron w kartach projektów: głębokie, ale wciąż szklane --- */
+body.rj-home .project-card .card-preview {
+  background:
+    radial-gradient(120% 100% at 50% 0%, rgba(168, 200, 255, 0.14), transparent 62%),
+    linear-gradient(158deg, rgba(12, 20, 36, 0.66), rgba(6, 10, 20, 0.74)) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+/* --- pasek statusu loadera na szkle --- */
+body #rj-page-loader {
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(168, 200, 255, 0.1), transparent 60%),
+    rgba(6, 10, 20, 0.9) !important;
+}
+
+html[data-theme="light"] body #rj-page-loader {
+  background: rgba(238, 242, 250, 0.94) !important;
+}
+
+/* --- RejClass: etapy nauki jako segmentowana pigułka (jak zakładki studia) --- */
+body .rjc-bio-modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px;
+  border: 1px solid var(--g-edge);
+  border-radius: 22px;
+  background: linear-gradient(158deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02));
+  box-shadow: var(--g-inset);
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+}
+
+body .rjc-bio-modes button {
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  border-radius: 16px !important;
+  color: rgba(214, 226, 248, 0.72) !important;
+  box-shadow: none !important;
+  transition: background 0.22s var(--hub-ease), color 0.22s var(--hub-ease), border-color 0.22s var(--hub-ease);
+}
+
+body .rjc-bio-modes button:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: var(--s-ink) !important;
+}
+
+body .rjc-bio-modes button[aria-pressed="true"] {
+  background: linear-gradient(150deg, #f6faff, #cfdfff) !important;
+  border-color: rgba(255, 255, 255, 0.7) !important;
+  color: #0c1526 !important;
+  box-shadow: inset 0 1px 0 #fff, 0 12px 26px -16px rgba(0, 0, 0, 0.9) !important;
+}
+
+body .rjc-bio-modes button[aria-pressed="true"] :is(b, small, .rjc-mode-number) {
+  color: #0c1526 !important;
+}
+
+body .rjc-bio-modes button[aria-pressed="true"] small {
+  opacity: 0.66;
+}
+
+body .rjc-mode-number {
+  color: rgba(168, 200, 255, 0.8) !important;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+}
+
+/* --- desktopowa mini-karta konta: gęsta, ale czytelna --- */
+@media (min-width: 1200px) {
+  body.rj-home .rj-club.rj-club--compact { width: 196px; }
+  body.rj-home .rj-account-mini { border-radius: 20px; }
+  body.rj-home .rj-account-mini-card {
+    border-radius: 20px !important;
+    border: 1px solid var(--g-edge) !important;
+    background: linear-gradient(158deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.03)) !important;
+    box-shadow: var(--g-shadow), var(--g-inset) !important;
+    backdrop-filter: var(--g-lens);
+    -webkit-backdrop-filter: var(--g-lens);
+  }
+  body.rj-home .rj-account-mini-card .rj-premium__inner { padding: 15px 13px; gap: 8px; }
+  body.rj-home .rj-account-mini-icon {
+    width: 34px;
+    height: 34px;
+    border: 1px solid rgba(168, 200, 255, 0.32);
+    border-radius: 11px;
+    background: rgba(168, 200, 255, 0.14);
+    color: var(--s-accent) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  }
+  body.rj-home .rj-account-mini-label {
+    color: var(--s-accent) !important;
+    font-size: 8.5px;
+    letter-spacing: 0.12em;
+  }
+  body.rj-home .rj-account-mini-card strong {
+    color: var(--s-ink) !important;
+    font-size: 14px !important;
+    line-height: 1.25;
+    letter-spacing: -0.015em;
+  }
+  body.rj-home .rj-account-mini-card p:not(.rj-account-mini-label) {
+    color: rgba(203, 216, 240, 0.72) !important;
+    font-size: 10.5px;
+    line-height: 1.45;
+  }
+  body.rj-home .rj-account-mini-card button {
+    min-height: 34px;
+    border: 1px solid rgba(255, 255, 255, 0.5) !important;
+    border-radius: 999px !important;
+    background: linear-gradient(160deg, #f6faff, #cfdfff) !important;
+    color: #0a1122 !important;
+    font: 700 10.5px/1.2 "Inter", system-ui, sans-serif !important;
+    box-shadow: inset 0 1px 0 #fff, 0 10px 22px -14px rgba(0, 0, 0, 0.9);
+  }
+  body.rj-home .rj-account-mini-card a {
+    color: var(--s-accent) !important;
+    font-size: 10.5px;
+  }
+  body.rj-home .rj-club--compact .rj-account-details {
+    background: linear-gradient(158deg, rgba(22, 31, 50, 0.94), rgba(10, 16, 29, 0.96)) !important;
+    border: 1px solid var(--g-edge);
+    box-shadow: var(--g-shadow), var(--g-inset);
+    backdrop-filter: var(--g-lens);
+    -webkit-backdrop-filter: var(--g-lens);
+    color: var(--s-ink);
+  }
+  body.rj-home .rj-club--compact .rj-account-details-bar {
+    background: transparent !important;
+    border-bottom: 1px solid var(--hub-line-soft);
+  }
+  body.rj-home .rj-account-details-bar button {
+    border: 1px solid var(--hub-line) !important;
+    border-radius: 999px !important;
+    background: rgba(255, 255, 255, 0.08) !important;
+    color: var(--s-ink) !important;
+    font: 600 12px "Inter", system-ui, sans-serif !important;
+  }
+}
+
+/* --- spójne pigułki filtrów (RejTools, projekty, tablica) --- */
+body :is(.comm-filters button, .tool-filters button, .board-filters button, .filter-chip,
+  .projects-toolbar button, .toolbar button, .board-toolbar button, .rjc-filters button) {
+  border-radius: 999px !important;
+  border: 1px solid var(--hub-line) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: rgba(214, 226, 248, 0.82) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16) !important;
+  font-weight: 600;
+  transition: background 0.22s var(--hub-ease), color 0.22s var(--hub-ease), border-color 0.22s var(--hub-ease);
+}
+
+body :is(.comm-filters button, .tool-filters button, .board-filters button, .filter-chip,
+  .projects-toolbar button, .toolbar button, .board-toolbar button, .rjc-filters button):hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: var(--s-ink) !important;
+}
+
+body :is(.comm-filters button[aria-pressed="true"], .tool-filters button[aria-pressed="true"],
+  .board-filters button[aria-pressed="true"], .filter-chip[aria-pressed="true"],
+  .projects-toolbar button[aria-pressed="true"], .toolbar button[aria-pressed="true"],
+  .board-toolbar button[aria-pressed="true"], .rjc-filters button[aria-pressed="true"],
+  .filter-chip.is-active, .tool-filter.is-active) {
+  background: linear-gradient(160deg, #f6faff, #cfdfff) !important;
+  border-color: rgba(255, 255, 255, 0.7) !important;
+  color: #0a1122 !important;
+  box-shadow: inset 0 1px 0 #fff, 0 10px 22px -14px rgba(0, 0, 0, 0.9) !important;
+}
+
+/* kolorowe akcenty starych sekcji -> paleta studia */
+body :is(.tool-filters, .comm-filters, .board-filters) {
+  background: transparent !important;
+}
+
+body .tools-notice,
+body .tool-status {
+  color: rgba(200, 214, 240, 0.72) !important;
+}
+
+/* podgląd w usługach: przyciski w oknie bez starego zielonego gradientu */
+body .services-window .btn,
+body .services-window button {
+  border-radius: 999px !important;
+}
+
+/* ==========================================================================
+   TRYB JASNY — jasne szkło na tej samej tapecie (mleczne, nie szare).
+   ========================================================================== */
+html[data-theme="light"] {
+  --g-hi: rgba(255, 255, 255, 0.82);
+  --g-lo: rgba(255, 255, 255, 0.52);
+  --g-edge: rgba(255, 255, 255, 0.96);
+  --g-lens: blur(24px) saturate(150%);
+  --g-shadow: 0 26px 60px -34px rgba(30, 48, 82, 0.42);
+  --g-inset: inset 0 1px 0 #ffffff, inset 0 -1px 0 rgba(20, 40, 74, 0.05);
+  --hub-line: rgba(20, 40, 74, 0.14);
+  --hub-line-soft: rgba(20, 40, 74, 0.08);
+}
+
+html[data-theme="light"] body :is(.site-header, .topbar, .rj-shared-header) {
+  background: linear-gradient(158deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.6)) !important;
+  border-color: #ffffff !important;
+}
+
+html[data-theme="light"] body .site-nav,
+html[data-theme="light"] body .topbar nav {
+  background: rgba(255, 255, 255, 0.62) !important;
+  border-color: rgba(20, 40, 74, 0.1);
+}
+
+html[data-theme="light"] body :is(.site-nav a, .topbar nav a, .nav-more > summary):hover {
+  background: rgba(20, 40, 74, 0.07) !important;
+  color: #16223a !important;
+}
+
+html[data-theme="light"] body :is(.site-nav a[aria-current="page"], .site-nav a.is-active) {
+  background: linear-gradient(150deg, #1b3153, #2c4a78) !important;
+  color: #f6f9ff !important;
+}
+
+html[data-theme="light"] body.rj-home .hero {
+  background:
+    radial-gradient(120% 120% at 0% 0%, rgba(168, 200, 255, 0.3), transparent 58%),
+    linear-gradient(158deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.52));
+  border-color: #ffffff;
+}
+
+html[data-theme="light"] body.rj-home .hero h1 {
+  color: #16223a;
+  text-shadow: none;
+}
+
+html[data-theme="light"] body.rj-home .hero-lead {
+  color: #43536e !important;
+}
+
+html[data-theme="light"] body.rj-home .profile-card {
+  background: linear-gradient(158deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.56)) !important;
+  border-color: #ffffff !important;
+}
+
+html[data-theme="light"] body.rj-home .profile-card .stat {
+  background: rgba(255, 255, 255, 0.66);
+  border-color: rgba(20, 40, 74, 0.1);
+  box-shadow: inset 0 1px 0 #fff;
+}
+
+html[data-theme="light"] body.rj-home .profile-card .stat dd { color: #16223a !important; }
+html[data-theme="light"] body.rj-home .profile-card .stat dt,
+html[data-theme="light"] body.rj-home :is(.profile-login, .profile-since),
+html[data-theme="light"] body.rj-home .profile-card .profile-note { color: #5b6883 !important; }
+
+html[data-theme="light"] body.rj-home :is(.universe-nav, .board-cta, .comm-cta, .rj-account-mini-card, .rj-premium) {
+  background: linear-gradient(158deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.54)) !important;
+  border-color: #ffffff !important;
+}
+
+html[data-theme="light"] body.rj-home .universe-links a {
+  background: rgba(255, 255, 255, 0.62);
+  border-color: rgba(20, 40, 74, 0.1);
+  color: #16223a !important;
+}
+
+html[data-theme="light"] body.rj-home .universe-links a:hover {
+  background: #ffffff;
+  border-color: rgba(20, 40, 74, 0.2);
+}
+
+html[data-theme="light"] body.rj-home .universe-icon {
+  background: rgba(168, 200, 255, 0.42);
+  border-color: rgba(90, 130, 200, 0.3);
+  color: #24406e;
+}
+
+html[data-theme="light"] body.rj-home :is(.project-card, .project-card .card-inner) {
+  background: linear-gradient(158deg, rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.56)) !important;
+  border-color: #ffffff !important;
+}
+
+html[data-theme="light"] body.rj-home .project-card .card-desc,
+html[data-theme="light"] body.rj-home .project-card .card-meta,
+html[data-theme="light"] body.rj-home .project-card .card-preview-url {
+  color: #4b5972 !important;
+}
+
+html[data-theme="light"] body.rj-home .project-card .card-title a,
+html[data-theme="light"] body.rj-home .showcase-item .card-title a { color: #16223a !important; }
+
+html[data-theme="light"] body.rj-home .project-card :is(.card-topics span, .card-topics a) {
+  background: rgba(20, 40, 74, 0.05);
+  border-color: rgba(20, 40, 74, 0.1);
+  color: #40506b !important;
+}
+
+html[data-theme="light"] body.rj-home .project-card .card-preview {
+  background: linear-gradient(158deg, rgba(240, 245, 253, 0.9), rgba(226, 235, 248, 0.92)) !important;
+  border-color: rgba(20, 40, 74, 0.08) !important;
+}
+
+html[data-theme="light"] body.rj-home .project-card .card-preview-hint {
+  background: rgba(255, 255, 255, 0.88) !important;
+  border-color: rgba(20, 40, 74, 0.12) !important;
+  color: #24324c !important;
+}
+
+html[data-theme="light"] body.rj-home :is(.project-card, .projects-toolbar) {
+  box-shadow: 0 24px 50px -32px rgba(30, 48, 82, 0.4), inset 0 1px 0 #fff !important;
+}
+
+html[data-theme="light"] body .rj-side-ad {
+  background: linear-gradient(158deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.58)) !important;
+  border-color: #ffffff !important;
+  color: #16223a !important;
+}
+
+html[data-theme="light"] body .rj-side-ad-icon {
+  background: rgba(168, 200, 255, 0.4) !important;
+  border-color: rgba(90, 130, 200, 0.28) !important;
+  color: #24406e !important;
+}
+
+html[data-theme="light"] body .rj-side-ads-title,
+html[data-theme="light"] body .rj-side-ads-hint {
+  color: #6b7893 !important;
+}
+
+html[data-theme="light"] body :is(.comm-online-card, .rejchat-rules, .rejchat-info-tip, .comm-composer) {
+  background: linear-gradient(158deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.56)) !important;
+  border-color: #ffffff !important;
+}
+
+html[data-theme="light"] body :is(.comm-chat-note, .origins-note) { color: #5b6883 !important; }
+
+html[data-theme="light"] body .comm-chat-empty {
+  background: rgba(255, 255, 255, 0.6) !important;
+  border-color: rgba(20, 40, 74, 0.1) !important;
+}
+
+html[data-theme="light"] :is(.rjhub-pill) {
+  background: linear-gradient(158deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.66));
+  border-color: #ffffff;
+  color: #16223a !important;
+}
+
+html[data-theme="light"] body :is(.btn-ghost, .secondary, .btn-secondary, .account-link, .btn-journey) {
+  background: rgba(255, 255, 255, 0.68) !important;
+  color: #16223a !important;
+  border-color: rgba(20, 40, 74, 0.12) !important;
+}
+
+html[data-theme="light"] body :is(.pill, .chip, .kicker, .eyebrow, .badge) {
+  background: rgba(255, 255, 255, 0.7) !important;
+  border-color: rgba(20, 40, 74, 0.1) !important;
+  color: #31527f !important;
+}
+
+html[data-theme="light"] body .rjc-bio-modes button[aria-pressed="true"] {
+  background: linear-gradient(150deg, #1b3153, #2c4a78) !important;
+  color: #f4f8ff !important;
+}
+
+html[data-theme="light"] body .rjc-bio-modes button[aria-pressed="true"] :is(b, small, .rjc-mode-number) {
+  color: #f4f8ff !important;
+}
+
+html[data-theme="light"] body footer,
+html[data-theme="light"] body .site-footer { color: #5b6883 !important; }
+html[data-theme="light"] body footer a,
+html[data-theme="light"] body .site-footer a { color: #24324c !important; }
+
+/* --- tryb jasny: czytelny tekst w kartach reklam i koncie --- */
+html[data-theme="light"] body .rj-side-ad {
+  background: linear-gradient(158deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.34)) !important;
+  border-color: rgba(255, 255, 255, 0.95) !important;
+  box-shadow: 0 18px 40px -28px rgba(30, 48, 82, 0.5), inset 0 1px 0 #fff !important;
+}
+
+html[data-theme="light"] body .rj-side-ad :is(strong, p, span, b, div) {
+  color: #23304a !important;
+}
+
+html[data-theme="light"] body .rj-side-ad b { color: #2b5b6f !important; }
+html[data-theme="light"] body .rj-side-ad .rj-side-ad-tag { color: #5b6883 !important; }
+html[data-theme="light"] body .rj-side-ad .rj-side-ad-icon { color: #31527f !important; }
+
+html[data-theme="light"] body .rj-side-ad--chat {
+  background: linear-gradient(158deg, rgba(232, 231, 255, 0.8), rgba(255, 255, 255, 0.36)) !important;
+}
+html[data-theme="light"] body .rj-side-ad--file {
+  background: linear-gradient(158deg, rgba(224, 250, 240, 0.8), rgba(255, 255, 255, 0.36)) !important;
+}
+
+html[data-theme="light"] body .rj-account-mini-card :is(strong, p:not(.rj-account-mini-label)) {
+  color: #1d2a44 !important;
+}
+html[data-theme="light"] body .rj-account-mini-card :is(.rj-premium__glow, .rj-premium__sheen) {
+  opacity: 0.35;
+}
+
+/* mniej białej zasłony — tapeta ma być widoczna także w trybie jasnym */
+html[data-theme="light"] body::after {
+  background:
+    radial-gradient(120% 90% at 50% -10%, rgba(255, 255, 255, 0.34), transparent 68%),
+    linear-gradient(180deg, rgba(238, 242, 250, 0.6), rgba(238, 242, 250, 0.7) 46%, rgba(232, 238, 249, 0.82));
+}
+
+html[data-theme="light"] body.rj-home .hero {
+  background:
+    radial-gradient(120% 120% at 0% 0%, rgba(168, 200, 255, 0.26), transparent 58%),
+    linear-gradient(158deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.34)) !important;
+}
+
+/* --- tryb jasny: mini-konto po lewej i pasek statystyk --- */
+html[data-theme="light"] body.rj-home .rj-account-mini-card {
+  background: linear-gradient(158deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.55)) !important;
+  border-color: #ffffff !important;
+}
+
+html[data-theme="light"] body.rj-home .rj-account-mini-label {
+  color: #31527f !important;
+}
+
+html[data-theme="light"] body.rj-home .rj-account-mini-card a {
+  color: #2b4a78 !important;
+}
+
+html[data-theme="light"] body.rj-home .rj-account-mini-card button {
+  border: 1px solid rgba(20, 40, 74, 0.12) !important;
+  background: linear-gradient(150deg, #1b3153, #2c4a78) !important;
+  color: #f4f8ff !important;
+}
+
+html[data-theme="light"] body.rj-home .rj-home-stats {
+  background: linear-gradient(158deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.5)) !important;
+  border-color: #ffffff !important;
+}
+
+html[data-theme="light"] body.rj-home .rj-home-stats :is(span, p, strong, b, small) {
+  color: #2c3d5c !important;
+}
+
+html[data-theme="light"] body.rj-home .universe-label {
+  color: #4a5b78 !important;
+}
+
+/* avatar ma zawsze czytelne tło, zanim zdjęcie się wczyta */
+body.rj-home .profile-card .avatar {
+  background: linear-gradient(150deg, rgba(168, 200, 255, 0.5), rgba(193, 188, 255, 0.45));
+  color: transparent;
+  font-size: 0;
+  overflow: hidden;
+}
+
+/* jaśniejsze akcenty dla trybu jasnego (tekst na mlecznym szkle) */
+html[data-theme="light"] {
+  --s-accent: #3f74c9;
+  --s-accent-2: #6c5fd0;
+  --hub-accent: #3f74c9;
+}
+
+html[data-theme="light"] body :is(.hero .eyebrow, .showcase-kicker, .projects .showcase-kicker, .rjc-kicker, .section-kicker) {
+  color: #3f74c9 !important;
+}
+
+html[data-theme="light"] body :is(.eyebrow-dot, .live-dot, .status-dot) {
+  background: #12a37c !important;
+  box-shadow: 0 0 0 4px rgba(18, 163, 124, 0.16) !important;
+}
+
+html[data-theme="light"] body :is(.hero h1 .accent) {
+  background: linear-gradient(120deg, #1d3b66, #3f74c9 50%, #6c5fd0);
   -webkit-background-clip: text;
   background-clip: text;
-  color: transparent !important;
+  -webkit-text-fill-color: transparent;
 }
 
-body.rj-home .hero-lead { color: var(--hub-muted) !important; }
-
-/* karta profilu, statystyki, kafel „wszechświata” */
-body.rj-home :is(.profile-card, .stat, .metric-badge, .universe-links a, .showcase-item, .board-cta-inner, .projects-toolbar, .filter-pill, .board-skeleton) {
-  border-radius: 20px !important;
-}
-
-body.rj-home .profile-card {
-  background: linear-gradient(155deg, var(--hub-glass-hi), var(--hub-glass-lo)) !important;
-  border: 1px solid var(--hub-line) !important;
-  box-shadow: var(--hub-shadow) !important;
-  backdrop-filter: var(--hub-lens);
-  -webkit-backdrop-filter: var(--hub-lens);
-}
-
-body.rj-home .stat,
-body.rj-home .metric-badge {
-  background: rgba(255, 255, 255, 0.055) !important;
-  border: 1px solid var(--hub-line-soft) !important;
-  color: var(--hub-ink) !important;
-  backdrop-filter: blur(12px) saturate(130%);
-  -webkit-backdrop-filter: blur(12px) saturate(130%);
-}
-
-body.rj-home .universe-links a {
-  background: linear-gradient(150deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.04)) !important;
-  border: 1px solid var(--hub-line) !important;
-  box-shadow: 0 18px 40px -26px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.22) !important;
-  backdrop-filter: var(--hub-lens);
-  -webkit-backdrop-filter: var(--hub-lens);
-  color: var(--hub-ink) !important;
-  transition: transform 0.2s var(--hub-ease), border-color 0.2s var(--hub-ease);
-}
-body.rj-home .universe-links a:hover {
-  transform: translateY(-2px);
-  border-color: rgba(168, 200, 255, 0.4) !important;
-}
-
-body.rj-home :is(.board-cta-inner, .comm-cta-inner) {
-  background: linear-gradient(150deg, rgba(168, 200, 255, 0.16), rgba(255, 255, 255, 0.035)) !important;
-  border: 1px solid rgba(168, 200, 255, 0.22) !important;
-  box-shadow: var(--hub-shadow) !important;
-  backdrop-filter: var(--hub-lens);
-  -webkit-backdrop-filter: var(--hub-lens);
-}
-
-/* karty projektów: te same treści, nowa powierzchnia */
-body.rj-home .project-card .card-inner {
-  background: linear-gradient(155deg, var(--hub-glass-hi), var(--hub-glass-lo)) !important;
-  border: 1px solid var(--hub-line) !important;
-  box-shadow: var(--hub-shadow) !important;
-  backdrop-filter: var(--hub-lens);
-  -webkit-backdrop-filter: var(--hub-lens);
-}
-
-body.rj-home .project-card .card-preview-frame {
-  border-radius: 14px !important;
-  border: 1px solid var(--hub-line-soft) !important;
-  background: rgba(6, 10, 22, 0.5) !important;
-}
-
-body.rj-home .project-card .card-title,
-body.rj-home .project-card .card-title a { color: var(--hub-ink) !important; }
-
-body.rj-home .project-card .card-desc { color: var(--hub-muted) !important; }
-
-body.rj-home .project-card .btn-live {
-  background: rgba(168, 200, 255, 0.14) !important;
-  border: 1px solid rgba(168, 200, 255, 0.28) !important;
-  color: #dbe6ff !important;
-}
-
-body.rj-home :is(.projects-toolbar, .toolbar-card, .board-toolbar, .filters, .search-field) {
-  background: linear-gradient(150deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03)) !important;
-  border: 1px solid var(--hub-line) !important;
-  border-radius: 20px !important;
-  backdrop-filter: var(--hub-lens);
-  -webkit-backdrop-filter: var(--hub-lens);
-}
-
-body.rj-home :is(.search-field input, .filter-field input, .filter-field select, .ctrl-select) {
-  background: rgba(6, 10, 22, 0.55) !important;
-  border: 1px solid var(--hub-line) !important;
-  color: var(--hub-ink) !important;
-  border-radius: 12px !important;
-}
-
-/* sekcja „premium / konto” */
-body.rj-home :is(.rj-club-inner, .club-card, .premium-card) {
-  background: linear-gradient(150deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.035)) !important;
-  border: 1px solid var(--hub-line) !important;
-  border-radius: var(--hub-radius) !important;
-  backdrop-filter: var(--hub-lens);
-  -webkit-backdrop-filter: var(--hub-lens);
-}
-
-/* ciemniejsze plamy tła strony głównej zamieniamy na jedno spójne światło */
-body.rj-home::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background: radial-gradient(60% 40% at 50% -10%, rgba(120, 150, 255, 0.12), transparent 70%);
-}
+/* --- informacja o tapetach w źródle strony --- */
+/* Tapeta: hub/wallpaper.webp (desktop), hub/wallpaper-mobile.webp (telefon). */
