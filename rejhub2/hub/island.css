@@ -1,0 +1,950 @@
+/* © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
+   Dynamiczna wyspa RejHub — czarna, sprężynowa, wspólna dla wszystkich podstron.
+   Style są zamknięte pod #rj-island-root, żeby nie walczyły z glass2.css. */
+
+#rj-island-root {
+  position: fixed;
+  inset: 0;
+  z-index: 2147482000;
+  pointer-events: none;
+  contain: layout style;
+}
+
+#rj-island-root *,
+#rj-island-root *::before,
+#rj-island-root *::after {
+  box-sizing: border-box;
+}
+
+#rj-island-root .rj-island {
+  --w: 172px;
+  --h: 46px;
+  --r: 23px;
+  position: absolute;
+  left: 50%;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  width: var(--w);
+  height: var(--h);
+  margin-left: calc(var(--w) / -2);
+  border-radius: var(--r);
+  background: #000;
+  color: #f4f7fc;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.14) inset,
+    0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 -1px 0 rgba(0, 0, 0, 0.9) inset,
+    0 24px 60px -22px rgba(0, 0, 0, 0.9),
+    0 4px 14px -6px rgba(0, 0, 0, 0.7);
+  overflow: hidden;
+  contain: layout style paint;
+  will-change: width, height, border-radius;
+  pointer-events: auto;
+  font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* jedna nitka światła na górnej krawędzi — cały „połysk” czerni */
+#rj-island-root .rj-island::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0) 42%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+#rj-island-root .rj-island:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px rgba(110, 168, 255, 0.7),
+    0 24px 60px -22px rgba(0, 0, 0, 0.9);
+}
+
+#rj-island-root [hidden] {
+  display: none !important;
+}
+
+#rj-island-root .rj-island.is-hidden {
+  display: none;
+}
+
+/* ---------- widoki ---------- */
+
+#rj-island-root .rj-view {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  opacity: 0;
+  transform: scale(0.97);
+  pointer-events: none;
+  transition: opacity 0.16s ease, transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  white-space: nowrap;
+}
+
+#rj-island-root .rj-island[data-state="idle"] .rj-view--idle,
+#rj-island-root .rj-island[data-state="dock"] .rj-view--dock,
+#rj-island-root .rj-island[data-state="report"] .rj-view--report,
+#rj-island-root .rj-island[data-state="search"] .rj-view--search,
+#rj-island-root .rj-island[data-state="alerts"] .rj-view--alerts,
+#rj-island-root .rj-island[data-state="now"] .rj-view--now,
+#rj-island-root .rj-island[data-state="profile"] .rj-view--profile,
+#rj-island-root .rj-island[data-state="quick"] .rj-view--quick,
+#rj-island-root .rj-island[data-state="theme"] .rj-view--theme,
+#rj-island-root .rj-island[data-state="tasks"] .rj-view--tasks,
+#rj-island-root .rj-island[data-state="panic"] .rj-view--panic {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+  transition: opacity 0.2s ease 0.05s, transform 0.32s cubic-bezier(0.22, 1, 0.36, 1) 0.02s;
+}
+
+/* ---------- zwinięta ---------- */
+
+#rj-island-root .rj-view--idle {
+  gap: 9px;
+  padding-left: 7px;
+  cursor: pointer;
+}
+
+#rj-island-root .rj-orb {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, #2b3340, #0b0d11 72%);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.12) inset;
+}
+
+#rj-island-root .rj-orb img {
+  width: 21px;
+  height: 21px;
+  display: block;
+}
+
+#rj-island-root .rj-title {
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  color: #f4f7fc;
+}
+
+#rj-island-root .rj-title small {
+  display: block;
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(232, 240, 252, 0.52);
+  letter-spacing: 0;
+}
+
+#rj-island-root .rj-hint {
+  margin-left: auto;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  opacity: 0.55;
+}
+
+#rj-island-root kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 4px;
+  font: 600 9.5px/1 ui-monospace, monospace;
+  color: rgba(240, 246, 255, 0.8);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+/* ---------- dock ---------- */
+
+#rj-island-root .rj-view--dock {
+  justify-content: center;
+  gap: 2px;
+  padding: 0 8px;
+}
+
+#rj-island-root .rj-dock-btn {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 40px;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  color: rgba(238, 245, 255, 0.72);
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease, transform 0.1s ease;
+}
+
+#rj-island-root .rj-dock-btn svg {
+  width: 19px;
+  height: 19px;
+}
+
+#rj-island-root .rj-dock-btn:hover,
+#rj-island-root .rj-dock-btn:focus-visible {
+  background: rgba(255, 255, 255, 0.09);
+  color: #fff;
+  outline: none;
+}
+
+#rj-island-root .rj-dock-btn:active {
+  transform: scale(0.92);
+}
+
+#rj-island-root .rj-dock-btn.is-primary {
+  color: #fff;
+}
+
+#rj-island-root .rj-dock-btn.has-dot {
+  position: relative;
+}
+
+#rj-island-root .rj-dock-btn.has-dot::after {
+  content: "";
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ff453a;
+  box-shadow: 0 0 0 2px #000;
+}
+
+#rj-island-root .rj-dock-sep {
+  width: 1px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.12);
+  margin: 0 3px;
+}
+
+/* ---------- panele ---------- */
+
+#rj-island-root .rj-panel {
+  width: 100%;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 11px 0 12px;
+  white-space: normal;
+  min-height: 0;
+}
+
+#rj-island-root .rj-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 26px;
+}
+
+#rj-island-root .rj-panel-title {
+  font-size: 12.5px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: #f4f7fc;
+}
+
+#rj-island-root .rj-panel-title small {
+  display: block;
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(232, 240, 252, 0.45);
+}
+
+#rj-island-root .rj-x {
+  margin-left: auto;
+  width: 26px;
+  height: 26px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(240, 246, 255, 0.7);
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease;
+}
+
+#rj-island-root .rj-x:hover,
+#rj-island-root .rj-x:focus-visible {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  outline: none;
+}
+
+#rj-island-root .rj-seg {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+#rj-island-root .rj-seg button {
+  border: 0;
+  border-radius: 999px;
+  padding: 5px 11px;
+  background: transparent;
+  color: rgba(235, 243, 255, 0.6);
+  font: 650 11.5px/1 system-ui, sans-serif;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+
+#rj-island-root .rj-seg button[aria-selected="true"] {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+}
+
+#rj-island-root .rj-field,
+#rj-island-root textarea.rj-input {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #f4f7fc;
+  font: 12.5px/1.45 system-ui, sans-serif;
+  padding: 9px 11px;
+  outline: none;
+  resize: none;
+}
+
+#rj-island-root textarea.rj-input {
+  flex: 1;
+  min-height: 66px;
+}
+
+#rj-island-root .rj-field::placeholder,
+#rj-island-root textarea.rj-input::placeholder {
+  color: rgba(232, 240, 252, 0.38);
+}
+
+#rj-island-root .rj-field:focus,
+#rj-island-root textarea.rj-input:focus {
+  border-color: rgba(110, 168, 255, 0.7);
+  box-shadow: 0 0 0 3px rgba(110, 168, 255, 0.16);
+}
+
+#rj-island-root .rj-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#rj-island-root .rj-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(238, 245, 255, 0.76);
+  font: 600 11.5px/1 system-ui, sans-serif;
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease;
+}
+
+#rj-island-root .rj-ghost svg {
+  width: 13px;
+  height: 13px;
+}
+
+#rj-island-root .rj-ghost:hover,
+#rj-island-root .rj-ghost:focus-visible {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  outline: none;
+}
+
+#rj-island-root .rj-ghost[aria-pressed="true"] {
+  border-color: rgba(110, 168, 255, 0.55);
+  background: rgba(110, 168, 255, 0.18);
+  color: #fff;
+}
+
+#rj-island-root .rj-send {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: #fff;
+  color: #000;
+  font: 700 11.5px/1 system-ui, sans-serif;
+  cursor: pointer;
+  transition: transform 0.12s ease, opacity 0.16s ease;
+}
+
+#rj-island-root .rj-send:hover {
+  opacity: 0.9;
+}
+
+#rj-island-root .rj-send:active {
+  transform: scale(0.97);
+}
+
+#rj-island-root .rj-send:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+#rj-island-root .rj-list {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: grid;
+  gap: 2px;
+  margin: 0 -6px;
+  padding: 0 6px;
+  overscroll-behavior: contain;
+}
+
+#rj-island-root .rj-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+#rj-island-root .rj-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 4px;
+}
+
+#rj-island-root .rj-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 8px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: rgba(238, 245, 255, 0.8);
+  font: 600 12px/1.3 system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.14s ease, color 0.14s ease;
+  white-space: nowrap;
+  width: 100%;
+}
+
+#rj-island-root .rj-item:hover,
+#rj-island-root .rj-item.is-cursor {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+#rj-island-root .rj-item .rj-key {
+  margin-left: auto;
+  color: rgba(232, 240, 252, 0.4);
+  font: 500 10px/1 ui-monospace, monospace;
+}
+
+#rj-island-root .rj-item .rj-ico {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.09);
+  flex: none;
+  font-size: 11px;
+}
+
+#rj-island-root .rj-empty {
+  padding: 9px 8px;
+  color: rgba(232, 240, 252, 0.45);
+  font-size: 11.5px;
+  line-height: 1.5;
+  white-space: normal;
+}
+
+#rj-island-root .rj-empty a {
+  color: #8fb8ff;
+  text-decoration: none;
+}
+
+#rj-island-root .rj-empty a:hover {
+  text-decoration: underline;
+}
+
+/* alerty */
+#rj-island-root .rj-alert {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 7px 8px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.055);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.14s ease;
+}
+
+#rj-island-root .rj-alert:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+#rj-island-root .rj-alert i {
+  width: 6px;
+  height: 6px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: #6ea8ff;
+  flex: none;
+}
+
+#rj-island-root .rj-alert.is-read i {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+#rj-island-root .rj-alert b {
+  display: block;
+  font-size: 11.5px;
+  color: #f4f7fc;
+  font-weight: 600;
+  margin-bottom: 1px;
+}
+
+#rj-island-root .rj-alert small {
+  color: rgba(232, 240, 252, 0.45);
+  font-size: 10px;
+}
+
+#rj-island-root .rj-link-btn {
+  border: 0;
+  background: transparent;
+  color: #7fb0ff;
+  font: 600 11px/1 system-ui, sans-serif;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+#rj-island-root .rj-link-btn:hover {
+  text-decoration: underline;
+}
+
+/* teraz gra */
+#rj-island-root .rj-now {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+}
+
+#rj-island-root .rj-cover {
+  width: 46px;
+  height: 46px;
+  flex: none;
+  border-radius: 10px;
+  background: linear-gradient(145deg, #2a3550, #6e4a8f);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 6px 16px -8px rgba(0, 0, 0, 0.8);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+#rj-island-root .rj-cover svg {
+  width: 20px;
+  height: 20px;
+}
+
+#rj-island-root .rj-now-meta {
+  min-width: 0;
+  flex: 1;
+}
+
+#rj-island-root .rj-now-meta b {
+  display: block;
+  font-size: 12.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #f4f7fc;
+}
+
+#rj-island-root .rj-now-meta small {
+  display: block;
+  color: rgba(232, 240, 252, 0.5);
+  font-size: 10.5px;
+}
+
+#rj-island-root .rj-round {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.16s ease, transform 0.1s ease;
+}
+
+#rj-island-root .rj-round:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+#rj-island-root .rj-round:active {
+  transform: scale(0.92);
+}
+
+#rj-island-root .rj-round svg {
+  width: 14px;
+  height: 14px;
+}
+
+#rj-island-root .rj-round.is-play {
+  background: #fff;
+  color: #000;
+}
+
+/* profil */
+#rj-island-root .rj-profile {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+}
+
+#rj-island-root .rj-avatar {
+  width: 42px;
+  height: 42px;
+  flex: none;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font: 700 15px/1 system-ui, sans-serif;
+  color: #06101f;
+  background: linear-gradient(145deg, #cfe0ff, #8fb6ff);
+  overflow: hidden;
+}
+
+#rj-island-root .rj-avatar img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+#rj-island-root .rj-profile-meta b {
+  display: block;
+  font-size: 12.5px;
+  color: #f4f7fc;
+}
+
+#rj-island-root .rj-profile-meta small {
+  display: block;
+  font-size: 10.5px;
+  color: rgba(232, 240, 252, 0.5);
+}
+
+#rj-island-root .rj-statuses {
+  display: flex;
+  gap: 4px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+#rj-island-root .rj-status {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  padding: 4px 8px;
+  background: transparent;
+  color: rgba(238, 245, 255, 0.62);
+  font: 600 10px/1 system-ui, sans-serif;
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+}
+
+#rj-island-root .rj-status:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+#rj-island-root .rj-status.is-on {
+  background: rgba(50, 215, 75, 0.16);
+  border-color: rgba(50, 215, 75, 0.5);
+  color: #7ef08c;
+}
+
+#rj-island-root .rj-status.is-on[data-status="busy"] {
+  background: rgba(255, 69, 58, 0.16);
+  border-color: rgba(255, 69, 58, 0.5);
+  color: #ff8d84;
+}
+
+#rj-island-root .rj-status.is-on[data-status="away"] {
+  background: rgba(255, 214, 10, 0.16);
+  border-color: rgba(255, 214, 10, 0.42);
+  color: #ffdf5c;
+}
+
+/* szybkie akcje */
+#rj-island-root .rj-quick {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  width: 100%;
+}
+
+#rj-island-root .rj-quick a,
+#rj-island-root .rj-quick button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 4px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.055);
+  color: rgba(240, 246, 255, 0.85);
+  font: 600 10px/1.2 system-ui, sans-serif;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.16s ease, border-color 0.16s ease, transform 0.12s ease;
+}
+
+#rj-island-root .rj-quick a:hover,
+#rj-island-root .rj-quick button:hover {
+  background: rgba(255, 255, 255, 0.11);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+#rj-island-root .rj-quick a:active,
+#rj-island-root .rj-quick button:active {
+  transform: scale(0.96);
+}
+
+#rj-island-root .rj-quick svg {
+  width: 17px;
+  height: 17px;
+}
+
+/* przełączniki */
+#rj-island-root .rj-switches {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+}
+
+#rj-island-root .rj-switch-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 2px;
+  font-size: 12px;
+  color: rgba(240, 246, 255, 0.86);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+}
+
+#rj-island-root .rj-switch-row .rj-label {
+  flex: 1;
+}
+
+#rj-island-root .rj-switch {
+  width: 34px;
+  height: 20px;
+  flex: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  position: relative;
+  transition: background 0.22s ease;
+}
+
+#rj-island-root .rj-switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+#rj-island-root .rj-switch-row[aria-pressed="true"] .rj-switch {
+  background: #0a84ff;
+}
+
+#rj-island-root .rj-switch-row[aria-pressed="true"] .rj-switch::after {
+  transform: translateX(14px);
+}
+
+#rj-island-root .rj-hintline {
+  color: rgba(232, 240, 252, 0.42);
+  font-size: 10.5px;
+  line-height: 1.45;
+}
+
+/* zadania */
+#rj-island-root .rj-task {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+}
+
+#rj-island-root .rj-task-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: rgba(240, 246, 255, 0.86);
+}
+
+#rj-island-root .rj-task-row b {
+  flex: 1;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#rj-island-root .rj-task-row span {
+  color: rgba(232, 240, 252, 0.55);
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+#rj-island-root .rj-progress {
+  height: 4px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.14);
+  overflow: hidden;
+}
+
+#rj-island-root .rj-progress span {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #6ea8ff, #a9c8ff);
+  transition: width 0.25s ease;
+}
+
+/* potwierdzenie */
+#rj-island-root .rj-panic-wrap {
+  width: 100%;
+  display: grid;
+  gap: 8px;
+  text-align: center;
+}
+
+#rj-island-root .rj-panic-wrap b {
+  font-size: 12.5px;
+  color: #f4f7fc;
+}
+
+#rj-island-root .rj-panic-wrap p {
+  margin: 0;
+  color: rgba(232, 240, 252, 0.55);
+  font-size: 10.5px;
+  line-height: 1.4;
+}
+
+#rj-island-root .rj-panic-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+
+#rj-island-root .rj-panic-actions button {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  padding: 7px 14px;
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+  font: 650 11.5px/1 system-ui, sans-serif;
+  cursor: pointer;
+}
+
+#rj-island-root .rj-panic-actions button:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+#rj-island-root .rj-panic-actions button.is-danger {
+  background: #ff453a;
+  border-color: transparent;
+  color: #fff;
+}
+
+#rj-island-root .rj-panic-actions button.is-danger:hover {
+  filter: brightness(1.1);
+}
+
+/* toast */
+#rj-island-root .rj-toast {
+  position: absolute;
+  left: 50%;
+  bottom: calc(max(16px, env(safe-area-inset-bottom)) + 74px);
+  transform: translate(-50%, 8px);
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #000;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 16px 40px -18px rgba(0, 0, 0, 0.9);
+  color: #f4f7fc;
+  font: 600 11.5px/1 system-ui, sans-serif;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+  white-space: nowrap;
+  max-width: calc(100% - 24px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#rj-island-root .rj-toast.is-on {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* ---------- telefon ---------- */
+
+@media (max-width: 560px) {
+  #rj-island-root .rj-island {
+    bottom: max(10px, env(safe-area-inset-bottom));
+  }
+  #rj-island-root .rj-view--dock {
+    gap: 0;
+    padding: 0 4px;
+  }
+  #rj-island-root .rj-dock-btn {
+    width: 40px;
+  }
+  #rj-island-root .rj-toast {
+    bottom: calc(max(10px, env(safe-area-inset-bottom)) + 66px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #rj-island-root .rj-view,
+  #rj-island-root .rj-toast,
+  #rj-island-root .rj-switch::after {
+    transition-duration: 0.01ms;
+  }
+}
+
+@media print {
+  #rj-island-root {
+    display: none;
+  }
+}
