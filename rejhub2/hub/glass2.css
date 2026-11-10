@@ -1114,15 +1114,19 @@ body.rj-home .project-card .card-preview {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
 
-/* --- pasek statusu loadera na szkle --- */
+/* --- nakładka ładowania: szyba, przez którą nadal widać kolor tapety --- */
 body #rj-page-loader {
   background:
-    radial-gradient(120% 90% at 50% 0%, rgba(168, 200, 255, 0.1), transparent 60%),
-    rgba(6, 10, 20, 0.9) !important;
+    radial-gradient(90% 70% at 50% 18%, rgba(74, 96, 158, 0.34), transparent 70%),
+    rgba(5, 8, 15, 0.5) !important;
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
 }
 
 html[data-theme="light"] body #rj-page-loader {
-  background: rgba(238, 242, 250, 0.94) !important;
+  background:
+    radial-gradient(90% 70% at 50% 18%, rgba(255, 255, 255, 0.42), transparent 70%),
+    rgba(14, 20, 34, 0.46) !important;
 }
 
 /* --- RejClass: etapy nauki jako segmentowana pigułka (jak zakładki studia) --- */
@@ -3091,4 +3095,167 @@ html[data-theme="light"] body .services-secondary {
   background: rgba(255, 255, 255, 0.8) !important;
   border-color: #fff !important;
   color: #1d2a44 !important;
+}
+
+/* ==========================================================================
+   REJHUB 2.0 — POPRAWKI 2026-11-10
+   1) smuga karty konta nie może świecić na całe hero (to ona „wyprała” tekst),
+   2) logo bez płytki, dokładnie jak w /testy,
+   3) lżejsza zasłona — tapeta ma dawać kolor,
+   4) mniejszy, spokojniejszy nagłówek hero.
+   ========================================================================== */
+
+/* 1. Karta konta: obwód premium zostaje w środku karty. Wcześniejsze
+   `overflow: visible` (dla przycisku na dole) wypuszczało 850 px smugę
+   na hero — stąd jasny „reflektor” i nieczytelny nagłówek. */
+@media (min-width: 1200px) {
+  body.rj-home .rj-account-mini-card {
+    overflow: hidden !important;
+    isolation: isolate;
+  }
+  body.rj-home .rj-account-mini-card .rj-premium__glow {
+    opacity: 0.4;
+  }
+  body.rj-home .rj-account-mini-card .rj-premium__sheen {
+    opacity: 0.35;
+  }
+}
+
+/* 2. Logo: sam znak, bez granatowej płytki i poświaty. */
+body .brand {
+  gap: 10px;
+  text-decoration: none;
+}
+
+body .brand .brand-mark {
+  width: 30px !important;
+  height: 30px !important;
+  min-width: 30px;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  filter: drop-shadow(0 3px 10px rgba(4, 8, 18, 0.45));
+  object-fit: contain;
+}
+
+body .brand .brand-text {
+  letter-spacing: -0.02em;
+  font-weight: 700;
+}
+
+body .brand .brand-suffix {
+  display: none !important;
+}
+
+html[data-theme="light"] body .brand .brand-mark {
+  filter: brightness(0.62) saturate(1.5) drop-shadow(0 2px 6px rgba(20, 40, 74, 0.18));
+}
+
+/* 3. Zasłona: mniej granatu, więcej koloru z tapety. Karty nadal mają
+   własne, ciemniejsze szkło, więc kontrast tekstu zostaje. */
+body::before {
+  filter: saturate(122%) brightness(1.05) !important;
+}
+
+body::after {
+  background:
+    radial-gradient(120% 90% at 50% -10%, rgba(6, 10, 20, 0.22), transparent 70%),
+    radial-gradient(90% 70% at 50% 108%, rgba(6, 10, 20, 0.42), transparent 72%),
+    linear-gradient(180deg, rgba(6, 10, 20, 0.24), rgba(6, 10, 20, 0.34) 42%, rgba(5, 8, 16, 0.5)) !important;
+}
+
+@media (max-width: 700px) {
+  body::before {
+    filter: saturate(116%) brightness(0.96) !important;
+  }
+}
+
+html[data-theme="light"] body::after {
+  background:
+    radial-gradient(120% 90% at 50% -10%, rgba(255, 255, 255, 0.5), transparent 70%),
+    linear-gradient(180deg, rgba(240, 244, 251, 0.66), rgba(238, 242, 250, 0.74) 46%, rgba(233, 239, 249, 0.84)) !important;
+}
+
+/* odrobina więcej światła w szkle, bez utraty czytelności */
+:root {
+  --g-tint: rgba(11, 18, 34, 0.56);
+  --g-tint-deep: rgba(8, 14, 28, 0.66);
+}
+
+/* 4. Mniejszy nagłówek hero — mniej „krzyku”, więcej oddechu. */
+@media (min-width: 1200px) {
+  body.rj-home .hero h1 {
+    font-size: clamp(32px, 3.5vw, 45px) !important;
+    line-height: 1.05 !important;
+    letter-spacing: -0.035em;
+    margin: 14px 0 12px;
+    text-shadow: 0 1px 2px rgba(3, 7, 16, 0.5), 0 10px 34px rgba(3, 7, 16, 0.45);
+  }
+
+  body.rj-home .hero-lead {
+    font-size: 14px;
+    line-height: 1.6;
+    color: rgba(233, 240, 255, 0.86) !important;
+  }
+}
+
+html[data-theme="light"] body.rj-home .hero h1 {
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+/* 5. Czytelność na wprost tapety: delikatny cień pod dużymi napisami zamiast
+   kolejnej warstwy przyciemnienia (tapeta ma zostać kolorowa). */
+body :is(h1, h2) {
+  text-shadow: 0 1px 2px rgba(3, 7, 16, 0.42), 0 10px 30px rgba(3, 7, 16, 0.3);
+}
+
+body :is(.tools-lead, .services-lead, .rjc-lead) {
+  text-shadow: 0 1px 2px rgba(3, 7, 16, 0.45);
+  color: rgba(233, 240, 255, 0.9) !important;
+}
+
+html[data-theme="light"] body :is(h1, h2) {
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+html[data-theme="light"] body :is(.tools-lead, .services-lead, .rjc-lead) {
+  text-shadow: none;
+  color: #35496d !important;
+}
+
+/* 6. Drobne poprawki czytelności na stronach bez własnej karty hero:
+   tablica pomysłów i profil konta. Nadal bez dodatkowego przyciemniania
+   całej tapety — cień tylko pod tekstem i szyba pod paskiem statusu. */
+body .board-sub {
+  text-shadow: 0 1px 2px rgba(3, 7, 16, 0.45);
+  color: rgba(233, 240, 255, 0.88) !important;
+}
+
+body.rj-profile-page :is(.profile-eyebrow, .profile-back, .profile-kicker) {
+  text-shadow: 0 1px 2px rgba(3, 7, 16, 0.55);
+}
+
+body.rj-profile-page .profile-status {
+  padding: 12px 16px;
+  border: 1px solid var(--g-edge);
+  border-radius: 16px;
+  background: rgba(9, 15, 28, 0.6);
+  backdrop-filter: blur(14px) saturate(150%);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  box-shadow: var(--g-inset);
+}
+
+html[data-theme="light"] body .board-sub {
+  text-shadow: none;
+  color: #35496d !important;
+}
+
+html[data-theme="light"] body.rj-profile-page :is(.profile-eyebrow, .profile-back, .profile-kicker) {
+  text-shadow: none;
+}
+
+html[data-theme="light"] body.rj-profile-page .profile-status {
+  background: rgba(255, 255, 255, 0.72);
 }

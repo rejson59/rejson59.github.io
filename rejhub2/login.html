@@ -145,8 +145,19 @@
       }
       @media (prefers-reduced-motion: reduce) { .aurora { animation: none; } }
     </style>
-  </head>
+    <link rel="stylesheet" href="/hub/loader.css?v=1">
+</head>
   <body>
+  <div id="rj-page-loader" aria-hidden="true">
+    <div class="rj-loader-box">
+      <div class="loader-mark mark-orbit">
+        <b><img src="/hub/brand-mark.svg?v=1" alt=""></b>
+        <span></span><span></span><span></span><span></span>
+      </div>
+      <p class="rj-loader-word">RejHub</p>
+      <div class="rj-progress is-indeterminate" aria-hidden="true"><span class="rj-progress-fill"></span></div>
+    </div>
+  </div>
     <div class="aurora" aria-hidden="true"></div>
     <main class="card">
       <div class="brand"><span class="brand-mark">R</span> RejHub</div>
@@ -218,5 +229,6 @@
         });
       })();
     </script>
-  </body>
+    <script src="/hub/loader.js?v=1" defer></script>
+</body>
 </html>
