@@ -221,3 +221,83 @@ body.rj-studio[data-backdrop="vivid"] .studio-backdrop {
 }
 .license-line a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
 .license-line strong { font-weight: 600; }
+
+/* ==========================================================================
+   SOCZEWKA zamiast mgły — stara strona (2026-10-19)
+   Te same zasady co w RejHub 2.0: mniej blura (9–12 px), mocniejsza saturacja,
+   podkreślona krawędź i — gdy przeglądarka potrafi `backdrop-filter: url(...)`
+   — prawdziwe załamanie tła z js/glass-lens.js (atrybut data-glass-lens).
+   ========================================================================== */
+
+:root {
+  --liquid-lens: blur(10px) saturate(180%);
+  --liquid-lens-soft: blur(7px) saturate(170%);
+}
+
+[data-theme="light"] {
+  --liquid-lens: blur(10px) saturate(160%);
+  --liquid-lens-soft: blur(7px) saturate(150%);
+}
+
+/* Nagłówek: szkło ma przepuszczać tapetę, nie mleć jej na biało. */
+body:is(.rj-home, .rj-community, .rj-account, .rj-partner, .rj-board, .rj-widgets, .rj-admin, .rj-studio) .site-header {
+  -webkit-backdrop-filter: var(--liquid-lens);
+  backdrop-filter: var(--liquid-lens);
+}
+
+body.rj-home .hero,
+body.rj-home .profile-card,
+body :is(.board-cta-inner, .comm-cta-inner, .services-window, .demo-card) {
+  -webkit-backdrop-filter: blur(11px) saturate(185%);
+  backdrop-filter: blur(11px) saturate(185%);
+}
+
+/* Element z soczewką: załamanie krawędzi + lekki blur resztek. */
+@supports (backdrop-filter: url(#rj-lens-probe)) {
+  [data-lens="on"] {
+    -webkit-backdrop-filter: var(--glass-lens) blur(6px) saturate(190%);
+    backdrop-filter: var(--glass-lens) blur(6px) saturate(190%);
+  }
+}
+
+/* Refleks na krawędzi — jedna cienka, nierówna linia światła. */
+[data-glass-lens] {
+  position: relative;
+  isolation: isolate;
+}
+
+[data-glass-lens]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  pointer-events: none;
+  z-index: 4;
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.7) 0%,
+    rgba(255, 255, 255, 0.22) 16%,
+    rgba(255, 255, 255, 0) 40%,
+    rgba(255, 255, 255, 0) 62%,
+    rgba(255, 255, 255, 0.16) 86%,
+    rgba(255, 255, 255, 0.42) 100%
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.75;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  [data-lens="on"],
+  [data-glass-lens] {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  [data-glass-lens]::after {
+    display: none;
+  }
+}

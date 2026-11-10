@@ -325,3 +325,81 @@ body.rj-tools .tool[open] .tool-content { animation:rju-pop-in .28s cubic-bezier
     body .rj-shared-header .nav-more > .nav-more-panel { transition:none!important; }
   }
 }
+
+/* ==========================================================================
+   Mniej mgły, więcej tapety (2026-10-19)
+   Wartości 20–22 px dawały mleczną płytę. Szkło ma przepuszczać kolor tła,
+   a czytelność trzyma półprzezroczysta powierzchnia (--rju-surface), nie blur.
+   ========================================================================== */
+body .rj-shared-header::before {
+  -webkit-backdrop-filter: blur(12px) saturate(185%);
+  backdrop-filter: blur(12px) saturate(185%);
+}
+
+@supports ((backdrop-filter: blur(12px)) or (-webkit-backdrop-filter: blur(12px))) {
+  body.rj-home .universe-links a,
+  body.rj-class .rjc-subject,
+  body.rj-account :is(.comm-auth-inner, .account-benefits),
+  body.rj-files :is(.upload.card, .safe-compose),
+  body.rj-partner .partner-form-card,
+  body.rj-class :is(.rjc-bio-lesson, .rjc-bio-quiz, .rjc-bio-summary, .rjc-bio-sidebar) {
+    -webkit-backdrop-filter: blur(10px) saturate(180%);
+    backdrop-filter: blur(10px) saturate(180%);
+  }
+
+  body.rj-home :is(.profile-card, .project-card .card-inner),
+  body.rj-tools .tool:not(.tool-more),
+  body.rj-files :is(.card, .safety) {
+    -webkit-backdrop-filter: blur(11px) saturate(185%);
+    backdrop-filter: blur(11px) saturate(185%);
+  }
+}
+
+/* Soczewka (js/glass-lens.js): załamanie krawędzi tam, gdzie silnik to potrafi. */
+@supports (backdrop-filter: url(#rj-lens-probe)) {
+  [data-lens="on"] {
+    -webkit-backdrop-filter: var(--glass-lens) blur(6px) saturate(190%);
+    backdrop-filter: var(--glass-lens) blur(6px) saturate(190%);
+  }
+}
+
+[data-glass-lens] {
+  position: relative;
+  isolation: isolate;
+}
+
+[data-glass-lens]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  pointer-events: none;
+  z-index: 4;
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.7) 0%,
+    rgba(255, 255, 255, 0.22) 16%,
+    rgba(255, 255, 255, 0) 40%,
+    rgba(255, 255, 255, 0) 62%,
+    rgba(255, 255, 255, 0.16) 86%,
+    rgba(255, 255, 255, 0.42) 100%
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.75;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  [data-lens="on"],
+  [data-glass-lens] {
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  [data-glass-lens]::after {
+    display: none;
+  }
+}
