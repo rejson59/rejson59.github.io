@@ -1583,3 +1583,1512 @@ html[data-theme="light"] body :is(.hero h1 .accent) {
 
 /* --- informacja o tapetach w źródle strony --- */
 /* Tapeta: hub/wallpaper.webp (desktop), hub/wallpaper-mobile.webp (telefon). */
+
+/* ==========================================================================
+   POPRAWKI STRONY GŁÓWNEJ (wygląd z 1280 px)
+   ========================================================================== */
+
+/* --- pasek statystyk: zamiast pustej wstęgi — kompaktowa kapsuła na szkle --- */
+@media (min-width: 1200px) {
+  body.rj-home .rj-home-stats {
+    box-sizing: border-box;
+    width: calc(100% - 420px);
+    margin: 6px auto 0;
+    padding: 0;
+    display: flex;
+    justify-content: flex-end;
+    background: none !important;
+    border: 0 !important;
+    border-radius: 0;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  body.rj-home .rj-home-stats-inner {
+    width: max-content;
+    max-width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 5px;
+    border: 1px solid var(--g-edge);
+    border-radius: 999px;
+    background: linear-gradient(158deg, var(--g-hi), var(--g-lo));
+    box-shadow: var(--g-shadow), var(--g-inset);
+    backdrop-filter: var(--g-lens);
+    -webkit-backdrop-filter: var(--g-lens);
+  }
+
+  body.rj-home .rj-home-stats .metric-badge {
+    min-height: 30px;
+    padding: 0 11px;
+    gap: 6px;
+    border-radius: 999px !important;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    background: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+  }
+
+  body.rj-home .rj-home-stats .metric-badge:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.18) !important;
+  }
+
+  body.rj-home .rj-home-stats .metric-badge-caption {
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    color: rgba(214, 226, 246, 0.72) !important;
+  }
+
+  body.rj-home .rj-home-stats .online-count {
+    font-size: 12px;
+    font-weight: 750;
+    color: var(--s-ink) !important;
+  }
+
+  /* hero: mniejsza, spokojniejsza typografia i krótszy oddech */
+  body.rj-home .hero {
+    margin-top: 14px;
+    padding: clamp(26px, 2.7vw, 40px) !important;
+    border-radius: 28px;
+    gap: clamp(20px, 2.4vw, 34px);
+  }
+
+  body.rj-home .hero h1 {
+    font-size: clamp(38px, 4.05vw, 54px) !important;
+    line-height: 1.02 !important;
+    letter-spacing: -0.045em;
+  }
+
+  body.rj-home .hero .eyebrow {
+    padding: 5px 11px;
+    font-size: 9.5px;
+  }
+
+  body.rj-home .hero-lead {
+    margin-top: 14px;
+    font-size: 14.5px;
+    line-height: 1.6;
+  }
+
+  body.rj-home .hero-actions {
+    margin-top: 20px;
+  }
+}
+
+/* --- szkło hero: mleczna tafla zamiast granatowej płyty --- */
+body.rj-home .hero {
+  background:
+    radial-gradient(120% 100% at 2% 0%, rgba(168, 200, 255, 0.14), transparent 56%),
+    linear-gradient(158deg, rgba(255, 255, 255, 0.11), rgba(255, 255, 255, 0.022));
+  backdrop-filter: blur(22px) saturate(160%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+}
+
+/* --- karta konta: nic nie ucina się na dole --- */
+@media (min-width: 1200px) {
+  body.rj-home .rj-account-mini,
+  body.rj-home .rj-account-mini-card {
+    overflow: visible;
+  }
+
+  body.rj-home .rj-account-mini-card .rj-premium__inner {
+    padding: 14px 13px 15px;
+  }
+
+  body.rj-home .rj-account-mini-card {
+    height: auto;
+  }
+
+  body.rj-home #rj-account-mini-description {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+/* ==========================================================================
+   GŁĘBSZE SZKŁO — ciemna baza studia pod jasnymi partiami tapety
+   (mleczna biel na kroplach dawała wyprany, nieczytelny obraz)
+   ========================================================================== */
+:root {
+  --g-tint: rgba(11, 18, 34, 0.62);
+  --g-tint-deep: rgba(8, 14, 28, 0.74);
+}
+
+body :is(
+  .rj-home-stats-inner,
+  .hero,
+  .profile-card,
+  .universe-nav,
+  .projects-toolbar,
+  .board-toolbar,
+  .toolbar,
+  .board-cta,
+  .comm-cta,
+  .rj-account-mini-card,
+  .rj-premium,
+  .rj-side-ads,
+  .rj-side-ad,
+  .comm-layout,
+  .comm-primary,
+  .comm-chat-head,
+  .comm-chat-list,
+  .comm-chat-note,
+  .comm-chat-empty,
+  .comm-online-card,
+  .comm-composer,
+  .rejchat-rules,
+  .rejchat-info-tip,
+  .rjc-note,
+  .rjc-definition,
+  .rjc-bio-point,
+  .rjc-bio-remember,
+  .services-window,
+  .file-drop,
+  .upload-card,
+  .tool-card,
+  .service-card,
+  .board-card,
+  .board-composer,
+  .panel,
+  .card
+) {
+  background-color: var(--g-tint) !important;
+}
+
+body.rj-home .project-card {
+  background-color: var(--g-tint) !important;
+}
+
+/* kapsuła statystyk i drobne elementy — ciemniejsze, żeby liczby były białe */
+body :is(.rj-home-stats-inner, .rj-side-ads) {
+  background-color: rgba(9, 15, 30, 0.7) !important;
+}
+
+/* --- prawa szyna reklam: spokojniejsza, bez zielonych akcentów --- */
+body .rj-side-ads {
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  border-radius: 22px !important;
+  box-shadow: var(--g-shadow), inset 0 1px 0 rgba(255, 255, 255, 0.26) !important;
+  backdrop-filter: var(--g-lens);
+  -webkit-backdrop-filter: var(--g-lens);
+  padding: 9px !important;
+  gap: 8px !important;
+}
+
+body .rj-side-ads-title {
+  color: rgba(226, 235, 250, 0.9) !important;
+  font-size: 10.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.02em;
+  padding: 2px 4px 4px;
+}
+
+body .rj-side-ads-hint {
+  color: rgba(196, 210, 232, 0.8) !important;
+  font-size: 9.5px !important;
+}
+
+body .rj-side-ad {
+  gap: 7px !important;
+  padding: 12px 11px !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: rgba(236, 243, 255, 0.92) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  transition: transform 0.22s var(--hub-ease), border-color 0.22s var(--hub-ease), background-color 0.22s var(--hub-ease);
+}
+
+body .rj-side-ad:hover {
+  transform: translateY(-1px);
+  border-color: rgba(168, 200, 255, 0.5) !important;
+}
+
+body .rj-side-ad--site,
+body .rj-side-ad--chat,
+body .rj-side-ad--file,
+body .rj-side-ad--offer {
+  background-color: rgba(13, 21, 39, 0.66) !important;
+  background-image:
+    linear-gradient(158deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.022)) !important;
+}
+
+body .rj-side-ad--offer { border-style: dashed !important; }
+
+body .rj-side-ad strong {
+  color: #f7faff !important;
+  font-size: 14.5px !important;
+  line-height: 1.24 !important;
+}
+
+body .rj-side-ad span:not(.rj-side-ad-tag):not(.rj-side-ad-icon) {
+  color: rgba(214, 226, 245, 0.82) !important;
+  font-size: 10.5px !important;
+  line-height: 1.45 !important;
+}
+
+body .rj-side-ad b {
+  color: #cfe0ff !important;
+  font-size: 10.5px !important;
+  font-weight: 700 !important;
+}
+
+body .rj-side-ad-tag {
+  color: rgba(202, 217, 240, 0.82) !important;
+  font-size: 8.5px !important;
+}
+
+body .rj-side-ad-icon {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 10px !important;
+  color: #d7e6ff !important;
+  background: rgba(255, 255, 255, 0.09) !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+}
+
+body .rj-side-ad--file .rj-side-ad-icon,
+body .rj-side-ad--offer .rj-side-ad-icon {
+  color: #d7e6ff !important;
+  background: rgba(255, 255, 255, 0.09) !important;
+}
+
+/* --- lewa karta konta: ciemniejsze szkło i czytelne napisy --- */
+body.rj-home .rj-account-mini-card {
+  background-color: rgba(9, 15, 30, 0.72) !important;
+  background-image:
+    radial-gradient(120% 120% at 100% 0%, rgba(193, 188, 255, 0.16), transparent 58%),
+    linear-gradient(158deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02)) !important;
+}
+
+body.rj-home .rj-account-mini-label {
+  color: #bfd4ff !important;
+  font-size: 9px !important;
+  letter-spacing: 0.15em !important;
+}
+
+body.rj-home #rj-account-mini-title {
+  color: #f4f8ff !important;
+  font-size: 15.5px !important;
+  line-height: 1.28 !important;
+}
+
+body.rj-home #rj-account-mini-description {
+  color: rgba(219, 230, 248, 0.86) !important;
+  font-size: 11px !important;
+  line-height: 1.5 !important;
+}
+
+body.rj-home #rj-account-mini-open {
+  border-color: rgba(255, 255, 255, 0.3) !important;
+  background: rgba(255, 255, 255, 0.14) !important;
+  color: #f7faff !important;
+  font-size: 11px !important;
+  min-height: 34px;
+}
+
+body.rj-home #rj-account-mini-link {
+  color: #cfdfff !important;
+  font-size: 10.5px !important;
+}
+
+body.rj-home .rj-account-mini-icon {
+  border: 1px solid rgba(168, 200, 255, 0.36) !important;
+  background: rgba(168, 200, 255, 0.16) !important;
+  color: #dbe8ff !important;
+}
+
+/* ciemniejsza zasłona po lewej, gdzie tapeta jest najjaśniejsza */
+body::after {
+  background:
+    radial-gradient(80% 70% at 0% 42%, rgba(6, 10, 20, 0.44), transparent 72%),
+    radial-gradient(120% 90% at 50% -10%, rgba(8, 13, 25, 0.46), transparent 70%),
+    radial-gradient(90% 70% at 50% 108%, rgba(8, 13, 25, 0.72), transparent 72%),
+    linear-gradient(180deg, rgba(6, 10, 20, 0.6), rgba(6, 10, 20, 0.74) 42%, rgba(5, 8, 16, 0.88));
+}
+
+/* --- tryb jasny: baza wraca do mlecznej bieli --- */
+html[data-theme="light"] body :is(
+  .rj-home-stats-inner,
+  .hero,
+  .profile-card,
+  .universe-nav,
+  .projects-toolbar,
+  .board-toolbar,
+  .toolbar,
+  .board-cta,
+  .comm-cta,
+  .rj-account-mini-card,
+  .rj-premium,
+  .rj-side-ads,
+  .rj-side-ad,
+  .comm-layout,
+  .comm-primary,
+  .comm-chat-head,
+  .comm-chat-list,
+  .comm-chat-note,
+  .comm-chat-empty,
+  .comm-online-card,
+  .comm-composer,
+  .rejchat-rules,
+  .rejchat-info-tip,
+  .rjc-note,
+  .rjc-definition,
+  .rjc-bio-point,
+  .rjc-bio-remember,
+  .services-window,
+  .file-drop,
+  .upload-card,
+  .tool-card,
+  .service-card,
+  .board-card,
+  .board-composer,
+  .panel,
+  .card
+) {
+  background-color: rgba(255, 255, 255, 0.66) !important;
+}
+
+html[data-theme="light"] body.rj-home .project-card {
+  background-color: rgba(255, 255, 255, 0.66) !important;
+}
+
+html[data-theme="light"] body .rj-side-ads,
+html[data-theme="light"] body .rj-side-ad,
+html[data-theme="light"] body.rj-home .rj-account-mini-card {
+  background-color: rgba(255, 255, 255, 0.74) !important;
+}
+
+html[data-theme="light"] body .rj-side-ads-title,
+html[data-theme="light"] body .rj-side-ad strong {
+  color: #1d2a44 !important;
+}
+
+html[data-theme="light"] body .rj-side-ad b { color: #2b4a78 !important; }
+
+/* ==========================================================================
+   REJCHAT — ikony rozmów i zwijane karty
+   ========================================================================== */
+body.rj-community .chat-channel-icon,
+body.rj-community .rejchat-rules summary > span[aria-hidden="true"],
+body.rj-community .rejchat-info-tip > span[aria-hidden="true"] {
+  display: grid !important;
+  place-items: center !important;
+  width: 36px !important;
+  height: 36px !important;
+  flex: none;
+  border-radius: 12px !important;
+  border: 1px solid rgba(168, 200, 255, 0.3) !important;
+  background: linear-gradient(158deg, rgba(168, 200, 255, 0.26), rgba(168, 200, 255, 0.1)) !important;
+  color: #e4eeff !important;
+  font-size: 17px !important;
+  line-height: 1 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+body.rj-community .chat-channel {
+  gap: 11px !important;
+  padding: 9px 11px !important;
+  border-radius: 16px !important;
+  border: 1px solid transparent !important;
+  background: transparent !important;
+  transition: background 0.2s var(--hub-ease), border-color 0.2s var(--hub-ease);
+}
+
+body.rj-community .chat-channel:hover {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+}
+
+body.rj-community .chat-channel.is-active {
+  border-color: rgba(168, 200, 255, 0.38) !important;
+  background: linear-gradient(158deg, rgba(168, 200, 255, 0.2), rgba(168, 200, 255, 0.06)) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24);
+}
+
+body.rj-community .chat-channel.is-active .chat-channel-icon {
+  background: linear-gradient(158deg, rgba(255, 255, 255, 0.34), rgba(168, 200, 255, 0.2)) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  color: #0d1526 !important;
+}
+
+body.rj-community .chat-channel strong {
+  color: #f4f8ff !important;
+  letter-spacing: -0.01em;
+}
+
+body.rj-community .chat-channel small {
+  color: rgba(200, 214, 236, 0.78) !important;
+}
+
+/* karta zasad: ikona obok tytułu, nic nie ucina się na dole */
+body.rj-community .rejchat-rules summary {
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+}
+
+body.rj-community .rejchat-rules summary strong {
+  display: block;
+  color: #f4f8ff !important;
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+body.rj-community .rejchat-rules summary small {
+  display: block;
+  margin-top: 2px;
+  color: rgba(200, 214, 236, 0.74) !important;
+  font-size: 10.5px;
+  line-height: 1.35;
+}
+
+/* --- ikony rozmów jako SVG (ten sam rysunek w każdej przeglądarce) --- */
+body.rj-community #channel-links .chat-channel-icon,
+body.rj-community #channel-private .chat-channel-icon,
+body.rj-community .rejchat-rules summary > span[aria-hidden="true"] {
+  color: transparent !important;
+  font-size: 0 !important;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 17px 17px;
+}
+
+body.rj-community #channel-links .chat-channel-icon {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e4eeff' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 17 17 7M9 7h8v8'/%3E%3C/svg%3E") !important;
+}
+
+body.rj-community #channel-private .chat-channel-icon {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e4eeff' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5.5' width='18' height='13' rx='2.5'/%3E%3Cpath d='m4.5 8 7.5 5.5L19.5 8'/%3E%3C/svg%3E") !important;
+}
+
+body.rj-community .rejchat-rules summary > span[aria-hidden="true"] {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e4eeff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3.5c.7 4.6 2.4 6.3 7 7-4.6.7-6.3 2.4-7 7-.7-4.6-2.4-6.3-7-7 4.6-.7 6.3-2.4 7-7Z'/%3E%3C/svg%3E") !important;
+}
+
+body.rj-community .chat-channel .chat-channel-icon,
+body.rj-community .rejchat-rules summary > span[aria-hidden="true"] {
+  background-color: rgba(168, 200, 255, 0.14) !important;
+}
+
+body.rj-community .chat-channel.is-active .chat-channel-icon {
+  background-color: rgba(255, 255, 255, 0.34) !important;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230d1526' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 7v10M14 7v10M5 12h14'/%3E%3C/svg%3E") !important;
+}
+
+body.rj-community #channel-links .chat-channel-icon { background-size: 17px 17px; }
+
+/* „+” przy zasadach po prawej, nie pod tekstem */
+body.rj-community .rejchat-rules summary {
+  position: relative;
+  padding-right: 46px !important;
+}
+
+body.rj-community .rejchat-rules summary::after {
+  position: absolute !important;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(214, 226, 246, 0.8) !important;
+}
+
+/* aktywna rozmowa zachowuje swój znak „#” */
+body.rj-community #channel-general.chat-channel.is-active .chat-channel-icon {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230d1526' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 4 8 20M16 4l-2 16M4 9h16M3 15h16'/%3E%3C/svg%3E") !important;
+}
+
+body.rj-community .rejchat-rules summary {
+  gap: 10px !important;
+  padding: 12px 34px 12px 12px !important;
+}
+
+body.rj-community .rejchat-rules summary strong {
+  font-size: 12.5px !important;
+  white-space: nowrap;
+}
+
+body.rj-community .rejchat-rules summary small {
+  font-size: 10px !important;
+}
+
+body.rj-community .rejchat-rules summary > span[aria-hidden="true"] {
+  width: 34px !important;
+  height: 34px !important;
+  background-size: 16px 16px !important;
+}
+
+/* --- telefon: pasek statystyk jako jedna kapsuła po prawej --- */
+@media (max-width: 1199px) {
+  body.rj-home .rj-home-stats {
+    margin: 4px 12px 0;
+    padding: 0;
+    border: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  body.rj-home .rj-home-stats-inner {
+    width: max-content;
+    max-width: 100%;
+    padding: 4px 5px;
+    border: 1px solid var(--g-edge);
+    border-radius: 999px;
+    background: rgba(9, 15, 30, 0.66);
+    box-shadow: var(--g-shadow), var(--g-inset);
+    backdrop-filter: var(--g-lens);
+    -webkit-backdrop-filter: var(--g-lens);
+  }
+
+  body.rj-home .rj-home-stats .metric-badge {
+    min-height: 28px;
+    padding: 0 9px;
+    gap: 5px;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  body.rj-home .rj-home-stats .metric-badge-caption {
+    font-size: 8.5px;
+    letter-spacing: 0.1em;
+    color: rgba(214, 226, 246, 0.7) !important;
+  }
+
+  body.rj-home .rj-home-stats .online-count { font-size: 11px; }
+}
+
+/* ikona w karcie „Twój profil, Twój styl” */
+body.rj-community .rejchat-info-tip {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 4px 11px;
+}
+
+body.rj-community .rejchat-info-tip > span[aria-hidden="true"] {
+  display: grid !important;
+  place-items: center !important;
+  grid-row: 1 / span 2;
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(168, 200, 255, 0.3) !important;
+  background: rgba(168, 200, 255, 0.14) !important;
+  color: transparent !important;
+  font-size: 0 !important;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e4eeff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='8.5' r='3.4'/%3E%3Cpath d='M4.8 20a7.2 7.2 0 0 1 14.4 0'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 16px 16px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.26);
+}
+
+body.rj-community .rejchat-info-tip > p {
+  margin: 0;
+}
+
+body.rj-community .rejchat-info-tip > p strong {
+  color: #f4f8ff !important;
+  font-size: 12.5px;
+}
+
+body.rj-community .rejchat-info-tip > p {
+  color: rgba(200, 214, 236, 0.8) !important;
+  font-size: 10.5px;
+  line-height: 1.45;
+}
+
+body.rj-community .rejchat-info-tip > a {
+  grid-column: 2;
+  color: #cfdfff !important;
+  font-size: 10.5px;
+  font-weight: 650;
+}
+
+/* ==========================================================================
+   TRYB JASNY — domknięcie kontrastów (RejChat, karty, ikony)
+   ========================================================================== */
+html[data-theme="light"] body.rj-community :is(
+  .chat-channel strong,
+  .rejchat-rules summary strong,
+  .rejchat-info-tip > p strong,
+  .comm-chat-head h2,
+  .comm-chat h2,
+  .chat-room-heading h2
+) {
+  color: #16223a !important;
+}
+
+html[data-theme="light"] body.rj-community :is(
+  .chat-channel small,
+  .rejchat-rules summary small,
+  .rejchat-info-tip > p,
+  .rejchat-online-note,
+  .comm-chat-note
+) {
+  color: #4a5b78 !important;
+}
+
+html[data-theme="light"] body.rj-community .chat-channel:hover {
+  background: rgba(20, 40, 74, 0.05) !important;
+  border-color: rgba(20, 40, 74, 0.12) !important;
+}
+
+html[data-theme="light"] body.rj-community .chat-channel.is-active {
+  border-color: rgba(20, 40, 74, 0.16) !important;
+  background: linear-gradient(150deg, #1b3153, #2c4a78) !important;
+  box-shadow: 0 16px 32px -22px rgba(20, 40, 74, 0.7);
+}
+
+html[data-theme="light"] body.rj-community .chat-channel.is-active :is(strong) {
+  color: #f4f8ff !important;
+}
+
+html[data-theme="light"] body.rj-community .chat-channel.is-active small {
+  color: rgba(233, 240, 255, 0.8) !important;
+}
+
+html[data-theme="light"] body.rj-community :is(.chat-channel-icon, .rejchat-rules summary > span[aria-hidden="true"]) {
+  background-color: rgba(20, 40, 74, 0.08) !important;
+  border-color: rgba(20, 40, 74, 0.12) !important;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232b4a78' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='3.2'/%3E%3C/svg%3E") !important;
+}
+
+html[data-theme="light"] body.rj-community #channel-links .chat-channel-icon {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232b4a78' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 17 17 7M9 7h8v8'/%3E%3C/svg%3E") !important;
+}
+
+html[data-theme="light"] body.rj-community #channel-private .chat-channel-icon {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232b4a78' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5.5' width='18' height='13' rx='2.5'/%3E%3Cpath d='m4.5 8 7.5 5.5L19.5 8'/%3E%3C/svg%3E") !important;
+}
+
+html[data-theme="light"] body.rj-community .rejchat-rules summary > span[aria-hidden="true"] {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232b4a78' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3.5c.7 4.6 2.4 6.3 7 7-4.6.7-6.3 2.4-7 7-.7-4.6-2.4-6.3-7-7 4.6-.7 6.3-2.4 7-7Z'/%3E%3C/svg%3E") !important;
+}
+
+html[data-theme="light"] body.rj-community .rejchat-info-tip > span[aria-hidden="true"] {
+  background-color: rgba(20, 40, 74, 0.08) !important;
+  border-color: rgba(20, 40, 74, 0.12) !important;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232b4a78' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='8.5' r='3.4'/%3E%3Cpath d='M4.8 20a7.2 7.2 0 0 1 14.4 0'/%3E%3C/svg%3E") !important;
+}
+
+html[data-theme="light"] body.rj-community .rejchat-rules summary::after {
+  color: #43536e !important;
+}
+
+html[data-theme="light"] body.rj-community .rejchat-info-tip > a { color: #2b4a78 !important; }
+
+html[data-theme="light"] body.rj-community :is(.rejchat-info-heading span, .chat-channel-label) {
+  color: #5b6883 !important;
+}
+
+html[data-theme="light"] body.rj-home .rj-home-stats .metric-badge-caption { color: #4a5b78 !important; }
+html[data-theme="light"] body.rj-home .rj-home-stats .online-count { color: #16223a !important; }
+
+html[data-theme="light"] body.rj-home .rj-account-mini-icon {
+  background: rgba(63, 116, 201, 0.12) !important;
+  border-color: rgba(63, 116, 201, 0.24) !important;
+  color: #2b4a78 !important;
+}
+
+/* tryb jasny: opis w kartach reklam ma ciemny tusz */
+html[data-theme="light"] body .rj-side-ad span:not(.rj-side-ad-tag):not(.rj-side-ad-icon) {
+  color: #3f5069 !important;
+}
+
+html[data-theme="light"] body .rj-side-ad .rj-side-ad-icon {
+  background-color: rgba(20, 40, 74, 0.08) !important;
+}
+
+html[data-theme="light"] body .rj-side-ad--chat,
+html[data-theme="light"] body .rj-side-ad--file {
+  background-image: linear-gradient(158deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.6)) !important;
+}
+
+/* ==========================================================================
+   FORMULARZE — wybory, pola, strefy upuszczania na szkle
+   ========================================================================== */
+body :is(.choice, .share-options label, .rjc-choice, .mode-choice) {
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  border-radius: 16px !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
+  color: rgba(230, 238, 252, 0.9) !important;
+  transition: border-color 0.2s var(--hub-ease), background 0.2s var(--hub-ease);
+}
+
+body :is(.choice, .share-options label, .rjc-choice, .mode-choice):hover {
+  border-color: rgba(168, 200, 255, 0.34) !important;
+  background: rgba(255, 255, 255, 0.09) !important;
+}
+
+body :is(.choice, .share-options label, .rjc-choice, .mode-choice):has(input:checked) {
+  border-color: rgba(168, 200, 255, 0.5) !important;
+  background: linear-gradient(158deg, rgba(168, 200, 255, 0.22), rgba(168, 200, 255, 0.07)) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), 0 16px 34px -26px rgba(2, 6, 18, 0.9) !important;
+}
+
+body :is(.choice, .share-options label) :is(b, strong) { color: #f2f7ff !important; }
+body :is(.choice, .share-options label) small { color: rgba(206, 219, 240, 0.78) !important; }
+
+body :is(.file-drop, .drop-zone, .upload-drop, .file-dropzone) {
+  border: 1.5px dashed rgba(168, 200, 255, 0.36) !important;
+  border-radius: 20px !important;
+  background: rgba(255, 255, 255, 0.045) !important;
+  color: rgba(226, 235, 250, 0.9) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+  transition: border-color 0.2s var(--hub-ease), background 0.2s var(--hub-ease);
+}
+
+body :is(.file-drop, .drop-zone, .upload-drop, .file-dropzone):hover {
+  border-color: rgba(168, 200, 255, 0.6) !important;
+  background: rgba(168, 200, 255, 0.09) !important;
+}
+
+html[data-theme="light"] body :is(.choice, .share-options label, .rjc-choice, .mode-choice) {
+  border-color: rgba(20, 40, 74, 0.14) !important;
+  background: rgba(255, 255, 255, 0.7) !important;
+  color: #24324c !important;
+}
+
+html[data-theme="light"] body :is(.choice, .share-options label):has(input:checked) {
+  border-color: rgba(43, 74, 120, 0.4) !important;
+  background: linear-gradient(158deg, rgba(63, 116, 201, 0.16), rgba(63, 116, 201, 0.06)) !important;
+}
+
+html[data-theme="light"] body :is(.choice, .share-options label) :is(b, strong) { color: #16223a !important; }
+html[data-theme="light"] body :is(.choice, .share-options label) small { color: #4a5b78 !important; }
+
+html[data-theme="light"] body :is(.file-drop, .drop-zone, .upload-drop, .file-dropzone) {
+  border-color: rgba(43, 74, 120, 0.28) !important;
+  background: rgba(255, 255, 255, 0.58) !important;
+  color: #24324c !important;
+}
+
+/* --- spójne pigułki filtrów: jasne szkło zamiast miętowej zieleni --- */
+body :is(
+  .tools-filters button.is-active,
+  .tool-filters button[aria-pressed="true"],
+  .board-filters button.is-active,
+  .board-filters button[aria-pressed="true"],
+  .filter-chip.is-active,
+  .filter-chip[aria-pressed="true"],
+  .share-kind button[aria-pressed="true"],
+  .rjc-filters button.is-active,
+  .rjc-filters button[aria-pressed="true"],
+  .seg button[aria-pressed="true"],
+  .tabs button[aria-pressed="true"]
+) {
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  background: linear-gradient(150deg, #dbe6ff, #b9cdff) !important;
+  color: #101c30 !important;
+  box-shadow: inset 0 1px 0 #fff, 0 12px 26px -18px rgba(2, 6, 18, 0.9) !important;
+}
+
+body :is(.tools-filters button, .tool-filters button, .board-filters button, .filter-chip, .share-kind button, .rjc-filters button, .seg button, .tabs button) {
+  border-radius: 999px !important;
+}
+
+/* --- RejFile: wnętrze kart wyboru i strefa upuszczania --- */
+body .choice > span,
+body .share-options label > span {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+body .choice:has(input:checked) > span {
+  background: transparent !important;
+}
+
+body .dropzone {
+  border: 1.5px dashed rgba(168, 200, 255, 0.4) !important;
+  border-radius: 20px !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: rgba(230, 238, 252, 0.92) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
+}
+
+body .dropzone:hover,
+body .dropzone.is-drag {
+  border-color: rgba(168, 200, 255, 0.66) !important;
+  background: rgba(168, 200, 255, 0.1) !important;
+}
+
+body .dropzone :is(strong, b) { color: #f4f8ff !important; }
+body .dropzone small { color: rgba(198, 212, 236, 0.72) !important; }
+
+body .drop-icon {
+  display: grid !important;
+  place-items: center !important;
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 15px !important;
+  border: 1px solid rgba(255, 255, 255, 0.34) !important;
+  background: linear-gradient(158deg, rgba(255, 255, 255, 0.32), rgba(168, 200, 255, 0.16)) !important;
+  color: transparent !important;
+  font-size: 0 !important;
+  background-image:
+    linear-gradient(158deg, rgba(255, 255, 255, 0.3), rgba(168, 200, 255, 0.14)) !important;
+  position: relative;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+body .drop-icon::after {
+  content: "";
+  width: 18px;
+  height: 18px;
+  background: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23eaf2ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 16V4m-5 5 5-5 5 5M5 19h14'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+
+html[data-theme="light"] body :is(.tools-filters button.is-active, .tool-filters button[aria-pressed="true"], .board-filters button[aria-pressed="true"], .filter-chip[aria-pressed="true"], .share-kind button[aria-pressed="true"], .seg button[aria-pressed="true"]) {
+  background: linear-gradient(150deg, #1b3153, #2c4a78) !important;
+  border-color: rgba(20, 40, 74, 0.2) !important;
+  color: #f4f8ff !important;
+}
+
+html[data-theme="light"] body .dropzone {
+  background: rgba(255, 255, 255, 0.62) !important;
+  border-color: rgba(43, 74, 120, 0.28) !important;
+  color: #24324c !important;
+}
+
+html[data-theme="light"] body .dropzone :is(strong, b) { color: #16223a !important; }
+html[data-theme="light"] body .dropzone small { color: #4a5b78 !important; }
+
+html[data-theme="light"] body .drop-icon {
+  background: rgba(63, 116, 201, 0.12) !important;
+  border-color: rgba(63, 116, 201, 0.22) !important;
+}
+
+html[data-theme="light"] body .drop-icon::after {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232b4a78' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 16V4m-5 5 5-5 5 5M5 19h14'/%3E%3C/svg%3E");
+}
+
+/* ==========================================================================
+   REJTOOLS — ikony narzędzi jako SVG (glify bywają nieobsługiwane)
+   ========================================================================== */
+body.rj-tools .tool-icon {
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 14px !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 19px 19px;
+  color: transparent !important;
+  font-size: 0 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+body.rj-tools .tool-icon.mint {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a6f0dd' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 8h13m0 0-3-3m3 3-3 3M20 16H7m0 0 3-3m-3 3 3 3'/%3E%3C/svg%3E") !important;
+}
+
+body.rj-tools .tool-icon.blue {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23bcd4ff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 3h8l4 4v14H6z'/%3E%3Cpath d='M14 3v5h4'/%3E%3C/svg%3E") !important;
+}
+
+body.rj-tools .tool-icon.lavender {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d5caff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 7h16M4 12h10M4 17h7'/%3E%3C/svg%3E") !important;
+}
+
+body.rj-tools .tool-icon.pink {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffc4de' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 18 18 6M8.5 7.5h.01M15.5 16.5h.01'/%3E%3Ccircle cx='8' cy='8' r='1.6'/%3E%3Ccircle cx='16' cy='16' r='1.6'/%3E%3C/svg%3E") !important;
+}
+
+body.rj-tools .tool-icon.amber {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffd7a3' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M13 3 5 14h6l-1 7 8-11h-6z'/%3E%3C/svg%3E") !important;
+}
+
+body.rj-tools .tool-icon:not(.mint):not(.blue):not(.lavender):not(.pink):not(.amber) {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23dce8ff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 4v16M4 12h16'/%3E%3C/svg%3E") !important;
+}
+
+/* ikony w kartach wyboru przedmiotu RejClass */
+body.rj-class .rjc-subject > b {
+  display: grid !important;
+  place-items: center !important;
+  color: #dbe8ff !important;
+}
+
+/* --- RejClass: etykieta biblioteki jak odznaka, nie pasek na całą szerokość --- */
+body.rj-class .rjc-kicker {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 7px;
+  width: fit-content !important;
+  padding: 6px 12px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(168, 200, 255, 0.3) !important;
+  background: rgba(168, 200, 255, 0.12) !important;
+  color: #cfdfff !important;
+  font-size: 9.5px !important;
+  letter-spacing: 0.14em !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+body.rj-class .rjc-library-stamp {
+  border: 1px solid rgba(168, 200, 255, 0.28) !important;
+  border-radius: 16px !important;
+  background: rgba(168, 200, 255, 0.1) !important;
+  color: rgba(214, 228, 250, 0.8) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+body.rj-class .rjc-library-stamp b { color: #e8f1ff !important; }
+
+html[data-theme="light"] body.rj-class .rjc-kicker {
+  border-color: rgba(63, 116, 201, 0.28) !important;
+  background: rgba(63, 116, 201, 0.1) !important;
+  color: #2b4a78 !important;
+}
+
+html[data-theme="light"] body.rj-class .rjc-library-stamp {
+  border-color: rgba(20, 40, 74, 0.14) !important;
+  background: rgba(255, 255, 255, 0.7) !important;
+  color: #4a5b78 !important;
+}
+
+html[data-theme="light"] body.rj-class .rjc-library-stamp b { color: #16223a !important; }
+
+/* --- RejClass: kafle przedmiotów na szkle, ikony odporne na brak glifów --- */
+body.rj-class .rjc-subject-icon {
+  display: grid !important;
+  place-items: center !important;
+  width: 46px !important;
+  height: 46px !important;
+  flex: none;
+  border-radius: 15px !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  background: linear-gradient(158deg, rgba(255, 255, 255, 0.2), rgba(168, 200, 255, 0.1)) !important;
+  color: #e8f1ff !important;
+  font-size: 18px !important;
+  line-height: 1 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+body.rj-class .rjc-subject[data-subject="biology"] .rjc-subject-icon,
+body.rj-class .rjc-subject[data-subject="chemia"] .rjc-subject-icon {
+  color: transparent !important;
+  font-size: 0 !important;
+  background-size: 22px 22px;
+}
+
+body.rj-class .rjc-subject[data-subject="biology"] .rjc-subject-icon {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23c9f4e4' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 3c5 2 8 6 8 11a7 7 0 0 1-1.6 4.6M16 21c-5-2-8-6-8-11a7 7 0 0 1 1.6-4.6M7.5 9h9M8 14h8'/%3E%3C/svg%3E") !important;
+}
+
+body.rj-class .rjc-subject[data-subject="chemia"] .rjc-subject-icon {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23d5caff' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 3h6M10 3v6.2L5.6 17A3 3 0 0 0 8.2 21h7.6a3 3 0 0 0 2.6-4L14 9.2V3'/%3E%3Cpath d='M7.4 15h9.2'/%3E%3C/svg%3E") !important;
+}
+
+body.rj-class .rjc-subject[data-subject="english"] .rjc-subject-icon { color: #cfe0ff !important; font-weight: 700 !important; letter-spacing: -0.02em; }
+body.rj-class .rjc-subject[data-subject="matematyka"] .rjc-subject-icon { color: #bfe6ff !important; }
+body.rj-class .rjc-subject[data-subject="polski"] .rjc-subject-icon { color: #ffd9c4 !important; }
+
+body.rj-class .rjc-subject {
+  border: 1px solid var(--g-edge) !important;
+  border-radius: 22px !important;
+  background-color: rgba(11, 18, 34, 0.62) !important;
+  background-image:
+    radial-gradient(120% 120% at 0% 0%, rgba(168, 200, 255, 0.12), transparent 58%),
+    linear-gradient(158deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02)) !important;
+  box-shadow: var(--g-shadow), var(--g-inset) !important;
+  backdrop-filter: var(--g-lens);
+  -webkit-backdrop-filter: var(--g-lens);
+  transition: transform 0.25s var(--hub-ease), border-color 0.25s var(--hub-ease);
+}
+
+body.rj-class .rjc-subject:hover,
+body.rj-class .rjc-subject:focus-visible {
+  transform: translateY(-2px);
+  border-color: rgba(168, 200, 255, 0.5) !important;
+}
+
+html[data-theme="light"] body.rj-class .rjc-subject {
+  background-color: rgba(255, 255, 255, 0.7) !important;
+  background-image: linear-gradient(158deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.5)) !important;
+}
+
+html[data-theme="light"] body.rj-class .rjc-subject-icon {
+  border-color: rgba(20, 40, 74, 0.12) !important;
+  background-color: rgba(63, 116, 201, 0.1) !important;
+}
+
+/* --- odznaka „eyebrow”: kropka ma być kropką, tekst bez miętowego tła --- */
+body .eyebrow > span:not(.eyebrow-dot) {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+}
+
+body .eyebrow > .eyebrow-dot {
+  flex: none;
+  width: 6px !important;
+  height: 6px !important;
+  border-radius: 50% !important;
+}
+
+body .eyebrow {
+  gap: 8px;
+}
+
+/* --- panel admina: karta logowania na ciemnym szkle, czytelne pola --- */
+body.rj-admin .auth-card {
+  background-color: rgba(11, 18, 34, 0.74) !important;
+  background-image:
+    radial-gradient(120% 120% at 100% 0%, rgba(193, 188, 255, 0.14), transparent 58%),
+    linear-gradient(158deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.02)) !important;
+  border: 1px solid var(--g-edge) !important;
+  border-radius: 26px !important;
+  box-shadow: var(--g-shadow), var(--g-inset) !important;
+  backdrop-filter: var(--g-lens);
+  -webkit-backdrop-filter: var(--g-lens);
+}
+
+body.rj-admin .auth-card :is(h1, .field-label) { color: #f2f7ff !important; }
+body.rj-admin .auth-card .auth-sub { color: rgba(206, 219, 240, 0.82) !important; }
+
+body.rj-admin .auth-card .ctrl-input {
+  border-radius: 14px !important;
+  border: 1px solid rgba(255, 255, 255, 0.18) !important;
+  background: rgba(255, 255, 255, 0.07) !important;
+  color: #f2f7ff !important;
+}
+
+body.rj-admin .auth-card .page-mark {
+  color: #cfdfff !important;
+}
+
+html[data-theme="light"] body.rj-admin .auth-card {
+  background-color: rgba(255, 255, 255, 0.78) !important;
+  background-image: linear-gradient(158deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.5)) !important;
+}
+
+html[data-theme="light"] body.rj-admin .auth-card :is(h1, .field-label) { color: #16223a !important; }
+html[data-theme="light"] body.rj-admin .auth-card .auth-sub { color: #4a5b78 !important; }
+html[data-theme="light"] body.rj-admin .auth-card .ctrl-input {
+  border-color: rgba(20, 40, 74, 0.16) !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  color: #16223a !important;
+}
+
+/* --- profil: komunikat statusu na szkle, nie na kryjącej płycie --- */
+body.rj-account .profile-status,
+body.rj-profile-page .profile-status {
+  padding: 22px !important;
+  border: 1px solid var(--g-edge) !important;
+  border-radius: 22px !important;
+  background: linear-gradient(158deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02)) !important;
+  background-color: rgba(11, 18, 34, 0.62) !important;
+  box-shadow: var(--g-shadow), var(--g-inset) !important;
+  backdrop-filter: var(--g-lens);
+  -webkit-backdrop-filter: var(--g-lens);
+  color: #edf3ff !important;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+body.rj-account .profile-status a,
+body.rj-profile-page .profile-status a {
+  color: #cfdfff !important;
+  font-weight: 650;
+}
+
+body.rj-account .profile-eyebrow,
+body.rj-profile-page .profile-eyebrow {
+  color: #bcd2ff !important;
+  letter-spacing: 0.16em !important;
+  font-weight: 800;
+}
+
+body.rj-account .profile-back,
+body.rj-profile-page .profile-back {
+  color: rgba(214, 226, 246, 0.86) !important;
+  text-decoration: none !important;
+}
+
+html[data-theme="light"] body.rj-profile-page .profile-status {
+  background-color: rgba(255, 255, 255, 0.78) !important;
+  background-image: linear-gradient(158deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.52)) !important;
+  color: #16223a !important;
+}
+
+html[data-theme="light"] body.rj-profile-page .profile-status a { color: #2b4a78 !important; }
+html[data-theme="light"] body.rj-profile-page .profile-eyebrow { color: #3f74c9 !important; }
+html[data-theme="light"] body.rj-profile-page .profile-back { color: #3f5069 !important; }
+
+/* --- profil: stopka konta czytelna na tapecie --- */
+body.rj-profile-page .profile-footer {
+  margin-top: 22px;
+  color: rgba(206, 219, 240, 0.82) !important;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+body.rj-profile-page .profile-footer a {
+  color: #cfdfff !important;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+html[data-theme="light"] body.rj-profile-page .profile-footer { color: #4a5b78 !important; }
+html[data-theme="light"] body.rj-profile-page .profile-footer a { color: #2b4a78 !important; }
+
+/* ==========================================================================
+   TRYB JASNY — akcenty w nagłówkach podstron
+   ========================================================================== */
+html[data-theme="light"] body :is(h1, h2, h3) em,
+html[data-theme="light"] body.rj-tools .tools-hero em,
+html[data-theme="light"] body.rj-partner :is(h2, h1) span {
+  color: #3f74c9 !important;
+  -webkit-text-fill-color: #3f74c9;
+  background: none !important;
+}
+
+html[data-theme="light"] body :is(
+  .tools-eyebrow,
+  .board-eyebrow,
+  .partner-eyebrow,
+  .services-eyebrow,
+  .files-eyebrow,
+  .profile-eyebrow,
+  .rjc-library-stamp,
+  .showcase-kicker,
+  .rjc-kicker
+) {
+  color: #3f74c9 !important;
+}
+
+html[data-theme="light"] body .tools-hero .tools-lead,
+html[data-theme="light"] body .board-hero p,
+html[data-theme="light"] body .partner-hero p,
+html[data-theme="light"] body .files-hero p {
+  color: #3f5069 !important;
+}
+
+html[data-theme="light"] body :is(.tools-lead, .services-lead, .partner-lead, .rjc-lead, .files-lead, .board-lead) {
+  color: #2b3a55 !important;
+}
+
+html[data-theme="light"] body :is(.tools-local, .tools-results, .tools-hint, .board-updated, .services-note) {
+  color: #43536e !important;
+}
+
+/* --- tryb jasny: segmenty filtrów i przyciski na jasnym szkle --- */
+html[data-theme="light"] body :is(.seg-btn, .seg-filter button, .board-filters button, .tool-filters button, .tools-filters button, .rjc-filters button) {
+  color: #2b3a55 !important;
+  border-color: rgba(20, 40, 74, 0.16) !important;
+  background: rgba(255, 255, 255, 0.62) !important;
+}
+
+html[data-theme="light"] body :is(.seg-btn.is-active, .seg-btn[aria-pressed="true"], .board-filters button.is-active, .tool-filters button.is-active, .tools-filters button.is-active, .rjc-filters button.is-active) {
+  color: #f4f8ff !important;
+  background: linear-gradient(150deg, #1b3153, #2c4a78) !important;
+  border-color: rgba(20, 40, 74, 0.24) !important;
+}
+
+html[data-theme="light"] body :is(.board-kpis, .kpi-card, .adm-kpi) :is(b, strong, .num, .value) {
+  color: #16223a !important;
+}
+
+html[data-theme="light"] body :is(.board-kpis, .kpi-card, .adm-kpi) {
+  background-color: rgba(255, 255, 255, 0.72) !important;
+}
+
+html[data-theme="light"] body :is(.tools-filters, .seg-filter, .board-filters) {
+  background-color: rgba(255, 255, 255, 0.55) !important;
+  border-color: rgba(20, 40, 74, 0.12) !important;
+}
+
+/* przyciski w jasnym motywie nie mogą być „duchami” */
+html[data-theme="light"] body :is(button, .btn, .rj-cta, a.btn):not(.metric-badge):not(.theme-toggle):not(.hamburger-btn):not(.site-nav a):not(:disabled) {
+  color: #1d2a44;
+}
+
+html[data-theme="light"] body :is(.btn-primary, .btn-live, .rj-primary, .rjc-primary, button[type="submit"]):not(:disabled) {
+  color: #f4f8ff !important;
+}
+
+/* jasny motyw: przyciski-akcje na szkle czytelne, także ikonowe */
+html[data-theme="light"] body :is(.rj-chat-alert-refresh, .feed-refresh, .board-refresh, .refresh-btn) {
+  color: #1d2a44 !important;
+  border-color: rgba(20, 40, 74, 0.18) !important;
+  background: rgba(255, 255, 255, 0.72) !important;
+}
+
+html[data-theme="light"] body :is(.rj-chat-alert-refresh, .feed-refresh, .board-refresh, .refresh-btn) svg {
+  color: #2b4a78 !important;
+  stroke: currentColor !important;
+}
+
+/* jasny motyw: btn-glass to zwykły, ciemny przycisk na mlecznym szkle */
+html[data-theme="light"] body :is(.btn-glass, .btn.btn-glass) {
+  background: rgba(255, 255, 255, 0.82) !important;
+  color: #1d2a44 !important;
+  border-color: rgba(20, 40, 74, 0.16) !important;
+  box-shadow: 0 12px 26px -20px rgba(30, 48, 82, 0.5), inset 0 1px 0 #fff !important;
+}
+
+html[data-theme="light"] body :is(.btn-glass, .btn.btn-glass):hover {
+  background: #fff !important;
+}
+
+/* ==========================================================================
+   TRYB JASNY — domknięcie: kapsuła statystyk, karta konta, przycisk główny
+   ========================================================================== */
+html[data-theme="light"] body.rj-home .rj-home-stats {
+  background: none !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html[data-theme="light"] body.rj-home .rj-home-stats-inner {
+  background: rgba(255, 255, 255, 0.78) !important;
+  border: 1px solid #ffffff !important;
+  border-radius: 999px !important;
+  box-shadow: 0 18px 40px -30px rgba(30, 48, 82, 0.55), inset 0 1px 0 #fff !important;
+}
+
+html[data-theme="light"] body.rj-home .rj-account-mini-card {
+  background-color: rgba(255, 255, 255, 0.82) !important;
+  background-image: linear-gradient(158deg, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.6)) !important;
+  border-color: #ffffff !important;
+  box-shadow: 0 26px 60px -34px rgba(30, 48, 82, 0.4), inset 0 1px 0 #fff !important;
+}
+
+html[data-theme="light"] body.rj-home #rj-account-mini-title {
+  color: #16223a !important;
+}
+
+html[data-theme="light"] body.rj-home #rj-account-mini-description {
+  color: #43536e !important;
+}
+
+html[data-theme="light"] body :is(.btn-primary, .btn-live, .rj-primary, .rjc-primary, button[type="submit"]):not(:disabled) {
+  background: linear-gradient(150deg, #1b3153, #2c4a78) !important;
+  border-color: rgba(20, 40, 74, 0.28) !important;
+  color: #f4f8ff !important;
+  box-shadow: 0 16px 34px -22px rgba(20, 40, 74, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.28) !important;
+}
+
+html[data-theme="light"] body :is(.btn-ghost, .secondary, .btn-secondary, .account-link) {
+  background: rgba(255, 255, 255, 0.8) !important;
+  border-color: #ffffff !important;
+  color: #1d2a44 !important;
+  box-shadow: 0 12px 28px -22px rgba(30, 48, 82, 0.5), inset 0 1px 0 #fff !important;
+}
+
+/* karta konta w trybie jasnym — reguły z selektorem #id muszą mieć tę samą wagę */
+html[data-theme="light"] body.rj-home #rj-account-mini-open {
+  background: linear-gradient(150deg, #1b3153, #2c4a78) !important;
+  border-color: rgba(20, 40, 74, 0.24) !important;
+  color: #f4f8ff !important;
+  box-shadow: 0 14px 30px -20px rgba(20, 40, 74, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.26) !important;
+}
+
+html[data-theme="light"] body.rj-home #rj-account-mini-link {
+  color: #2b4a78 !important;
+  font-weight: 650;
+}
+
+html[data-theme="light"] body.rj-home #rj-account-mini-title {
+  color: #16223a !important;
+}
+
+html[data-theme="light"] body.rj-home #rj-account-mini-description {
+  color: #43536e !important;
+}
+
+/* ==========================================================================
+   KARTA KONTA — jasny przycisk w ciemnym motywie, czytelny odnośnik
+   ========================================================================== */
+body.rj-home #rj-account-mini-open {
+  border: 1px solid rgba(255, 255, 255, 0.34) !important;
+  background: linear-gradient(150deg, #eef4ff, #c7d8ff) !important;
+  color: #101c30 !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  min-height: 34px;
+  box-shadow: inset 0 1px 0 #fff, 0 12px 24px -18px rgba(130, 165, 255, 0.9) !important;
+}
+
+body.rj-home #rj-account-mini-open:hover {
+  filter: brightness(1.04);
+}
+
+body.rj-home #rj-account-mini-link {
+  color: #dbe7ff !important;
+  font-size: 10.5px !important;
+  font-weight: 650 !important;
+  text-decoration: underline !important;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(219, 231, 255, 0.5);
+}
+
+body.rj-home #rj-account-mini-link:hover {
+  text-decoration-color: #dbe7ff;
+}
+
+html[data-theme="light"] body.rj-home #rj-account-mini-link {
+  color: #2b4a78 !important;
+  text-decoration-color: rgba(43, 74, 120, 0.45);
+}
+
+/* etykieta „TWOJE KONTO” była zbyt ciemna na granatowym szkle */
+body.rj-home #rj-account-mini-title + * { }
+body.rj-home .rj-account-mini-label {
+  color: #a9c4f2 !important;
+  text-shadow: 0 1px 8px rgba(4, 8, 18, 0.6);
+}
+
+/* etykieta konta jako mała ciemna plakietka — czytelna na jasnym fragmencie tapety */
+body.rj-home .rj-account-mini-label {
+  display: inline-flex !important;
+  align-items: center;
+  width: fit-content;
+  margin: 0;
+  padding: 3px 8px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(168, 200, 255, 0.28) !important;
+  background: rgba(6, 11, 22, 0.5) !important;
+  color: #cfe0ff !important;
+  font-size: 9px !important;
+  letter-spacing: 0.14em !important;
+  text-shadow: none !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+html[data-theme="light"] body.rj-home .rj-account-mini-label {
+  background: rgba(63, 116, 201, 0.1) !important;
+  border-color: rgba(63, 116, 201, 0.24) !important;
+  color: #2b4a78 !important;
+}
+
+/* ==========================================================================
+   TRYB JASNY — drobnice, które zostawały jasne na jasnym szkle
+   ========================================================================== */
+html[data-theme="light"] body :is(.card-index, .project-card .card-index) {
+  color: #5b6883 !important;
+}
+
+html[data-theme="light"] body :is(.card-meta, .card-since, .card-updated) {
+  color: #43536e !important;
+}
+
+html[data-theme="light"] body.rj-files :is(.files-hero .files-pills span, .files-hero span, .files-facts span) {
+  color: #2b4a78 !important;
+  border-color: rgba(20, 40, 74, 0.14) !important;
+  background: rgba(255, 255, 255, 0.7) !important;
+}
+
+html[data-theme="light"] body.rj-home :is(.rj-premium__head, .rj-premium__dot) {
+  color: #2b4a78 !important;
+}
+
+html[data-theme="light"] body.rj-home .rj-premium__dot {
+  background: #12a37c !important;
+}
+
+html[data-theme="light"] body.rj-home :is(.rj-club-title, .rj-premium__list b, .rj-premium__list strong) {
+  color: #16223a !important;
+}
+
+html[data-theme="light"] body.rj-home :is(.rj-club-lead, .rj-club-note, .rj-premium__list li) {
+  color: #43536e !important;
+}
+
+html[data-theme="light"] body.rj-home .rj-premium {
+  background-color: rgba(255, 255, 255, 0.8) !important;
+  background-image: linear-gradient(158deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.56)) !important;
+  border-color: #fff !important;
+}
+
+/* ciemna karta „wyślij coś przez RejFile” w RejTools — w jasnym motywie też szkło */
+html[data-theme="light"] body.rj-tools .tool-more {
+  background-color: rgba(255, 255, 255, 0.8) !important;
+  background-image: linear-gradient(158deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.56)) !important;
+  border: 1px solid #fff !important;
+  color: #16223a !important;
+  box-shadow: 0 22px 50px -34px rgba(30, 48, 82, 0.5), inset 0 1px 0 #fff !important;
+}
+
+html[data-theme="light"] body.rj-tools .tool-more :is(.tool-type, b, h2, p) {
+  color: #2b3a55 !important;
+}
+
+html[data-theme="light"] body.rj-tools .tool-more b { color: #2b4a78 !important; }
+
+html[data-theme="light"] body.rj-tools .tool-more .tool-icon {
+  border-color: rgba(20, 40, 74, 0.12) !important;
+  background-color: rgba(63, 116, 201, 0.1) !important;
+}
+
+/* CTA „Porozmawiajmy o Twojej stronie” — jasne szkło zamiast miętowego bloku */
+body :is(.services-hero .btn, .services-cta, .services-hero a.btn) {
+  background: linear-gradient(150deg, #eaf2ff, #c3d6ff) !important;
+  border: 1px solid rgba(255, 255, 255, 0.42) !important;
+  color: #101c30 !important;
+  font-weight: 700 !important;
+  box-shadow: inset 0 1px 0 #fff, 0 18px 36px -22px rgba(130, 165, 255, 0.9) !important;
+}
+
+html[data-theme="light"] body :is(.services-hero .btn, .services-cta, .services-hero a.btn) {
+  background: linear-gradient(150deg, #1b3153, #2c4a78) !important;
+  color: #f4f8ff !important;
+  border-color: rgba(20, 40, 74, 0.24) !important;
+}
+
+/* CTA Usług — właściwa klasa i jasne szkło w ciemnym motywie */
+body .services-primary,
+body .services-actions .services-primary {
+  border: 1px solid rgba(255, 255, 255, 0.42) !important;
+  background: linear-gradient(150deg, #eaf2ff, #c3d6ff) !important;
+  color: #101c30 !important;
+  font-weight: 750 !important;
+  border-radius: 999px !important;
+  box-shadow: inset 0 1px 0 #fff, 0 18px 36px -22px rgba(130, 165, 255, 0.9) !important;
+}
+
+body .services-secondary {
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  border-radius: 999px !important;
+  padding: 10px 16px !important;
+  background: rgba(255, 255, 255, 0.07) !important;
+  color: #edf3ff !important;
+  text-decoration: none !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+
+html[data-theme="light"] body .services-primary {
+  background: linear-gradient(150deg, #1b3153, #2c4a78) !important;
+  color: #f4f8ff !important;
+  border-color: rgba(20, 40, 74, 0.24) !important;
+}
+
+html[data-theme="light"] body .services-secondary {
+  background: rgba(255, 255, 255, 0.8) !important;
+  border-color: #fff !important;
+  color: #1d2a44 !important;
+}
