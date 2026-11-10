@@ -23,8 +23,8 @@ function checkStructure() {
 
   /* 1. Każda zwykła podstrona RejHuba ma wyspę. */
   EXPECTED_WITH_ISLAND.forEach(({ file, html }) => {
-    assert.ok(html.includes('/hub/island.js?v=3'), file + ': brak wyspy');
-    assert.ok(html.includes('/hub/island.css?v=2'), file + ': brak arkusza wyspy');
+    assert.ok(html.includes('/hub/island.js?v=4'), file + ': brak wyspy');
+    assert.ok(html.includes('/hub/island.css?v=3'), file + ': brak arkusza wyspy');
     /* RejSejf trzyma wyłączony znacznik (type="application/json") — to nie ładowanie. */
     const widgets = html.match(/<script[^>]*src="[^"]*widget\.js[^"]*"[^>]*>/g) || [];
     const activeWidget = widgets.filter((tag) => !/application\/json/.test(tag));
@@ -60,7 +60,7 @@ function checkStructure() {
 
 function buildPage() {
   return '<!doctype html><html lang="pl" data-theme="dark"><head><meta charset="utf-8">' +
-    '<script src="/hub/island.js?v=3" data-project="rejhub" data-project-name="RejHub"></script>' +
+    '<script src="/hub/island.js?v=4" data-project="rejhub" data-project-name="RejHub"></script>' +
     '</head><body>' +
     '<header class="rj-shared-header"><nav><a href="/rejchat">RejChat</a><a href="/rejfile">RejFile</a></nav></header>' +
     '<main><h1>Test</h1><button type="button" data-feedback-project="RejStream">Zgłoś</button>' +
@@ -127,7 +127,12 @@ async function checkBehaviour() {
   /* wyspa montuje się po DOMContentLoaded, a sprężyna pisze style w rAF */
   await wait(180);
 
-  const island = d.querySelector('#rj-island-root .rj-island');
+  /* Wyspa siedzi w shadow DOM — pytamy jej własne drzewo, nie dokument. */
+  const host = d.getElementById('rj-island-root');
+  assert.ok(host && host.shadowRoot, 'wyspa ma własne drzewo (shadow DOM)');
+  const ui = (sel) => host.shadowRoot.querySelector(sel);
+  const uiAll = (sel) => Array.from(host.shadowRoot.querySelectorAll(sel));
+  const island = ui('.rj-island');
   assert.ok(island, 'wyspa się zamontowała');
   assert.equal(island.dataset.state, 'idle');
   assert.ok(/px$/.test(island.style.width), 'JS ustawia szerokość sprężyny');
@@ -138,17 +143,17 @@ async function checkBehaviour() {
   island.click();
   await wait(20);
   assert.equal(island.dataset.state, 'dock', 'klik rozwija dock');
-  assert.equal(d.querySelectorAll('.rj-dock-btn').length, 8, 'osiem funkcji w docku');
+  assert.equal(uiAll('.rj-dock-btn').length, 8, 'osiem funkcji w docku');
 
   /* — zgłoszenie: walidacja, potem prawdziwy RPC — */
-  d.querySelector('.rj-dock-btn[data-open="report"]').click();
+  ui('.rj-dock-btn[data-open="report"]').click();
   await wait(20);
   assert.equal(island.dataset.state, 'report');
-  d.querySelector('[data-send]').click();
-  assert.ok(/Napisz/.test(d.querySelector('.rj-toast').textContent), 'puste zgłoszenie nie leci do bazy');
+  ui('[data-send]').click();
+  assert.ok(/Napisz/.test(ui('.rj-toast').textContent), 'puste zgłoszenie nie leci do bazy');
 
-  d.getElementById('rj-island-text').value = 'Nie działa podgląd na telefonie';
-  d.querySelector('[data-send]').click();
+  ui('#rj-island-text').value = 'Nie działa podgląd na telefonie';
+  ui('[data-send]').click();
   await wait(60);
   const submit = calls.find((call) => /submit_feedback/.test(call.url));
   assert.ok(submit, 'zgłoszenie poszło do submit_feedback');
@@ -163,75 +168,75 @@ async function checkBehaviour() {
   d.querySelector('[data-feedback-project="RejStream"]').click();
   await wait(20);
   assert.equal(island.dataset.state, 'report');
-  assert.ok(/RejStream/.test(d.querySelector('[data-report-project]').textContent), 'projekt trafia do zgłoszenia');
+  assert.ok(/RejStream/.test(ui('[data-report-project]').textContent), 'projekt trafia do zgłoszenia');
 
   /* — wyszukiwanie: prawdziwe linki + akcje — */
-  d.querySelector('[data-close]').click();
+  ui('[data-close]').click();
   await wait(10);
   island.click();
   await wait(10);
-  d.querySelector('.rj-dock-btn[data-open="search"]').click();
+  ui('.rj-dock-btn[data-open="search"]').click();
   await wait(20);
   assert.equal(island.dataset.state, 'search');
-  const input = d.getElementById('rj-island-search');
+  const input = ui('#rj-island-search');
   input.value = 'czat';
   input.dispatchEvent(new w.Event('input', { bubbles: true }));
-  const results = Array.from(d.querySelectorAll('#rj-island-results .rj-item')).map((el) => el.textContent);
+  const results = uiAll('#rj-island-results .rj-item').map((el) => el.textContent);
   assert.ok(results.some((text) => /RejChat/.test(text)), 'wyszukiwanie znajduje prawdziwy link ze strony');
 
   /* — powiadomienia: prawdziwe RPC RejChat — */
-  d.querySelector('[data-close]').click();
+  ui('[data-close]').click();
   island.click();
   await wait(10);
-  d.querySelector('.rj-dock-btn[data-open="alerts"]').click();
+  ui('.rj-dock-btn[data-open="alerts"]').click();
   await wait(40);
-  assert.equal(d.querySelectorAll('.rj-alert').length, 2, 'dwa powiadomienia z RejChat');
-  assert.ok(d.querySelector('.rj-dock-btn[data-open="alerts"]').classList.contains('has-dot'), 'kropka nieprzeczytanych');
-  assert.ok(/Lusi/.test(d.querySelector('#rj-island-alerts').textContent));
+  assert.equal(uiAll('.rj-alert').length, 2, 'dwa powiadomienia z RejChat');
+  assert.ok(ui('.rj-dock-btn[data-open="alerts"]').classList.contains('has-dot'), 'kropka nieprzeczytanych');
+  assert.ok(/Lusi/.test(ui('#rj-island-alerts').textContent));
 
   /* — motyw i animacje — */
-  d.querySelector('[data-close]').click();
+  ui('[data-close]').click();
   island.click();
   await wait(10);
-  d.querySelector('.rj-dock-btn[data-open="theme"]').click();
+  ui('.rj-dock-btn[data-open="theme"]').click();
   await wait(10);
-  d.querySelector('[data-switch="theme"]').click();
+  ui('[data-switch="theme"]').click();
   assert.equal(d.documentElement.dataset.theme, 'light', 'motyw się przełącza');
   assert.equal(w.localStorage.getItem('theme'), 'light', 'motyw zapisany jak w resztę strony');
-  d.querySelector('[data-switch="motion"]').click();
-  assert.equal(d.querySelector('[data-switch="motion"]').getAttribute('aria-pressed'), 'false', 'przełącznik animacji działa');
+  ui('[data-switch="motion"]').click();
+  assert.equal(ui('[data-switch="motion"]').getAttribute('aria-pressed'), 'false', 'przełącznik animacji działa');
 
   /* — profil — */
-  d.querySelector('[data-close]').click();
+  ui('[data-close]').click();
   island.click();
   await wait(10);
-  d.querySelector('.rj-dock-btn[data-open="profile"]').click();
+  ui('.rj-dock-btn[data-open="profile"]').click();
   await wait(30);
-  assert.ok(/rejson59/.test(d.querySelector('#rj-island-profile').textContent), 'profil pokazuje zalogowanego użytkownika');
+  assert.ok(/rejson59/.test(ui('#rj-island-profile').textContent), 'profil pokazuje zalogowanego użytkownika');
 
   /* — teraz gra: prawdziwy element audio — */
-  d.querySelector('[data-close]').click();
+  ui('[data-close]').click();
   island.click();
   await wait(10);
-  d.querySelector('.rj-dock-btn[data-open="now"]').click();
+  ui('.rj-dock-btn[data-open="now"]').click();
   await wait(10);
-  assert.ok(/Nocne światła/.test(d.querySelector('#rj-island-now').textContent), 'czyta tytuł z odtwarzacza');
+  assert.ok(/Nocne światła/.test(ui('#rj-island-now').textContent), 'czyta tytuł z odtwarzacza');
 
   /* — autodestrukcja: potwierdzenie i prawdziwy RejPanic — */
-  d.querySelector('[data-close]').click();
+  ui('[data-close]').click();
   island.click();
   await wait(10);
-  d.querySelector('.rj-dock-btn[data-open="panic"]').click();
+  ui('.rj-dock-btn[data-open="panic"]').click();
   await wait(10);
-  assert.ok(d.querySelector('[data-close]'), 'jest wyjście bez zamykania');
-  d.querySelector('[data-panic]').click();
+  assert.ok(ui('[data-close]'), 'jest wyjście bez zamykania');
+  ui('[data-panic]').click();
   assert.ok(panicked, 'RejPanic.run został wywołany');
 
   /* — klawiatura: bez skrótów, zostaje Esc — */
   d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true, cancelable: true }));
   await wait(20);
   assert.notEqual(island.dataset.state, 'search', 'skrót klawiszowy nie otwiera już wyszukiwania');
-  d.querySelector('.rj-dock-btn[data-open="search"]').click();
+  ui('.rj-dock-btn[data-open="search"]').click();
   await wait(20);
   assert.equal(island.dataset.state, 'search', 'wyszukiwanie otwiera się przyciskiem');
   d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));

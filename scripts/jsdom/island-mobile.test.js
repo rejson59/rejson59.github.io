@@ -55,12 +55,26 @@ function checkSources() {
   assert.match(source, /function rebuild\(\)/, 'jest odbudowa uszkodzonej wyspy');
   assert.match(source, /function resetToIdle/, 'jest awaryjny powrót do spoczynku');
   assert.match(source, /isFinite\(target\)/, 'sprężyna odrzuca nieliczby');
-  assert.match(source, /void 0|setInterval\(watchdog, 2500\)/, 'pilnowacz działa cyklicznie');
+  assert.match(source, /setInterval\(watchdog, 2500\)/, 'pilnowacz działa cyklicznie');
+
+  /* --- awaryjne style: wyspa nie może zostać czarna bez arkusza --- */
+  const critical = source.slice(source.indexOf('var CRITICAL_CSS'), source.indexOf('STATES.map'));
+  assert.match(critical, /color:#f4f7fc/, 'krytyczne style ustawiają jasny tekst na czerni');
+  assert.match(critical, /\.rj-panel\{[^}]*position:static/, 'reset .rj-panel unieważnia globalne .rj-panel z premium.css');
+  assert.match(critical, /\.rj-dock-btn svg\{width:19px;height:19px\}/, 'ikony docku mają rozmiar bez arkusza');
+  assert.match(source, /color-scheme:dark/, 'wyspa deklaruje ciemny schemat kolorów (bez auto-inwersji)');
+  assert.match(source, /STATES\.map/, 'każdy stan ma awaryjną regułę widoczności');
+
+  /* --- izolacja od arkuszy strony --- */
+  assert.match(source, /attachShadow/, 'wyspa montuje się w shadow DOM');
+  assert.match(source, /attachShadow/, 'wyspa montuje się w shadow DOM');
+  assert.match(css, /overflow:\s*clip/, 'wyspa używa overflow: clip (fokus nie przewinie treści)');
+  assert.match(source, /island\.scrollTop = 0/, 'otwarcie panelu zeruje przewinięcie wyspy');
 }
 
 function buildPage() {
   return '<!doctype html><html lang="pl" data-theme="dark"><head><meta charset="utf-8">' +
-    '<script src="/hub/island.js?v=3" data-project="rejhub" data-project-name="RejHub"></script>' +
+    '<script src="/hub/island.js?v=4" data-project="rejhub" data-project-name="RejHub"></script>' +
     '</head><body><header class="rj-shared-header"><nav><a href="/rejchat">RejChat</a></nav></header>' +
     '<main><h1>Test</h1></main></body></html>';
 }
@@ -106,7 +120,11 @@ async function checkPhone() {
   const d = w.document;
   await wait(180);
 
-  const island = d.querySelector('#rj-island-root .rj-island');
+  const host = d.getElementById('rj-island-root');
+  assert.ok(host && host.shadowRoot, 'wyspa ma własne drzewo (shadow DOM)');
+  const ui = (sel) => host.shadowRoot.querySelector(sel);
+  const inner = () => host.shadowRoot.querySelector('#rj-island-root');
+  const island = ui('.rj-island');
   assert.ok(island, 'wyspa zamontowana na telefonie');
 
   const idle = size(island);
@@ -141,13 +159,14 @@ async function checkPhone() {
   viewportMock.height = 268;
   viewportMock.emit('resize');
   await wait(40);
-  const kb = parseFloat(d.getElementById('rj-island-root').style.getPropertyValue('--rj-kb'));
-  assert.ok(kb >= 140 && kb <= 150, 'klawiatura podnosi wyspę o ~147 px, jest: ' + kb);
+  const kb = parseFloat(inner().style.getPropertyValue('--rj-kb'));
+  assert.ok(kb >= 295 && kb <= 305, 'klawiatura podnosi wyspę nad siebie (300 px), jest: ' + kb);
 
   w.RejIsland.open('report');
   await wait(30);
   const withKeyboard = size(island);
   assert.ok(withKeyboard.h <= 268 - 34, 'panel mieści się nad klawiaturą: ' + withKeyboard.h);
+  assert.ok(withKeyboard.h > 0, 'panel nad klawiaturą nie jest pusty');
   assert.equal(w.RejIsland.health(), 'ok');
 
   /* --- powrót klawiatury --- */
@@ -155,7 +174,7 @@ async function checkPhone() {
   viewportMock.emit('resize');
   w.RejIsland.open('idle');
   await wait(40);
-  assert.equal(parseFloat(d.getElementById('rj-island-root').style.getPropertyValue('--rj-kb')), 0, 'bez klawiatury wyspa wraca na dół');
+  assert.equal(parseFloat(inner().style.getPropertyValue('--rj-kb')) || 0, 0, 'bez klawiatury wyspa wraca na dół');
 
   dom.window.close();
 }
@@ -164,7 +183,10 @@ async function checkRecovery() {
   const { dom, w } = makePhone();
   const d = w.document;
   await wait(180);
-  const island = d.querySelector('#rj-island-root .rj-island');
+  const host = d.getElementById('rj-island-root');
+  const ui = (sel) => host.shadowRoot.querySelector(sel);
+  const inner = () => host.shadowRoot.querySelector('#rj-island-root');
+  const island = ui('.rj-island');
 
   /* 1. Wyjątek w rysowaniu panelu (np. profil bez danych) nie może zostawić
         pustej czarnej wyspy — wracamy do spoczynku i mówimy o tym. */
@@ -174,7 +196,7 @@ async function checkRecovery() {
   await wait(40);
   assert.equal(island.dataset.state, 'idle', 'wyjątek w renderze wraca do spoczynku');
   assert.equal(w.RejIsland.health(), 'ok');
-  assert.ok(/Nie udało się otworzyć panelu/.test(d.querySelector('.rj-toast').textContent), 'użytkownik dostaje komunikat');
+  assert.ok(/Nie udało się otworzyć panelu/.test(ui('.rj-toast').textContent), 'użytkownik dostaje komunikat');
   w.RJProfiles.session = goodSession;
 
   /* 2. Zły stan w atrybucie — pilnowacz przywraca poprawny. */
@@ -193,18 +215,18 @@ async function checkRecovery() {
   assert.ok(isFinite(fixed.h) && fixed.h <= 568, 'wysokość naprawiona');
 
   /* 4. Uszkodzone drzewo wyspy — odbudowa z pełnym dockiem. */
-  d.getElementById('rj-island-root').innerHTML = '';
+  inner().innerHTML = '';
   assert.equal(w.RejIsland.health(), 'missing');
   w.RejIsland.check();
-  const rebuilt = d.querySelector('#rj-island-root .rj-island');
+  const rebuilt = ui('.rj-island');
   assert.ok(rebuilt, 'wyspa odbudowana po skasowaniu drzewa');
-  assert.equal(d.querySelectorAll('.rj-dock-btn').length, 8, 'dock wrócił w komplecie');
+  assert.equal(host.shadowRoot.querySelectorAll('.rj-dock-btn').length, 8, 'dock wrócił w komplecie');
   assert.equal(w.RejIsland.health(), 'ok');
 
   /* 5. Pusty panel (treść usunięta) nie może udawać czarnej wyspy. */
   w.RejIsland.open('alerts');
   await wait(20);
-  d.querySelector('.rj-view--alerts .rj-panel').innerHTML = '<div></div>';
+  ui('.rj-view--alerts .rj-panel').innerHTML = '<div></div>';
   assert.equal(w.RejIsland.health(), 'empty', 'pusty panel jest wykrywany');
   w.RejIsland.check();
   assert.equal(w.RejIsland.health(), 'ok', 'po kontroli wyspa jest sprawna');
@@ -220,9 +242,65 @@ async function checkRecovery() {
   dom.window.close();
 }
 
+/* Prawdziwa przyczyna czarnej wyspy na stronie głównej: premium.css ma
+   globalne `.rj-panel` (position:absolute; top:calc(100% + 10px); z-index:9000),
+   które wypychało panel poza wyspę. Wyspa musi być na to odporna — nawet gdy
+   arkusz strony definiuje te same klasy. */
+async function checkIsolation() {
+  const { dom, w } = makePhone();
+  const d = w.document;
+
+  /* Dokładnie te reguły, które były w premium.css. */
+  const pageStyle = d.createElement('style');
+  pageStyle.textContent =
+    '.rj-panel{position:absolute;top:calc(100% + 10px);right:0;z-index:9000;' +
+    'width:min(380px,calc(100vw - 32px));border:1px solid #2b3244;background:#141a26;' +
+    'box-shadow:0 24px 60px -20px #000;overflow:hidden}' +
+    '.rj-panel-head{display:flex;justify-content:space-between;padding:13px 15px;' +
+    'border-bottom:1px solid #2b3244;font-size:13px}' +
+    '.rj-progress{position:relative;width:148px;height:5px;margin-top:-6px}';
+  d.head.appendChild(pageStyle);
+
+  await wait(180);
+
+  const host = d.getElementById('rj-island-root');
+  const sr = host.shadowRoot;
+  const ui = (sel) => sr.querySelector(sel);
+
+  /* 1. Arkusz strony nie widzi wnętrza wyspy. */
+  assert.equal(host.querySelectorAll('.rj-panel').length, 0, 'strona nie może dosięgnąć paneli wyspy');
+  assert.equal(d.querySelectorAll('.rj-panel').length, 0, 'globalne .rj-panel nie łapie paneli wyspy');
+  assert.equal(d.getElementById('rj-island-text'), null, 'pola wyspy nie są w dokumencie strony');
+
+  /* 2. Wyspa ma własny arkusz i własne drzewo. */
+  const link = sr.querySelector('link[rel="stylesheet"]');
+  assert.ok(link, 'wyspa sama wczytuje swój arkusz');
+  assert.match(link.getAttribute('href'), /hub\/island\.css\?v=\d+$/, 'właściwy adres arkusza wyspy');
+
+  /* 3. Panele wyspy są wewnątrz .rj-view i mają własny układ. */
+  w.RejIsland.open('report');
+  await wait(30);
+  const panel = ui('.rj-view--report .rj-panel');
+  assert.ok(panel, 'panel zgłoszenia istnieje we własnym drzewie');
+  assert.equal(w.RejIsland.health(), 'ok');
+  /* treść panelu nie została przeniesiona pod wyspę (skutek globalnego .rj-panel) */
+  assert.ok(ui('.rj-view--report').contains(panel), 'panel siedzi w widoku');
+  assert.ok(panel.querySelector('[data-send]'), 'panel ma swoje przyciski');
+
+  /* 4. Panel nigdy nie jest przewinięty poza wyspę. */
+  const islandEl = ui('.rj-island');
+  islandEl.scrollTop = 40;
+  w.RejIsland.open('alerts');
+  await wait(30);
+  assert.equal(islandEl.scrollTop, 0, 'otwarcie panelu zeruje przewinięcie wyspy');
+
+  dom.window.close();
+}
+
 (async function main() {
   checkSources();
   await checkPhone();
+  await checkIsolation();
   await checkRecovery();
   console.log('island-mobile: wszystkie sprawdzenia przeszły');
 })().catch((error) => {
