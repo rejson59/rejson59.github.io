@@ -7,9 +7,20 @@
     <title>RejHub 2.0 — panel roboczy</title>
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="/hub/app.css" />
-    <link rel="stylesheet" href="/hub/glass2.css?v=4" />
-  </head>
+    <link rel="stylesheet" href="/hub/glass2.css?v=5" />
+    <link rel="stylesheet" href="/hub/loader.css?v=1">
+</head>
   <body>
+  <div id="rj-page-loader" aria-hidden="true">
+    <div class="rj-loader-box">
+      <div class="loader-mark mark-orbit">
+        <b><img src="/hub/brand-mark.svg?v=1" alt=""></b>
+        <span></span><span></span><span></span><span></span>
+      </div>
+      <p class="rj-loader-word">RejHub</p>
+      <div class="rj-progress is-indeterminate" aria-hidden="true"><span class="rj-progress-fill"></span></div>
+    </div>
+  </div>
     <div class="aurora" aria-hidden="true"></div>
     <div class="grain" aria-hidden="true"></div>
 
@@ -137,5 +148,6 @@
       })();
     </script>
     <script src="/hub/hub-shell.js?v=1" defer></script>
-  </body>
+    <script src="/hub/loader.js?v=1" defer></script>
+</body>
 </html>
