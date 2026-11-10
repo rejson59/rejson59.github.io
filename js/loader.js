@@ -96,8 +96,12 @@
   /* ---------- 1. Wygaszenie nakładki po starcie strony ---------- */
   var started = performance.now();
   /* Tyle minimum widać loader. MUSI być równe CURVE_S w bootstrapie stron:
-     pasek dochodzi do ~94% dokładnie w tym momencie, więc na końcu nie ma skoku. */
-  var MIN_SHOW_MS = 1800;
+     pasek dochodzi do ~94% dokładnie w tym momencie, więc na końcu nie ma skoku.
+     3000 ms = trzy zmiany animacji znacznika (jedna na sekundę). */
+  var MIN_SHOW_MS = 3000;
+
+  /* Czas zanikania nakładki — musi zgadzać się z transition w CSS loadera. */
+  var FADE_MS = 320;
 
   /* Podglądy (5 iframe-ów, w tym ciężki projekt z wideo) nie mogą startować,
      gdy loader jeszcze gra — zabierały główny wątek i GPU, przez co kulki
@@ -150,9 +154,12 @@
     function doHide() {
       el.classList.remove("is-shown");
       el.classList.add("is-hidden");
-      /* Treść była schowana pod nakładką — pokazuje ją dopiero animacja
-         wejścia (js/page-reveal.js), która zdejmuje tę klasę w tej samej klatce. */
-      document.documentElement.classList.remove("rj-booting");
+      /* Najpierw nakładka znika, dopiero potem odsłaniamy treść. Wcześniej oba
+         działy się w tej samej klatce: animacja wejścia grała pod gasnącym
+         loaderem i wyglądało to, jakby jedna warstwa nachodziła na drugą. */
+      later(FADE_MS, function () {
+        document.documentElement.classList.remove("rj-booting");
+      });
       markPageReady();
       /* Po zaniknięciu wyjmujemy nakładkę z układu. To twardsze niż pauzowanie
          animacji (i nie ma jak zablokować zanikania): display:none zatrzymuje
@@ -216,6 +223,10 @@
   (function watchFramePacing() {
     var el = getOverlay();
     if (!el) return;
+    /* Pomiarem nie może być sam start strony: parsowanie i pierwsze skrypty
+       dają klatki po 80–300 ms i tryb oszczędny włączał się prawie zawsze,
+       przez co loader „gubił” animację na normalnym sprzęcie. Interesują nas
+       tylko równe klatki animacji, i to dopiero po wczytaniu dokumentu. */
 
     /* Jedyny wyjątek bez pomiaru: użytkownik sam włączył oszczędzanie danych.
        Liczby rdzeni nie używamy — Chrome zaniża je do 2 przy blokadach
@@ -230,25 +241,33 @@
 
     var last = 0;
     var samples = [];
-    var frames = 0;
+    var ready = false;
 
     function tick(ts) {
-      if (last) samples.push(ts - last);
+      if (!ready) { last = ts; window.requestAnimationFrame(tick); return; }
+      /* Długie zadanie (parsowanie, GC, wczytywanie obrazka) to nie „słabe GPU”.
+         Takie klatki pomijamy, żeby nie karać użytkownika za jeden zryw. */
+      if (last) {
+        var dt = ts - last;
+        if (dt >= 4 && dt <= 60) samples.push(dt);
+      }
       last = ts;
-      frames++;
 
-      if (frames < 24 && !el.classList.contains("is-hidden")) {
-        window.requestAnimationFrame(tick);
+      if (el.classList.contains("is-hidden")) return;
+
+      if (samples.length >= 40) {
+        var sorted = samples.slice().sort(function (a, b) { return a - b; });
+        var p75 = sorted[Math.floor(sorted.length * 0.75)];
+        /* Dopiero trwałe < 33 fps (p75 > 30 ms) uzasadnia tryb oszczędny. */
+        if (p75 > 30) el.classList.add("rj-loader--lite");
         return;
       }
-      if (!samples.length) return;
-
-      samples.sort(function (a, b) { return a - b; });
-      var p75 = samples[Math.floor(samples.length * 0.75)];
-      if (p75 > 26) el.classList.add("rj-loader--lite");
+      window.requestAnimationFrame(tick);
     }
 
-    window.requestAnimationFrame(tick);
+    function begin() { ready = true; last = 0; window.requestAnimationFrame(tick); }
+    if (document.readyState === "complete") begin();
+    else window.addEventListener("load", begin, { once: true });
   })();
 
   /* Strona bez nakładki (np. osadzenie loadera gdzie indziej) nie może

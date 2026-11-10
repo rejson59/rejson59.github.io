@@ -104,34 +104,11 @@
   100% { transform: scaleX(1.3);  opacity: 0.55; }
 }
 
-/* ---------- Nakładka całej strony (start + przejścia między podstronami) ---------- */
-#rj-page-loader {
-  position: fixed;
-  inset: 0;
-  z-index: 100000;
-  display: grid;
-  place-items: center;
-  /* Pełne krycie: arkusz ładuje się bez blokowania, więc pod nakładką może
-     jeszcze nie być gotowych stylów strony — nie chcemy, by cokolwiek prześwitywało. */
-  background: var(--bg, #0b0e13);
-  opacity: 1;
-  visibility: visible;
-  transition: opacity 0.34s ease 0s, visibility 0s linear 0.37s;
-}
-/* is-shown: pokazanie natychmiast (bez delayu visibility) — ważne przy przejściach */
-#rj-page-loader.is-shown { transition-delay: 0s, 0s; }
-#rj-page-loader.is-hidden {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-}
-
-/* Bezpiecznik bez JS: nakładka nie może zakryć strony na zawsze. */
-#rj-page-loader { animation: rj-loader-failsafe 0.01s linear 8s forwards; }
-#rj-page-loader.is-shown { animation: none; }
-@keyframes rj-loader-failsafe {
-  to { opacity: 0; visibility: hidden; pointer-events: none; }
-}
+/* ---------- Nakładka całej strony ----------
+   Wygląd i tempo znikania (#rj-page-loader) ma JEDNO miejsce: hub/loader.css.
+   Wcześniej ten plik też definiował nakładkę i nadpisywał tamten — dwa różne
+   czasy przejścia i dwa tła powodowały mruganie loadera na stronach ze starym
+   harmonogramem. Tutaj zostają tylko style trybu oszczędnego. */
 
 /* Pudełko środkowe: kulki + podpis, z pop-em na wejściu */
 .rj-loader-box {

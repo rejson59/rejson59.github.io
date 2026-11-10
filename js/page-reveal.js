@@ -416,6 +416,11 @@
 
   /* Czekamy na zniknięcie nakładki: animacja jest nagrodą za wczytanie,
      nie czymś, co dzieje się pod loaderem. */
+  /* Czas zanikania nakładki (patrz #rj-page-loader w hub/loader.css).
+     Wejście startuje dopiero PO niej — inaczej animacja grała pod gasnącym
+     loaderem i wyglądało to na dwie nachodzące na siebie warstwy. */
+  var LOADER_FADE_MS = 340;
+
   function whenReady(callback) {
     var overlay = document.getElementById("rj-page-loader");
     if (!overlay) {
@@ -423,14 +428,14 @@
       return;
     }
     if (overlay.classList.contains("is-hidden") || overlay.style.display === "none") {
-      window.setTimeout(callback, 90);
+      window.setTimeout(callback, LOADER_FADE_MS);
       return;
     }
     var fired = false;
     function fire() {
       if (fired) return;
       fired = true;
-      window.setTimeout(callback, 60);
+      window.setTimeout(callback, LOADER_FADE_MS);
     }
     if (window.MutationObserver) {
       var observer = new MutationObserver(function () {

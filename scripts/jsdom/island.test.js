@@ -23,7 +23,7 @@ function checkStructure() {
 
   /* 1. Każda zwykła podstrona RejHuba ma wyspę. */
   EXPECTED_WITH_ISLAND.forEach(({ file, html }) => {
-    assert.ok(html.includes('/hub/island.js?v=1'), file + ': brak wyspy');
+    assert.ok(html.includes('/hub/island.js?v=2'), file + ': brak wyspy');
     assert.ok(html.includes('/hub/island.css?v=1'), file + ': brak arkusza wyspy');
     /* RejSejf trzyma wyłączony znacznik (type="application/json") — to nie ładowanie. */
     const widgets = html.match(/<script[^>]*src="[^"]*widget\.js[^"]*"[^>]*>/g) || [];
@@ -54,12 +54,13 @@ function checkStructure() {
   assert.ok(/localStorage/.test(source) && /"theme"/.test(source), 'motyw zapisuje się tak jak w resztę strony');
   assert.ok(/rejhub_motion/.test(source), 'przełącznik animacji używa klucza strony');
   assert.ok(/data-feedback-project/.test(source), 'przyciski projektów otwierają wyspę');
+  assert.ok(!/⌘|metaKey/.test(source), 'w wyspie nie ma już skrótu ⌘K');
   assert.ok(!/data-preview/.test(source), 'kod prototypu nie trafił do wdrożenia');
 }
 
 function buildPage() {
   return '<!doctype html><html lang="pl" data-theme="dark"><head><meta charset="utf-8">' +
-    '<script src="/hub/island.js?v=1" data-project="rejhub" data-project-name="RejHub"></script>' +
+    '<script src="/hub/island.js?v=2" data-project="rejhub" data-project-name="RejHub"></script>' +
     '</head><body>' +
     '<header class="rj-shared-header"><nav><a href="/rejchat">RejChat</a><a href="/rejfile">RejFile</a></nav></header>' +
     '<main><h1>Test</h1><button type="button" data-feedback-project="RejStream">Zgłoś</button>' +
@@ -226,10 +227,13 @@ async function checkBehaviour() {
   d.querySelector('[data-panic]').click();
   assert.ok(panicked, 'RejPanic.run został wywołany');
 
-  /* — klawiatura — */
+  /* — klawiatura: bez skrótów, zostaje Esc — */
   d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true, cancelable: true }));
   await wait(20);
-  assert.equal(island.dataset.state, 'search', '⌘K otwiera wyszukiwanie');
+  assert.notEqual(island.dataset.state, 'search', 'skrót klawiszowy nie otwiera już wyszukiwania');
+  d.querySelector('.rj-dock-btn[data-open="search"]').click();
+  await wait(20);
+  assert.equal(island.dataset.state, 'search', 'wyszukiwanie otwiera się przyciskiem');
   d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
   await wait(10);
   assert.equal(island.dataset.state, 'idle', 'Esc zamyka');

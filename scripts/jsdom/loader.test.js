@@ -21,6 +21,7 @@ const LOADER = fs.readFileSync(path.join(ROOT, "js", "loader.js"), "utf8");
 
 /* Szybkie warianty watchdogów — inaczej testy trwałyby minutami. */
 const LOADER_FAST = LOADER
+  .replace("var MIN_SHOW_MS = 3000;", "var MIN_SHOW_MS = 320;")
   .replace("var PREVIEW_TIMEOUT_MS = 15000;", "var PREVIEW_TIMEOUT_MS = 120;")
   .replace("var PREVIEW_RETRY_MS = 15000;", "var PREVIEW_RETRY_MS = 160;")
   .replace("}, 1200);", "}, 60);")
@@ -88,15 +89,19 @@ function mk(html, evalBoot, evalLoader) {
     const timer = setInterval(() => samples.push(scale(fill)), 60);
     await wait(1000);
     const poSekundzie = scale(fill);
-    await wait(1400);
+    await wait(2400);
     clearInterval(timer);
 
     console.log("   przebieg:", samples.map((v) => v.toFixed(2)).join(" "));
     check("pasek ruszył sam", samples.some((v) => v > 0.03));
     check("nigdy się nie cofa", samples.every((v, i) => i === 0 || v >= samples[i - 1] - 0.0001));
     check("po sekundzie NIE ma jeszcze połowy", poSekundzie < 0.45, "scaleX=" + poSekundzie.toFixed(3));
-    check("po ~2 s wciąż rośnie", samples[samples.length - 1] > 0.45, "scaleX=" + samples[samples.length - 1].toFixed(3));
-    check("brama trzyma do 55%, dopóki nie ma `load`", samples.every((v) => v <= 0.5501), "max=" + Math.max(...samples).toFixed(3));
+    check("po ~3,4 s pasek jest wysoko", samples[samples.length - 1] > 0.45, "scaleX=" + samples[samples.length - 1].toFixed(3));
+    /* do 3 s brama trzyma 55%; po trzeciej sekundzie wolno jej rosnąć (max 90%) */
+    check("brama trzyma do 55% przez pierwsze 3 s",
+      samples.slice(0, 46).every((v) => v <= 0.5501),
+      "max=" + Math.max(...samples.slice(0, 46)).toFixed(3));
+    check("nigdy nie przekracza 90% bez realnego końca", samples.every((v) => v <= 0.9001), "max=" + Math.max(...samples).toFixed(3));
 
     w.RJProgress.set(0.97);
     await wait(900);
@@ -146,7 +151,7 @@ function mk(html, evalBoot, evalLoader) {
     wrap("complete"); wrap("reset");
 
     w.dispatchEvent(new w.Event("load"));
-    await wait(3400);
+    await wait(4400);
     console.log("   kolejność:", events.join(" → "));
     check("complete przed ukryciem", events.indexOf("complete") > -1 && events.indexOf("complete") < events.indexOf("hidden"), events.join(","));
     check("nakładka ukryta", ov.classList.contains("is-hidden"));
@@ -193,7 +198,7 @@ function mk(html, evalBoot, evalLoader) {
       return [];
     };
     w.dispatchEvent(new w.Event("load"));
-    await wait(3400);
+    await wait(4400);
     const ov = doc.getElementById("rj-page-loader");
     check("getAnimations nie dotyka nakładki", touched.every((n) => n !== "rj-page-loader"), touched.join(", ") || "brak wywołań");
     check("nakładka i tak znika z układu", ov.style.display === "none", "display=" + (ov.style.display || "brak"));
