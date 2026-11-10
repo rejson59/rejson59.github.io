@@ -272,11 +272,10 @@
         '<div class="rj-view rj-view--idle">' +
           '<span class="rj-orb" aria-hidden="true"><img src="/hub/brand-mark.svg?v=1" alt=""></span>' +
           "<span class=\"rj-title\">" + esc(projectName) + "<small>dotknij, żeby rozwinąć</small></span>" +
-          '<span class="rj-hint" aria-hidden="true"><kbd>⌘</kbd><kbd>K</kbd></span>' +
         "</div>" +
         '<div class="rj-view rj-view--dock">' +
           '<button class="rj-dock-btn is-primary" type="button" data-open="report" title="Zgłoś błąd lub pomysł" aria-label="Zgłoś błąd lub pomysł">' + ICONS.report + "</button>" +
-          '<button class="rj-dock-btn" type="button" data-open="search" title="Szukaj (⌘K)" aria-label="Szukaj">' + ICONS.search + "</button>" +
+          '<button class="rj-dock-btn" type="button" data-open="search" title="Szukaj" aria-label="Szukaj">' + ICONS.search + "</button>" +
           '<button class="rj-dock-btn" type="button" data-open="alerts" title="Powiadomienia" aria-label="Powiadomienia">' + ICONS.alerts + "</button>" +
           '<button class="rj-dock-btn" type="button" data-open="now" title="Teraz gra" aria-label="Teraz gra">' + ICONS.now + "</button>" +
           '<span class="rj-dock-sep" aria-hidden="true"></span>' +
@@ -1117,17 +1116,10 @@
       }
     });
 
+    /* Skróty klawiszowe zostały usunięte — wyszukiwanie otwiera
+       przycisk w docku. Zostaje tylko Esc, żeby dało się zamknąć panel. */
     document.addEventListener("keydown", function (event) {
-      var key = String(event.key || "").toLowerCase();
-      var typing = /input|textarea|select/i.test((event.target && event.target.tagName) || "");
-
-      if ((event.metaKey || event.ctrlKey) && key === "k") {
-        event.preventDefault();
-        apply(state === "search" ? "idle" : "search");
-        return;
-      }
-      if (key === "escape" && state !== "idle") { close(); return; }
-      if (key === "/" && !typing) { event.preventDefault(); apply("search"); }
+      if (event.key === "Escape" && state !== "idle") close();
     });
 
     window.addEventListener("resize", function () {

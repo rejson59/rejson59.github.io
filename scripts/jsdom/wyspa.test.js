@@ -129,13 +129,18 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
   assert.ok(d.querySelector('.panic-actions [data-close]'), 'jest wyjście bez zamykania');
   assert.ok(d.querySelector('[data-panic]'), 'jest potwierdzenie');
 
-  /* 10. Klawiatura. */
+  /* 10. Klawiatura: Esc zamyka, skrótów nie ma. */
   d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
   await wait(30);
   assert.equal(island.dataset.state, 'idle', 'Esc zwija wyspę');
   d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true, cancelable: true }));
   await wait(30);
-  assert.equal(island.dataset.state, 'search', '⌘K otwiera wyszukiwanie');
+  assert.notEqual(island.dataset.state, 'search', 'bez skrótu klawiszowego');
+  d.querySelector('.island').click();
+  await wait(30);
+  d.querySelector('[data-open="search"]').click();
+  await wait(30);
+  assert.equal(island.dataset.state, 'search', 'wyszukiwanie otwiera przycisk');
 
   /* 11. Studio linkuje prototyp i używa tego samego logo. */
   const studio = fs.readFileSync(path.join(root, 'rejhub2/studio-source/propozycje.html'), 'utf8');

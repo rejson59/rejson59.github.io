@@ -140,13 +140,7 @@
         li.hidden = q.length > 0 && li.textContent.toLowerCase().indexOf(q) === -1;
       });
     });
-    document.addEventListener("keydown", function (event) {
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k" && document.contains(cmd)) {
-        event.preventDefault();
-        cmd.hidden = !cmd.hidden;
-        if (!cmd.hidden && cmdInput) cmdInput.focus();
-      }
-    });
+    /* Skrót klawiszowy usunięty — paleta otwiera się przyciskiem. */
   }
 
   /* ---------------- stos powiadomień ---------------- */

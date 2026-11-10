@@ -557,7 +557,7 @@
       <button class="feature" type="button" data-preview="search" data-tier="must">
         <span class="feature__top">
           <span class="feature__icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg></span>
-          <b>Wyszukiwanie ⌘K</b><span class="feature__badge">NIEZBĘDNE</span>
+          <b>Wyszukiwanie</b><span class="feature__badge">NIEZBĘDNE</span>
         </span>
         <small>Strony, projekty, pliki, czaty i osoby w jednym polu. Wpisz literę — lista się zawęża.</small>
       </button>
@@ -632,14 +632,13 @@
     <div class="view view--idle">
       <span class="island__orb" aria-hidden="true"><img src="/hub/brand-mark.svg" alt=""></span>
       <span class="island__title">RejHub<small>dotknij, żeby rozwinąć</small></span>
-      <span class="island__hint" aria-hidden="true"><kbd>⌘</kbd><kbd>K</kbd></span>
     </div>
 
     <div class="view view--dock">
       <button class="dock-btn dock-btn--accent" type="button" data-open="report" title="Zgłoś błąd lub pomysł" aria-label="Zgłoś błąd lub pomysł">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 8v5M12 16.5h.01"/><path d="M10.3 3.6 2.4 18a1.9 1.9 0 0 0 1.7 2.8h15.8A1.9 1.9 0 0 0 21.6 18L13.7 3.6a1.9 1.9 0 0 0-3.4 0Z"/></svg>
       </button>
-      <button class="dock-btn" type="button" data-open="search" title="Szukaj (⌘K)" aria-label="Szukaj">
+      <button class="dock-btn" type="button" data-open="search" title="Szukaj" aria-label="Szukaj">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>
       </button>
       <button class="dock-btn has-dot" type="button" data-open="alerts" title="Powiadomienia" aria-label="Powiadomienia, 3 nowe">
@@ -1168,13 +1167,7 @@
     var key = String(event.key || "").toLowerCase();
     var typing = /input|textarea/i.test((event.target && event.target.tagName) || "");
 
-    if ((event.metaKey || event.ctrlKey) && key === "k") {
-      event.preventDefault();
-      apply(state === "search" ? "idle" : "search");
-      return;
-    }
     if (key === "escape" && state !== "idle") { close(); return; }
-    if (key === "/" && !typing) { event.preventDefault(); apply("search"); return; }
     if ((key === "enter" || key === " ") && state === "idle" && document.activeElement === island) {
       event.preventDefault();
       toggleDock();

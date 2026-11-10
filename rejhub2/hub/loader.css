@@ -13,6 +13,10 @@
   display: grid;
   place-items: center;
   flex: none;
+  /* Podmiana animacji co sekundę: krótkie przygaszenie zamiast przeskoku.
+     Dwie animacje nigdy nie grają jednocześnie (patrz hub/loader.js). */
+  transition: opacity 0.14s ease;
+  will-change: opacity;
 }
 
 .loader-mark span {
@@ -371,14 +375,35 @@
   z-index: 100000;
   display: grid;
   place-items: center;
+  /* Pełne krycie, bez backdrop-filter. Rozmywanie całej strony pod nakładką
+     było najdroższą rzeczą na ekranie i to ono powodowało zacinanie animacji
+     oraz „prześwitywanie” treści przygaszonej pod spodem. */
   background:
-    radial-gradient(90% 70% at 50% 18%, rgba(58, 78, 132, 0.42), transparent 70%),
-    rgba(5, 8, 15, 0.58);
-  backdrop-filter: blur(16px) saturate(150%);
-  -webkit-backdrop-filter: blur(16px) saturate(150%);
+    radial-gradient(120% 90% at 50% 0%, #151d2b, #0b0e13 62%);
   opacity: 1;
   visibility: visible;
-  transition: opacity 0.45s ease, visibility 0.45s ease;
+  contain: layout style paint;
+  transition: opacity 0.32s ease, visibility 0s linear 0.34s;
+}
+
+/* Jasny motyw: ta sama nakładka, tylko w jasnej wersji */
+html[data-theme="light"] #rj-page-loader {
+  background:
+    radial-gradient(120% 90% at 50% 0%, #ffffff, #eef2f9 62%);
+}
+
+html[data-theme="light"] #rj-page-loader .rj-loader-word,
+html[data-theme="light"] #rj-page-loader .rj-loader-caption {
+  color: #16233a;
+}
+
+html[data-theme="light"] #rj-page-loader .rj-progress {
+  background: rgba(16, 32, 60, 0.14);
+  box-shadow: inset 0 0 0 1px rgba(16, 32, 60, 0.08);
+}
+
+html[data-theme="light"] #rj-page-loader .rj-loader-stage {
+  color: rgba(38, 58, 92, 0.6);
 }
 
 #rj-page-loader.is-hidden,
@@ -386,6 +411,7 @@
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
+  transition: opacity 0.32s ease, visibility 0s linear 0.34s;
 }
 
 #rj-page-loader .rj-loader-box {
