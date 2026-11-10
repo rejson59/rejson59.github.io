@@ -23,6 +23,9 @@
 
   var VOTER_KEY = "rejson_widgets_voter_id_v1";
   var COLLAPSE_KEY = "rj_island_collapsed_v1";
+  var CORNER_KEY = "rj_island_corner_v1";
+  var QUIET_KEY = "rj_island_quiet_until_v1";
+  var QUEUE_KEY = "rj_island_offline_queue_v1";
   var TASKS_KEY = "rj_island_tasks_v1";
   var STATUS_KEY = "rj_island_status_v1";
 
@@ -181,6 +184,9 @@
     /* Schowana wyspa to mały uchwyt przyklejony do dolnej krawędzi ekranu —
        wciąż widoczny (żeby dało się ją przywrócić), ale nie zasłania treści. */
     min: { w: 132, h: 28, r: 14 },
+    /* Schowany uchwyt pokazujący, co gra — szerszy i wyższy, żeby zmieścił
+       tytuł, pasek postępu i pauzę. */
+    minPlay: { w: 244, h: 34, r: 17 },
     idle: { w: 172, h: 46, r: 23 },
     dock: { w: 436, h: 52, r: 26 },
     report: { w: 384, h: 236, r: 24 },
@@ -188,8 +194,8 @@
     alerts: { w: 384, h: 296, r: 24 },
     now: { w: 384, h: 96, r: 24 },
     profile: { w: 384, h: 158, r: 24 },
-    quick: { w: 384, h: 152, r: 24 },
-    theme: { w: 384, h: 156, r: 24 },
+    quick: { w: 384, h: 250, r: 24 },
+    theme: { w: 384, h: 226, r: 24 },
     tasks: { w: 384, h: 208, r: 24 },
     panic: { w: 320, h: 160, r: 24 }
   };
@@ -257,6 +263,85 @@
     return typeof value === "number" && isFinite(value) ? value : fallback;
   }
 
+  /* ------------------------------------------------------------ sieć */
+
+  function online() {
+    try {
+      return navigator.onLine !== false;
+    } catch (e) {
+      return true;
+    }
+  }
+
+  /* --------------------------------------------------------- cisza */
+
+  function quietUntil() {
+    var value = Number(store(QUIET_KEY));
+    return isFinite(value) && value > 0 ? value : 0;
+  }
+
+  function isQuiet() {
+    return quietUntil() > Date.now();
+  }
+
+  function quiet(minutes) {
+    var ms = Math.max(1, Number(minutes) || 30) * 60000;
+    store(QUIET_KEY, String(Date.now() + ms));
+    if (island) island.classList.add("is-quiet");
+    toast("Cisza na " + Math.round(ms / 60000) + " min — wrócę sam");
+    clearTimeout(quiet._timer);
+    quiet._timer = setTimeout(function () {
+      store(QUIET_KEY, "0");
+      if (!island) return;
+      island.classList.remove("is-quiet");
+      resetToIdle(true);
+      toast("Wyspa wróciła");
+    }, ms);
+  }
+
+  function endQuiet() {
+    store(QUIET_KEY, "0");
+    clearTimeout(quiet._timer);
+    if (island) island.classList.remove("is-quiet");
+  }
+
+  /* -------------------------------------------------- kolejka offline */
+
+  function queue() {
+    var list = storeJson(QUEUE_KEY);
+    return Array.isArray(list) ? list : [];
+  }
+
+  function queueSave(list) {
+    storeJson(QUEUE_KEY, list.slice(-20));
+    syncNetBadge();
+  }
+
+  function queueReport(payload) {
+    var list = queue();
+    list.push({ payload: payload, at: Date.now() });
+    queueSave(list);
+    saveTask({ label: "Zgłoszenie czeka na internet · " + String(payload.p_title || "").slice(0, 40), at: Date.now() });
+  }
+
+  function flushQueue() {
+    var list = queue();
+    if (!list.length || !online() || report.busy) return;
+
+    var next = list[0];
+    report.busy = true;
+    rpc("submit_feedback", next.payload).then(function () {
+      report.busy = false;
+      queueSave(queue().filter(function (item) { return item.at !== next.at; }));
+      saveTask({ label: "Wysłano zaległe zgłoszenie · " + String(next.payload.p_title || "").slice(0, 40), at: Date.now() });
+      toast("Wysłano zgłoszenie sprzed chwili");
+      if (queue().length) setTimeout(flushQueue, 400);
+    }).catch(function () {
+      report.busy = false;
+      /* Sieć nadal nie działa — spróbujemy przy następnej okazji. */
+    });
+  }
+
   /* Wyspa żyje we własnym drzewie (shadow DOM), więc szukamy w nim, a nie
      w całym dokumencie — inaczej trafilibyśmy na obcy element o tym samym id. */
   function byId(id) {
@@ -285,6 +370,8 @@
   var alertsCache = null;
 
   function sizeFor(name) {
+    /* Uchwyt rośnie, gdy pokazuje odtwarzacz. */
+    if (name === "min" && handlePlaying()) name = "minPlay";
     var size = SIZES[name] || SIZES.idle;
     var vp = viewport();
     var w = Math.min(size.w, Math.max(200, vp.w - EDGE * 2));
@@ -294,6 +381,33 @@
 
   /* Każde wpisanie rozmiaru przechodzi przez ten pilnik: NaN albo wartość
      z kosmosu nie może już rozciągnąć czarnej wyspy na cały ekran. */
+  function corner() {
+    var value = store(CORNER_KEY);
+    return value === "left" || value === "right" ? value : "center";
+  }
+
+  function applyCorner() {
+    if (!island) return;
+    var where = corner();
+    island.classList.toggle("is-left", where === "left");
+    island.classList.toggle("is-right", where === "right");
+    /* Uwaga na nazwę: `data-corner` należy do przycisków wyboru pozycji.
+       Gdyby wyspa miała ten sam atrybut, `closest("[data-corner]")` łapałby
+       ją przy każdym kliknięciu i przełączał pozycję zamiast motywu. */
+    island.setAttribute("data-island-corner", where);
+  }
+
+  function setCorner(where) {
+    if (where !== "left" && where !== "right" && where !== "center") return;
+    store(CORNER_KEY, where);
+    applyCorner();
+    resetBox();
+    try { writeBox(); } catch (e) { /* trudno */ }
+    springTo(state);
+    syncCornerButtons();
+    toast(where === "left" ? "Wyspa po lewej" : where === "right" ? "Wyspa po prawej" : "Wyspa na środku");
+  }
+
   function writeBox() {
     if (!island) return;
     var vp = viewport();
@@ -306,7 +420,9 @@
     island.style.width = w.toFixed(2) + "px";
     island.style.height = h.toFixed(2) + "px";
     island.style.borderRadius = r.toFixed(2) + "px";
-    island.style.marginLeft = (-w / 2).toFixed(2) + "px";
+    /* Przyklejona do boku nie jest wyśrodkowana — margines liczony od lewej
+       krawędzi byłby przesunięciem o połowę szerokości. */
+    island.style.marginLeft = corner() === "center" ? (-w / 2).toFixed(2) + "px" : "0px";
   }
 
   function resetBox() {
@@ -433,12 +549,18 @@
           '<button class="rj-collapse" type="button" data-collapse title="Schowaj wyspę" aria-label="Schowaj wyspę">' + ICONS.down + "</button>" +
         "</div>" +
 
-        /* Schowana: mały uchwyt przy dolnej krawędzi, sama strzałka w górę. */
+        /* Schowana: uchwyt przy dolnej krawędzi. Pokazuje, co się właśnie
+           stało (4 s), liczbę nieprzeczytanych, a gdy coś gra — tytuł
+           z pauzą i paskiem postępu. */
         '<div class="rj-view rj-view--min">' +
+          '<button class="rj-handle-play" type="button" data-media="play" data-handle-play hidden aria-label="Pauza">' + ICONS.pause + "</button>" +
           '<button class="rj-handle" type="button" data-expand aria-label="Pokaż wyspę" title="Pokaż wyspę">' +
-            ICONS.up +
-            '<span class="rj-handle-label">' + esc(projectName) + "</span>" +
+            '<span class="rj-handle-up" aria-hidden="true">' + ICONS.up + "</span>" +
+            '<span class="rj-handle-text" data-handle-text>' + esc(projectName) + "</span>" +
+            '<span class="rj-handle-badge" data-handle-badge hidden aria-hidden="true"></span>' +
           "</button>" +
+          '<span class="rj-handle-net" data-net title="Internet działa" aria-hidden="true"></span>' +
+          '<span class="rj-handle-bar" data-handle-bar hidden aria-hidden="true"><i data-handle-progress></i></span>' +
         "</div>" +
         '<div class="rj-view rj-view--dock">' +
           '<button class="rj-dock-btn is-primary" type="button" data-open="report" title="Zgłoś błąd lub pomysł" aria-label="Zgłoś błąd lub pomysł">' + ICONS.report + "</button>" +
@@ -509,6 +631,7 @@
               '<span class="rj-panel-title">Szybkie akcje</span>' +
               '<button class="rj-x" type="button" data-close aria-label="Zamknij">' + ICONS.close + "</button>" +
             "</div>" +
+            '<div class="rj-quick-context" data-quick-context></div>' +
             '<div class="rj-quick">' +
               '<a href="/rejtools" data-quick="tools">' + ICONS.note + "Narzędzia</a>" +
               '<a href="/rejchat" data-quick="chat">' + ICONS.chat + "Czat</a>" +
@@ -528,6 +651,12 @@
               '<button class="rj-switch-row" type="button" data-switch="theme" aria-pressed="false"><span class="rj-label">Jasny motyw</span><span class="rj-switch" aria-hidden="true"></span></button>' +
               '<button class="rj-switch-row" type="button" data-switch="motion" aria-pressed="true"><span class="rj-label">Animacje zawsze</span><span class="rj-switch" aria-hidden="true"></span></button>' +
             "</div>" +
+            '<div class="rj-corner" role="group" aria-label="Pozycja wyspy">' +
+              '<button type="button" data-corner="left" aria-pressed="false">Lewo</button>' +
+              '<button type="button" data-corner="center" aria-pressed="true">Środek</button>' +
+              '<button type="button" data-corner="right" aria-pressed="false">Prawo</button>' +
+            "</div>" +
+            '<button class="rj-switch-row" type="button" data-quiet><span class="rj-label">Cisza na 30 minut</span><span class="rj-quiet-hint">ukryj</span></button>' +
             '<p class="rj-hintline">Animacje omijają systemowe blokady ruchu — tak, jak w Szklanym studiu.</p>' +
           "</div>" +
         "</div>" +
@@ -553,13 +682,22 @@
           "</div>" +
         "</div>" +
       "</div>" +
-      '<div class="rj-toast" role="status" aria-live="polite"></div>'
+      '<div class="rj-toast" role="status" aria-live="polite"></div>' +
+      /* Niewidoczny, ale czytany przez czytniki — informuje o schowaniu,
+         rozwinięciu i o tym, co wyspa właśnie zrobiła. */
+      '<span class="rj-sr" role="status" aria-live="polite" data-live></span>'
     );
   }
 
   /* ------------------------------------------------------------- widoki */
 
   function toast(text) {
+    if (text) {
+      announce(text);
+      /* Schowany uchwyt też mówi, co się stało — inaczej po schowaniu wyspy
+         użytkownik nie wie, czy akcja doszła do skutku. */
+      if (state === "min") handleText(text);
+    }
     if (!toastEl) return;
     toastEl.textContent = text;
     toastEl.classList.add("is-on");
@@ -567,6 +705,206 @@
     toast._timer = setTimeout(function () {
       toastEl.classList.remove("is-on");
     }, 2600);
+  }
+
+  /* Czytniki ekranu: jedna linia na wszystko, co wyspa komunikuje. */
+  function announce(text) {
+    var live = within("[data-live]");
+    if (!live || !text) return;
+    live.textContent = "";
+    setTimeout(function () {
+      if (live.isConnected) live.textContent = String(text);
+    }, 30);
+  }
+
+  /* ------------------------------------------------------------ uchwyt */
+
+  function handlePlaying() {
+    var media = currentMedia();
+    return Boolean(media && !media.paused && !media.ended);
+  }
+
+  /* Krótka informacja na uchwycie (np. „Zgłoszenie wysłane”). Po 4 s wraca
+     nazwa projektu albo tytuł tego, co gra. */
+  function handleText(text, ms) {
+    var label = within("[data-handle-text]");
+    if (!label) return;
+    label.textContent = text;
+    label.classList.add("is-flash");
+    clearTimeout(handleText._timer);
+    handleText._timer = setTimeout(function () {
+      if (!label.isConnected) return;
+      label.classList.remove("is-flash");
+      syncHandle();
+    }, ms || 4000);
+  }
+
+  function syncHandle() {
+    if (!island) return;
+    var media = currentMedia();
+    var playing = Boolean(media && !media.paused && !media.ended);
+
+    var label = within("[data-handle-text]");
+    var playBtn = within("[data-handle-play]");
+    var bar = within("[data-handle-bar]");
+    var fill = within("[data-handle-progress]");
+
+    if (label && !label.classList.contains("is-flash")) {
+      label.textContent = playing ? mediaTitle(media) : projectName;
+    }
+    if (playBtn) {
+      playBtn.hidden = !playing;
+      playBtn.innerHTML = playing ? ICONS.pause : ICONS.play;
+      playBtn.setAttribute("aria-label", playing ? "Pauza" : "Odtwórz");
+    }
+    if (bar && fill) {
+      bar.hidden = !playing;
+      var duration = media && isFinite(media.duration) && media.duration > 0 ? media.duration : 0;
+      var percent = duration ? Math.min(100, (media.currentTime / duration) * 100) : 0;
+      fill.style.width = percent.toFixed(1) + "%";
+    }
+    if (state === "min") springTo("min");
+  }
+
+  function syncNetBadge() {
+    var dot = within("[data-net]");
+    if (!dot) return;
+    var waiting = queue().length;
+    var ok = online();
+    dot.classList.toggle("is-offline", !ok);
+    dot.classList.toggle("has-queue", waiting > 0);
+    dot.title = ok
+      ? (waiting ? "Internet działa — " + waiting + " zgłoszeń w kolejce" : "Internet działa")
+      : (waiting ? "Brak internetu — " + waiting + " zgłoszeń wyśle się później" : "Brak internetu");
+  }
+
+  /* ------------------------------------------------------- pozycja */
+
+  function syncCornerButtons() {
+    var where = corner();
+    withinAll("[data-corner]").forEach(function (button) {
+      button.setAttribute("aria-pressed", String(button.getAttribute("data-corner") === where));
+    });
+  }
+
+  /* --------------------------------------------------- kontekst strony */
+
+  /* Akcje dobrane do tego, gdzie jest użytkownik. Każda ma selektor, który
+     naprawdę istnieje na danej stronie — klikamy go zamiast zgadywać. */
+  function contextActions() {
+    var path = (location.pathname || "/").replace(/\/+$/, "") || "/";
+    var map = {
+      "/": [
+        { label: "Przeglądaj projekty", icon: "quick", selector: "#projekty", href: "/#projekty" },
+        { label: "Zgłoś błąd", icon: "report", state: "report" }
+      ],
+      "/rejfile": [
+        { label: "Wgraj plik", icon: "file", selector: "#file-input", href: "/rejfile#upload" },
+        { label: "Powiadomienia o plikach", icon: "alerts", state: "alerts" }
+      ],
+      "/rejchat": [
+        { label: "Nowy wpis", icon: "chat", selector: "#post-content", focus: true, href: "/rejchat#composer-card" },
+        { label: "Powiadomienia czatu", icon: "alerts", state: "alerts" }
+      ],
+      "/rejclass": [
+        { label: "Kontynuuj lekcję", icon: "note", selector: "#nauka", href: "/rejclass#nauka" },
+        { label: "Zgłoś błąd w pytaniu", icon: "report", state: "report" }
+      ],
+      "/rejsejf": [
+        { label: "Nowa notatka", icon: "note", selector: "#mode-note", href: "/rejsejf#notatka" },
+        { label: "Moje pliki", icon: "file", selector: "#mode-file", href: "/rejsejf#pliki" }
+      ],
+      "/rejtools": [
+        { label: "Przelicz plik", icon: "file", selector: "#convert-file", href: "/rejtools#konwersja" },
+        { label: "Różnica dat", icon: "note", selector: "#date-from", href: "/rejtools#daty" }
+      ],
+      "/rejhub2": [
+        { label: "Przeglądaj projekty", icon: "quick", selector: "#projekty", href: "/#projekty" }
+      ]
+    };
+    return (map[path] || []).map(function (item, index) {
+      return {
+        label: item.label,
+        icon: item.icon,
+        hint: index === 0 ? "tu" : "",
+        kind: "context",
+        selector: item.selector,
+        focus: item.focus,
+        href: item.href,
+        state: item.state
+      };
+    });
+  }
+
+  function renderQuickContext() {
+    var host = within("[data-quick-context]");
+    if (!host) return;
+    var items = contextActions();
+    if (!items.length) {
+      host.innerHTML = "";
+      return;
+    }
+    host.innerHTML =
+      '<p class="rj-context-title">Dla tej strony</p>' +
+      items.map(function (item, index) {
+        return '<button class="rj-context-btn" type="button" data-context="' + index + '">' +
+          '<span class="rj-ico" aria-hidden="true">' + (item.icon === "file" ? "↑" : item.icon === "chat" ? "✎" : "→") + "</span>" +
+          esc(item.label) + "</button>";
+      }).join("");
+  }
+
+  function runContext(item) {
+    if (!item) return;
+    close();
+    var target = null;
+    try {
+      target = item.selector ? document.querySelector(item.selector) : null;
+    } catch (e) {
+      target = null;
+    }
+    if (target) {
+      try {
+        if (!item.focus && typeof target.click === "function") target.click();
+        if (typeof target.focus === "function") target.focus({ preventScroll: true });
+        target.scrollIntoView({ block: "center", behavior: "smooth" });
+        return;
+      } catch (e) { /* spróbujemy przez adres */ }
+    }
+    if (item.state) {
+      apply(item.state);
+      return;
+    }
+    if (item.href) window.location.href = item.href;
+  }
+
+  /* ---------------------------------------------- dostępność: fokus */
+
+  var FOCUSABLE = "button, a[href], input, textarea, select, [tabindex]:not([tabindex='-1'])";
+
+  function trapFocus(event) {
+    if (event.key !== "Tab") return;
+    if (state === "idle" || state === "min") return;
+    /* Tylko bieżący panel — ukryte widoki nie mogą łapać Tab. */
+    var view = island.querySelector(".rj-view--" + state);
+    if (!view) return;
+    var nodes = Array.prototype.slice.call(view.querySelectorAll(FOCUSABLE)).filter(function (node) {
+      if (node.hidden || node.disabled) return false;
+      if (node.getAttribute("aria-hidden") === "true") return false;
+      if (node.closest("[hidden]")) return false;
+      var style = window.getComputedStyle(node);
+      return style.display !== "none" && style.visibility !== "hidden";
+    });
+    if (!nodes.length) return;
+    var first = nodes[0];
+    var last = nodes[nodes.length - 1];
+    var active = (shadow && shadow.activeElement) || document.activeElement;
+    if (event.shiftKey && (active === first || !island.contains(active))) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && active === last) {
+      event.preventDefault();
+      first.focus();
+    }
   }
 
   var VIEWS = {
@@ -584,6 +922,7 @@
     if (!island) return;
     store(COLLAPSE_KEY, "1");
     apply("min");
+    announce("Wyspa schowana. Strzałka w górę albo przesunięcie palcem w górę przywraca ją.");
     /* Krótkie muśnięcie na Androidzie — informacja bez patrzenia. */
     try {
       if (navigator.vibrate) navigator.vibrate(8);
@@ -592,8 +931,10 @@
 
   function expand() {
     if (!island) return;
+    endQuiet();
     store(COLLAPSE_KEY, "0");
     apply("idle");
+    announce("Wyspa rozwinięta.");
     try {
       if (navigator.vibrate) navigator.vibrate(8);
     } catch (e) { /* trudno */ }
@@ -608,6 +949,7 @@
        czarnej wyspy bez treści i bez wyjścia. */
     island.classList.toggle("is-min", name === "min");
     island.setAttribute("aria-expanded", String(name !== "min"));
+    applyCorner();
     try {
       paint(name);
     } catch (error) {
@@ -626,6 +968,7 @@
     window.requestAnimationFrame(function () {
       island.scrollTop = 0;
       try { fit(); } catch (e) { /* trudno */ }
+      try { syncHandle(); } catch (e) { /* trudno */ }
       setTimeout(function () { try { fit(); } catch (e) { /* trudno */ } }, 220);
     });
   }
@@ -650,7 +993,8 @@
     if (name === "alerts") loadAlerts();
     if (name === "now") renderNow();
     if (name === "profile") renderProfile();
-    if (name === "theme") syncSwitches();
+    if (name === "theme") { syncSwitches(); syncCornerButtons(); }
+    if (name === "quick") renderQuickContext();
     if (name === "tasks") renderTasks();
   }
 
@@ -811,10 +1155,14 @@
       return matches(item.label, q);
     }).slice(0, 5);
 
+    var contextual = contextActions();
     if (!q) {
-      searchResults = ACTIONS.slice(0, 5);
+      /* Bez wpisanej frazy najpierw to, co pasuje do bieżącej podstrony. */
+      searchResults = contextual.concat(ACTIONS).slice(0, 6);
     } else {
-      searchResults = list.concat(ACTIONS.filter(function (item) {
+      searchResults = contextual.filter(function (item) {
+        return matches(item.label, q);
+      }).concat(list, ACTIONS.filter(function (item) {
         return matches(item.label, q);
       })).slice(0, 6);
     }
@@ -826,7 +1174,7 @@
       host.innerHTML = '<p class="rj-empty">Nic nie znaleziono. Spróbuj „czat”, „plik” albo „konto”.</p>';
       return;
     }
-    var marks = { report: "!", alerts: "●", theme: "◐", profile: "○", tasks: "↑", panic: "✕" };
+    var marks = { report: "!", alerts: "●", theme: "◐", profile: "○", tasks: "↑", panic: "✕", file: "↑", chat: "✎", note: "▤", quick: "→" };
     host.innerHTML = searchResults.map(function (item, index) {
       var mark = item.kind === "page" ? "↗" : (marks[item.icon] || "•");
       return '<button class="rj-item" type="button" role="option" data-result="' + index + '">' +
@@ -839,6 +1187,7 @@
   function openResult(index) {
     var item = searchResults[index];
     if (!item) return;
+    if (item.kind === "context") { runContext(item); return; }
     if (item.kind === "page") {
       close();
       window.location.href = item.href;
@@ -902,13 +1251,6 @@
       return;
     }
 
-    report.busy = true;
-    var send = island.querySelector("[data-send]");
-    if (send) {
-      send.disabled = true;
-      send.textContent = "Wysyłam…";
-    }
-
     var title = value.split("\n")[0].trim().slice(0, 96);
     var profile = session();
     var payload = {
@@ -927,6 +1269,24 @@
       p_voter_key: voterId(),
       p_fp: fpId()
     };
+
+    /* Brak internetu nie może zgubić zgłoszenia: odkładamy je lokalnie
+       i wyślemy samo, gdy sieć wróci (także po zamknięciu karty). */
+    if (!online()) {
+      queueReport(payload);
+      if (text) text.value = "";
+      report.shot = null;
+      close();
+      toast("Zapisane — wyśle się po powrocie internetu");
+      return;
+    }
+
+    report.busy = true;
+    var send = island.querySelector("[data-send]");
+    if (send) {
+      send.disabled = true;
+      send.textContent = "Wysyłam…";
+    }
 
     rpc("submit_feedback", payload).then(function (created) {
       var id = created && created.id;
@@ -952,6 +1312,16 @@
       if (send) {
         send.disabled = false;
         send.textContent = "Wyślij";
+      }
+      /* Zerwane połączenie w trakcie wysyłki = to samo co brak internetu:
+         chowamy zgłoszenie do kolejki zamiast kazać pisać od nowa. */
+      if (!online()) {
+        queueReport(payload);
+        if (text) text.value = "";
+        report.shot = null;
+        close();
+        toast("Zapisane — wyśle się po powrocie internetu");
+        return;
       }
       toast((error && error.message) || "Nie udało się wysłać. Spróbuj jeszcze raz.");
     });
@@ -1054,11 +1424,26 @@
   }
 
   function setUnread(count) {
+    var value = Math.max(0, Number(count) || 0);
     var dot = island.querySelector('.rj-dock-btn[data-open="alerts"]');
-    if (dot) dot.classList.toggle("has-dot", count > 0);
+    if (dot) dot.classList.toggle("has-dot", value > 0);
     var label = island.querySelector("[data-alerts-count]");
-    if (label) label.textContent = count > 0 ? count + " nowe" : "";
-    island.setAttribute("data-unread", String(count || 0));
+    if (label) label.textContent = value > 0 ? value + " nowe" : "";
+    island.setAttribute("data-unread", String(value));
+
+    /* Licznik widać też na schowanym uchwycie — inaczej trzeba by rozwinąć
+       wyspę, żeby sprawdzić, czy coś przyszło. */
+    var badge = within("[data-handle-badge]");
+    if (badge) {
+      badge.hidden = value === 0;
+      badge.textContent = value > 9 ? "9+" : String(value);
+    }
+
+    /* Wibracja tylko przy pierwszej nowej rzeczy, nie przy każdej zmianie. */
+    if (value > 0 && !setUnread._had && navigator.vibrate) {
+      try { navigator.vibrate(12); } catch (e) { /* trudno */ }
+    }
+    setUnread._had = value > 0;
   }
 
   function renderPushRow(host, me) {
@@ -1315,6 +1700,39 @@
     "#rj-island-root .rj-handle svg{width:13px;height:13px}" +
     "#rj-island-root .rj-island.is-min{bottom:0;border-bottom-left-radius:0!important;" +
     "border-bottom-right-radius:0!important}" +
+    "#rj-island-root .rj-view--min{display:flex;align-items:center;gap:7px;padding:0 9px}" +
+    "#rj-island-root .rj-handle{display:inline-flex;align-items:center;gap:6px;flex:1 1 auto;" +
+    "min-width:0;height:100%;padding:0;border:0;background:transparent;color:#eef5ff;" +
+    "font:600 10.5px/1 system-ui,sans-serif}" +
+    "#rj-island-root .rj-handle-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}" +
+    "#rj-island-root .rj-handle svg{width:13px;height:13px}" +
+    "#rj-island-root .rj-handle-badge{display:inline-grid;place-items:center;min-width:16px;" +
+    "height:16px;padding:0 4px;border-radius:999px;background:#ff453a;color:#fff;" +
+    "font:700 9.5px/1 system-ui,sans-serif}" +
+    "#rj-island-root .rj-handle-net{width:7px;height:7px;flex:none;border-radius:50%;" +
+    "background:#32d74b}" +
+    "#rj-island-root .rj-handle-net.is-offline{background:#8e8e93}" +
+    "#rj-island-root .rj-handle-play{display:grid;place-items:center;width:24px;height:24px;" +
+    "flex:none;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,.14);color:#fff}" +
+    "#rj-island-root .rj-handle-play svg{width:12px;height:12px}" +
+    "#rj-island-root .rj-handle-bar{position:absolute;left:0;right:0;bottom:0;height:2px;" +
+    "background:rgba(255,255,255,.14);overflow:hidden}" +
+    "#rj-island-root .rj-handle-bar i{display:block;height:100%;width:0;background:#6ea8ff}" +
+    "#rj-island-root .rj-island.is-quiet{display:none}" +
+    "#rj-island-root .rj-island.is-left{left:10px;margin-left:0!important}" +
+    "#rj-island-root .rj-island.is-right{left:auto;right:10px;margin-left:0!important}" +
+    "#rj-island-root .rj-corner{display:flex;gap:4px;width:100%}" +
+    "#rj-island-root .rj-corner button{flex:1 1 0;padding:7px 6px;border-radius:9px;" +
+    "border:1px solid rgba(255,255,255,.12);background:transparent;color:#eef5ff;" +
+    "font:600 11px/1 system-ui,sans-serif}" +
+    "#rj-island-root .rj-corner button[aria-pressed='true']{background:rgba(110,168,255,.18);" +
+    "border-color:rgba(110,168,255,.55);color:#fff}" +
+    "#rj-island-root .rj-quick-context{display:grid;gap:4px;width:100%}" +
+    "#rj-island-root .rj-context-btn{display:flex;align-items:center;gap:8px;width:100%;" +
+    "padding:7px 8px;border:0;border-radius:9px;background:rgba(255,255,255,.06);" +
+    "color:#eef5ff;font:600 11.5px/1.3 system-ui,sans-serif;text-align:left}" +
+    "#rj-island-root .rj-sr{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;" +
+    "clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}" +
     "#rj-island-root .rj-toast{position:absolute;left:50%;bottom:74px;transform:translate(-50%,8px);" +
     "padding:8px 14px;border-radius:999px;background:#000;color:#f4f7fc;" +
     "border:1px solid rgba(255,255,255,.12);opacity:0;pointer-events:none}" +
@@ -1453,6 +1871,19 @@
         return;
       }
 
+      var cornerBtn = event.target.closest("[data-corner]");
+      if (cornerBtn) { setCorner(cornerBtn.getAttribute("data-corner")); return; }
+
+      var quietBtn = event.target.closest("[data-quiet]");
+      if (quietBtn) { quiet(30); return; }
+
+      var ctx = event.target.closest("[data-context]");
+      if (ctx) {
+        var ctxItems = contextActions();
+        runContext(ctxItems[Number(ctx.getAttribute("data-context"))]);
+        return;
+      }
+
       var sw = event.target.closest("[data-switch]");
       if (sw) {
         if (sw.getAttribute("data-switch") === "theme") toggleTheme();
@@ -1545,6 +1976,103 @@
       if (event.key === "Escape" && state !== "idle") close();
     });
 
+    /* ---------- gesty: przesunięcie palcem i długie przytrzymanie ---------- */
+
+    var gesture = null;
+
+    /* Nie przechwytujemy gestów zaczętych na liście ani w polu — tam palec
+       ma przewijać i pisać. */
+    function gestureStartAllowed(target) {
+      if (!target || !target.closest) return true;
+      return !target.closest(".rj-list, input, textarea, .rj-switch-row, .rj-corner, .rj-seg, .rj-handle-play, .rj-quick, .rj-context-btn");
+    }
+
+    root.addEventListener("pointerdown", function (event) {
+      if (event.pointerType === "mouse") return;
+      if (state !== "idle" && state !== "min") return;
+      if (!gestureStartAllowed(event.target)) { gesture = null; return; }
+      gesture = {
+        x: event.clientX,
+        y: event.clientY,
+        moved: false,
+        longPress: false,
+        start: Date.now()
+      };
+      /* Długie przytrzymanie uchwytu = cisza na 30 minut. */
+      clearTimeout(gesture._timer);
+      gesture._timer = setTimeout(function () {
+        if (!gesture || gesture.moved) return;
+        if (state !== "min") return;
+        gesture.longPress = true;
+        gesture = null;
+        quiet(30);
+      }, 620);
+    }, { passive: true });
+
+    root.addEventListener("pointermove", function (event) {
+      if (!gesture) return;
+      var dy = Math.abs(event.clientY - gesture.y);
+      var dx = Math.abs(event.clientX - gesture.x);
+      if (dx > 10 || dy > 10) {
+        gesture.moved = true;
+        clearTimeout(gesture._timer);
+      }
+    }, { passive: true });
+
+    function endGesture(event) {
+      if (!gesture) return;
+      var current = gesture;
+      gesture = null;
+      clearTimeout(current._timer);
+      if (current.longPress) return;
+      var dy = event.clientY - current.y;
+      var dx = event.clientX - current.x;
+      /* Ruch w bok to nie gest wyspy — nie ruszamy niczego. */
+      if (Math.abs(dx) > Math.abs(dy) + 14) return;
+      if (state === "idle" && dy > 22) { collapse(); return; }
+      if (state === "min" && dy < -22) { expand(); return; }
+    }
+
+    root.addEventListener("pointerup", endGesture, { passive: true });
+    root.addEventListener("pointercancel", function () {
+      if (gesture) clearTimeout(gesture._timer);
+      gesture = null;
+    }, { passive: true });
+
+    /* ---------- sieć ---------- */
+
+    function refreshNet() {
+      syncNetBadge();
+      if (online()) flushQueue();
+    }
+
+    window.addEventListener("online", refreshNet);
+    window.addEventListener("offline", refreshNet);
+
+    /* ---------- odtwarzacz ---------- */
+
+    /* Zdarzenia mediów nie bąbelkują, ale faza przechwytywania je widzi. */
+    ["play", "pause", "ended", "timeupdate", "loadedmetadata"].forEach(function (type) {
+      document.addEventListener(type, function () {
+        if (state === "min") syncHandle();
+      }, true);
+    });
+
+    /* Schowany uchwyt odświeża pasek postępu raz na sekundę — to tanie,
+       a media mogą grać w iframe, gdzie nie ma zdarzeń. */
+    setInterval(function () {
+      if (state === "min") {
+        try { syncHandle(); } catch (e) { /* trudno */ }
+      }
+    }, 1000);
+
+    /* ---------- fokus w panelu (Tab nie ucieka w stronę) ---------- */
+
+    root.addEventListener("keydown", function (event) {
+      if (event.key !== "Tab") return;
+      try { trapFocus(event); } catch (e) { /* trudno */ }
+    });
+
     /* Klawiatura pojawia się z opóźnieniem — po fokusie w polu sprawdzamy
        widok jeszcze raz, żeby panel zdążył się podnieść. */
     root.addEventListener("focusin", function () {
@@ -1586,7 +2114,26 @@
     /* Jeśli użytkownik schował wyspę, zostaje schowana także tutaj. */
     apply(isCollapsed() ? "min" : "idle");
     try { syncSwitches(); } catch (e) { /* trudno */ }
+    try { syncCornerButtons(); } catch (e) { /* trudno */ }
+    try { syncNetBadge(); } catch (e) { /* trudno */ }
+    try { syncHandle(); } catch (e) { /* trudno */ }
     syncViewport();
+
+    /* Cisza z poprzedniej wizyty: wyspa zostaje ukryta do końca odliczania. */
+    if (isQuiet()) {
+      island.classList.add("is-quiet");
+      var left = quietUntil() - Date.now();
+      clearTimeout(quiet._timer);
+      quiet._timer = setTimeout(function () {
+        store(QUIET_KEY, "0");
+        if (!island) return;
+        island.classList.remove("is-quiet");
+        resetToIdle(true);
+      }, Math.max(1000, left));
+    }
+
+    /* Zaległe zgłoszenia z poprzedniej wizyty, gdy sieć już jest. */
+    if (online() && queue().length) setTimeout(flushQueue, 1200);
   }
 
   function toggleShot(button) {
@@ -1659,6 +2206,14 @@
     collapse: collapse,
     expand: expand,
     collapsed: isCollapsed,
+    quiet: quiet,
+    corner: setCorner,
+    online: online,
+    queueSize: function () { return queue().length; },
+    flushQueue: flushQueue,
+    sync: syncHandle,
+    /* Dla strony: pokaż komunikat także na schowanym uchwycie. */
+    notify: function (text, ms) { toast(text); if (ms) handleText(text, ms); },
     health: health,
     check: watchdog,
     reset: resetToIdle,

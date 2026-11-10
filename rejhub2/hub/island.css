@@ -234,25 +234,236 @@
 /* ---------- schowana: uchwyt przy dolnej krawędzi ---------- */
 
 #rj-island-root .rj-view--min {
-  justify-content: center;
-  padding: 0 8px;
+  justify-content: flex-start;
+  gap: 7px;
+  padding: 0 9px;
+  overflow: hidden;
 }
 
 #rj-island-root .rj-handle {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 6px;
-  width: 100%;
+  flex: 1 1 auto;
+  min-width: 0;
   height: 100%;
   padding: 0;
   border: 0;
   background: transparent;
   color: rgba(240, 246, 255, 0.78);
-  font: 600 10px/1 system-ui, sans-serif;
+  font: 600 10.5px/1 system-ui, sans-serif;
   letter-spacing: 0.01em;
   cursor: pointer;
   transition: color 0.16s ease;
+  text-align: left;
+}
+
+#rj-island-root .rj-handle-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: opacity 0.16s ease;
+}
+
+#rj-island-root .rj-handle-text.is-flash {
+  color: #fff;
+  font-weight: 700;
+}
+
+#rj-island-root .rj-handle-up {
+  display: grid;
+  place-items: center;
+  flex: none;
+  color: rgba(240, 246, 255, 0.5);
+}
+
+/* licznik nieprzeczytanych widoczny także wtedy, gdy wyspa jest schowana */
+#rj-island-root .rj-handle-badge {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #ff453a;
+  color: #fff;
+  font: 700 9.5px/1 system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+/* kropka stanu sieci: zielona = działa, szara = brak */
+#rj-island-root .rj-handle-net {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 50%;
+  background: #32d74b;
+  box-shadow: 0 0 0 2px rgba(50, 215, 75, 0.16);
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+#rj-island-root .rj-handle-net.is-offline {
+  background: #8e8e93;
+  box-shadow: 0 0 0 2px rgba(142, 142, 147, 0.16);
+}
+
+#rj-island-root .rj-handle-net.has-queue {
+  background: #ffd60a;
+  box-shadow: 0 0 0 2px rgba(255, 214, 10, 0.2);
+}
+
+/* pauza/play w schowanym uchwycie */
+#rj-island-root .rj-handle-play {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex: none;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.16s ease, transform 0.1s ease;
+}
+
+#rj-island-root .rj-handle-play svg {
+  width: 12px;
+  height: 12px;
+}
+
+#rj-island-root .rj-handle-play:hover {
+  background: rgba(255, 255, 255, 0.24);
+}
+
+#rj-island-root .rj-handle-play:active {
+  transform: scale(0.9);
+}
+
+/* pasek postępu przyklejony do dolnej krawędzi uchwytu */
+#rj-island-root .rj-handle-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.14);
+  overflow: hidden;
+}
+
+#rj-island-root .rj-handle-bar i {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, #6ea8ff, #a9c8ff);
+  transition: width 0.4s linear;
+}
+
+/* cisza: wyspa znika z ekranu, ale sama wraca */
+#rj-island-root .rj-island.is-quiet {
+  display: none;
+}
+
+/* ---------- pozycja: lewo / prawo ---------- */
+
+#rj-island-root .rj-island.is-left {
+  left: 10px;
+  margin-left: 0 !important;
+}
+
+#rj-island-root .rj-island.is-right {
+  left: auto;
+  right: 10px;
+  margin-left: 0 !important;
+}
+
+/* ---------- wybór pozycji w panelu wyglądu ---------- */
+
+#rj-island-root .rj-corner {
+  display: flex;
+  gap: 4px;
+  width: 100%;
+  margin-top: 2px;
+}
+
+#rj-island-root .rj-corner button {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 7px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 9px;
+  background: transparent;
+  color: rgba(238, 245, 255, 0.62);
+  font: 600 11px/1 system-ui, sans-serif;
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+}
+
+#rj-island-root .rj-corner button[aria-pressed="true"] {
+  border-color: rgba(110, 168, 255, 0.55);
+  background: rgba(110, 168, 255, 0.18);
+  color: #fff;
+}
+
+#rj-island-root .rj-quiet-hint {
+  color: rgba(232, 240, 252, 0.42);
+  font-size: 10px;
+}
+
+/* ---------- akcje dla bieżącej strony ---------- */
+
+#rj-island-root .rj-quick-context {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+}
+
+#rj-island-root .rj-context-title {
+  margin: 0;
+  color: rgba(232, 240, 252, 0.42);
+  font: 600 9.5px/1 system-ui, sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+#rj-island-root .rj-context-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  padding: 7px 8px;
+  border: 0;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(238, 245, 255, 0.86);
+  font: 600 11.5px/1.3 system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.14s ease;
+}
+
+#rj-island-root .rj-context-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* ---------- czytniki ekranu ---------- */
+
+#rj-island-root .rj-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  border: 0;
+  white-space: nowrap;
 }
 
 #rj-island-root .rj-handle:hover,
@@ -264,13 +475,6 @@
 #rj-island-root .rj-handle svg {
   width: 13px;
   height: 13px;
-}
-
-#rj-island-root .rj-handle-label {
-  max-width: 72px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 /* Przyklejenie do dołu: bez marginesu, dolne rogi proste, lżejszy cień. */

@@ -83,7 +83,7 @@ function checkSources() {
 
 function buildPage() {
   return '<!doctype html><html lang="pl" data-theme="dark"><head><meta charset="utf-8">' +
-    '<script src="/hub/island.js?v=5" data-project="rejhub" data-project-name="RejHub"></script>' +
+    '<script src="/hub/island.js?v=6" data-project="rejhub" data-project-name="RejHub"></script>' +
     '</head><body><header class="rj-shared-header"><nav><a href="/rejchat">RejChat</a></nav></header>' +
     '<main><h1>Test</h1></main></body></html>';
 }
