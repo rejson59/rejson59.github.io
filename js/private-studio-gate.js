@@ -49,7 +49,7 @@
        autodestrukcji trzeba wstawić do treści z bazy — inaczej zniknąłby wraz
        z powłoką strony. */
     if (html.indexOf('/js/panic.js') === -1) {
-      html = html.replace('</head>', '<link rel="stylesheet" href="/css/panic.css?v=1"><script defer src="/js/panic.js?v=1"></script></head>');
+      html = html.replace('</head>', '<link rel="stylesheet" href="/css/panic.css?v=2"><script defer src="/js/panic.js?v=2"></script></head>');
     }
     document.open(); document.write(html); document.close();
     // Zmiana sesji w innej karcie i powrót z bfcache wymagają ponownej kontroli.

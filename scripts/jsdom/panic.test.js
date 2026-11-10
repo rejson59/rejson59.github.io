@@ -26,7 +26,7 @@ function makeWindow(html = '<!doctype html><html><body></body></html>', url = 'h
       w.__channels.push(this);
     }
     addEventListener(type, fn) { if (type === 'message') this.handler = fn; }
-    postMessage(data) { this.sent = data; }
+    postMessage(data) { (this.sentAll || (this.sentAll = [])).push(data); this.sent = data; }
     close() {}
   }
   w.BroadcastChannel = FakeChannel;
@@ -75,8 +75,11 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
     w.document.dispatchEvent(event);
     assert.equal(event.defaultPrevented, true, 'skrót ma przechwytywać zdarzenie');
     const channel = w.__channels[0];
-    assert.equal(JSON.stringify(channel.sent), '{"type":"panic"}', 'inne karty muszą dostać sygnał');
-    await wait(500);
+    await wait(900);
+    const types = (channel.sentAll || []).map((item) => item.type);
+    assert.ok(types.includes('ping'), 'najpierw pytamy, które karty jeszcze żyją');
+    assert.ok(types.includes('panic'), 'potem inne karty dostają sygnał');
+    assert.ok(types.indexOf('ping') < types.indexOf('panic'), 'ping przed sygnałem — bez tworzenia pustych okien');
     assert.equal(closed, true, 'bieżąca karta ma zostać zamknięta');
   }
 
@@ -104,18 +107,73 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
     assert.ok(pages.length > 10, 'brak stron RejHuba');
     pages.forEach((file) => {
       const html = fs.readFileSync(path.join(dir, file), 'utf8');
-      assert.ok(html.includes('/js/panic.js?v=1'), 'brak skryptu autodestrukcji w ' + file);
-      assert.ok(html.includes('/css/panic.css?v=1'), 'brak stylu autodestrukcji w ' + file);
+      assert.ok(html.includes('/js/panic.js?v=2'), 'brak skryptu autodestrukcji w ' + file);
+      assert.ok(html.includes('/css/panic.css?v=2'), 'brak stylu autodestrukcji w ' + file);
     });
   }
 
   /* 7. Studio podmienia cały dokument — brama musi wnieść przycisk do treści. */
   {
     const gate = fs.readFileSync(path.join(root, 'js/private-studio-gate.js'), 'utf8');
-    assert.ok(gate.includes('/js/panic.js?v=1'), 'brama studia ma wstrzykiwać autodestrukcję');
-    assert.ok(gate.includes('/css/panic.css?v=1'), 'brama studia ma wstrzykiwać styl autodestrukcji');
+    assert.ok(gate.includes('/js/panic.js?v=2'), 'brama studia ma wstrzykiwać autodestrukcję');
+    assert.ok(gate.includes('/css/panic.css?v=2'), 'brama studia ma wstrzykiwać styl autodestrukcji');
     const shell = fs.readFileSync(path.join(root, 'rejhub2/szklane-studio.html'), 'utf8');
     assert.ok(shell.includes('/js/private-studio-gate.js?v=4'), 'powłoka studia ma świeżą wersję bramy');
+  }
+
+
+  /* 8. Pigułka w lewym dolnym rogu jest przyciskiem autodestrukcji, nie linkiem do huba. */
+  {
+    const html = '<!doctype html><html><body><header class="rj-shared-header"></header></body></html>';
+    const dom = makeWindow(html);
+    const w = dom.window;
+    w.eval(fs.readFileSync(path.join(root, 'rejhub2/hub/hub-shell.js'), 'utf8'));
+    w.document.dispatchEvent(new w.Event('DOMContentLoaded'));
+    const pill = w.document.querySelector('.rjhub-pill');
+    assert.ok(pill, 'brak pigułki');
+    assert.equal(pill.tagName, 'BUTTON', 'pigułka ma być przyciskiem');
+    assert.ok(pill.hasAttribute('data-rj-panic'), 'pigułka ma być przyciskiem autodestrukcji');
+    assert.equal(pill.getAttribute('href'), null, 'nie może prowadzić na stronę główną');
+    assert.ok(pill.textContent.includes('Autodestrukcja'), 'czytelna etykieta');
+    assert.equal(w.document.querySelectorAll('a.rjhub-pill').length, 0, 'stary link do huba zniknął');
+    assert.ok(fs.readFileSync(path.join(root, 'css/panic.css'), 'utf8').includes('.rjhub-pill--panic'),
+      'brak stylu pigułki awaryjnej');
+  }
+
+  /* 9. Autodestrukcja nie otwiera nowych pustych kart (źródło starego błędu). */
+  {
+    assert.equal(/window\.open\(\s*""\s*,\s*tab\.id\s*\)/.test(source), false,
+      'nie wolno wołać window.open("", losowe-id) — to tworzy nowe about:blank');
+    assert.equal(source.includes('location.replace("about:blank")'), false,
+      'koniec z przenoszeniem karty na about:blank');
+
+    const w = run(makeWindow());
+    let opened = 0;
+    const originalOpen = w.open;
+    w.open = (...args) => { opened += 1; return originalOpen ? originalOpen.apply(w, args) : null; };
+    /* rejestr pełen już zamkniętych kart — nie mogą spowodować window.open */
+    w.localStorage.setItem('rejhub_open_tabs_v1', JSON.stringify([
+      { id: 'stara1', name: 'rejhub-tab-stara1', at: Date.now(), url: '/rejfile' },
+      { id: 'stara2', name: 'rejhub-tab-stara2', at: Date.now(), url: '/rejchat' }
+    ]));
+    w.RejPanic.run();
+    await wait(700);
+    assert.equal(opened, 0, 'martwe karty nie mogą tworzyć nowych okien');
+  }
+
+  /* 10. Gdy przeglądarka odmawia zamknięcia, karta jest czyszczona lokalnie
+         — bez zmiany adresu na about:blank. */
+  {
+    const dom = makeWindow('<!doctype html><html><body><main><h1>Sekret</h1></main></body></html>');
+    const w = dom.window;
+    const startUrl = w.location.href;
+    w.close = () => {}; /* przeglądarka blokuje zamknięcie karty otwartej przez użytkownika */
+    run(dom);
+    w.RejPanic.run();
+    await wait(1200);
+    assert.equal(w.location.href, startUrl, 'adres karty nie może się zmienić');
+    assert.equal(w.document.querySelector('h1'), null, 'treść strony musi zniknąć');
+    assert.ok(/Karta wyłączona/.test(w.document.documentElement.textContent), 'neutralna plansza');
   }
 
   console.log('panic: wszystkie sprawdzenia przeszły');
