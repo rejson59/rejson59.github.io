@@ -142,6 +142,18 @@
   patchMatchMedia();
   muteAll();
 
+  /* Arkusze w <head> mogą dojść po tym skrypcie — przez pierwsze ~2 s
+     powtarzamy wyłączanie, żeby żadna reguła nie zdążyła zostać włączona. */
+  (function retry() {
+    var frames = 0;
+    function step() {
+      muteAll();
+      frames += 1;
+      if (frames < 120 && window.requestAnimationFrame) window.requestAnimationFrame(step);
+    }
+    if (window.requestAnimationFrame) window.requestAnimationFrame(step);
+  })();
+
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", muteAll);
   }
