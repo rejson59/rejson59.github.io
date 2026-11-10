@@ -165,7 +165,6 @@
       "index": "Strona główna",
       "admin": "Panel admina",
       "spolecznosc": "Społeczność",
-      "tablica-pomyslow": "Tablica pomysłów",
       "rejson-widgets": "Podgląd zgłoszeń"
     };
     return map[s] !== undefined ? map[s] : String(slug || "");
@@ -1083,7 +1082,7 @@
           '<span class="pa-time-chip" title="Wejścia — nowa wizyta po przerwie dłuższej niż 30 minut">🚪 ' + fmt(p.visits) + "</span>" +
           '<span class="pa-time-chip" title="Odwiedzone podstrony">📄 ' + fmt(p.pages) + "</span>" +
           '<span class="pa-time-chip" title="Kliknięcia i akcje">🖱 ' + fmt(p.actions) + "</span>" +
-          (Number(p.submissions) > 0 ? '<span class="pa-time-chip" title="Zgłoszenia na tablicę">📨 ' + fmt(p.submissions) + "</span>" : "") +
+          (Number(p.submissions) > 0 ? '<span class="pa-time-chip" title="Zgłoszenia od użytkowników">📨 ' + fmt(p.submissions) + "</span>" : "") +
           (Number(p.votes) > 0 ? '<span class="pa-time-chip" title="Głosy na pomysły">👍 ' + fmt(p.votes) + "</span>" : "") +
           (Array.isArray(p.today_pages) && p.today_pages.length
             ? '<span class="vif-row-today" title="Dziś był na: ' + esc(p.today_pages.map(prettySlug).join(" · ")) + '">' +
@@ -1261,7 +1260,7 @@
       : "";
 
     var subsHtml = subs.length
-      ? '<div class="vif-section"><h3 class="vif-h">Zgłoszenia na tablicę</h3><div class="vif-subs">' +
+      ? '<div class="vif-section"><h3 class="vif-h">Zgłoszenia od użytkowników</h3><div class="vif-subs">' +
         subs.map(function (it) {
           return (
             '<div class="vif-sub">' +

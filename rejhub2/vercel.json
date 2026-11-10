@@ -3,25 +3,84 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/css/:path*", "destination": "https://rejson59.github.io/css/:path*" },
-    { "source": "/js/:path*", "destination": "https://rejson59.github.io/js/:path*" },
-    { "source": "/data/:path*", "destination": "https://rejson59.github.io/data/:path*" },
-    { "source": "/vendor/:path*", "destination": "https://rejson59.github.io/vendor/:path*" },
-    { "source": "/assets/:path*", "destination": "https://rejson59.github.io/assets/:path*" },
-    { "source": "/rejson-widgets/:path*", "destination": "https://rejson59.github.io/rejson-widgets/:path*" }
+    {
+      "source": "/css/:path*",
+      "destination": "https://rejson59.github.io/css/:path*"
+    },
+    {
+      "source": "/js/:path*",
+      "destination": "https://rejson59.github.io/js/:path*"
+    },
+    {
+      "source": "/data/:path*",
+      "destination": "https://rejson59.github.io/data/:path*"
+    },
+    {
+      "source": "/vendor/:path*",
+      "destination": "https://rejson59.github.io/vendor/:path*"
+    },
+    {
+      "source": "/assets/:path*",
+      "destination": "https://rejson59.github.io/assets/:path*"
+    },
+    {
+      "source": "/rejson-widgets/:path*",
+      "destination": "https://rejson59.github.io/rejson-widgets/:path*"
+    }
   ],
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "X-Frame-Options", "value": "SAMEORIGIN" }
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        }
       ]
     },
     {
       "source": "/(w-budowie|login)",
-      "headers": [{ "key": "Cache-Control", "value": "no-store" }]
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        }
+      ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/tablica-pomyslow",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/tablica-pomyslow.html",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/board",
+      "destination": "/widzety",
+      "permanent": true
+    },
+    {
+      "source": "/rejson-widgets/board",
+      "destination": "/widzety",
+      "permanent": true
+    },
+    {
+      "source": "/rejson-widgets/board.html",
+      "destination": "/widzety",
+      "permanent": true
     }
   ]
 }

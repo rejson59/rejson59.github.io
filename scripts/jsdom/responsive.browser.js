@@ -116,7 +116,7 @@ const server = http.createServer((req, res) => {
     await configure(logged);
     await logged.addInitScript(() => localStorage.setItem('rejson_community_session_v1', JSON.stringify({username:'Tester',token:'0123456789abcdef0123456789abcdef'})));
     const lp = await logged.newPage();
-    for (const url of ['/index.html','/rejchat.html','/widzety.html','/partnerstwo.html','/tablica-pomyslow.html']) {
+    for (const url of ['/index.html','/rejchat.html','/widzety.html','/partnerstwo.html','/.html']) {
       await lp.goto(origin + url,{waitUntil:'domcontentloaded'});
       await lp.locator('.rj-header-profile').waitFor({state:'visible'});
       assert.equal(await lp.locator('header a[href$="logowanie"]').filter({visible:true}).count(),0,`${url}: konto nie jest zdublowane`);

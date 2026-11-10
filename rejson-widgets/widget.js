@@ -42,9 +42,6 @@
 
   var VOTER_KEY_NAME = "rejson_widgets_voter_id_v1";
   var PREFS_KEY_PREFIX = "rejson_widget_prefs_v3:";
-  var MIRROR_KEY = "rejson_widgets_mirror_v1";
-
-  var DEFAULT_BOARD_FALLBACK = [];
 
   /* ========================================================================
      2. CICHUTKIE PRZECHWYTYWANIE BŁĘDÓW KONSOLI I DANYCH TECHNICZNYCH
@@ -218,11 +215,10 @@
 
   var state = {
     open: false,
-    view: "form", // "form" | "board" | "sent"
+    view: "form", // "form" | "sent"
     type: "bug", // "bug" | "idea"
     scope: "all", // "project" | "all"
     submitting: false,
-    boardItems: [],
     attachments: [],   /* zrzuty / migawki / nagrania dołączone do zgłoszenia */
     mediaStatus: null, /* { text, error } — komunikat pod przyciskami */
 
@@ -834,8 +830,6 @@
      ======================================================================== */
   var SVG_CLOSE =
     '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>';
-  var SVG_BOARD =
-    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg>';
   var SVG_CHECK =
     '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
 
@@ -891,9 +885,6 @@
     "      </div>" +
     '      <div class="rj-actions-right">' +
     '        <button type="button" class="rj-account" hidden title="Zaloguj się przez rejson59.github.io" aria-label="Konto — zaloguj się przez rejson59.github.io">Konto</button>' +
-    '        <button type="button" class="rj-ghost-icon rj-btn-board" title="Tablica pomysłów" aria-label="Tablica pomysłów">' +
-    SVG_BOARD +
-    "</button>" +
     '        <button type="button" class="rj-ghost-icon rj-btn-close" title="Zwiń (Esc)" aria-label="Zamknij">' +
     SVG_CLOSE +
     "</button>" +
@@ -911,7 +902,6 @@
   var openWrap = shadow.querySelector(".rj-open");
   var segPill = shadow.querySelector(".rj-seg-pill");
   var segButtons = Array.prototype.slice.call(shadow.querySelectorAll(".rj-seg button"));
-  var boardBtn = shadow.querySelector(".rj-btn-board");
   var accountBtn = shadow.querySelector(".rj-account");
   function accountReady() { accountBtn.hidden = !window.RejsonAccount; }
   window.addEventListener("rj:account-ready", accountReady);
@@ -1101,7 +1091,6 @@
     segButtons.forEach(function (b) {
       b.classList.toggle("is-active", state.view === "form" && b.dataset.type === state.type);
     });
-    boardBtn.classList.toggle("is-active", state.view === "board");
   }
 
   function renderSlot() {
@@ -1115,50 +1104,6 @@
         "</div>" +
         "  <p>Wysłano — dzięki!</p>" +
         "  <span>Zgłoszenie trafiło do panelu Rejsona.</span>" +
-        "</div>";
-      kickMorphSpring();
-      return;
-    }
-
-    if (state.view === "board") {
-      var list = state.boardItems.slice(0, 12);
-      slotEl.innerHTML = (!list.length
-        ? '<p style="margin:14px 0;text-align:center;font-size:12px;color:var(--rj-muted)">Brak wpisów — dodaj pierwszy pomysł.</p>'
-        : '<div class="rj-list">' +
-          list
-            .map(function (it) {
-              var pBadge = it.project_slug ? '<span class="rj-row-meta">' + esc(it.project_slug) + " · " + (it.type === "bug" ? "Błąd" : "Pomysł") + "</span>" : "";
-              return (
-                '<div class="rj-row">' +
-                '  <button type="button" class="rj-up ' +
-                (it.has_voted ? "is-voted" : "") +
-                '" data-up="' +
-                esc(it.id) +
-                '" title="' +
-                (it.has_voted ? "Cofnij polubienie" : "Polub — pokaż, że pomysł Ci się podoba") +
-                '" aria-label="' +
-                (it.has_voted ? "Cofnij polubienie" : "Polub pomysł") +
-                '"><svg class="rj-up-heart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg><span>' +
-                Number(it.upvotes_count || 0) +
-                "</span></button>" +
-                '  <div style="min-width:0;flex:1">' +
-                pBadge +
-                '    <p class="rj-row-title">' +
-                esc(it.title) +
-                "</p>" +
-                (it.admin_reply
-                  ? '<p class="rj-row-reply">' + esc(it.admin_reply) + "</p>"
-                  : "") +
-                "  </div>" +
-                "</div>"
-              );
-            })
-            .join("") +
-          "</div>") +
-        '<div class="rj-board-foot">' +
-        '  <span>Zgłoszenia i pomysły</span>' +
-        '  <a href="/tablica-pomyslow" target="_blank" rel="noopener noreferrer">Publiczna tablica ↗</a>' +
-        '  <a href="/admin" target="_blank" rel="noopener noreferrer">Panel ↗</a>' +
         "</div>";
       kickMorphSpring();
       return;
@@ -1340,33 +1285,6 @@
       });
   }
 
-  function getMirror() {
-    try {
-      var raw = localStorage.getItem(MIRROR_KEY);
-      if (raw) {
-        var p = JSON.parse(raw);
-        if (p && Array.isArray(p.items)) return p;
-      }
-    } catch (e) {}
-    return { items: DEFAULT_BOARD_FALLBACK.slice(), votedIds: {} };
-  }
-
-  async function syncBoard() {
-    try {
-      var rows = await callRPC("list_public_board", {
-        p_project_slug: null,
-        p_voter_key: getVoterId(),
-        p_limit: 40
-      });
-      if (Array.isArray(rows)) state.boardItems = rows;
-    } catch (e) {
-      var m = getMirror();
-      state.boardItems = m.items.map(function (x) {
-        return Object.assign({}, x, { has_voted: Boolean(m.votedIds && m.votedIds[x.id]) });
-      });
-    }
-    if (state.open && state.view === "board") renderSlot();
-  }
 
   /* ========================================================================
      ZAŁĄCZNIKI DO ZGŁOSZEŃ — zrzut ekranu, migawka strony, ostatnie 15 s
@@ -1572,7 +1490,7 @@
       p_description: text,
       p_category: state.type === "bug" ? "bug" : "feature",
       p_severity: "normal",
-      p_is_public: true,
+      p_is_public: false,
       p_author_name: sessionUsername() || draft.author.trim() || "Anonim",
       p_author_contact: null,
       // Parametry i fragment mogą zawierać prywatne linki lub tokeny.
@@ -1585,7 +1503,6 @@
     try {
       var created = await callRPC("submit_feedback", payload);
       if (created) {
-        state.boardItems.unshift(created);
         trackAction("submit", (state.type === "bug" ? "zgłoszenie błędu" : "nowy pomysł") + ": „" + shortTitle.slice(0, 80) + "”");
         /* załączniki (zrzuty, nagrania) dołączamy już do istniejącego zgłoszenia */
         if (state.attachments.length) {
@@ -1593,28 +1510,11 @@
         }
       }
     } catch (err) {
-      var m = getMirror();
-      var localItem = {
-        id: "local-" + Date.now().toString(36),
-        project_slug: payload.p_project_slug,
-        project_name: payload.p_project_name,
-        type: payload.p_type,
-        title: payload.p_title,
-        description: payload.p_description,
-        status: "new",
-        is_public: true,
-        upvotes_count: 1,
-        author_name: payload.p_author_name,
-        page_url: payload.p_page_url,
-        diagnostics: payload.p_diagnostics,
-        created_at: new Date().toISOString(),
-        has_voted: true
-      };
-      m.items.unshift(localItem);
-      try {
-        localStorage.setItem(MIRROR_KEY, JSON.stringify(m));
-      } catch (e2) {}
-      state.boardItems.unshift(localItem);
+      /* Bez zapisu lokalnego „na pokaz”: zgłoszenie ma naprawdę dotrzeć do admina. */
+      state.submitting = false;
+      state.mediaStatus = { text: "Nie udało się wysłać zgłoszenia. Sprawdź połączenie i spróbuj jeszcze raz.", error: true };
+      renderSlot();
+      return;
     }
 
     draft.message = "";
@@ -1641,29 +1541,6 @@
     }, 1150);
   }
 
-  async function toggleVote(id) {
-    var item = state.boardItems.find(function (x) {
-      return x.id === id;
-    });
-    if (!item) return;
-    item.has_voted = !item.has_voted;
-    item.upvotes_count = Math.max(0, Number(item.upvotes_count || 0) + (item.has_voted ? 1 : -1));
-    renderSlot();
-
-    try {
-      var res = await callRPC("toggle_upvote", {
-        p_submission_id: id,
-        p_voter_key: getVoterId(),
-        p_fp: fpId()
-      });
-      if (res && typeof res.upvotes_count === "number") {
-        item.has_voted = Boolean(res.voted);
-        item.upvotes_count = res.upvotes_count;
-        renderSlot();
-        trackAction(res.voted ? "like" : "unlike", "❤ pomysł: „" + String(item.title || "").slice(0, 80) + "”");
-      }
-    } catch (e) {}
-  }
 
   /* ========================================================================
      11. OTWIERANIE / ZWIJANIE MORFINGOWE + PRZECIĄGANIE + MOTYW STRONY
@@ -1677,9 +1554,6 @@
       state.type = target;
       state.view = "form";
       trackAction("open", "otworzył formularz: " + (target === "bug" ? "zgłoś błąd" : "zgłoś pomysł"));
-    } else if (target === "board") {
-      state.view = "board";
-      trackAction("open", "otworzył listę pomysłów w pigułce");
     } else if (state.view === "sent") {
       state.view = "form";
     }
@@ -1693,7 +1567,6 @@
       if (msgEl && state.open && state.view === "form") msgEl.focus();
     }, 140);
 
-    syncBoard();
     emit("open", { view: state.view, type: state.type });
   }
 
@@ -1840,11 +1713,6 @@
     if (window.RejsonAccount) window.RejsonAccount.open();
   });
 
-  boardBtn.addEventListener("click", function () {
-    state.view = state.view === "board" ? "form" : "board";
-    renderSlot();
-  });
-
   segButtons.forEach(function (btn) {
     btn.addEventListener("click", function () {
       state.type = btn.dataset.type;
@@ -1879,12 +1747,6 @@
   });
 
   slotEl.addEventListener("click", function (e) {
-    var up = e.target.closest("[data-up]");
-    if (up) {
-      toggleVote(up.dataset.up);
-      return;
-    }
-
     /* --- załączniki --- */
     if (e.target.closest("[data-rj-shot]")) {
       handleScreenShot();
@@ -2097,7 +1959,6 @@
     });
     document.addEventListener("fullscreenchange", ensureMounted);
     document.addEventListener("visibilitychange", onWidgetVisibility);
-    syncBoard();
   }
 
   if (document.readyState === "loading") {

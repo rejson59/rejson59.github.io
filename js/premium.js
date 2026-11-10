@@ -3,7 +3,6 @@
    --------------------------------------------------------------------------
    Zasada: nic tu nie udaje. Każde powiadomienie pochodzi z realnych danych:
      • projekt, który obserwujesz, ma nowszy `updated_at` (dane GitHuba),
-     • Twoje zgłoszenie na tablicy zmieniło status albo dostało odpowiedź,
      • Rejson59 jest TERAZ online (realna obecność z bazy, nie timer).
 
    Bramka: sam ten moduł niczego nie blokuje. Odblokowuje DODATKI, które bez
@@ -161,7 +160,7 @@
 
   /* ---------- powiadomienia ---------- */
 
-  var state = { items: [], loading: false, error: null, sourceError: "", ownerOnline: false, board: [] };
+  var state = { items: [], loading: false, error: null, sourceError: "", ownerOnline: false };
   var activeToken = null, inFlight = null;
   function queueKey(s) { return NOTICES_KEY + String(s.username).toLowerCase(); }
   function loadQueue(s) {
@@ -174,7 +173,6 @@
       activeToken = token;
       inFlight = null;
       state.items = loadQueue(s);
-      state.board = [];
       state.sourceError = "";
       state.ownerOnline = false;
     }
@@ -198,16 +196,6 @@
     changed();
   }
 
-  /* Klucz, którym pigułka/board podpisują głosy — bez niego `has_voted`
-     zawsze wracałoby false i „Twój wkład” kłamałby o zerze. */
-  function voterKey() {
-    try {
-      var k = window.localStorage.getItem(VOTER_KEY);
-      if (k && k.length >= 16) return k;
-    } catch (e) { /* tryb prywatny */ }
-    return null;
-  }
-
   /* Jedno przejście: porównujemy „co widziałem ostatnio” z tym, co jest teraz.
      Pierwsze uruchomienie tylko zapisuje punkt odniesienia — bez zalewu
      powiadomień o wszystkim, co wydarzyło się przed założeniem konta. */
@@ -224,28 +212,21 @@
     var firstRun = !seen || seen.user !== s.username;
 
     var prevProjects = (!firstRun && seen.projects) || {};
-    var prevSubs = (!firstRun && seen.subs) || {};
     // Podstrony nie mają listy projektów — nie wymazuj poprzedniej migawki.
     var nextProjects = Object.assign({}, prevProjects);
     var events = [];
 
     var followed = following();
 
-    /* 2. moje zgłoszenia na tablicy — status i odpowiedź */
-    var boardPromise = rpc("list_public_board", {
-      p_limit: 120,
-      p_voter_key: voterKey()          /* bez tego nie wiemy, na co już głosowałeś */
-    }).catch(function () { return null; });
-
     /* 3. obecność właściciela — realna, z bazy */
     var presencePromise = rpc("community_online_users", { p_window_seconds: 120 })
       .catch(function () { return null; });
 
-    return Promise.all([boardPromise, presencePromise, projectData(followed)]).then(function (res) {
+    return Promise.all([presencePromise, projectData(followed)]).then(function (res) {
       // Odpowiedź starej sesji nie może trafić do nowego konta.
       var currentSession = session();
       if (!currentSession || currentSession.token !== s.token) return [];
-      var projectRows = res[2];
+      var projectRows = res[1];
       /* 1. projekty, które obserwuję */
       projectRows.forEach(function (p) {
         var name = p.name || p.slug;
@@ -269,69 +250,8 @@
         }
       });
 
-      var boardOk = Array.isArray(res[0]);
-      state.sourceError = !boardOk ? "Nie udało się sprawdzić zgłoszeń." : projectFetchError ? "Nie udało się sprawdzić aktualizacji projektów." : "";
-      var rows = boardOk ? res[0] : [];
-      var online = Array.isArray(res[1]) ? res[1] : [];
-      var nextSubs = {};
-      state.board = rows;
-
-      /* Nowe zgłoszenie w projekcie, który obserwuję. Prawdziwe zdarzenie:
-         wpis powstał po moim ostatnim wejściu. Pomijam własne zgłoszenia. */
-      var lastVisitMs = seen && seen.at ? new Date(seen.at).getTime() : 0;
-      if (!firstRun && lastVisitMs) {
-        rows.forEach(function (it) {
-          var slug = it.project_slug || it.project_name;
-          if (!slug || followed.indexOf(slug) === -1) return;
-          if (String(it.author_name || "").toLowerCase() === String(s.username).toLowerCase()) return;
-          var created = new Date(it.created_at).getTime();
-          if (!(created > lastVisitMs)) return;
-          events.push({
-            id: "newsub:" + it.id,
-            kind: "new_submission",
-            icon: "📣",
-            title: "Nowe zgłoszenie w „" + slug + "”",
-            text: it.title || "Ktoś coś zgłosił.",
-            href: "/tablica-pomyslow#" + it.id,
-            when: it.created_at
-          });
-        });
-      }
-
-      var mine = rows.filter(function (it) {
-        return String(it.author_name || "").toLowerCase() === String(s.username).toLowerCase();
-      });
-
-      mine.forEach(function (it) {
-        var sig = { s: it.status || "", r: it.admin_replied_at || "" };
-        nextSubs[it.id] = sig;
-        var before = prevSubs[it.id];
-        if (firstRun || !before) return;          /* pierwsze zobaczenie — cicho */
-
-        if (sig.s !== before.s) {
-          var label = STATUS_LABEL[sig.s] || sig.s;
-          events.push({
-            id: "status:" + it.id + ":" + sig.s + ":" + (it.updated_at || ""),
-            kind: "status",
-            icon: sig.s === "completed" ? "✅" : (sig.s === "in_progress" ? "🛠" : "🔎"),
-            title: "„" + (it.title || "") + "” — " + label,
-            text: "Twoje zgłoszenie zmieniło status.",
-            href: "/tablica-pomyslow#" + it.id,
-            when: it.updated_at || ""
-          });
-        }
-        if (sig.r && sig.r !== before.r) {
-          events.push({
-            id: "reply:" + it.id + ":" + sig.r,
-            kind: "reply",
-            icon: "💬",
-            title: "Nowa odpowiedź Rejsona",
-            text: (it.title || "Twoje zgłoszenie") + " — zobacz, co napisał.",
-            href: "/tablica-pomyslow#" + it.id,
-            when: sig.r
-          });
-        }
-      });
+      state.sourceError = projectFetchError ? "Nie udało się sprawdzić aktualizacji projektów." : "";
+      var online = Array.isArray(res[0]) ? res[0] : [];
 
       var ownerOnline = online.some(function (u) {
         return u && (u.is_owner === true || String(u.username || "").toLowerCase() === "rejson59");
@@ -356,8 +276,7 @@
       var nextSeen = {
         user: s.username,
         projects: nextProjects,
-        subs: boardOk ? (firstRun ? nextSubs : Object.assign(prevSubs, nextSubs)) : prevSubs,
-        at: boardOk ? nowIso() : (seen && !firstRun && seen.at || nowIso())
+        at: nowIso()
       };
       writeJSON(window.localStorage, accountSeenKey, nextSeen);
       writeJSON(window.localStorage, SEEN_KEY, nextSeen);
@@ -380,11 +299,6 @@
       return state.items;
     });
   }
-
-  var STATUS_LABEL = {
-    new: "Nowe", under_review: "Rozważane", planned: "Planowane",
-    in_progress: "W realizacji", completed: "Wdrożone", closed: "Zamknięte"
-  };
 
   /* ---------- wstrzykiwanie przycisków ---------- */
 
@@ -482,32 +396,21 @@
 
   /* ---------- sekcja „Premium za darmo” ---------- */
 
-  /* „Twój wkład” — wszystko policzone z realnych danych tablicy, które
-     i tak już pobieramy. Żadnych szacunków ani zaokrągleń „na pokaz”. */
+  /* Liczniki konta — tylko to, co naprawdę wiemy: obserwacje i lista
+     projektów. Bez wymyślonych „wkładów” z usuniętej tablicy. */
   function myStats() {
-    var s = session();
-    var uname = s ? String(s.username).toLowerCase() : "";
-    var rows = Array.isArray(state.board) ? state.board : [];
-    var mine = rows.filter(function (it) {
-      return uname && String(it.author_name || "").toLowerCase() === uname;
-    });
-    mine.sort(function (a, b) {
-      return String(b.updated_at || b.created_at || "").localeCompare(String(a.updated_at || a.created_at || ""));
-    });
     return {
-      mine: mine,
-      shipped: mine.filter(function (it) { return it.status === "completed"; }).length,
-      votes: rows.filter(function (it) { return it.has_voted; }).length,
-      following: following().length
+      following: following().length,
+      projects: projects().filter(function (p) {
+        return !!(p.liveUrl || p.homepage || p.html_url);
+      }).length
     };
   }
 
   function statsHTML(st) {
     var cells = [
-      [st.mine.length, "Twoje zgłoszenia"],
-      [st.shipped, "Wdrożone"],
-      [st.votes, "Oddane głosy"],
-      [st.following, "Obserwujesz"]
+      [st.following, "Obserwujesz"],
+      [st.projects, "Projekty w RejHub"]
     ];
     return '<div class="rj-stats">' +
       cells.map(function (c) {
@@ -516,31 +419,13 @@
       "</div>";
   }
 
-  function mineHTML(st) {
-    if (!st.mine.length) {
-      return '<p class="rj-mine-empty">Nie masz jeszcze własnych zgłoszeń — ' +
-        '<a href="tablica-pomyslow">coś Ci nie działa albo czegoś brakuje?</a> Napisz, to naprawdę trafia na listę.</p>';
-    }
-    return '<div class="rj-mine">' +
-      '<p class="rj-mine-head">Twoje zgłoszenia <span class="mono">(' + st.mine.length + ')</span> ' +
-        '<a href="tablica-pomyslow#moje">zobacz na tablicy →</a></p>' +
-      st.mine.slice(0, 3).map(function (it) {
-        return '<a class="rj-mine-item" href="tablica-pomyslow#' + esc(it.id) + '">' +
-          '<span class="rj-mine-title">' + esc(it.title || "Zgłoszenie") + "</span>" +
-          '<em>' + esc(STATUS_LABEL[it.status] || it.status || "") + "</em>" +
-          "</a>";
-      }).join("") +
-      "</div>";
-  }
-
   function clubHTML() {
     var perks = [
-      ["bell", "Powiadomienia", "Status Twojego zgłoszenia, odpowiedź Rejsona i realna obecność — nic wymyślonego."],
-      ["board", "Twój wkład", "Widzisz, ile Twoich zgłoszeń trafiło do realizacji i ile pomysłów poparłeś."],
-      ["file", "Moje zgłoszenia", "Skrót do własnych wpisów i filtr „tylko moje” na tablicy — bez szukania w tłumie."],
-      ["chat", "Nowości z obserwowanych", "Ktoś zgłosił coś w projekcie, który obserwujesz? Dowiesz się pierwszy."],
-      ["account", "Twój profil", "Wybierz awatar i kolor nicka, dodaj bio i przedstaw się w RejChat."],
-      ["portal", "Obserwowane projekty", "Klikasz „obserwuj” i wiesz, gdy projekt się zmieni."]
+      ["bell", "Powiadomienia", "Aktualizacje obserwowanych projektów i realna obecność — bez wymyślonych zdarzeń."],
+      ["portal", "Obserwowane projekty", "Klikasz „obserwuj” i wiesz, gdy projekt się zmieni."],
+      ["account", "Twój profil", "Awatar, kolor nicka i bio — widoczne w RejChat i na profilu."],
+      ["chat", "RejChat", "Czat i wpisy po zalogowaniu, z reakcjami i spokojnym moderowaniem."],
+      ["file", "Wspólne konto", "Jedno konto strony i projektów — bez e-maila, nazwa i hasło."]
     ];
 
     var s = session();
@@ -584,7 +469,6 @@
           (state.ownerOnline ? ' · <strong>Rejson59 jest teraz online</strong>' : '') +
         '</p>' +
         statsHTML(st) +
-        mineHTML(st) +
         '<div class="rj-follow" role="group" aria-label="Obserwowane projekty">' +
           followable.map(function (p) {
             var on = list.indexOf(p.name) !== -1;
@@ -593,8 +477,8 @@
               (on ? "★ " : "☆ ") + esc(p.name) + '</button>';
           }).join("") +
         '</div>' +
-        '<p class="rj-club-note">Obserwowanie zapisuje się na tym urządzeniu — po zalogowaniu ' +
-          'na innym sprzęcie Twoje zgłoszenia i tak trafią do tego samego konta.</p>' +
+        '<p class="rj-club-note">Obserwowanie zapisuje się na tym urządzeniu. Zgłoszenia i pomysły ' +
+          'widzi wyłącznie admin — w swoim panelu.</p>' +
       '</div>' +
     '</div>';
   }
@@ -692,7 +576,6 @@
     var s = syncSession();
     if (!s) {
       state.items = [];
-      state.board = [];
       paintCount();
       changed();
       return Promise.resolve([]);

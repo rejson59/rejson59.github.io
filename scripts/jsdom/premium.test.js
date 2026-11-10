@@ -38,18 +38,6 @@ const PROJEKTY = [
   { name: "JoyPad", homepage: "https://rejson59.github.io/JoyPad/", pushed_at: "2026-10-21T10:00:00Z" }
 ];
 
-function plansza(over) {
-  return Object.assign([
-    {
-      id: "11111111-1111-1111-1111-111111111111",
-      title: "Pasek postępu skacze",
-      status: "new",
-      author_name: "RejsonFan",
-      admin_replied_at: null,
-      updated_at: "2026-10-27T10:00:00Z"
-    }
-  ], over || []);
-}
 
 /* Jedno miejsce, w którym udajemy backend. Każda odpowiedź jest sterowana
    z zewnątrz, więc testy mogą sprawdzić, co moduł robi z konkretnymi danymi. */
@@ -76,8 +64,7 @@ function mk(opts) {
     calls.push({ fn, body });
 
     let payload = null;
-    if (fn === "list_public_board") payload = opts.board || plansza();
-    else if (fn === "community_online_users") payload = opts.online || [];
+    if (fn === "community_online_users") payload = opts.online || [];
     else if (fn === "community_link_submissions") payload = { username: "RejsonFan", linked: 2 };
     else payload = null;
 
@@ -110,12 +97,13 @@ const count = (doc) => {
     check("tytuł zawiera całą obietnicę, nie tylko ogon",
       /Premium jest u mnie za darmo/.test(card.querySelector(".rj-club-title").textContent),
       card.querySelector(".rj-club-title").textContent);
-    check("wymienione realne korzyści (6)",
-      (card.querySelectorAll(".rj-premium__list li").length === 6),
+    check("wymienione realne korzyści (5)",
+      (card.querySelectorAll(".rj-premium__list li").length === 5),
       String(card.querySelectorAll(".rj-premium__list li").length));
-    check("wśród nich wkład, moje zgłoszenia i nowości z obserwowanych",
-      /Twój wkład/.test(card.textContent) && /Moje zgłoszenia/.test(card.textContent) &&
-      /Nowości z obserwowanych/.test(card.textContent));
+    check("wśród nich obserwowane projekty i wspólne konto",
+      /Obserwowane projekty/.test(card.textContent) && /Wspólne konto/.test(card.textContent));
+    check("nie ma już zachęty do publicznej tablicy",
+      !/tablic/i.test(card.textContent), "wzmianek: " + (card.textContent.match(/tablic/gi) || []).length);
     check("karta ma warstwę połysku (animacja światła, nie tylko ramka)",
       !!card.querySelector(".rj-premium__sheen"));
     check("jest jedno wyraźne wezwanie do działania", !!cta && /konto|Zaloguj/.test(cta.textContent),
@@ -151,12 +139,12 @@ const count = (doc) => {
     check("widać nick z konta", /RejsonFan/.test(card.textContent));
     check("odblokowana karta też ma połysk", !!card.querySelector(".rj-premium__sheen"));
 
-    /* „Twój wkład” musi być policzony z danych, nie z sufitu */
+    /* Liczniki liczone z realnych danych, bez publicznej tablicy */
     const stats = Array.prototype.map.call(card.querySelectorAll(".rj-stat"), (el) => el.textContent.trim());
-    check("są cztery liczniki wkładu", stats.length === 4, stats.join(" | "));
-    check("zgłoszenia policzone z tablicy (1 zgłoszenie RejsonFan)", /^1/.test(stats[0] || ""), stats[0]);
-    check("wdrożone policzone ze statusów", /^0/.test(stats[1] || ""), stats[1]);
-    check("obserwowane projekty = 0 na starcie", /^0/.test(stats[3] || ""), stats[3]);
+    check("są dwa liczniki (obserwowane + projekty)", stats.length === 2, stats.join(" | "));
+    check("obserwowane projekty = 0 na starcie", /^0/.test(stats[0] || ""), stats[0]);
+    check("liczba projektów do obserwowania pochodzi z listy", /^2/.test(stats[1] || ""), stats[1]);
+    check("karta nie pokazuje już zgłoszeń z tablicy", !/Twoje zgłoszenia/.test(card.textContent));
 
     const link = t.calls.filter((c) => c.fn === "community_link_submissions");
     check("scalanie historii wywołane", link.length === 1, "wywołań: " + link.length);
@@ -191,23 +179,16 @@ const count = (doc) => {
   console.log("\n=== E. POWIADOMIENIA TYLKO Z PRAWDZIWYCH ZDARZEŃ ===");
   {
     /* 1. pierwsze wejście: tylko punkt odniesienia, zero powiadomień */
-    const t = mk({ loggedIn: true, board: plansza() });
+    const t = mk({ loggedIn: true });
     await wait(60);
     check("pierwsze wejście nie zalewa powiadomieniami",
       t.w.RJPremium.notifications().length === 0,
       "sztuk: " + t.w.RJPremium.notifications().length);
 
-    /* 2. następna wizyta: projekt się zmienił, zgłoszenie dostało odpowiedź */
+    /* 2. następna wizyta: obserwowany projekt dostał aktualizację */
     const changed = PROJEKTY.map((p) =>
       p.name === "mconline" ? Object.assign({}, p, { pushed_at: "2026-10-28T09:00:00Z" }) : p);
-    const t2 = mk({ loggedIn: true, projects: changed, board: plansza([{
-      id: "11111111-1111-1111-1111-111111111111",
-      title: "Pasek postępu skacze",
-      status: "completed",
-      author_name: "RejsonFan",
-      admin_replied_at: "2026-10-28T08:00:00Z",
-      updated_at: "2026-10-28T08:00:00Z"
-    }]) });
+    const t2 = mk({ loggedIn: true, projects: changed });
     /* przenosimy „widziane” z poprzedniej wizyty — tak działa prawdziwa przeglądarka */
     t2.w.localStorage.setItem("rj_following_v1", JSON.stringify(["mconline"]));
     t2.w.localStorage.setItem("rj_seen_v1", t.w.localStorage.getItem("rj_seen_v1"));
@@ -218,78 +199,17 @@ const count = (doc) => {
     const titles = notif.map((n) => n.title).join(" | ");
     check("jest powiadomienie o aktualizacji obserwowanego projektu",
       notif.some((n) => n.kind === "update" && /mconline/.test(n.title)), titles);
-    check("jest powiadomienie o zmianie statusu mojego zgłoszenia",
-      notif.some((n) => n.kind === "status" && /Wdrożone/.test(n.title)), titles);
-    check("jest powiadomienie o odpowiedzi Rejsona",
-      notif.some((n) => n.kind === "reply"), titles);
+    check("nie ma powiadomień o zgłoszeniach (tablica usunięta)",
+      !notif.some((n) => n.kind === "status" || n.kind === "reply" || n.kind === "new_submission"),
+      notif.map((n) => n.kind).join(" | "));
     check("każde powiadomienie ma konkretne źródło (href)", notif.every((n) => !!n.href));
     check("każde ma znacznik czasu", notif.every((n) => !!n.when && !isNaN(new Date(n.when).getTime())));
-    /* Czas zdarzenia ma być prawdziwy (updated_at z tablicy), a nie moment,
-       w którym przeglądarka akurat odpytała serwer — inaczej „5 min temu”
-       kłamie. Kontrakt: list_public_board zwraca updated_at. */
-    const statusNote = notif.filter((n) => n.kind === "status")[0];
-    check("powiadomienie o statusie ma czas zdarzenia z bazy",
-      statusNote && String(statusNote.when).indexOf("2026-10-28T08:00:00") === 0,
-      statusNote ? String(statusNote.when) : "brak");
     check("licznik pokazuje liczbę zdarzeń",
       count(t2.doc) === (notif.length > 9 ? "9+" : String(notif.length)),
       count(t2.doc) + " vs " + notif.length);
-  }
-
-  console.log("\n=== E2. NOWE ZGŁOSZENIE W OBSERWOWANYM PROJEKCIE ===");
-  {
-    /* Punkt odniesienia z pierwszej wizyty */
-    const first = mk({ loggedIn: true });
-    await wait(60);
-    const seen = first.w.localStorage.getItem("rj_seen_v1");
-
-    /* Ktoś inny zgłosił coś PO naszej ostatniej wizycie, w projekcie,
-       który obserwujemy — to realne zdarzenie, więc powiadomienie ma być. */
-    const future = new Date(Date.now() + 60 * 1000).toISOString();
-    const fresh = plansza();
-    fresh.push({
-      id: "22222222-2222-2222-2222-222222222222",
-      title: "Nowy pomysł kogoś innego",
-      status: "new",
-      author_name: "KtosInny",
-      admin_replied_at: null,
-      updated_at: future,
-      created_at: future,
-      project_slug: "mconline",
-      project_name: "mconline"
-    });
-
-    const t = mk({ loggedIn: true, board: fresh });
-    t.w.localStorage.setItem("rj_following_v1", JSON.stringify(["mconline"]));
-    t.w.localStorage.setItem("rj_seen_v1", seen);
-    t.w.eval(PREMIUM);
-    await wait(90);
-
-    const notif = t.w.RJPremium.notifications();
-    check("jest powiadomienie o nowym zgłoszeniu w obserwowanym projekcie",
-      notif.some((n) => n.kind === "new_submission" && /mconline/.test(n.title)),
-      notif.map((n) => n.kind).join(" | "));
-    check("nie powiadamiamy o własnych zgłoszeniach",
-      !notif.some((n) => n.kind === "new_submission" && /RejsonFan/.test(n.text)));
-    check("nieobserwowany projekt nie generuje powiadomienia", (() => {
-      const other = plansza();
-      other.push({
-        id: "33333333-3333-3333-3333-333333333333",
-        title: "Coś w JoyPad",
-        status: "new",
-        author_name: "KtosInny",
-        admin_replied_at: null,
-        updated_at: future,
-        created_at: future,
-        project_slug: "JoyPad",
-        project_name: "JoyPad"
-      });
-      const t2 = mk({ loggedIn: true, board: other });
-      t2.w.localStorage.setItem("rj_following_v1", JSON.stringify(["mconline"]));
-      t2.w.localStorage.setItem("rj_seen_v1", seen);
-      t2.w.eval(PREMIUM);
-      return !t2.w.RJPremium.notifications().some((n) => n.kind === "new_submission");
-    })());
+    check("moduł nie odpytuje już publicznej tablicy",
+      !t2.calls.some((c) => c.fn === "list_public_board"),
+      t2.calls.map((c) => c.fn).join(", "));
   }
 
   console.log("\n=== F. OBECNOŚĆ: TYLKO PRAWDA, RAZ NA WIZYTĘ ===");
@@ -315,7 +235,7 @@ const count = (doc) => {
 
   console.log("\n=== G. ODPORNOŚĆ: BRAK SIECI NIE PSUJE STRONY ===");
   {
-    const t = mk({ loggedIn: true, fail: ["list_public_board", "community_online_users", "community_link_submissions"] });
+    const t = mk({ loggedIn: true, fail: ["community_online_users", "community_link_submissions"] });
     await wait(80);
     check("strona żyje mimo błędów sieci", !!t.doc.querySelector("#rj-club .rj-premium"));
     check("brak powiadomień nie jest błędem", Array.isArray(t.w.RJPremium.notifications()));
@@ -338,13 +258,13 @@ const count = (doc) => {
   {
     check("karta premium podpięta na stronie głównej", /id="rj-club"/.test(INDEX));
     check("arkusz premium dołączony", /css\/premium\.css\?v=5/.test(INDEX));
-    check("skrypt premium dołączony", /js\/premium\.js\?v=9/.test(INDEX));
+    check("skrypt premium dołączony", /js\/premium\.js\?v=10/.test(INDEX));
     check("karta premium stoi przed listą projektów",
       INDEX.indexOf('id="rj-club"') < INDEX.indexOf('id="projekty"'));
     check("karta premium jest widoczna przed wyróżnionymi projektami",
       INDEX.indexOf('id="rj-club"') < INDEX.indexOf('class="origins container"'),
       "pozycja: " + INDEX.indexOf('id="rj-club"'));
-    check("zachęty do tablicy i RejChat pozostają na stronie, poniżej wyróżnionych",
+    check("zachęta do RejChat pozostaje na stronie, poniżej wyróżnionych",
       INDEX.indexOf('class="cta-grid container"') > INDEX.indexOf('class="origins container"') &&
       INDEX.indexOf('class="cta-grid container"') < INDEX.indexOf('id="projekty"'));
   }

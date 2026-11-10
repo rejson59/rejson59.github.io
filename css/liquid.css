@@ -96,7 +96,7 @@ body:is(.rj-home,.rj-community,.rj-account,.rj-partner,.rj-board,.rj-widgets,.rj
 .rj-community :is(.comm-chat,.comm-online-card) { margin-bottom:16px; padding:22px; }
 .rj-community .comm-card { border-radius:26px; }
 .rj-community .comm-chat-list { min-height: 130px; }
-/* Konto, partnerstwo, widżety i tablica. */
+/* Konto, partnerstwo, widżety i licencja. */
 .rj-account .account-main { max-width:1120px; }
 .rj-account .account-intro { text-align:left; max-width:none; margin-bottom:36px; }
 .rj-account .account-intro p { max-width:56ch; }
@@ -207,3 +207,15 @@ body.rj-studio[data-backdrop="vivid"] .studio-backdrop {
   .rj-home .site-nav .nav-icon-only .nav-label { position:static; width:auto; height:auto; margin:0; clip:auto; overflow:visible; white-space:normal; }
 }
 .ui-icon, .page-mark { fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+
+/* ---------- Stopka licencyjna (© 2026 rejson59) ---------- */
+.license-line {
+  margin: 0;
+  padding: 18px 20px 26px;
+  text-align: center;
+  font-size: 12.5px;
+  line-height: 1.6;
+  opacity: 0.85;
+}
+.license-line a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.license-line strong { font-weight: 600; }

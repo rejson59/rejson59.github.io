@@ -1,0 +1,12 @@
+[
+  {
+    "location": "https://rejson59.github.io/*",
+    "tdm-reservation": 1,
+    "tdm-policy": "https://rejson59.github.io/AI-POLICY"
+  },
+  {
+    "location": "https://rejhub.vercel.app/*",
+    "tdm-reservation": 1,
+    "tdm-policy": "https://rejson59.github.io/AI-POLICY"
+  }
+]

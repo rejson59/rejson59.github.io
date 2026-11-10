@@ -2,7 +2,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {JSDOM,VirtualConsole}=require('jsdom'),root=path.resolve(__dirname,'../..');
 const read=f=>fs.readFileSync(path.join(root,f),'utf8');
-const pages=['index.html','uslugi.html','partnerstwo.html','rejchat.html','rejfile.html','tablica-pomyslow.html','widzety.html','logowanie.html','profil.html','404.html','rejtools.html','rejsejf.html','konto-demo.html'];
+const pages=['index.html','uslugi.html','partnerstwo.html','rejchat.html','rejfile.html','widzety.html','logowanie.html','profil.html','404.html','rejtools.html','rejsejf.html','konto-demo.html'];
 for(const file of pages){const dom=new JSDOM(read(file),{url:'https://rejson59.github.io/'+file,runScripts:'outside-only',virtualConsole:new VirtualConsole()});const w=dom.window,d=w.document;
  assert.ok(d.querySelector('noscript #rj-mobile-ads'),file+': fallback bez JS');assert.equal(d.querySelectorAll('noscript .rj-mobile-ad-icon svg').length,3,file+': ikony bez JS');
  d.querySelector('noscript #rj-mobile-ads').parentNode.remove();

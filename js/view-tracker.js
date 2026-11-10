@@ -1523,7 +1523,7 @@
 
   function nudgeBlockedPath() {
     var p = (location.pathname || "/").toLowerCase();
-    return /admin|spolecznosc|rejchat|profil|tablica-pomyslow|logowanie|partnerstwo/.test(p);
+    return /admin|spolecznosc|rejchat|profil|logowanie|partnerstwo/.test(p);
   }
 
   function hasCommunityAccount() {
