@@ -203,33 +203,76 @@
   var RESET_GUARD = 0;
   var vpRaf = 0;
 
-  /* Wysokość i szerokość widocznego obszaru. visualViewport kurczy się, gdy
-     otwiera się klawiatura — dzięki temu wyspa nigdy nie chowa się pod nią. */
+  /* Rozmiar liczymy z pudełka samej wyspy, nie z window.innerWidth ani
+     visualViewport. Na Brave/Android te dwa potrafią podać inną liczbę niż
+     ta, której używa CSS (100vw), i wtedy wyspa była szersza niż ekran albo
+     niższa niż jej własna treść. Pudełko `position: fixed; inset: 0` ma
+     dokładnie ten sam rozmiar, co 100vw × 100vh. */
   function viewport() {
-    var vv = window.visualViewport || null;
-    var innerW = Number(window.innerWidth) || 0;
-    var innerH = Number(window.innerHeight) || 0;
-    var w = Math.round((vv && vv.width) || innerW || 360);
-    var h = Math.round((vv && vv.height) || innerH || 640);
-    var kb = 0;
-    if (vv && innerH) {
-      kb = Math.round(innerH - (vv.height + (vv.offsetTop || 0)));
-      /* Kilkadziesiąt pikseli to chowający się pasek adresu, nie klawiatura. */
-      if (kb < 90) kb = 0;
-    }
+    var rect = null;
+    try {
+      rect = root && root.getBoundingClientRect ? root.getBoundingClientRect() : null;
+    } catch (e) { rect = null; }
+    var docEl = document.documentElement || {};
+    var w = Math.round((rect && rect.width) || docEl.clientWidth || window.innerWidth || 360);
+    var h = Math.round((rect && rect.height) || docEl.clientHeight || window.innerHeight || 640);
     return {
       w: Math.max(220, w),
       h: Math.max(260, h),
-      kb: Math.max(0, Math.min(kb, Math.round(h * 0.55)))
+      kb: keyboardOffset(h)
     };
+  }
+
+  /* Klawiatura podnosi wyspę tylko wtedy, gdy naprawdę piszemy w wyspie.
+     Dzięki temu dziwne wartości visualViewport (zoom, pasek adresu) nie
+     przesuwają jej bez powodu. */
+  function keyboardOffset(viewHeight) {
+    var vv = window.visualViewport || null;
+    if (!vv || !focusedInside()) return 0;
+    if (vv.scale && vv.scale > 1.01) return 0;
+    var innerH = Number(window.innerHeight) || 0;
+    if (!innerH) return 0;
+    var delta = Math.round(innerH - (vv.height + (vv.offsetTop || 0)));
+    /* Kilkadziesiąt pikseli to chowający się pasek adresu, nie klawiatura. */
+    if (delta < 90) return 0;
+    /* Wyspa staje dokładnie nad klawiaturą — cała jej wysokość jest wtedy
+       liczona od widocznego obszaru, nie od całego okna. */
+    return Math.min(delta, Math.round(viewHeight * 0.6));
+  }
+
+  function focusedInside() {
+    if (!island) return false;
+    var active = (shadow && shadow.activeElement) || document.activeElement;
+    if (!active || active === document.body || active === host) return false;
+    return island.contains(active);
   }
 
   function finite(value, fallback) {
     return typeof value === "number" && isFinite(value) ? value : fallback;
   }
 
+  /* Wyspa żyje we własnym drzewie (shadow DOM), więc szukamy w nim, a nie
+     w całym dokumencie — inaczej trafilibyśmy na obcy element o tym samym id. */
+  function byId(id) {
+    if (island && island.querySelector) {
+      var hit = island.querySelector("#" + id);
+      if (hit) return hit;
+    }
+    return (shadow || document).querySelector("#" + id);
+  }
+
+  function within(selector) {
+    return (shadow || document).querySelector(selector);
+  }
+
+  function withinAll(selector) {
+    return Array.prototype.slice.call((shadow || document).querySelectorAll(selector));
+  }
+
   var root = null;
   var island = null;
+  var shadow = null;
+  var host = null;
   var toastEl = null;
   var report = { type: "bug", shot: null, project: "", busy: false };
   var pendingUpload = null;
@@ -239,7 +282,7 @@
     var size = SIZES[name] || SIZES.idle;
     var vp = viewport();
     var w = Math.min(size.w, Math.max(200, vp.w - EDGE * 2));
-    var h = Math.min(size.h, Math.max(120, vp.h - BOTTOM_RESERVE));
+    var h = Math.min(size.h, Math.max(120, vp.h - vp.kb - BOTTOM_RESERVE));
     return { w: Math.round(w), h: Math.round(h), r: Math.min(size.r, Math.round(h / 2)) };
   }
 
@@ -248,8 +291,9 @@
   function writeBox() {
     if (!island) return;
     var vp = viewport();
+    var availH = Math.max(120, vp.h - vp.kb);
     var w = Math.min(Math.max(finite(box.w, 172), 40), vp.w);
-    var h = Math.min(Math.max(finite(box.h, 46), 40), vp.h);
+    var h = Math.min(Math.max(finite(box.h, 46), 40), availH);
     var r = Math.min(Math.max(finite(box.r, 23), 8), h / 2);
     island.style.width = w.toFixed(2) + "px";
     island.style.height = h.toFixed(2) + "px";
@@ -323,6 +367,36 @@
     if (!raf) {
       lastTs = 0;
       raf = window.requestAnimationFrame(tick);
+    }
+  }
+
+  /* Panel musi zmieścić się w wyspie: jeśli treść jest wyższa niż założony
+     rozmiar (np. dłuższy tekst na wąskim ekranie), wyspa rośnie — ale nigdy
+     ponad widoczny ekran. W drugą stronę nie kurczymy: mniejsza treść nie
+     może zostawić czarnej pustki, bo wysokości są dobrane do zawartości. */
+  function fit() {
+    if (!island) return;
+    if (state === "idle" || state === "dock") return;
+    var view = island.querySelector(".rj-view--" + state);
+    var panel = view && view.querySelector(".rj-panel");
+    if (!panel) return;
+
+    var need = panel.scrollHeight;
+    var have = Math.round(box.th);
+    if (!isFinite(need) || need <= 0) return;
+    /* scrollHeight panelu rozciągniętego do wyspy = wysokość treści,
+       gdy treść nie mieści się w środku. */
+    if (need <= panel.clientHeight + 2) return;
+
+    var vp = viewport();
+    var target = Math.min(Math.round(need + 2), vp.h - vp.kb - BOTTOM_RESERVE);
+    if (target > have) {
+      box.th = target;
+      box.tr = Math.min(box.tr, Math.round(target / 2));
+      if (!raf) {
+        lastTs = 0;
+        raf = window.requestAnimationFrame(tick);
+      }
     }
   }
 
@@ -501,18 +575,26 @@
     }
     springTo(name);
     syncViewport();
+    /* Fokus w polu potrafi przewinąć wyspę (overflow jest kontenerem
+       przewijania), a wtedy treść ucieka z widoku. */
+    island.scrollTop = 0;
+    window.requestAnimationFrame(function () {
+      island.scrollTop = 0;
+      try { fit(); } catch (e) { /* trudno */ }
+      setTimeout(function () { try { fit(); } catch (e) { /* trudno */ } }, 220);
+    });
   }
 
   function paint(name) {
     if (name === "search") {
       renderSearch("");
       setTimeout(function () {
-        var input = document.getElementById("rj-island-search");
+        var input = byId("rj-island-search");
         if (input) input.focus();
       }, 90);
     }
     if (name === "report") {
-      var text = document.getElementById("rj-island-text");
+      var text = byId("rj-island-text");
       if (text) setTimeout(function () { text.focus(); }, 90);
       var label = island.querySelector("[data-report-project]");
       if (label) {
@@ -564,12 +646,11 @@
 
   /* Odbudowa znaczników wyspy — ratunek, gdy drzewo zostało uszkodzone. */
   function rebuild() {
-    var host = document.getElementById("rj-island-root");
-    if (!host) { island = null; toastEl = null; mount(); return; }
+    if (!root || !root.isConnected) { island = null; toastEl = null; root = null; mount(); return; }
     try {
-      host.innerHTML = buildHtml();
-      island = host.querySelector(".rj-island");
-      toastEl = host.querySelector(".rj-toast");
+      root.innerHTML = buildHtml();
+      island = root.querySelector(".rj-island");
+      toastEl = root.querySelector(".rj-toast");
       var shot = island.querySelector("[data-shot]");
       if (shot) shot.hidden = !(window.RJMedia && window.RJMedia.captureDom);
       RESET_GUARD = 0;
@@ -691,7 +772,7 @@
     }
     searchCursor = -1;
 
-    var host = document.getElementById("rj-island-results");
+    var host = byId("rj-island-results");
     if (!host) return;
     if (!searchResults.length) {
       host.innerHTML = '<p class="rj-empty">Nic nie znaleziono. Spróbuj „czat”, „plik” albo „konto”.</p>';
@@ -720,7 +801,7 @@
   }
 
   function moveSearchCursor(delta) {
-    var nodes = Array.prototype.slice.call(document.querySelectorAll("#rj-island-results .rj-item"));
+    var nodes = withinAll("#rj-island-results .rj-item");
     if (!nodes.length) return;
     searchCursor = (searchCursor + delta + nodes.length) % nodes.length;
     nodes.forEach(function (node, index) {
@@ -738,7 +819,7 @@
   }
 
   function renderTasks() {
-    var host = document.getElementById("rj-island-tasks");
+    var host = byId("rj-island-tasks");
     if (!host) return;
     var tasks = storeJson(TASKS_KEY) || [];
     var rows = [];
@@ -765,7 +846,7 @@
 
   function submitReport() {
     if (report.busy) return;
-    var text = document.getElementById("rj-island-text");
+    var text = byId("rj-island-text");
     var value = (text && text.value || "").trim();
     if (value.length < 4) {
       toast("Napisz choć kilka słów");
@@ -862,8 +943,8 @@
   /* --------------------------------------------------------- powiadomienia */
 
   function loadAlerts() {
-    var host = document.getElementById("rj-island-alerts");
-    var pushRow = document.getElementById("rj-island-push-row");
+    var host = byId("rj-island-alerts");
+    var pushRow = byId("rj-island-push-row");
     if (!host) return;
 
     var me = session();
@@ -893,7 +974,7 @@
   }
 
   function paintAlerts() {
-    var host = document.getElementById("rj-island-alerts");
+    var host = byId("rj-island-alerts");
     if (!host || !alertsCache) return;
     var rows = [];
 
@@ -989,7 +1070,7 @@
   }
 
   function renderNow() {
-    var host = document.getElementById("rj-island-now");
+    var host = byId("rj-island-now");
     if (!host) return;
     var media = currentMedia();
 
@@ -1036,7 +1117,7 @@
   }
 
   function renderProfile() {
-    var host = document.getElementById("rj-island-profile");
+    var host = byId("rj-island-profile");
     if (!host) return;
     var me = session();
     var status = store(STATUS_KEY) || "online";
@@ -1129,14 +1210,96 @@
 
   /* ------------------------------------------------------------ montowanie */
 
+  /* Wersja arkusza wyspy — trzymaj w zgodzie z <script src="hub/island.js?v=…">
+     na stronach. Adres bierzemy z własnego <script>, więc działa i na
+     rejhub.vercel.app, i na GitHub Pages. */
+  var CSS_VERSION = "3";
+
+  function stylesheetUrl() {
+    var base = scriptEl && scriptEl.src ? scriptEl.src.split("?")[0].split("#")[0] : "";
+    if (!base || !/island\.js$/.test(base)) base = "/hub/island.js";
+    return base.replace(/island\.js$/, "island.css") + "?v=" + CSS_VERSION;
+  }
+
+  /* Minimalne style, które muszą działać przed wczytaniem arkusza — i które
+     ratują sytuację, gdy arkusz się nie wczyta (słabe łącze, blokada, stara
+     wersja z cache). Bez nich wyspa była czarnym prostokątem bez treści. */
+  var STATES = ["idle", "dock", "report", "search", "alerts", "now",
+                "profile", "quick", "theme", "tasks", "panic"];
+
+  var CRITICAL_CSS =
+    "#rj-island-root{position:fixed;inset:0;pointer-events:none;contain:layout style;" +
+    "color-scheme:dark}" +
+    "#rj-island-root .rj-island{position:absolute;left:50%;bottom:16px;background:#000;" +
+    "border-radius:23px;overflow:hidden;color:#f4f7fc;pointer-events:auto;" +
+    "font:15px/1.55 system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;" +
+    "width:172px;height:46px;margin-left:-86px;max-width:calc(100vw - 16px)}" +
+    "#rj-island-root .rj-view{position:absolute;inset:0;display:flex;align-items:center;" +
+    "justify-content:flex-start;flex-direction:row;padding:0 14px;opacity:0;" +
+    "pointer-events:none;white-space:normal;box-sizing:border-box;color:#f4f7fc}" +
+    "#rj-island-root .rj-panel{position:static;inset:auto;top:auto;right:auto;bottom:auto;" +
+    "left:auto;z-index:auto;width:100%;max-width:none;border:0;background:transparent;" +
+    "box-shadow:none;display:flex;flex-direction:column;gap:8px;align-self:stretch;" +
+    "min-height:0;padding:11px 0 12px;font-size:15px;color:#f4f7fc}" +
+    "#rj-island-root .rj-panel-head{display:flex;align-items:center;gap:8px;height:auto;" +
+    "padding:0;border:0;background:transparent}" +
+    "#rj-island-root .rj-dock-btn{display:grid;place-items:center;width:44px;height:40px;" +
+    "padding:0;border-radius:14px;background:transparent;color:#eef5ff}" +
+    "#rj-island-root .rj-dock-btn svg{width:19px;height:19px}" +
+    "#rj-island-root .rj-list{overflow:auto;display:grid;gap:2px;min-height:0;flex:1 1 auto}" +
+    "#rj-island-root .rj-item{display:flex;align-items:center;gap:9px;width:100%;" +
+    "padding:7px 8px;border:0;border-radius:9px;background:transparent;" +
+    "color:#eef5ff;font:600 12px/1.3 system-ui,sans-serif;text-align:left}" +
+    "#rj-island-root .rj-field,#rj-island-root textarea.rj-input{width:100%;" +
+    "border:1px solid rgba(255,255,255,.12);border-radius:11px;" +
+    "background:rgba(255,255,255,.06);color:#f4f7fc;" +
+    "font:12.5px/1.45 system-ui,sans-serif;padding:9px 11px}" +
+    "#rj-island-root textarea.rj-input{flex:1 1 auto;min-height:52px}" +
+    "#rj-island-root .rj-empty{padding:9px 8px;color:rgba(232,240,252,.55);font-size:11.5px}" +
+    "#rj-island-root .rj-toast{position:absolute;left:50%;bottom:74px;transform:translate(-50%,8px);" +
+    "padding:8px 14px;border-radius:999px;background:#000;color:#f4f7fc;" +
+    "border:1px solid rgba(255,255,255,.12);opacity:0;pointer-events:none}" +
+    "#rj-island-root .rj-toast.is-on{opacity:1}" +
+    STATES.map(function (name) {
+      return '#rj-island-root .rj-island[data-state="' + name + '"] .rj-view--' + name +
+        '{opacity:1;transform:none;pointer-events:auto}';
+    }).join("");
+
   function mount() {
     if (document.querySelector(".rj-legacy-home")) return;
     if (document.getElementById("rj-island-root")) return;
 
+    /* Wyspa mieszka we własnym drzewie (shadow DOM). Powód jest konkretny:
+       na stronie głównej arkusz premium.css ma globalne `.rj-panel`
+       (position:absolute; top:calc(100% + 10px); z-index:9000), które
+       wypychało nasze panele poza wyspę — stąd czarna, martwa plama.
+       W shadow DOM żaden arkusz strony nie sięga do wnętrza wyspy. */
+    host = document.createElement("div");
+    host.id = "rj-island-root";
+    host.setAttribute("data-rj-island-host", "");
+    /* `color-scheme: dark` mówi przeglądarce: ten fragment jest już ciemny.
+       Bez tego funkcje typu „wymuszony ciemny motyw" (Brave, Chrome na
+       Androidzie) potrafią przerobić wnętrze wyspy na czarne na czarnym. */
+    host.style.cssText =
+      "position:fixed;inset:0;z-index:2147482000;pointer-events:none;" +
+      "contain:layout style;color-scheme:dark";
+    document.body.appendChild(host);
+
+    if (host.attachShadow) {
+      shadow = host.attachShadow({ mode: "open" });
+      var boot = document.createElement("style");
+      boot.textContent = CRITICAL_CSS;
+      shadow.appendChild(boot);
+      var sheet = document.createElement("link");
+      sheet.rel = "stylesheet";
+      sheet.href = stylesheetUrl();
+      shadow.appendChild(sheet);
+    }
+
     root = document.createElement("div");
     root.id = "rj-island-root";
     root.innerHTML = buildHtml();
-    document.body.appendChild(root);
+    (shadow || host).appendChild(root);
 
     island = root.querySelector(".rj-island");
     toastEl = root.querySelector(".rj-toast");
@@ -1182,7 +1345,7 @@
         Array.prototype.forEach.call(island.querySelectorAll(".rj-seg button"), function (button) {
           button.setAttribute("aria-selected", String(button === kind));
         });
-        var field = document.getElementById("rj-island-text");
+        var field = byId("rj-island-text");
         if (field) {
           field.placeholder = report.type === "idea"
             ? "Co warto dodać albo zmienić?"
@@ -1265,11 +1428,37 @@
       }
     });
 
+    /* Czy kliknięcie wydarzyło się wewnątrz wyspy. Zdarzenia wychodzące
+       z shadow DOM są przecelowywane na hosta, więc samo island.contains()
+       już nie wystarcza — potrzebna jest cała ścieżka zdarzenia. */
+    function clickInsideIsland(event) {
+      if (typeof event.composedPath === "function") {
+        var path = event.composedPath();
+        for (var i = 0; i < path.length; i += 1) {
+          if (path[i] === island || path[i] === root || path[i] === host) return true;
+        }
+        return false;
+      }
+      return island.contains(event.target);
+    }
+
+    /* Czy kliknięcie trafiło w przycisk „Zgłoś błąd / pomysł” przy projekcie. */
+    function feedbackTrigger(event) {
+      if (event.target && event.target.closest && event.target.closest("[data-feedback-project]")) {
+        return event.target.closest("[data-feedback-project]");
+      }
+      var path = typeof event.composedPath === "function" ? event.composedPath() : [];
+      for (var i = 0; i < path.length; i += 1) {
+        if (path[i] && path[i].getAttribute && path[i].getAttribute("data-feedback-project")) return path[i];
+      }
+      return null;
+    }
+
     document.addEventListener("click", function (event) {
       /* Klik w „Zgłoś błąd / pomysł” przy projekcie ma otworzyć wyspę, a nie
          ją zamknąć — ten przycisk leży poza wyspą, więc musi być wyjątkiem. */
-      if (event.target.closest("[data-feedback-project]")) return;
-      if (!island.contains(event.target) && state !== "idle") close();
+      if (feedbackTrigger(event)) return;
+      if (!clickInsideIsland(event) && state !== "idle") close();
     });
 
     /* Delegacja: pole wyszukiwania powstaje na nowo po odbudowie wyspy,
@@ -1298,6 +1487,13 @@
        widok jeszcze raz, żeby panel zdążył się podnieść. */
     root.addEventListener("focusin", function () {
       setTimeout(syncViewport, 320);
+    });
+
+    /* Po wyjściu z pola klawiatura znika — wyspa wraca na dół. */
+    root.addEventListener("focusout", function () {
+      setTimeout(function () {
+        if (!focusedInside()) syncViewport();
+      }, 60);
     });
 
     /* Obrót telefonu, chowanie paska adresu i klawiatura ekranowa. */
@@ -1407,7 +1603,7 @@
 
   /* media-capture.js może dojść po wyspie — wtedy dopiero odsłaniamy zdjęcie */
   window.addEventListener("rj:media-ready", function () {
-    var shot = document.querySelector('[data-shot]');
+    var shot = within("[data-shot]");
     if (shot && window.RJMedia && window.RJMedia.captureDom) shot.hidden = false;
   });
 })(window, document);
