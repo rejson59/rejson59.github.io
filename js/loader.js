@@ -500,6 +500,12 @@
       navigator.serviceWorker.addEventListener("controllerchange", check);
       timer = setTimeout(function () { finish(false); }, 8000);
       check();
+      /* Szybka kontrola: wdrożenie bez /sw.js nie ma po co czekać 8 s. */
+      if (typeof fetch === "function") {
+        fetch("/sw.js?v=2", { method: "HEAD", cache: "no-store" }).then(function (res) {
+          if (!res || !res.ok) finish(false);
+        }).catch(function () { finish(false); });
+      }
       navigator.serviceWorker.register("/sw.js?v=2", { scope:"/", updateViaCache:"none" }).then(function (reg) {
         if (reg && reg.update) reg.update().catch(function () {});
         check();
@@ -656,7 +662,21 @@
       }
       var target;
       try { target = new URL(url, location.href); } catch (e) { finish(false); return; }
-      if (target.origin !== location.origin || !/^https?:$/.test(target.protocol)) { finish(false, true); return; }
+      if (!/^https?:$/.test(target.protocol)) { finish(false, true); return; }
+      /* Inna domena (np. rejhub.vercel.app vs rejson59.github.io) nie może iść
+         przez lokalny worker pośredniczący — ładujemy ją wprost. Ramka dostaje
+         piaskownicę bez nawigacji okna głównego, więc podgląd zostaje podglądem. */
+      if (target.origin !== location.origin) {
+        iframe.name = "rejson-card-preview";
+        iframe.setAttribute("allow", "autoplay 'none'");
+        if (!iframe.getAttribute("sandbox")) {
+          iframe.setAttribute("sandbox", "allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox");
+        }
+        try { iframe.src = target.href; } catch (e) { finish(false); return; }
+        armWatchdog();
+        if (retentionObserver) retentionObserver.observe(preview);
+        return;
+      }
       iframe.name = "rejson-card-preview";
       iframe.setAttribute("allow", "autoplay 'none'");
       var proxy = new URL("/__rj_silent_preview__", location.origin);
@@ -671,7 +691,14 @@
           stopPreviewDough(preview);
           return;
         }
-        if (!ready) { finish(false, true); return; }
+        if (!ready) {
+          /* Brak workera (np. wdrożenie bez /sw.js) nie może zabić podglądu —
+             wtedy po prostu ładujemy stronę wprost. */
+          try { iframe.src = target.href; } catch (e) { finish(false); return; }
+          armWatchdog();
+          if (retentionObserver) retentionObserver.observe(preview);
+          return;
+        }
         /* Adres pośredni znajduje się w scope głównego workera, również gdy
            prawdziwy projekt ma już własny, węższy service worker. */
         navigator.serviceWorker.getRegistration(proxyUrl).then(function (registration) {

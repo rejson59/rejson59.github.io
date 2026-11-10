@@ -302,3 +302,72 @@ html[data-theme="light"] .lic-badge,
 html[data-theme="light"] .lic-files a { color: #16223a; border-color: rgba(63, 116, 201, 0.24); background: rgba(63, 116, 201, 0.07); }
 html[data-theme="light"] .lic-quote { color: #16223a; background: rgba(63, 116, 201, 0.07); border-color: rgba(63, 116, 201, 0.28); }
 html[data-theme="light"] .lic-quote strong { color: #3f74c9; }
+
+/* ==========================================================================
+   Naprawa wyglądu nagłówka (2026-10-19)
+   Strona licencji nie ładuje css/uslugi.css, więc link „Przejdź do treści”
+   nie miał ŻADNEJ reguły ukrywającej i rysował się w lewym górnym rogu,
+   spychając szklaną kapsułę w dół. Dodatkowo geometria nagłówka jest teraz
+   zdefiniowana tutaj, żeby nie zależała od kolejności arkuszy i nie skakała
+   przy pierwszym malowaniu (stąd „duch” marki nad kapsułą).
+   ========================================================================== */
+
+.rj-license .services-skip,
+.rj-license a[href="#tresc"].services-skip {
+  position: absolute !important;
+  left: 12px;
+  top: -120px;
+  z-index: 999;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: #eef4ff;
+  color: #101a2c;
+  font: 600 14px/1.3 system-ui, sans-serif;
+  text-decoration: none;
+  transition: top 0.18s ease;
+}
+
+.rj-license .services-skip:focus,
+.rj-license .services-skip:focus-visible {
+  top: 12px;
+}
+
+/* Kapsuła nagłówka: ta sama geometria na każdej szerokości, bez skoków. */
+.rj-license .rj-shared-header {
+  box-sizing: border-box;
+  width: min(1372px, calc(100% - 32px));
+  margin-inline: auto;
+  border-radius: 999px;
+  overflow: visible;
+}
+
+.rj-license .rj-shared-header .rj-shared-inner {
+  min-height: 71px;
+  gap: 14px;
+}
+
+@media (max-width: 1200px) {
+  .rj-license .rj-shared-header {
+    width: calc(100% - 24px);
+  }
+
+  .rj-license .rj-shared-header .rj-shared-inner {
+    min-height: 62px;
+  }
+}
+
+/* Marka: SVG w linii, więc nie ma szansy na brakującą ikonę. */
+.rj-license .rj-shared-header .brand-mark {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 0;
+  background: none;
+  border-radius: 12px;
+  filter: drop-shadow(0 6px 14px rgba(6, 14, 30, 0.4));
+}
+
+.rj-license .rj-shared-header .brand-text {
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
