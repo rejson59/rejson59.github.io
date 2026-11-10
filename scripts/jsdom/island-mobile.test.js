@@ -65,6 +65,15 @@ function checkSources() {
   assert.match(source, /color-scheme:dark/, 'wyspa deklaruje ciemny schemat kolorów (bez auto-inwersji)');
   assert.match(source, /STATES\.map/, 'każdy stan ma awaryjną regułę widoczności');
 
+  /* --- schowanie do uchwytu przy dolnej krawędzi --- */
+  assert.match(source, /min: \{ w: 132, h: 28, r: 14 \}/, 'jest osobny rozmiar dla schowanej wyspy');
+  assert.match(source, /COLLAPSE_KEY/, 'stan schowania jest zapamiętywany');
+  assert.equal((source.match(/data-collapse/g) || []).length >= 2, true, 'strzałka w dół jest w idle i w docku');
+  assert.match(source, /data-expand/, 'uchwyt rozwija wyspę');
+  assert.match(css, /\.rj-island\.is-min\s*\{[^}]*bottom:\s*env\(safe-area-inset-bottom/, 'schowana wyspa klei się do dolnej krawędzi');
+  assert.match(css, /\.rj-collapse\s*\{/, 'strzałka ma własny styl');
+  assert.match(css, /\.rj-handle\s*\{/, 'uchwyt ma własny styl');
+
   /* --- izolacja od arkuszy strony --- */
   assert.match(source, /attachShadow/, 'wyspa montuje się w shadow DOM');
   assert.match(source, /attachShadow/, 'wyspa montuje się w shadow DOM');
@@ -74,7 +83,7 @@ function checkSources() {
 
 function buildPage() {
   return '<!doctype html><html lang="pl" data-theme="dark"><head><meta charset="utf-8">' +
-    '<script src="/hub/island.js?v=4" data-project="rejhub" data-project-name="RejHub"></script>' +
+    '<script src="/hub/island.js?v=5" data-project="rejhub" data-project-name="RejHub"></script>' +
     '</head><body><header class="rj-shared-header"><nav><a href="/rejchat">RejChat</a></nav></header>' +
     '<main><h1>Test</h1></main></body></html>';
 }
@@ -155,6 +164,37 @@ async function checkPhone() {
     await wait(15);
   }
 
+  /* --- schowanie strzałką i powrót uchwytem --- */
+  w.RejIsland.open('idle');
+  await wait(20);
+  const collapseBtn = ui('.rj-view--idle [data-collapse]');
+  assert.ok(collapseBtn, 'w zwiniętej wyspie jest strzałka w dół');
+  collapseBtn.click();
+  await wait(420);
+
+  assert.equal(island.dataset.state, 'min', 'strzałka chowa wyspę');
+  assert.ok(island.classList.contains('is-min'), 'schowana wyspa dostaje klasę is-min (klejenie do dołu)');
+  const min = size(island);
+  assert.ok(min.w <= 140 && min.w >= 100, 'uchwyt jest wąski: ' + min.w);
+  assert.ok(min.h <= 34 && min.h >= 18, 'uchwyt jest niski: ' + min.h);
+  assert.equal(w.localStorage.getItem('rj_island_collapsed_v1'), '1', 'schowanie jest zapamiętane');
+  assert.equal(w.RejIsland.health(), 'ok', 'schowana wyspa jest zdrowa');
+
+  const handle = ui('[data-expand]');
+  assert.ok(handle, 'uchwyt ma przycisk rozwinięcia');
+  handle.click();
+  await wait(420);
+  assert.equal(island.dataset.state, 'idle', 'uchwyt rozwija wyspę');
+  assert.ok(!island.classList.contains('is-min'), 'po rozwinięciu wraca cień i zaokrąglenie dołu');
+  assert.equal(w.localStorage.getItem('rj_island_collapsed_v1'), '0', 'rozwinięcie też jest zapamiętane');
+
+  /* Uchwyt ma być też w docku — tam wyspa bywa najczęściej. */
+  w.RejIsland.open('dock');
+  await wait(20);
+  assert.ok(ui('.rj-view--dock [data-collapse]'), 'dock ma własną strzałkę schowania');
+  w.RejIsland.open('idle');
+  await wait(20);
+
   /* --- klawiatura: wyspa odsuwa się i kurczy --- */
   viewportMock.height = 268;
   viewportMock.emit('resize');
@@ -220,7 +260,7 @@ async function checkRecovery() {
   w.RejIsland.check();
   const rebuilt = ui('.rj-island');
   assert.ok(rebuilt, 'wyspa odbudowana po skasowaniu drzewa');
-  assert.equal(host.shadowRoot.querySelectorAll('.rj-dock-btn').length, 8, 'dock wrócił w komplecie');
+  assert.equal(host.shadowRoot.querySelectorAll('.rj-dock-btn[data-open]').length, 8, 'dock wrócił w komplecie');
   assert.equal(w.RejIsland.health(), 'ok');
 
   /* 5. Pusty panel (treść usunięta) nie może udawać czarnej wyspy. */
@@ -297,9 +337,31 @@ async function checkIsolation() {
   dom.window.close();
 }
 
+/* Schowanie ma zostać także na kolejnej podstronie — inaczej po każdym
+   kliknięciu w link wyspa wracałaby na środek ekranu. */
+async function checkPersistence() {
+  const { dom, w } = makePhone();
+  await wait(150);
+  w.localStorage.setItem('rj_island_collapsed_v1', '1');
+
+  const second = makePhone();
+  second.w.localStorage.setItem('rj_island_collapsed_v1', '1');
+  second.w.eval(fs.readFileSync(islandJs, 'utf8'));
+  await wait(160);
+
+  const host = second.w.document.getElementById('rj-island-root');
+  const islandEl = host.shadowRoot.querySelector('.rj-island');
+  assert.equal(islandEl.dataset.state, 'min', 'nowa podstrona startuje ze schowaną wyspą');
+  assert.ok(islandEl.classList.contains('is-min'), 'klejenie do dołu działa od pierwszej klatki');
+
+  dom.window.close();
+  second.dom.window.close();
+}
+
 (async function main() {
   checkSources();
   await checkPhone();
+  await checkPersistence();
   await checkIsolation();
   await checkRecovery();
   console.log('island-mobile: wszystkie sprawdzenia przeszły');

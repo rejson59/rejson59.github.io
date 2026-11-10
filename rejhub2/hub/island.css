@@ -49,6 +49,8 @@
   contain: layout style;
   overscroll-behavior: contain;
   touch-action: manipulation;
+  /* Schowanie: wyspa zjeżdża do dolnej krawędzi jako mały uchwyt. */
+  transition: bottom 0.3s cubic-bezier(0.22, 1, 0.36, 1);
   pointer-events: auto;
   font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -130,6 +132,51 @@
   cursor: pointer;
 }
 
+/* mała strzałka w dół — schowanie wyspy do uchwytu przy dolnej krawędzi */
+#rj-island-root .rj-collapse {
+  margin-left: auto;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(240, 246, 255, 0.75);
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease, transform 0.12s ease;
+}
+
+#rj-island-root .rj-collapse svg {
+  width: 15px;
+  height: 15px;
+}
+
+#rj-island-root .rj-collapse:hover,
+#rj-island-root .rj-collapse:focus-visible {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  outline: none;
+}
+
+#rj-island-root .rj-collapse:active {
+  transform: scale(0.9);
+}
+
+#rj-island-root .rj-dock-btn--collapse {
+  flex: 0 0 auto;
+  width: 32px;
+  max-width: 32px;
+  color: rgba(238, 245, 255, 0.55);
+}
+
+#rj-island-root .rj-dock-btn--collapse svg {
+  width: 16px;
+  height: 16px;
+}
+
 #rj-island-root .rj-orb {
   display: grid;
   place-items: center;
@@ -182,6 +229,63 @@
   font: 600 9.5px/1 ui-monospace, monospace;
   color: rgba(240, 246, 255, 0.8);
   background: rgba(255, 255, 255, 0.07);
+}
+
+/* ---------- schowana: uchwyt przy dolnej krawędzi ---------- */
+
+#rj-island-root .rj-view--min {
+  justify-content: center;
+  padding: 0 8px;
+}
+
+#rj-island-root .rj-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: rgba(240, 246, 255, 0.78);
+  font: 600 10px/1 system-ui, sans-serif;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: color 0.16s ease;
+}
+
+#rj-island-root .rj-handle:hover,
+#rj-island-root .rj-handle:focus-visible {
+  color: #fff;
+  outline: none;
+}
+
+#rj-island-root .rj-handle svg {
+  width: 13px;
+  height: 13px;
+}
+
+#rj-island-root .rj-handle-label {
+  max-width: 72px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Przyklejenie do dołu: bez marginesu, dolne rogi proste, lżejszy cień. */
+#rj-island-root .rj-island.is-min {
+  bottom: env(safe-area-inset-bottom, 0px);
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.12) inset,
+    0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 -6px 22px -12px rgba(0, 0, 0, 0.85);
+}
+
+#rj-island-root .rj-island.is-min::before {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0) 60%);
 }
 
 /* ---------- dock ---------- */

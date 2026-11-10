@@ -22,6 +22,7 @@
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6YnF6ZmltdHJvaXhubGR6amVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1OTYzOTEsImV4cCI6MjEwODE3MjM5MX0.oeZWOaNd6p3wZBZQQu3QWjRHlrkxV_BFQRNSN-6YntE";
 
   var VOTER_KEY = "rejson_widgets_voter_id_v1";
+  var COLLAPSE_KEY = "rj_island_collapsed_v1";
   var TASKS_KEY = "rj_island_tasks_v1";
   var STATUS_KEY = "rj_island_status_v1";
 
@@ -42,6 +43,8 @@
     tasks: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7.5 8.5 12 4l4.5 4.5"/><path d="M4.5 15v4.5h15V15"/></svg>',
     panic: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 3v9"/><path d="M6.5 6.5a7.5 7.5 0 1 0 11 0"/></svg>',
     close: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 5l14 14M19 5 5 19"/></svg>',
+    down: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9.5 12 15.5l6-6"/></svg>',
+    up: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 14.5 12 8.5l6 6"/></svg>',
     back: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM19 5v14L9 12z"/></svg>',
     play: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5l11 7-11 7z"/></svg>',
     pause: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg>',
@@ -175,6 +178,9 @@
   /* ------------------------------------------------------------- rozmiary */
 
   var SIZES = {
+    /* Schowana wyspa to mały uchwyt przyklejony do dolnej krawędzi ekranu —
+       wciąż widoczny (żeby dało się ją przywrócić), ale nie zasłania treści. */
+    min: { w: 132, h: 28, r: 14 },
     idle: { w: 172, h: 46, r: 23 },
     dock: { w: 436, h: 52, r: 26 },
     report: { w: 384, h: 236, r: 24 },
@@ -292,8 +298,10 @@
     if (!island) return;
     var vp = viewport();
     var availH = Math.max(120, vp.h - vp.kb);
+    /* Schowany uchwyt jest niższy niż dolny limit zwykłej wyspy. */
+    var floorH = state === "min" ? 18 : 40;
     var w = Math.min(Math.max(finite(box.w, 172), 40), vp.w);
-    var h = Math.min(Math.max(finite(box.h, 46), 40), availH);
+    var h = Math.min(Math.max(finite(box.h, 46), floorH), availH);
     var r = Math.min(Math.max(finite(box.r, 23), 8), h / 2);
     island.style.width = w.toFixed(2) + "px";
     island.style.height = h.toFixed(2) + "px";
@@ -302,7 +310,7 @@
   }
 
   function resetBox() {
-    var size = sizeFor("idle");
+    var size = sizeFor(state);
     box = { w: size.w, h: size.h, r: size.r, vw: 0, vh: 0, vr: 0, tw: size.w, th: size.h, tr: size.r };
     lastTs = 0;
   }
@@ -422,6 +430,15 @@
         '<div class="rj-view rj-view--idle">' +
           '<span class="rj-orb" aria-hidden="true"><img src="/hub/brand-mark.svg?v=1" alt=""></span>' +
           "<span class=\"rj-title\">" + esc(projectName) + "<small>dotknij, żeby rozwinąć</small></span>" +
+          '<button class="rj-collapse" type="button" data-collapse title="Schowaj wyspę" aria-label="Schowaj wyspę">' + ICONS.down + "</button>" +
+        "</div>" +
+
+        /* Schowana: mały uchwyt przy dolnej krawędzi, sama strzałka w górę. */
+        '<div class="rj-view rj-view--min">' +
+          '<button class="rj-handle" type="button" data-expand aria-label="Pokaż wyspę" title="Pokaż wyspę">' +
+            ICONS.up +
+            '<span class="rj-handle-label">' + esc(projectName) + "</span>" +
+          "</button>" +
         "</div>" +
         '<div class="rj-view rj-view--dock">' +
           '<button class="rj-dock-btn is-primary" type="button" data-open="report" title="Zgłoś błąd lub pomysł" aria-label="Zgłoś błąd lub pomysł">' + ICONS.report + "</button>" +
@@ -433,6 +450,7 @@
           '<button class="rj-dock-btn" type="button" data-open="profile" title="Profil i status" aria-label="Profil i status">' + ICONS.profile + "</button>" +
           '<button class="rj-dock-btn" type="button" data-open="theme" title="Motyw i animacje" aria-label="Motyw i animacje">' + ICONS.theme + "</button>" +
           '<button class="rj-dock-btn" type="button" data-open="panic" title="Autodestrukcja" aria-label="Autodestrukcja">' + ICONS.panic + "</button>" +
+          '<button class="rj-dock-btn rj-dock-btn--collapse" type="button" data-collapse title="Schowaj wyspę" aria-label="Schowaj wyspę">' + ICONS.down + "</button>" +
         "</div>" +
 
         '<div class="rj-view rj-view--report">' +
@@ -552,9 +570,34 @@
   }
 
   var VIEWS = {
-    idle: 1, dock: 1, report: 1, search: 1, alerts: 1, now: 1,
+    min: 1, idle: 1, dock: 1, report: 1, search: 1, alerts: 1, now: 1,
     profile: 1, quick: 1, theme: 1, tasks: 1, panic: 1
   };
+
+  /* Czy wyspa jest schowana do uchwytu przy dolnej krawędzi. Pamiętane
+     w przeglądarce, więc zostaje schowana także na kolejnych podstronach. */
+  function isCollapsed() {
+    return store(COLLAPSE_KEY) === "1";
+  }
+
+  function collapse() {
+    if (!island) return;
+    store(COLLAPSE_KEY, "1");
+    apply("min");
+    /* Krótkie muśnięcie na Androidzie — informacja bez patrzenia. */
+    try {
+      if (navigator.vibrate) navigator.vibrate(8);
+    } catch (e) { /* trudno */ }
+  }
+
+  function expand() {
+    if (!island) return;
+    store(COLLAPSE_KEY, "0");
+    apply("idle");
+    try {
+      if (navigator.vibrate) navigator.vibrate(8);
+    } catch (e) { /* trudno */ }
+  }
 
   function apply(name) {
     if (!island) return;
@@ -563,6 +606,8 @@
     island.dataset.state = name;
     /* Rysowanie paneli jest w osłonie: wyjątek w danych nie może zostawić
        czarnej wyspy bez treści i bez wyjścia. */
+    island.classList.toggle("is-min", name === "min");
+    island.setAttribute("aria-expanded", String(name !== "min"));
     try {
       paint(name);
     } catch (error) {
@@ -617,8 +662,10 @@
     RESET_GUARD = now;
     if (raf) { window.cancelAnimationFrame(raf); raf = 0; }
     if (!island) return;
-    state = "idle";
-    island.dataset.state = "idle";
+    var back = isCollapsed() ? "min" : "idle";
+    state = back;
+    island.dataset.state = back;
+    island.classList.toggle("is-min", back === "min");
     island.style.display = "";
     resetBox();
     try { writeBox(); } catch (e) { /* trudno */ }
@@ -635,7 +682,8 @@
     if (!island.querySelector(".rj-view--" + state)) return "view";
     var w = parseFloat(island.style.width);
     var h = parseFloat(island.style.height);
-    if (!isFinite(w) || !isFinite(h) || w < 40 || h < 40) return "size";
+    var minHeight = state === "min" ? 20 : 40;
+    if (!isFinite(w) || !isFinite(h) || w < 40 || h < minHeight) return "size";
     if (state !== "idle" && state !== "dock") {
       var view = island.querySelector(".rj-view--" + state);
       var content = view && view.querySelector("button, a, input, textarea, .rj-list, .rj-switches, .rj-now, .rj-panic-wrap, .rj-empty");
@@ -1224,7 +1272,7 @@
   /* Minimalne style, które muszą działać przed wczytaniem arkusza — i które
      ratują sytuację, gdy arkusz się nie wczyta (słabe łącze, blokada, stara
      wersja z cache). Bez nich wyspa była czarnym prostokątem bez treści. */
-  var STATES = ["idle", "dock", "report", "search", "alerts", "now",
+  var STATES = ["min", "idle", "dock", "report", "search", "alerts", "now",
                 "profile", "quick", "theme", "tasks", "panic"];
 
   var CRITICAL_CSS =
@@ -1256,6 +1304,17 @@
     "font:12.5px/1.45 system-ui,sans-serif;padding:9px 11px}" +
     "#rj-island-root textarea.rj-input{flex:1 1 auto;min-height:52px}" +
     "#rj-island-root .rj-empty{padding:9px 8px;color:rgba(232,240,252,.55);font-size:11.5px}" +
+    "#rj-island-root .rj-collapse{margin-left:auto;display:grid;place-items:center;" +
+    "width:26px;height:26px;padding:0;border:0;border-radius:50%;" +
+    "background:rgba(255,255,255,.08);color:#eef5ff;flex:none}" +
+    "#rj-island-root .rj-collapse svg{width:15px;height:15px}" +
+    "#rj-island-root .rj-view--min{justify-content:center;padding:0 8px}" +
+    "#rj-island-root .rj-handle{display:inline-flex;align-items:center;gap:6px;padding:0;" +
+    "border:0;background:transparent;color:rgba(240,246,255,.85);" +
+    "font:600 10px/1 system-ui,sans-serif}" +
+    "#rj-island-root .rj-handle svg{width:13px;height:13px}" +
+    "#rj-island-root .rj-island.is-min{bottom:0;border-bottom-left-radius:0!important;" +
+    "border-bottom-right-radius:0!important}" +
     "#rj-island-root .rj-toast{position:absolute;left:50%;bottom:74px;transform:translate(-50%,8px);" +
     "padding:8px 14px;border-radius:999px;background:#000;color:#f4f7fc;" +
     "border:1px solid rgba(255,255,255,.12);opacity:0;pointer-events:none}" +
@@ -1330,6 +1389,8 @@
         else apply(name);
         return;
       }
+      if (event.target.closest("[data-collapse]")) { collapse(); return; }
+      if (event.target.closest("[data-expand]")) { expand(); return; }
       if (event.target.closest("[data-close]")) { close(); return; }
       if (event.target.closest("[data-panic]")) { runPanic(); return; }
 
@@ -1421,11 +1482,12 @@
     });
 
     root.addEventListener("keydown", function (event) {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      /* Sam przycisk (uchwyt, strzałka) obsłuży się jak każdy <button>. */
+      if (event.target && event.target.closest && event.target.closest("button")) return;
       if (state !== "idle") return;
-      if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
-        toggleDock();
-      }
+      event.preventDefault();
+      toggleDock();
     });
 
     /* Czy kliknięcie wydarzyło się wewnątrz wyspy. Zdarzenia wychodzące
@@ -1521,7 +1583,8 @@
 
     /* stan początkowy: czekamy na koniec loadera, żeby wyspa nie wyskakiwała
        przed resztą strony — chowamy ją tylko na czas `rj-booting`. */
-    apply("idle");
+    /* Jeśli użytkownik schował wyspę, zostaje schowana także tutaj. */
+    apply(isCollapsed() ? "min" : "idle");
     try { syncSwitches(); } catch (e) { /* trudno */ }
     syncViewport();
   }
@@ -1593,6 +1656,9 @@
   window.RejIsland = {
     open: apply,
     close: close,
+    collapse: collapse,
+    expand: expand,
+    collapsed: isCollapsed,
     health: health,
     check: watchdog,
     reset: resetToIdle,
