@@ -352,6 +352,19 @@
   letter-spacing: 0.16em;
   color: var(--s-muted);
 }
+.sx-picked {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: linear-gradient(150deg, rgba(127, 211, 196, 0.9), rgba(120, 170, 240, 0.75));
+  color: #06211d;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  vertical-align: 1px;
+}
+
 .sx-caption h3 { font-size: 16px; letter-spacing: -0.02em; margin: 0 0 5px; }
 .sx-caption p { margin: 0; color: var(--s-muted); font-size: 12.5px; line-height: 1.5; }
 
@@ -423,17 +436,15 @@
   white-space: nowrap;
 }
 
-.sx-brand i {
-  display: grid;
-  place-items: center;
+/* Logo RejHub jest jedno i niezmienne: ten sam plik co w topbarze,
+   bez płytki, bez tła, bez własnej wersji „R”. */
+.sx-mark {
+  display: block;
+  flex: none;
   width: 26px;
   height: 26px;
-  border-radius: 9px;
-  background: linear-gradient(145deg, #eaf2ff, #9dbcf0);
-  color: #12203a;
-  font-style: normal;
-  font-weight: 800;
-  font-size: 13px;
+  object-fit: contain;
+  filter: drop-shadow(0 3px 8px rgba(4, 8, 18, 0.45));
 }
 
 .sx-nav { display: flex; align-items: center; gap: 2px; margin-inline: auto; }
@@ -516,7 +527,7 @@
   cursor: pointer;
 }
 
-.sx-orb i { font-style: normal; font-weight: 800; font-size: 15px; color: #dfeaff; }
+.sx-orb .sx-mark { width: 26px; height: 26px; }
 .sx-orb b {
   position: absolute;
   inset: -5px;

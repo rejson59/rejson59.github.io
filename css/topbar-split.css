@@ -1,0 +1,165 @@
+/* © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
+   ============================================================================
+   Topbar „Dwie taflę” (wariant wybrany w Szklanym studiu)
+   ----------------------------------------------------------------------------
+   Dwie osobne szklane kapsuły: marka po lewej, nawigacja i przyciski po prawej.
+   Po przewinięciu strony obie taflę znikają, a ich miejsce zajmuje jedna
+   szeroka kapsuła — dokładnie ta sama, która była wcześniej.
+
+   Cała geometria siedzi na istniejących elementach (`.brand`, `.header-right`),
+   więc HTML stron się nie zmienia. Warstwy szkła są na pseudoelementach, żeby
+   przejście mogło być zwykłym crossfade'em opacity (tanie dla GPU).
+   ========================================================================== */
+
+body .rj-shared-header {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  transition: border-color 0.5s var(--rju-ease), box-shadow 0.5s var(--rju-ease);
+}
+
+/* Jedna wielka tafla — widoczna dopiero po scaleniu. */
+body .rj-shared-header::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    linear-gradient(135deg, var(--rju-reflection), transparent 40%),
+    linear-gradient(115deg, var(--rju-glow), transparent 68%),
+    var(--rju-vessel);
+  border: 1px solid var(--rju-rim-low);
+  box-shadow:
+    inset 0 1px 1px var(--rju-rim-top),
+    inset 0 -1px 0 var(--rju-rim-low),
+    0 14px 38px rgba(1, 8, 22, 0.25);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  backdrop-filter: blur(22px) saturate(180%);
+  transition: opacity 0.5s var(--rju-ease);
+}
+
+body .rj-shared-header.is-merged {
+  border-color: var(--rju-rim-low) !important;
+}
+
+body .rj-shared-header.is-merged::before {
+  opacity: 1;
+}
+
+/* ---------- dwie osobne taflę ---------- */
+
+body .rj-shared-header .brand,
+body .rj-shared-header .header-right {
+  position: relative;
+  isolation: isolate;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  transition: padding 0.5s var(--rju-ease);
+}
+
+body .rj-shared-header .brand {
+  padding: 6px 16px 6px 7px;
+}
+
+body .rj-shared-header .header-right {
+  padding: 5px 8px;
+}
+
+body .rj-shared-header .brand::before,
+body .rj-shared-header .header-right::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+  border: 1px solid var(--rju-rim-low);
+  background:
+    linear-gradient(150deg, var(--rju-reflection), transparent 46%),
+    var(--rju-vessel);
+  box-shadow:
+    inset 0 1px 1px var(--rju-rim-top),
+    inset 0 -1px 0 var(--rju-rim-low),
+    0 16px 34px -22px rgba(1, 8, 22, 0.7);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
+  opacity: 1;
+  transition: opacity 0.5s var(--rju-ease);
+}
+
+/* Scalenie: dwie taflę gasną, jedna szeroka zapala się pod nimi. */
+body .rj-shared-header.is-merged .brand::before,
+body .rj-shared-header.is-merged .header-right::before {
+  opacity: 0;
+}
+
+/* Nawigacja to zawartość prawej tafli, nie kolejna kapsuła w kapsule. */
+@media (min-width: 1201px) {
+  body .rj-shared-header .site-nav,
+  body.rj-home .rj-shared-header .site-nav {
+    background: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+  }
+}
+
+/* Przyciski w prawej tafli zachowują własne, mniejsze szkło. */
+body .rj-shared-header .brand .brand-mark {
+  flex: none;
+}
+
+/* ---------- wąskie ekrany: dwie taflę muszą się zmieścić ---------- */
+
+@media (max-width: 700px) {
+  body .rj-shared-header .brand {
+    padding: 4px 12px 4px 4px;
+  }
+  body .rj-shared-header .header-right {
+    padding: 4px 5px;
+    gap: 6px;
+  }
+}
+
+@media (max-width: 420px) {
+  body .rj-shared-header .brand {
+    padding: 3px 9px 3px 3px;
+    gap: 8px;
+  }
+  body .rj-shared-header .header-right {
+    padding: 3px 4px;
+    gap: 4px;
+  }
+}
+
+@media (max-width: 360px) {
+  body .rj-shared-header .brand {
+    padding: 2px 7px 2px 2px;
+    gap: 6px;
+  }
+  body .rj-shared-header .header-right {
+    padding: 2px;
+    gap: 3px;
+  }
+  body .rj-shared-header :is(.rj-home-link, .rj-chat-bell, .mobile-account, .hamburger-btn) {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+  }
+}
+
+/* Bez animacji przejścia, gdy użytkownik świadomie zgasił ruch
+   (przycisk w studiu / ?motion=off). Same taflę zostają. */
+html[data-motion-force="off"] body .rj-shared-header,
+html[data-motion-force="off"] body .rj-shared-header::before,
+html[data-motion-force="off"] body .rj-shared-header .brand,
+html[data-motion-force="off"] body .rj-shared-header .header-right,
+html[data-motion-force="off"] body .rj-shared-header .brand::before,
+html[data-motion-force="off"] body .rj-shared-header .header-right::before {
+  transition: none;
+}
