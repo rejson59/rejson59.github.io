@@ -1,0 +1,621 @@
+/* ==========================================================================
+   RejHub 2.0 — liquid glass, warstwa wspólna dla wszystkich podstron.
+   Inspiracja: szklane studio /testy (ciemne granatowe tło, cienka krawędź,
+   wewnętrzne odbicie, blur 8px + saturacja 135%, akcent #a8c8ff).
+   Ładowana PO arkuszach strony, więc nadpisuje stary wygląd.
+   ========================================================================== */
+
+:root {
+  --hub-bg: #070b16;
+  --hub-bg-2: #0a1122;
+  --hub-ink: #eef3ff;
+  --hub-muted: #a2afc6;
+  --hub-dim: #7e8ba3;
+  --hub-line: rgba(255, 255, 255, 0.13);
+  --hub-line-soft: rgba(255, 255, 255, 0.07);
+  --hub-accent: #a8c8ff;
+  --hub-accent-2: #8ff0dc;
+  --hub-glass-hi: rgba(255, 255, 255, 0.16);
+  --hub-glass-lo: rgba(255, 255, 255, 0.035);
+  --hub-lens: blur(18px) saturate(140%);
+  --hub-radius: 24px;
+  --hub-shadow: 0 26px 60px -30px rgba(0, 0, 0, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  --hub-ease: cubic-bezier(0.22, 0.72, 0.2, 1);
+  color-scheme: dark;
+}
+
+html[data-theme="light"] {
+  --hub-bg: #eef2fa;
+  --hub-bg-2: #e6ecf8;
+  --hub-ink: #17233a;
+  --hub-muted: #56637a;
+  --hub-dim: #6d7a92;
+  --hub-line: rgba(23, 42, 74, 0.14);
+  --hub-line-soft: rgba(23, 42, 74, 0.08);
+  --hub-glass-hi: rgba(255, 255, 255, 0.85);
+  --hub-glass-lo: rgba(255, 255, 255, 0.42);
+  --hub-shadow: 0 22px 48px -28px rgba(30, 51, 84, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  color-scheme: light;
+}
+
+/* ---------- tło: spokojny granat + trzy odległe światła ---------- */
+html,
+body {
+  background: var(--hub-bg) !important;
+  color: var(--hub-ink);
+}
+
+/* Tło malujemy tylko na <html>, żeby świecące plamy (body::before) nie
+   chowały się pod nieprzezroczystym tłem <body>. */
+html {
+  background: var(--hub-bg) !important;
+}
+body {
+  background: transparent !important;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: -20%;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(36% 36% at 18% 6%, rgba(92, 118, 255, 0.24), transparent 70%),
+    radial-gradient(30% 30% at 84% 4%, rgba(0, 205, 184, 0.15), transparent 72%),
+    radial-gradient(48% 48% at 64% 98%, rgba(150, 92, 255, 0.17), transparent 74%),
+    radial-gradient(24% 24% at 6% 94%, rgba(255, 118, 172, 0.09), transparent 70%);
+  filter: blur(42px) saturate(130%);
+  animation: hub-drift 34s ease-in-out infinite alternate;
+}
+
+html[data-theme="light"] body::before {
+  background:
+    radial-gradient(34% 34% at 16% 6%, rgba(120, 150, 255, 0.28), transparent 70%),
+    radial-gradient(30% 30% at 86% 8%, rgba(80, 214, 200, 0.22), transparent 72%),
+    radial-gradient(44% 44% at 62% 98%, rgba(168, 128, 255, 0.18), transparent 74%);
+  opacity: 0.9;
+}
+
+@keyframes hub-drift {
+  from { transform: translate3d(-1.5%, -1%, 0) scale(1); }
+  to { transform: translate3d(1.5%, 1.5%, 0) scale(1.06); }
+}
+
+/* wyłączamy stare pełnoekranowe dekoracje stron */
+body .backdrop,
+body .grain-overlay,
+body > .aurora {
+  display: none !important;
+}
+
+/* ---------- typografia ---------- */
+body,
+body * {
+  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+}
+
+body h1,
+body h2,
+body h3 {
+  color: var(--hub-ink);
+  letter-spacing: -0.025em;
+}
+
+body p,
+body small,
+body li,
+body label {
+  color: var(--hub-muted);
+}
+
+body a {
+  color: var(--hub-accent);
+}
+
+/* ---------- nagłówek: szkło bez zmiany geometrii ----------
+   Szerokość i wysokość paska zostają takie jak w starym serwisie (dzięki
+   temu nic się nie zawija i nie ucina), zmienia się tylko powierzchnia:
+   rozmycie, półprzezroczystość i cienka krawędź. */
+body .site-header,
+body .topbar,
+body .rj-shared-header {
+  background:
+    radial-gradient(120% 160% at 12% -40%, rgba(146, 172, 255, 0.22), transparent 62%),
+    linear-gradient(180deg, rgba(30, 42, 68, 0.72), rgba(10, 16, 29, 0.72)) !important;
+  border-color: rgba(173, 198, 255, 0.19) !important;
+  box-shadow:
+    0 20px 46px -30px rgba(0, 0, 0, 0.95),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(120, 150, 255, 0.08) !important;
+  backdrop-filter: var(--hub-lens);
+  -webkit-backdrop-filter: var(--hub-lens);
+}
+
+body .site-nav,
+body .topbar nav {
+  background: rgba(255, 255, 255, 0.045) !important;
+  border: 1px solid var(--hub-line-soft);
+  border-radius: 999px;
+  padding: 4px;
+  gap: 2px;
+}
+
+body :is(.site-nav a, .topbar nav a, .nav-more > summary, .rj-home-link, .mobile-account, .theme-toggle, .hamburger-btn, .rj-chat-bell) {
+  border-radius: 999px !important;
+  transition: background 0.2s var(--hub-ease), color 0.2s var(--hub-ease);
+}
+
+body :is(.site-nav a, .topbar nav a, .nav-more > summary):hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: var(--hub-ink) !important;
+}
+
+body :is(.site-nav a[aria-current="page"], .site-nav a.is-active, .site-nav a.active) {
+  background: linear-gradient(140deg, #eef2ff, #c3cfff) !important;
+  color: #0a1122 !important;
+  font-weight: 650;
+}
+
+body :is(.nav-more-panel, .rj-chat-alert-panel, .rj-header-profile, .mobile-menu) {
+  background: linear-gradient(160deg, rgba(24, 32, 52, 0.96), rgba(12, 18, 32, 0.96)) !important;
+  border: 1px solid var(--hub-line) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 28px 60px -28px rgba(0, 0, 0, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
+  backdrop-filter: var(--hub-lens);
+  -webkit-backdrop-filter: var(--hub-lens);
+}
+
+/* ---------- wszystkie karty i panele ---------- */
+body .card,
+body .panel,
+body .safety,
+body .tool,
+body .tools-notice,
+body .board-toolbar,
+body .kpi-card,
+body .partner-option,
+body .partner-form-card,
+body .partner-note,
+body .wid-card,
+body .wid-demo,
+body .wid-cta,
+body .auth-card,
+body .adm-card,
+body .adm-kpi,
+body .toolbar-card,
+body .inspector-card,
+body .comm-auth-inner,
+body .account-benefits,
+body .profile-card,
+body .profile-card-view,
+body .profile-editor,
+body .comm-card,
+body .comm-chat,
+body .comm-thread,
+body .comm-compose,
+body .rjc-subject,
+body .rjc-workspace,
+body .rjc-countdown,
+body .rjc-bio-progress,
+body .rjc-bio-sidebar,
+body .rjc-bio-lesson,
+body .rjc-bio-quiz,
+body .rjc-bio-summary,
+body .service-card,
+body .services-grid > article,
+body .contacts-card,
+body .dropzone,
+body .success,
+body .file-item,
+body .store-card,
+body .timeline-card {
+  background: linear-gradient(155deg, var(--hub-glass-hi), var(--hub-glass-lo)) !important;
+  border: 1px solid var(--hub-line) !important;
+  border-radius: var(--hub-radius) !important;
+  box-shadow: var(--hub-shadow) !important;
+  backdrop-filter: var(--hub-lens);
+  -webkit-backdrop-filter: var(--hub-lens);
+}
+
+body .dropzone {
+  border-style: dashed !important;
+  border-color: rgba(168, 200, 255, 0.35) !important;
+}
+
+body .dropzone:hover,
+body .dropzone.dragging,
+body .dropzone:focus-within {
+  background: linear-gradient(155deg, rgba(168, 200, 255, 0.2), rgba(255, 255, 255, 0.05)) !important;
+  border-color: var(--hub-accent) !important;
+}
+
+/* ---------- przyciski ---------- */
+body .btn,
+body .primary,
+body .secondary,
+body .rjc-primary,
+body .tool-expand,
+body .board-toolbar button,
+body .share-kind button,
+body .note-toolbar button,
+body .note-toolbar select {
+  border-radius: 13px !important;
+  border: 1px solid var(--hub-line) !important;
+  transition: transform 0.16s var(--hub-ease), background 0.16s var(--hub-ease), box-shadow 0.16s var(--hub-ease);
+}
+
+body :is(.btn, .primary, .rjc-primary, .btn-primary) {
+  background: linear-gradient(140deg, #f0f4ff, #c4d1ff) !important;
+  color: #0a1122 !important;
+  font-weight: 650 !important;
+  box-shadow: 0 14px 32px -16px rgba(140, 165, 255, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+}
+
+body :is(.btn-ghost, .secondary, .btn-secondary, .account-link) {
+  background: rgba(255, 255, 255, 0.07) !important;
+  color: var(--hub-ink) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+}
+
+body :is(.btn, .primary, .secondary, .rjc-primary):hover {
+  transform: translateY(-1px);
+  filter: brightness(1.04);
+}
+
+body :is(.btn, .primary, .secondary, .rjc-primary):disabled {
+  opacity: 0.5;
+  transform: none;
+}
+
+/* ---------- pola formularzy ---------- */
+body :is(input[type="text"], input[type="email"], input[type="password"], input[type="search"], input[type="number"], input[type="url"], input[type="tel"], textarea, select, .comm-input) {
+  background: rgba(6, 10, 22, 0.55) !important;
+  border: 1px solid var(--hub-line) !important;
+  border-radius: 13px !important;
+  color: var(--hub-ink) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+html[data-theme="light"] body :is(input, textarea, select, .comm-input) {
+  background: rgba(255, 255, 255, 0.72) !important;
+}
+
+body :is(input, textarea, select, .comm-input):focus,
+body :is(input, textarea, select, .comm-input):focus-visible {
+  outline: none !important;
+  border-color: rgba(168, 200, 255, 0.75) !important;
+  box-shadow: 0 0 0 4px rgba(120, 145, 255, 0.16) !important;
+}
+
+body ::placeholder {
+  color: rgba(162, 175, 198, 0.7) !important;
+}
+
+/* ---------- odznaki, etykiety, pigułki ---------- */
+body :is(.pill, .chip, .kicker, .eyebrow, .badge, .rjc-kicker, .file-tag, .tool-status, .facts span, .tag) {
+  border-radius: 999px !important;
+  border: 1px solid var(--hub-line-soft) !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: var(--hub-accent) !important;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 10.5px;
+  padding: 5px 10px;
+}
+
+/* ---------- karty projektów i siatki ---------- */
+body .project-card,
+body .project-card .card-inner {
+  background: linear-gradient(155deg, var(--hub-glass-hi), var(--hub-glass-lo)) !important;
+  border: 1px solid var(--hub-line) !important;
+  border-radius: 26px !important;
+  box-shadow: var(--hub-shadow) !important;
+  backdrop-filter: var(--hub-lens);
+  -webkit-backdrop-filter: var(--hub-lens);
+}
+
+/* ---------- stopka ---------- */
+body footer {
+  border-top: 1px solid var(--hub-line-soft) !important;
+  color: var(--hub-dim) !important;
+  background: transparent !important;
+}
+
+/* ---------- pływający powrót do RejHub ---------- */
+.rjhub-pill {
+  position: fixed;
+  left: 16px;
+  bottom: 16px;
+  z-index: 9000;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 15px 9px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.05));
+  box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  backdrop-filter: var(--hub-lens);
+  -webkit-backdrop-filter: var(--hub-lens);
+  color: var(--hub-ink) !important;
+  font-size: 12.5px;
+  font-weight: 600;
+  text-decoration: none !important;
+  transition: transform 0.18s var(--hub-ease), background 0.18s var(--hub-ease);
+}
+.rjhub-pill:hover { transform: translateY(-1px); background: linear-gradient(150deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.08)); }
+.rjhub-pill .rjhub-pill-mark {
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: 800;
+  color: #080b16;
+  background: linear-gradient(140deg, #a9b9ff, #5ce1d0);
+}
+.rjhub-pill .rjhub-pill-arrow { opacity: 0.6; font-weight: 500; }
+
+@media (max-width: 720px) {
+  .rjhub-pill { left: 12px; bottom: 12px; padding: 8px 12px 8px 8px; font-size: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before { animation: none; }
+  .rjhub-pill { transition: none; }
+}
+
+/* ==========================================================================
+   Ujednolicenie akcentów do palety studia (/testy):
+   #a8c8ff (błękit), #c1bcff (liliowy), #9ff3d1 tylko jako kropka statusu.
+   ========================================================================== */
+:root,
+body,
+body[class] {
+  --accent: #a8c8ff;
+  --accent-2: #c1bcff;
+  --accent-soft: rgba(168, 200, 255, 0.16);
+  --mint: #a8c8ff;
+  --green: #a8c8ff;
+  --teal: #a8c8ff;
+  --lilac: #c1bcff;
+  --purple: #c1bcff;
+  --brand: #a8c8ff;
+  --rj-accent: #a8c8ff;
+}
+
+body :is(h1 em, h1 .accent, .hero em, .kicker, .eyebrow, .rjc-kicker, .brand-mark span, .facts span) {
+  color: #c1bcff !important;
+}
+
+body :is(.brand-mark, .drop-icon, .success-icon) {
+  background: linear-gradient(140deg, #a9b9ff, #5ce1d0) !important;
+  color: #080b16 !important;
+  box-shadow: 0 8px 22px -10px rgba(110, 150, 255, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.5) !important;
+}
+
+body :is(.eyebrow span, .live-dot, .status-dot) {
+  background: #9ff3d1 !important;
+  box-shadow: 0 0 12px rgba(131, 242, 206, 0.8) !important;
+}
+
+body :is(.btn-live, .btn-feedback, .primary span, .file-actions button, .text-button) {
+  color: #a8c8ff !important;
+}
+
+body .btn-live,
+body .btn-feedback {
+  background: rgba(168, 200, 255, 0.12) !important;
+  border: 1px solid rgba(168, 200, 255, 0.3) !important;
+  box-shadow: none !important;
+}
+
+body h1 {
+  letter-spacing: -0.045em;
+}
+
+body :is(.hero h1, .rjc-hero h1, .comm-hero h1) em {
+  background: linear-gradient(100deg, #bcc8ff 5%, #7ef0dc 52%, #eab7ff 96%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+}
+
+/* pasek reklam bocznych też w szkle */
+body :is(.side-ads, .ads-rail, .ad-card, .rj-mobile-ads, .mobile-ads) {
+  border-radius: 20px;
+}
+
+body .side-ads :is(a, .ad-slot, aside),
+body :is(.ad-card, .promo-card) {
+  background: linear-gradient(150deg, var(--hub-glass-hi), var(--hub-glass-lo)) !important;
+  border: 1px solid var(--hub-line-soft) !important;
+  border-radius: 18px !important;
+  box-shadow: var(--hub-shadow) !important;
+  backdrop-filter: var(--hub-lens);
+  -webkit-backdrop-filter: var(--hub-lens);
+  color: var(--hub-ink) !important;
+}
+
+/* sekcje i nagłówki sekcji bez starych teł */
+body :is(.section-head, .section-title, .block-head, .rjc-section-label) {
+  border-color: var(--hub-line-soft) !important;
+  color: var(--hub-ink) !important;
+}
+
+/* tabele, listy, separatory */
+body :is(hr, .divider, .sep) {
+  border-color: var(--hub-line-soft) !important;
+}
+
+body :is(table, .table) {
+  border-color: var(--hub-line) !important;
+}
+
+body :is(th, td) {
+  border-color: var(--hub-line-soft) !important;
+}
+
+/* aktywne stany dawnych zielonych/liliowych akcentów */
+body :is([aria-pressed="true"], [aria-selected="true"], .is-active, .is-current) {
+  background: linear-gradient(140deg, #eef3ff, #c6d2ff) !important;
+  border-color: rgba(255, 255, 255, 0.35) !important;
+  color: #0a1122 !important;
+}
+
+body .choice input:checked + span {
+  border-color: rgba(168, 200, 255, 0.6) !important;
+  background: rgba(168, 200, 255, 0.14) !important;
+  color: var(--hub-ink) !important;
+}
+
+body progress {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-radius: 999px;
+}
+body progress::-webkit-progress-bar { background: rgba(255, 255, 255, 0.08) !important; }
+body progress::-webkit-progress-value { background: linear-gradient(90deg, #a8c8ff, #c1bcff) !important; }
+body progress::-moz-progress-bar { background: linear-gradient(90deg, #a8c8ff, #c1bcff) !important; }
+
+body :is(a, button, input, textarea, select, [tabindex]):focus-visible {
+  outline: 2px solid rgba(168, 200, 255, 0.9) !important;
+  outline-offset: 3px !important;
+}
+
+/* pasek „Zgłoś błąd / pomysł” to element serwisu — zostaje, ale w szkle */
+body :is(.rj-feedback, .feedback-dock, .bug-pill) {
+  backdrop-filter: var(--hub-lens);
+  -webkit-backdrop-filter: var(--hub-lens);
+}
+
+/* ==========================================================================
+   Strona główna (dawny układ, nowe szkło)
+   ========================================================================== */
+body.rj-home {
+  /* na stronie głównej szkło jest ciemniejsze i bardziej „mokre” —
+     mniej mlecznej bieli, więcej granatu i wewnętrznego odbicia */
+  --hub-glass-hi: rgba(255, 255, 255, 0.075);
+  --hub-glass-lo: rgba(255, 255, 255, 0.014);
+  --hub-shadow: 0 26px 60px -34px rgba(0, 0, 0, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+body.rj-home .backdrop { display: none !important; }
+
+body.rj-home :is(.hero-copy h1, .rj-club h2, .origins h2, .projects h2) {
+  color: var(--hub-ink);
+}
+
+body.rj-home :is(.hero-copy h1, .rj-club h2) :is(.accent, em) {
+  background: linear-gradient(100deg, #bcc8ff 5%, #7ef0dc 52%, #eab7ff 96%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+}
+
+body.rj-home .hero-lead { color: var(--hub-muted) !important; }
+
+/* karta profilu, statystyki, kafel „wszechświata” */
+body.rj-home :is(.profile-card, .stat, .metric-badge, .universe-links a, .showcase-item, .board-cta-inner, .projects-toolbar, .filter-pill, .board-skeleton) {
+  border-radius: 20px !important;
+}
+
+body.rj-home .profile-card {
+  background: linear-gradient(155deg, var(--hub-glass-hi), var(--hub-glass-lo)) !important;
+  border: 1px solid var(--hub-line) !important;
+  box-shadow: var(--hub-shadow) !important;
+  backdrop-filter: var(--hub-lens);
+  -webkit-backdrop-filter: var(--hub-lens);
+}
+
+body.rj-home .stat,
+body.rj-home .metric-badge {
+  background: rgba(255, 255, 255, 0.055) !important;
+  border: 1px solid var(--hub-line-soft) !important;
+  color: var(--hub-ink) !important;
+  backdrop-filter: blur(12px) saturate(130%);
+  -webkit-backdrop-filter: blur(12px) saturate(130%);
+}
+
+body.rj-home .universe-links a {
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.04)) !important;
+  border: 1px solid var(--hub-line) !important;
+  box-shadow: 0 18px 40px -26px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.22) !important;
+  backdrop-filter: var(--hub-lens);
+  -webkit-backdrop-filter: var(--hub-lens);
+  color: var(--hub-ink) !important;
+  transition: transform 0.2s var(--hub-ease), border-color 0.2s var(--hub-ease);
+}
+body.rj-home .universe-links a:hover {
+  transform: translateY(-2px);
+  border-color: rgba(168, 200, 255, 0.4) !important;
+}
+
+body.rj-home :is(.board-cta-inner, .comm-cta-inner) {
+  background: linear-gradient(150deg, rgba(168, 200, 255, 0.16), rgba(255, 255, 255, 0.035)) !important;
+  border: 1px solid rgba(168, 200, 255, 0.22) !important;
+  box-shadow: var(--hub-shadow) !important;
+  backdrop-filter: var(--hub-lens);
+  -webkit-backdrop-filter: var(--hub-lens);
+}
+
+/* karty projektów: te same treści, nowa powierzchnia */
+body.rj-home .project-card .card-inner {
+  background: linear-gradient(155deg, var(--hub-glass-hi), var(--hub-glass-lo)) !important;
+  border: 1px solid var(--hub-line) !important;
+  box-shadow: var(--hub-shadow) !important;
+  backdrop-filter: var(--hub-lens);
+  -webkit-backdrop-filter: var(--hub-lens);
+}
+
+body.rj-home .project-card .card-preview-frame {
+  border-radius: 14px !important;
+  border: 1px solid var(--hub-line-soft) !important;
+  background: rgba(6, 10, 22, 0.5) !important;
+}
+
+body.rj-home .project-card .card-title,
+body.rj-home .project-card .card-title a { color: var(--hub-ink) !important; }
+
+body.rj-home .project-card .card-desc { color: var(--hub-muted) !important; }
+
+body.rj-home .project-card .btn-live {
+  background: rgba(168, 200, 255, 0.14) !important;
+  border: 1px solid rgba(168, 200, 255, 0.28) !important;
+  color: #dbe6ff !important;
+}
+
+body.rj-home :is(.projects-toolbar, .toolbar-card, .board-toolbar, .filters, .search-field) {
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.03)) !important;
+  border: 1px solid var(--hub-line) !important;
+  border-radius: 20px !important;
+  backdrop-filter: var(--hub-lens);
+  -webkit-backdrop-filter: var(--hub-lens);
+}
+
+body.rj-home :is(.search-field input, .filter-field input, .filter-field select, .ctrl-select) {
+  background: rgba(6, 10, 22, 0.55) !important;
+  border: 1px solid var(--hub-line) !important;
+  color: var(--hub-ink) !important;
+  border-radius: 12px !important;
+}
+
+/* sekcja „premium / konto” */
+body.rj-home :is(.rj-club-inner, .club-card, .premium-card) {
+  background: linear-gradient(150deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.035)) !important;
+  border: 1px solid var(--hub-line) !important;
+  border-radius: var(--hub-radius) !important;
+  backdrop-filter: var(--hub-lens);
+  -webkit-backdrop-filter: var(--hub-lens);
+}
+
+/* ciemniejsze plamy tła strony głównej zamieniamy na jedno spójne światło */
+body.rj-home::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(60% 40% at 50% -10%, rgba(120, 150, 255, 0.12), transparent 70%);
+}
