@@ -46,7 +46,7 @@
       var action = n.kind === 'like' ? 'polubił(a) Twój wpis' : n.kind === 'reply' ? 'odpowiedział(a) na Twój komentarz' : 'skomentował(a) Twój wpis';
       var when = new Date(n.created_at), date = isNaN(when.getTime()) ? '' : when.toLocaleString('pl-PL', {day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
       var target = /^\/rejchat(?:\.html)?\/?$/i.test(location.pathname) ? '#powiadomienie=' : '/rejchat#powiadomienie=';
-      return {when:n.created_at, html:'<a class="rj-chat-alert-item' + (n.read_at ? '' : ' is-unread') + '" href="' + target + text(n.id) + '" data-notification="' + text(n.id) + '"><span class="rj-chat-alert-symbol" aria-hidden="true">' + (n.kind === 'like' ? '♡' : '💬') + '</span><span><strong>' + text(n.actor_name) + '</strong> ' + action + '<small>RejChat · ' + text(date) + ' · Otwórz wpis</small></span></a>'};
+      return {when:n.created_at, html:'<a class="rj-chat-alert-item' + (n.read_at ? '' : ' is-unread') + '" href="' + target + text(n.id) + '" data-notification="' + text(n.id) + '"><span class="rj-chat-alert-symbol" aria-hidden="true">' + (n.kind === 'like' ? '♡' : '💬') + '</span><span><strong>' + text(n.actor_name) + '</strong> ' + action + (n.post_excerpt ? '<q class="rj-chat-alert-quote">' + text(String(n.post_excerpt).slice(0,90)) + '</q>' : '') + '<small>RejChat · ' + text(date) + ' · Otwórz wpis</small></span></a>'};
     });
     dmItems.forEach(function(n) {
       if (!n.unread || !/^[0-9a-f-]{36}$/i.test(String(n.id || ''))) return;
@@ -92,7 +92,11 @@
     ]).then(function(results) {
       if (seq !== serial || !same(s)) return;
       var posts=results[0], dm=results[1], reactions=results[2], errors=[];
-      if (posts.status==='fulfilled' && posts.value && Array.isArray(posts.value.items) && typeof posts.value.unread==='number') { items=posts.value.items; unread=Math.max(0,posts.value.unread); }
+      if (posts.status==='fulfilled' && posts.value && Array.isArray(posts.value.items) && typeof posts.value.unread==='number') {
+        var me=String(s.username||'').toLowerCase();
+        items=posts.value.items.filter(function(n){return !me || String(n.actor_name||'').toLowerCase()!==me;});
+        unread=Math.max(0,posts.value.unread);
+      }
       else errors.push('Nie udało się odświeżyć powiadomień RejChat.');
       if (dm.status==='fulfilled' && Array.isArray(dm.value)) { dmItems=dm.value.filter(function(x){return Number(x.unread)>0;}); dmUnread=dmItems.reduce(function(n,x){return n+Math.max(0,Number(x.unread)||0);},0); }
       else errors.push('Nie udało się sprawdzić prywatnych rozmów.');

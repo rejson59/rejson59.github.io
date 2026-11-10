@@ -1,0 +1,161 @@
+/* © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved. */
+/* Panel admina — zakładka „Serwer”. */
+
+.srv-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 12px;
+  margin: 0 0 18px;
+}
+
+.srv-kpi {
+  display: grid;
+  gap: 4px;
+  padding: 14px 16px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 16px;
+  background: linear-gradient(158deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+.srv-kpi-label {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.62;
+}
+
+.srv-kpi-value {
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.srv-kpi-note {
+  font-size: 11.5px;
+  opacity: 0.66;
+}
+
+.srv-tables,
+.srv-accounts,
+.srv-identities {
+  display: grid;
+  gap: 9px;
+  padding: 4px 0 2px;
+}
+
+.srv-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 1.1fr) minmax(90px, 2fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  font-size: 12.5px;
+}
+
+.srv-row-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.srv-row-value {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.srv-row-note {
+  min-width: 78px;
+  text-align: right;
+  font-size: 11.5px;
+  opacity: 0.6;
+}
+
+.srv-bar {
+  display: block;
+  height: 7px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.16);
+  overflow: hidden;
+}
+
+.srv-bar > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #6aa6ff, #a78bfa);
+}
+
+.srv-bar > span.is-full {
+  background: linear-gradient(90deg, #f59e0b, #ef4444);
+}
+
+.srv-merge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 4px 0 8px;
+}
+
+.srv-merge .ctrl-input {
+  flex: 1 1 160px;
+  min-width: 140px;
+}
+
+.srv-status {
+  margin: 4px 0 8px;
+  font-size: 12.5px;
+  opacity: 0.8;
+}
+
+.srv-ident {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding: 10px 12px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 12px;
+}
+
+.srv-ident strong {
+  font-size: 13px;
+}
+
+.srv-ident-note {
+  display: block;
+  margin-top: 2px;
+  font-size: 11.5px;
+  opacity: 0.62;
+}
+
+.srv-ident-actions {
+  display: flex;
+  gap: 6px;
+}
+
+[data-theme="light"] .srv-kpi {
+  border-color: rgba(15, 23, 42, 0.1);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+[data-theme="light"] .srv-bar {
+  background: rgba(15, 23, 42, 0.1);
+}
+
+@media (max-width: 640px) {
+  .srv-row {
+    grid-template-columns: 1fr auto;
+    row-gap: 4px;
+  }
+
+  .srv-bar {
+    grid-column: 1 / -1;
+    order: 3;
+  }
+
+  .srv-row-note {
+    min-width: 0;
+  }
+}
