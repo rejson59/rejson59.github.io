@@ -40,8 +40,11 @@ for (const file of pages) {
     () => assert.equal(d.querySelectorAll('header').length, 1));
   check('jeden <main> z id treść',
     () => assert.equal(d.querySelectorAll('main#tresc').length, 1));
-  check('pigułka zgłoszeń jest podpięta',
-    () => assert.ok(/widget\.js\?v=\d+/.test(html)));
+  /* RejHub 2.0 zgłasza przez wyspę (#244); stara strona zostaje przy pigułce. */
+  check('zgłoszenia są podpięte',
+    () => assert.ok(file === 'rejhub2/licencja.html'
+      ? /hub\/island\.js\?v=\d+/.test(html) && /hub\/island\.css\?v=\d+/.test(html)
+      : /widget\.js\?v=\d+/.test(html)));
   check('ruch odblokowany',
     () => assert.ok(html.includes('/js/motion-unlock.js?v=1')));
   check('soczewka podpięta',
