@@ -39,5 +39,18 @@ const tick=()=>new Promise(r=>setTimeout(r,20));
  assert.equal(args.credentials,'omit');
  assert.equal(w.document.querySelector('.studio').textContent,'private');
  w.close();
+
+ /* Treść starsza niż zmiana nazw plików nie może zablokować galerii:
+    brak znaczników stylu/skryptu => brama dokłada własne. */
+ dom=new JSDOM(html,{url:'https://example.org/szklane-studio',runScripts:'outside-only'});w=dom.window;
+ w.RejsonCloud={url:'https://example.org',anonKey:'anon',getStoredSession:()=>({access_token:'token'}),getAccessToken:()=>Promise.resolve('token')};
+ w.fetch=()=>Promise.resolve({status:200,ok:true,json:()=>Promise.resolve({
+   html:'<!doctype html><html><head></head><body><main class="studio">bez linków</main></body></html>',
+   css:'body{color:green}',javascript:'window.test=2;'})});
+ w.eval(gate);await tick();
+ assert.equal(w.document.querySelector('.studio').textContent,'bez linków');
+ assert.ok(w.document.head.textContent.includes('color:green'),'styl wstrzyknięty mimo braku linku');
+ assert.ok(w.document.querySelector('meta[name="robots"]'),'noindex dodany przez bramę');
+ w.close();
  console.log('PASS: bramka /szklane-studio, gość i odmowa dostępu, prywatna odpowiedź oraz brak cache');
 })().catch(e=>{console.error(e);process.exitCode=1});

@@ -28,12 +28,23 @@
     var current = cloud.getStoredSession();
     if (!current || current.sandbox || current.access_token !== requestToken) throw new Error('auth');
     if (!data || typeof data.html !== 'string' || typeof data.css !== 'string' || typeof data.javascript !== 'string' || /<\/style/i.test(data.css) || /<\/script/i.test(data.javascript)) throw new Error('data');
+
+    /* Styl i skrypt zawsze wstrzykujemy sami. Wcześniej brama wymagała, żeby
+       HTML z bazy zawierał dokładnie te dwa znaczniki — po zmianie nazw plików
+       (testy → szklane-studio) stara treść przestała przechodzić kontrolę
+       i całe studio pokazywało „Nie udało się wczytać strony”. Teraz brak
+       znaczników nie jest błędem: podmieniamy je, a gdy ich nie ma, dokładamy
+       własne. Dzięki temu zmiana nazw plików nie może już zablokować galerii. */
     var styleLink = '<link rel="stylesheet" href="/css/szklane-studio.css?v=1">';
     var scriptLink = '<script defer src="/js/szklane-studio.js?v=1"></script>';
-    if (!data.html.includes(styleLink) || !data.html.includes(scriptLink)) throw new Error('data');
-    var html = data.html.replace(styleLink, '<meta name="robots" content="noindex,nofollow,noarchive"><meta name="referrer" content="no-referrer"><style>' + data.css + '</style>')
-      .replace(scriptLink, '')
+    var styleTag = '<style>' + data.css + '</style>';
+    var html = data.html;
+    html = html.indexOf(styleLink) !== -1
+      ? html.replace(styleLink, styleTag)
+      : html.replace('</head>', styleTag + '</head>');
+    html = html.replace(scriptLink, '')
       .replace('</body>', '<script>' + data.javascript + '</script></body>');
+    html = html.replace('<head>', '<head><meta name="robots" content="noindex,nofollow,noarchive"><meta name="referrer" content="no-referrer">');
     document.open(); document.write(html); document.close();
     // Zmiana sesji w innej karcie i powrót z bfcache wymagają ponownej kontroli.
     window.addEventListener('storage', function (event) {
