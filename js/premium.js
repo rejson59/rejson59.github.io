@@ -1,3 +1,5 @@
+/* © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
+   Kopiowanie i ponowne użycie bez pisemnej zgody zabronione. Licencja: /LICENSE, /licencja */
 /* ==========================================================================
    Rejson59 — „Premium za darmo” + powiadomienia (tylko prawdziwe zdarzenia)
    --------------------------------------------------------------------------
@@ -345,8 +347,8 @@
       body.innerHTML =
         '<div class="rj-panel-guest">' +
           '<p class="rj-panel-guest-title">Powiadomienia są dla zalogowanych</p>' +
-          '<p>Dowiesz się tutaj, gdy Twoje zgłoszenie zmieni status albo gdy projekt, który ' +
-             'obserwujesz, dostanie aktualizację.</p>' +
+          '<p>Dowiesz się tutaj, gdy projekt, który obserwujesz, dostanie aktualizację — ' +
+             'i gdy pojawi się nowość w RejChat.</p>' +
           '<a class="rj-cta" href="logowanie">Załóż darmowe konto</a>' +
         '</div>';
       if (foot) foot.innerHTML = "";

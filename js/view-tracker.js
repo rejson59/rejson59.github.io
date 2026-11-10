@@ -1,3 +1,5 @@
+/* © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
+   Kopiowanie i ponowne użycie bez pisemnej zgody zabronione. Licencja: /LICENSE, /licencja */
 /*!
  * Rejson59 Live View, Click & Online Presence Tracker
  * (Supabase Realtime + 15-min Anti-Spam Cooldown + Live Online Presence)

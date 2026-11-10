@@ -1,3 +1,5 @@
+/* © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
+   Kopiowanie i ponowne użycie bez pisemnej zgody zabronione. Licencja: /LICENSE, /licencja */
 /* rejson59.github.io — lista projektów pobierana na żywo z API GitHuba.
    Najpierw renderujemy ostatnio zapisane dane z cache / kopii zapasowej
    (projects-data.js), a równolegle — oraz przy powrocie na kartę i cyklicznie
