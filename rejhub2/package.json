@@ -4,6 +4,6 @@
   "type": "module",
   "description": "RejHub 2.0 — prywatna wersja robocza z serwerową bramą administratora",
   "scripts": {
-    "check": "node --check api/session.js && node --check middleware.js && node --check assets/app.js"
+    "check": "node --check api/session.js && node --check middleware.js && node --check hub/hub-shell.js"
   }
 }

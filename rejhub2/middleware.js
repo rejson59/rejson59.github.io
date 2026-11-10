@@ -24,9 +24,14 @@ const PUBLIC_PATHS = new Set([
   "/robots.txt"
 ]);
 const PUBLIC_PREFIXES = ["/api/session"];
+/* Zasoby statyczne nie zawierają prywatnych treści — puszczamy je bez sesji,
+   żeby brama nigdy nie odpowiadała HTML-em na żądanie CSS/JS/obrazka
+   (inaczej strona „w budowie” i logowanie gubiłyby swoje pliki). */
+const PUBLIC_EXTENSIONS = /\.(css|js|mjs|json|map|svg|png|jpe?g|webp|avif|gif|ico|woff2?|ttf|otf|txt|xml|webmanifest)$/i;
 
 function isPublic(pathname) {
   if (PUBLIC_PATHS.has(pathname)) return true;
+  if (PUBLIC_EXTENSIONS.test(pathname)) return true;
   return PUBLIC_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(prefix + "/"));
 }
 
