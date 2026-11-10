@@ -6,6 +6,9 @@
      Był rzadko używany, więc jego miejsce zajmuje szybka autodestrukcja:
      ta sama pigułka, ten sam róg, ale realna funkcja awaryjna. */
   function addPill() {
+    /* Nowa wyspa (hub/island.js) ma własne wyjście awaryjne — stara pigułka
+       byłaby w tym samym rogu ekranu duplikatem. */
+    if (document.querySelector('script[src*="hub/island.js"]') || window.__RJ_ISLAND__) return;
     if (document.querySelector(".rjhub-pill")) return;
     /* Strony-przekierowania (podroz, portal) nie potrzebują pigułki —
        znikają z ekranu w ułamku sekundy. */
