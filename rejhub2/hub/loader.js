@@ -1,7 +1,7 @@
 /* © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
    Kopiowanie i ponowne użycie bez pisemnej zgody zabronione. Licencja: /LICENSE, /licencja */
 /* RejHub 2.0 — wspólny loader.
-   Losuje jeden z 16 znaczników z /testy (loader-mark + mark-*), chowa
+   Losuje jeden z 16 znaczników z /szklane-studio (loader-mark + mark-*), chowa
    nakładkę po wczytaniu strony i pokazuje ją ponownie przy przejściu
    na inną podstronę. Na czterech stronach ze starym loaderem
    (data-legacy="1") chowanie zostawiamy js/loader.js, żeby nie dublować

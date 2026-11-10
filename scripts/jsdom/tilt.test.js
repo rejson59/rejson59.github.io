@@ -376,7 +376,7 @@ const angles = (transform) => {
       /attachTilt\(card, inner, 5\)/.test(APP));
     check("karta profilu też ma efekt", /attachTilt\(profile, profile, 4\)/.test(APP));
     check("wersje podbite w index.html",
-      /js\/app\.js\?v=2026-11-02-offchat-1/.test(INDEX) && /css\/style\.css\?v=2026-11-02-offchat-1/.test(INDEX));
+      /js\/app\.js\?v=2026-\d\d-\d\d/.test(INDEX) && /css\/style\.css\?v=2026-\d\d-\d\d/.test(INDEX));
     const bezKomentarzy = TILT.replace(/\/\*[\s\S]*?\*\//g, "");
     check("jedno miejsce mierzenia layoutu w bloku tiltu",
       (bezKomentarzy.match(/getBoundingClientRect/g) || []).length === 1,

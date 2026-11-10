@@ -1,6 +1,6 @@
 const assert=require('node:assert/strict'),{setup}=require('./studio-browser-helpers');
 (async()=>{const app=await setup();try{
-const ctx=await app.context(),p=await ctx.newPage();await p.goto(app.origin+'/testy');await p.locator('.studio').waitFor();await p.locator('#tab-ruch').click();
+const ctx=await app.context(),p=await ctx.newPage();await p.goto(app.origin+'/szklane-studio');await p.locator('.studio').waitFor();await p.locator('#tab-ruch').click();
 assert.equal(await p.locator('.motion-card').count(),12);
 for(const name of ['sheen','float','press','reveal','glow','slide','tilt','hue','pulse','enter','focus','magnet']){
  const b=p.locator(`[data-motion=${name}]`),object=b.locator('xpath=ancestor::article').locator('[data-motion-object]');
