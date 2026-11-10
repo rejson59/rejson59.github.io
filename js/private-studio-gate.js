@@ -28,8 +28,8 @@
     var current = cloud.getStoredSession();
     if (!current || current.sandbox || current.access_token !== requestToken) throw new Error('auth');
     if (!data || typeof data.html !== 'string' || typeof data.css !== 'string' || typeof data.javascript !== 'string' || /<\/style/i.test(data.css) || /<\/script/i.test(data.javascript)) throw new Error('data');
-    var styleLink = '<link rel="stylesheet" href="/css/testy.css?v=12">';
-    var scriptLink = '<script defer src="/js/testy.js?v=12"></script>';
+    var styleLink = '<link rel="stylesheet" href="/css/testy.css?v=14">';
+    var scriptLink = '<script defer src="/js/testy.js?v=14"></script>';
     if (!data.html.includes(styleLink) || !data.html.includes(scriptLink)) throw new Error('data');
     var html = data.html.replace(styleLink, '<meta name="robots" content="noindex,nofollow,noarchive"><meta name="referrer" content="no-referrer"><style>' + data.css + '</style>')
       .replace(scriptLink, '')
