@@ -113,26 +113,18 @@ body a {
   color: var(--hub-accent);
 }
 
-/* ---------- nagłówek: jedna szklana kapsuła ---------- */
+/* ---------- nagłówek: szkło bez zmiany geometrii ----------
+   Szerokość i wysokość paska zostają takie jak w starym serwisie (dzięki
+   temu nic się nie zawija i nie ucina), zmienia się tylko powierzchnia:
+   rozmycie, półprzezroczystość i cienka krawędź. */
 body .site-header,
 body .topbar,
 body .rj-shared-header {
-  background: linear-gradient(150deg, var(--hub-glass-hi), var(--hub-glass-lo)) !important;
-  border: 1px solid var(--hub-line) !important;
-  box-shadow: 0 18px 40px -26px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.24) !important;
+  background: linear-gradient(180deg, rgba(18, 27, 45, 0.82), rgba(10, 16, 29, 0.72)) !important;
+  border-color: var(--hub-line) !important;
+  box-shadow: 0 18px 40px -30px rgba(0, 0, 0, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
   backdrop-filter: var(--hub-lens);
   -webkit-backdrop-filter: var(--hub-lens);
-  border-radius: 22px;
-  margin: 12px auto 0;
-  max-width: 1220px;
-  width: calc(100% - 28px);
-  top: 12px;
-}
-
-body .site-header {
-  position: sticky;
-  z-index: 60;
-  padding: 8px 14px;
 }
 
 body .site-nav,
@@ -363,7 +355,6 @@ body footer {
 
 @media (max-width: 720px) {
   .rjhub-pill { left: 12px; bottom: 12px; padding: 8px 12px 8px 8px; font-size: 12px; }
-  body .site-header { width: calc(100% - 16px); border-radius: 18px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
