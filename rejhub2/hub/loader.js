@@ -43,6 +43,7 @@
     hidden = true;
     overlay.classList.add("is-hidden");
     document.documentElement.classList.remove("rj-loading");
+    document.documentElement.classList.remove("rj-booting");
   }
 
   function hideSoon() {
@@ -54,6 +55,9 @@
     hidden = false;
     overlay.classList.remove("is-hidden");
     document.documentElement.classList.add("rj-loading");
+    /* Przy przejściu na inną podstronę treść ma zniknąć pod nakładką —
+       inaczej przez rozmycie widać było tekst, zanim strona się wczytała. */
+    document.documentElement.classList.add("rj-booting");
     startedAt = now();
   }
 

@@ -2,30 +2,30 @@
    ============================================================================
    Wejście strony — fala szkła od prawego górnego do lewego dolnego rogu.
    ----------------------------------------------------------------------------
-   Po zniknięciu loadera każda szklana tafla i każdy przycisk dostaje jedną
-   z animacji znanych ze Szklanego studia (losowo, ale bez powtórek pod rząd),
-   a nagłówki rozsypują się na litery i podskakują jedna po drugiej.
-
-   Kolejność: elementy są sortowane po przekątnej `top - left`, więc fala
-   zaczyna się w prawym górnym rogu i schodzi do lewego dolnego.
+   Po zniknięciu loadera:
+     • topbar zjeżdża z góry,
+     • mini reklamy wchodzą z prawej (mobilne z dołu),
+     • szklane tafle i przyciski dostają losową animację ze Szklanego studia,
+       ale zawsze w kolejności przekątnej: prawy górny → lewy dolny,
+     • nagłówki rozsypują się na litery, które podskakują jedna po drugiej.
 
    Animacje idą przez Web Animations API z `fill: both` i są anulowane po
-   zakończeniu — dzięki temu nie zostawiają na elementach transformacji,
-   które blokowałyby późniejsze efekty hover.
+   zakończeniu — nie zostawiają transformacji blokujących hover ani tilt kart.
    ========================================================================== */
 (function (window, document) {
   "use strict";
 
-  var root = document.documentElement;
   var MAX_ELEMENTS = 110;
   var MAX_LETTERS = 320;
   var started = false;
   var tracked = [];
 
   /* Świadome wyłączenie ruchu w studiu / `?motion=off` ma pierwszeństwo.
-     Systemowe `prefers-reduced-motion` jest neutralizowane przez motion-unlock. */
-  if (window.RejMotion && window.RejMotion.status && window.RejMotion.status() === "off") return;
-  if (!window.Element || !window.Element.prototype || !window.Element.prototype.animate) return;
+     Systemowe `prefers-reduced-motion` neutralizuje motion-unlock.
+     Bez animacji treść i tak musi poczekać na zniknięcie loadera — inaczej
+     przez rozmycie było widać tekst, zanim strona się wczytała. */
+  var noMotion = (window.RejMotion && window.RejMotion.status && window.RejMotion.status() === "off") ||
+    !window.Element || !window.Element.prototype || !window.Element.prototype.animate;
 
   var SURFACES = [
     "main .card", "main .panel", "main .tool", "main .service-card",
@@ -35,18 +35,17 @@
     "main .rjc-workspace", "main .file-item", "main .store-card",
     "main .timeline-card", "main .dropzone", "main .comm-card",
     "main .partner-option", "main .partner-form-card", "main .rj-cta",
-    "main .rj-premium", "main .universe-links a", "main .notfound > div"
+    "main .rj-premium", "main .universe-links a", "main .notfound > div",
+    "main .rj-page-index"
   ];
 
   var SELECTOR = [
-    ".rj-shared-header .brand",
-    ".rj-shared-header .site-nav > a",
-    ".rj-shared-header .site-nav > details",
-    ".rj-shared-header .rj-home-link",
-    ".rj-shared-header .rj-chat-alerts",
-    ".rj-shared-header .mobile-account",
-    ".rj-shared-header .hamburger-btn",
-    ".rj-shared-header .rj-header-profile",
+    ".rj-shared-header",
+    ".rj-side-ads",
+    "#rj-mobile-ads",
+    "footer",
+    ".rj-home-stats",
+    ".rjhub-pill",
     "main button",
     "main .btn",
     "main .button",
@@ -67,43 +66,43 @@
     {
       name: "drop",
       frames: [
-        { opacity: 0, transform: "translate3d(8px,-18px,0) scale(.94)", filter: "blur(6px)" },
+        { opacity: 0, transform: "translate3d(10px,-46px,0) scale(.9)", filter: "blur(10px)" },
         { opacity: 1, transform: "translate3d(0,0,0) scale(1)", filter: "blur(0)" }
       ]
     },
     {
       name: "rise",
       frames: [
-        { opacity: 0, transform: "translate3d(-6px,22px,0) scale(.96)", filter: "blur(8px)" },
+        { opacity: 0, transform: "translate3d(-8px,46px,0) scale(.92)", filter: "blur(12px)" },
         { opacity: 1, transform: "translate3d(0,0,0) scale(1)", filter: "blur(0)" }
       ]
     },
     {
       name: "tilt",
       frames: [
-        { opacity: 0, transform: "translate3d(16px,8px,0) rotate(1.6deg) scale(.95)", filter: "blur(5px)" },
+        { opacity: 0, transform: "translate3d(34px,16px,0) rotate(2.4deg) scale(.92)", filter: "blur(9px)" },
         { opacity: 1, transform: "translate3d(0,0,0) rotate(0deg) scale(1)", filter: "blur(0)" }
       ]
     },
     {
       name: "slide",
       frames: [
-        { opacity: 0, transform: "translate3d(28px,0,0) scale(.97)", filter: "blur(9px)" },
+        { opacity: 0, transform: "translate3d(54px,0,0) scale(.94)", filter: "blur(12px)" },
         { opacity: 1, transform: "translate3d(0,0,0) scale(1)", filter: "blur(0)" }
       ]
     },
     {
       name: "pop",
       frames: [
-        { opacity: 0, transform: "scale(.86)", filter: "blur(3px)" },
+        { opacity: 0, transform: "scale(.8)", filter: "blur(6px)" },
         { opacity: 1, transform: "scale(1)", filter: "blur(0)" }
       ],
-      easing: "cubic-bezier(.18,1.32,.36,1)"
+      easing: "cubic-bezier(.18,1.34,.36,1)"
     },
     {
       name: "glide",
       frames: [
-        { opacity: 0, transform: "translate3d(-20px,10px,0) rotate(-1.2deg) scale(.97)", filter: "blur(7px)" },
+        { opacity: 0, transform: "translate3d(-44px,20px,0) rotate(-1.8deg) scale(.94)", filter: "blur(10px)" },
         { opacity: 1, transform: "translate3d(0,0,0) rotate(0deg) scale(1)", filter: "blur(0)" }
       ]
     }
@@ -122,6 +121,57 @@
       }
     }
     return bag.pop();
+  }
+
+  /* ---------- wybrane kierunki ---------- */
+
+  /* Topbar zawsze z góry, reklamy zawsze z prawej/dolu — tego nie losujemy. */
+  function directionFor(el) {
+    if (el.classList.contains("rj-shared-header")) {
+      return {
+        frames: [
+          { opacity: 0, transform: "translate3d(0,-110%,0)" },
+          { opacity: 1, transform: "translate3d(0,0,0)" }
+        ],
+        duration: 980,
+        easing: "cubic-bezier(.16,.92,.24,1)",
+        delay: 0
+      };
+    }
+    if (el.classList.contains("rj-side-ads")) {
+      return {
+        frames: [
+          { opacity: 0, transform: "translate3d(120%,0,0) scale(.96)" },
+          { opacity: 1, transform: "translate3d(0,0,0) scale(1)" }
+        ],
+        duration: 900,
+        easing: "cubic-bezier(.16,.92,.24,1)",
+        delay: 620
+      };
+    }
+    if (el.id === "rj-mobile-ads") {
+      return {
+        frames: [
+          { opacity: 0, transform: "translate3d(0,120%,0)" },
+          { opacity: 1, transform: "translate3d(0,0,0)" }
+        ],
+        duration: 820,
+        easing: "cubic-bezier(.16,.92,.24,1)",
+        delay: 620
+      };
+    }
+    if (el.classList.contains("rjhub-pill") || el.hasAttribute("data-rj-panic")) {
+      return {
+        frames: [
+          { opacity: 0, transform: "translate3d(-16px,24px,0) scale(.9)" },
+          { opacity: 1, transform: "translate3d(0,0,0) scale(1)" }
+        ],
+        duration: 780,
+        easing: "cubic-bezier(.18,1.3,.36,1)",
+        delay: 760
+      };
+    }
+    return null;
   }
 
   /* ---------- litery ---------- */
@@ -185,10 +235,15 @@
 
   function usable(el) {
     if (!el || !el.isConnected) return false;
-    if (el.closest("#rj-page-loader, .card-preview, .sx-stage, iframe, [hidden], noscript")) return false;
+    if (el.closest("#rj-page-loader, .card-preview, .sx-stage, iframe, noscript")) return false;
+    /* Pasek mini reklam jest tworzony przez skrypt — może być jeszcze ukryty
+       (display:none na wąskich ekranach), ale ma wejść animacją, gdy się pokaże. */
+    if (el.hasAttribute("hidden") && el.id !== "rj-mobile-ads") return false;
     var style = window.getComputedStyle(el);
-    if (style.display === "none" || style.visibility === "hidden") return false;
-    if (style.animationName && style.animationName !== "none") return false;
+    if (style.display === "none") return false;
+    /* `rj-boot-failsafe` to nasz własny bezpiecznik schowania treści —
+       nie jest „prawdziwą” animacją i nie może wykluczać elementu. */
+    if (style.animationName && style.animationName !== "none" && style.animationName !== "rj-boot-failsafe") return false;
     var rect = el.getBoundingClientRect();
     if (rect.width < 4 || rect.height < 4) return false;
     if (rect.bottom < -40) return false;
@@ -198,15 +253,10 @@
 
   function collect() {
     var list = [];
-    var seen = [];
     Array.prototype.forEach.call(document.querySelectorAll(SELECTOR), function (el) {
-      if (el.__rjSplit) return;
       if (!usable(el)) return;
-      if (seen.some(function (other) { return other !== el && other.contains(el); })) return;
       if (list.some(function (other) { return other !== el && other.contains(el); })) return;
-      /* elementy zagnieżdżone w już wybranych taflach pojadą razem z rodzicem */
       list = list.filter(function (other) { return !el.contains(other); });
-      seen.push(el);
       list.push(el);
     });
     return list;
@@ -219,29 +269,35 @@
 
   /* ---------- animowanie ---------- */
 
-  function play(el, delay) {
+  function play(el, delay, options) {
     var variant = pickVariant();
-    var duration = 560 + Math.round(Math.random() * 240);
-    /* Telefon: bez rozmycia — na małych ekranach filtr na kilkudziesięciu
-       taflach potrafi zgubić klatki, a sam ruch wystarcza do efektu. */
+    var duration = 900 + Math.round(Math.random() * 320);
+    var easing = variant.easing || "cubic-bezier(.16,.88,.26,1)";
+    /* Telefon: bez rozmycia — filtr na kilkudziesięciu taflach gubi klatki,
+       a sam ruch wystarcza do efektu. */
     var frames = window.innerWidth < 700
       ? variant.frames.map(function (frame) {
           return { opacity: frame.opacity, transform: frame.transform };
         })
       : variant.frames;
+    if (options && options.frames) {
+      frames = options.frames;
+      duration = options.duration || duration;
+      easing = options.easing || easing;
+      delay = (options.delay || 0) + delay;
+    }
     var animation;
     try {
       animation = el.animate(frames, {
         duration: duration,
         delay: delay,
-        easing: variant.easing || "cubic-bezier(.16,.86,.28,1)",
+        easing: easing,
         fill: "both"
       });
     } catch (error) {
       el.style.opacity = "";
       return;
     }
-    el.style.opacity = "";
     el.style.willChange = window.innerWidth < 700 ? "transform, opacity" : "transform, opacity, filter";
     function done() {
       el.style.willChange = "";
@@ -252,19 +308,19 @@
   }
 
   function playLetters(letters, delay) {
-    var step = letters.length > 70 ? 9 : 14;
+    var step = letters.length > 70 ? 12 : 20;
     letters.forEach(function (letter, index) {
       var animation;
       try {
         animation = letter.animate(
           [
-            { opacity: 0, transform: "translate3d(0,.34em,0) rotate(-4deg)" },
-            { opacity: 1, transform: "translate3d(0,0,0) rotate(0deg)" }
+            { opacity: 0, transform: "translate3d(0,.46em,0) rotate(-5deg) scale(.9)" },
+            { opacity: 1, transform: "translate3d(0,0,0) rotate(0deg) scale(1)" }
           ],
           {
-            duration: 460,
+            duration: 640,
             delay: delay + index * step,
-            easing: "cubic-bezier(.2,1.36,.35,1)",
+            easing: "cubic-bezier(.2,1.4,.34,1)",
             fill: "both"
           }
         );
@@ -272,7 +328,6 @@
         letter.style.opacity = "";
         return;
       }
-      letter.style.opacity = "";
       animation.onfinish = function () {
         try { animation.cancel(); } catch (error) { /* już anulowana */ }
       };
@@ -303,24 +358,28 @@
 
     var limit = window.innerWidth < 700 ? 70 : MAX_ELEMENTS;
     if (ranks.length > limit) ranks = ranks.slice(0, limit);
+
+    /* Najpierw wszystkie kandydaty na opacity:0 — w tej samej klatce, w której
+       zdejmujemy `rj-booting`, więc nic nie mignie przed animacją. */
     ranks.forEach(function (item) {
       item.el.style.opacity = "0";
       tracked.push(item.el);
     });
-
     letterBuckets.forEach(function (bucket) {
       bucket.letters.forEach(function (letter) {
         letter.style.opacity = "0";
         tracked.push(letter);
       });
     });
+    document.documentElement.classList.remove("rj-booting");
 
-    var base = 60;
+    /* Fala: rozpiętość startów ograniczona, żeby przy 100 taflach nie trwało
+       to pół minuty, ale przy kilku elementach było wyraźnie widać kolejność. */
+    var step = Math.max(9, Math.min(34, Math.round(1600 / Math.max(1, ranks.length))));
+
     ranks.forEach(function (item, index) {
-      play(item.el, base + index * 22 + Math.random() * 50);
+      play(item.el, 60 + index * step, directionFor(item.el));
     });
-
-    rescue();
 
     letterBuckets.forEach(function (bucket) {
       var score = scoreOf(bucket.heading);
@@ -328,15 +387,18 @@
       ranks.forEach(function (item) {
         if (item.score < score) rank += 1;
       });
-      var delay = base + Math.min(rank, ranks.length) * 22 + 40;
+      var delay = 120 + Math.min(rank, ranks.length) * step + 60;
       playLetters(bucket.letters, delay);
     });
+
+    rescue();
   }
 
-  /* Siatka bezpieczeństwa: gdyby animacja z jakiegoś powodu nie wystartowała
-     (np. karta w tle), po kilku sekundach i tak pokazujemy treść. */
+  /* Siatka bezpieczeństwa: gdyby animacja nie wystartowała (np. karta w tle),
+     po kilku sekundach i tak pokazujemy treść. */
   function rescue() {
     window.setTimeout(function () {
+      document.documentElement.classList.remove("rj-booting");
       tracked.forEach(function (el) {
         if (el.style.opacity === "0" && (!el.getAnimations || !el.getAnimations().length)) {
           el.style.opacity = "";
@@ -346,7 +408,7 @@
     }, 9000);
   }
 
-  /* Czekamy na zniknięcie nakładki: animacja ma być nagrodą za wczytanie,
+  /* Czekamy na zniknięcie nakładki: animacja jest nagrodą za wczytanie,
      nie czymś, co dzieje się pod loaderem. */
   function whenReady(callback) {
     var overlay = document.getElementById("rj-page-loader");
@@ -362,7 +424,7 @@
     function fire() {
       if (fired) return;
       fired = true;
-      window.setTimeout(callback, 90);
+      window.setTimeout(callback, 60);
     }
     if (window.MutationObserver) {
       var observer = new MutationObserver(function () {
@@ -377,6 +439,10 @@
   }
 
   function boot() {
+    if (noMotion) {
+      whenReady(function () { document.documentElement.classList.remove("rj-booting"); });
+      return;
+    }
     whenReady(run);
   }
 
