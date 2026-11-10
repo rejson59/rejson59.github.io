@@ -298,6 +298,11 @@
       el.style.opacity = "";
       return;
     }
+    /* Animacja (fill: both) ma pierwszeństwo nad stylem inline, więc od razu
+       zdejmujemy zaparkowane `opacity: 0`. Wcześniej zostawało ono na
+       elemencie — po `cancel()` na końcu animacji element wracał do zera
+       i cała strona znikała tuż po tym, jak ładnie się pojawiła. */
+    el.style.opacity = "";
     el.style.willChange = window.innerWidth < 700 ? "transform, opacity" : "transform, opacity, filter";
     function done() {
       el.style.willChange = "";
@@ -328,6 +333,9 @@
         letter.style.opacity = "";
         return;
       }
+      /* To samo co przy taflach: bez zdjęcia `opacity: 0` litery zniknęłyby
+         w chwili zakończenia animacji. */
+      letter.style.opacity = "";
       animation.onfinish = function () {
         try { animation.cancel(); } catch (error) { /* już anulowana */ }
       };
@@ -400,10 +408,8 @@
     window.setTimeout(function () {
       document.documentElement.classList.remove("rj-booting");
       tracked.forEach(function (el) {
-        if (el.style.opacity === "0" && (!el.getAnimations || !el.getAnimations().length)) {
-          el.style.opacity = "";
-          el.style.willChange = "";
-        }
+        el.style.opacity = "";
+        el.style.willChange = "";
       });
     }, 9000);
   }

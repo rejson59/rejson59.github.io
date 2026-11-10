@@ -209,7 +209,7 @@ check('każda strona z loaderem ma falę wejścia', () => {
   pages.forEach((file) => {
     const html = read('rejhub2/' + file);
     if (!html.includes('rj-page-loader')) return;
-    assert.ok(html.includes('/js/page-reveal.js?v=2'), 'brak page-reveal.js w ' + file);
+    assert.ok(html.includes('/js/page-reveal.js?v=3'), 'brak page-reveal.js w ' + file);
     assert.ok(html.includes('/css/page-reveal.css?v=2'), 'brak page-reveal.css w ' + file);
   });
 });
@@ -303,6 +303,47 @@ check('topbar zjeżdża z góry, reklamy z prawej, mobilne z dołu', () => {
   assert.ok(js.includes('translate3d(120%,0,0)'), 'mini reklamy mają wchodzić z prawej');
   assert.ok(js.includes('translate3d(0,120%,0)'), 'mobilne reklamy mają wchodzić z dołu');
   assert.ok(/duration: 9\d\d/.test(js), 'wejście ma być dłuższe niż wcześniej');
+});
+
+
+check('po zakończeniu animacji nic nie znika (regresja)', () => {
+  const html = '<!doctype html><html><body>' +
+    '<header class="rj-shared-header"><a class="brand" href="/">RejHub</a></header>' +
+    '<main><h2 id="head">Szkło i światło</h2>' +
+    '<button id="a" class="rj-cta">A</button>' +
+    '<button id="b" class="rj-cta">B</button>' +
+    '<div id="c" class="card">Karta</div></main></body></html>';
+  const dom = new JSDOM(html, { url: 'https://rejhub.vercel.app/', runScripts: 'outside-only', pretendToBeVisual: true, virtualConsole });
+  const w = dom.window;
+  w.Element.prototype.getBoundingClientRect = function () {
+    return { top: 100, left: 100, width: 160, height: 44, bottom: 144, right: 260, x: 100, y: 100 };
+  };
+  const created = [];
+  w.Element.prototype.animate = function () {
+    const animation = {
+      onfinish: null, oncancel: null, playState: 'running',
+      cancel: function () { this.playState = 'idle'; if (this.oncancel) this.oncancel(); }
+    };
+    created.push(animation);
+    return animation;
+  };
+  w.eval(read('js/page-reveal.js'));
+  w.RejReveal.start();
+
+  /* Animacja trzyma opacity przez `fill: both`, ale styl inline nie może
+     zostawić zera — po `cancel()` to on decydowałby o widoczności. */
+  const tracked = w.document.querySelectorAll('.rj-shared-header, main .rj-cta, main .card, main h2, .rj-letter');
+  assert.ok(tracked.length > 6, 'animacja ma objąć taflę, przyciski i litery');
+  tracked.forEach((el) => {
+    assert.notEqual(el.style.opacity, '0', 'element nie może zostać na opacity:0 — ' + el.tagName);
+  });
+
+  /* Koniec animacji = `cancel()`: element musi zostać widoczny. */
+  created.forEach((animation) => { if (animation.onfinish) animation.onfinish(); });
+  tracked.forEach((el) => {
+    assert.notEqual(el.style.opacity, '0', 'po końcu animacji element zniknął — ' + el.tagName);
+    assert.equal(el.style.willChange, '', 'po końcu animacji nie zostaje will-change');
+  });
 });
 
 console.log('\nWYNIK: wszystkie sprawdzenia RejHub 2.0 przeszły ✔');
