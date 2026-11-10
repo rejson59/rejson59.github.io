@@ -258,7 +258,7 @@ const count = (doc) => {
   {
     check("karta premium podpięta na stronie głównej", /id="rj-club"/.test(INDEX));
     check("arkusz premium dołączony", /css\/premium\.css\?v=5/.test(INDEX));
-    check("skrypt premium dołączony", /js\/premium\.js\?v=10/.test(INDEX));
+    check("skrypt premium dołączony", /js\/premium\.js\?v=11/.test(INDEX));
     check("karta premium stoi przed listą projektów",
       INDEX.indexOf('id="rj-club"') < INDEX.indexOf('id="projekty"'));
     check("karta premium jest widoczna przed wyróżnionymi projektami",
