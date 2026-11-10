@@ -63,21 +63,42 @@ function queryParam(request, name) {
   }
 }
 
-function authorized(request) {
-  const secret = process.env.PUSH_SEND_SECRET;
-  if (!secret) return false;
+/* Sekret może pochodzić z env albo z bazy (push_auth) — oba muszą być zgodne.
+   Dzięki temu zmiana klucza w panelu nie wymaga ponownego wdrożenia. */
+async function authorized(request) {
   const given = header(request, "x-push-key") || queryParam(request, "key");
   if (!given) return false;
-  const a = Buffer.from(given);
-  const b = Buffer.from(secret);
-  return a.length === b.length && crypto.timingSafeEqual(a, b);
+
+  const secret = process.env.PUSH_SEND_SECRET;
+  if (secret) {
+    const a = Buffer.from(given);
+    const b = Buffer.from(secret);
+    if (a.length === b.length && crypto.timingSafeEqual(a, b)) return true;
+  }
+
+  const anon = process.env.SUPABASE_ANON_KEY;
+  if (!anon) return false;
+  try {
+    const response = await fetch(SUPABASE_URL + "/rest/v1/rpc/push_auth", {
+      method: "POST",
+      cache: "no-store",
+      headers: { apikey: anon, Authorization: "Bearer " + anon, "Content-Type": "application/json" },
+      body: JSON.stringify({ p_secret: given })
+    });
+    if (!response.ok) return false;
+    return (await response.json()) === true;
+  } catch (error) {
+    return false;
+  }
 }
 
 export default async function handler(request, response) {
   response.setHeader("Cache-Control", "no-store");
 
-  if (!authorized(request)) {
-    return response.status(401).json({ ok: false, error: "Brak dostępu." });
+  if (!(await authorized(request))) {
+    /* Sam znacznik, bez wartości: ułatwia diagnozę, nie ujawnia sekretu. */
+    const received = Boolean(header(request, "x-push-key") || queryParam(request, "key"));
+    return response.status(401).json({ ok: false, error: "Brak dostępu.", received });
   }
   if (!SERVICE_KEY) {
     return response.status(500).json({ ok: false, error: "Brak klucza serwera (SUPABASE_SERVICE_ROLE_KEY)." });
