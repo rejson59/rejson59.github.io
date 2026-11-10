@@ -195,6 +195,39 @@
   var SPRING = 700;
   var DAMP = 62;
 
+  /* Margines od krawędzi ekranu i miejsce pod wyspą (pasek przeglądarki,
+     bezpieczny obszar iPhone'a). Bez tego panel 384 px na telefonie 360 px
+     wystawał poza ekran i przycisk zamykania był ucięty. */
+  var EDGE = 12;
+  var BOTTOM_RESERVE = 34;
+  var RESET_GUARD = 0;
+  var vpRaf = 0;
+
+  /* Wysokość i szerokość widocznego obszaru. visualViewport kurczy się, gdy
+     otwiera się klawiatura — dzięki temu wyspa nigdy nie chowa się pod nią. */
+  function viewport() {
+    var vv = window.visualViewport || null;
+    var innerW = Number(window.innerWidth) || 0;
+    var innerH = Number(window.innerHeight) || 0;
+    var w = Math.round((vv && vv.width) || innerW || 360);
+    var h = Math.round((vv && vv.height) || innerH || 640);
+    var kb = 0;
+    if (vv && innerH) {
+      kb = Math.round(innerH - (vv.height + (vv.offsetTop || 0)));
+      /* Kilkadziesiąt pikseli to chowający się pasek adresu, nie klawiatura. */
+      if (kb < 90) kb = 0;
+    }
+    return {
+      w: Math.max(220, w),
+      h: Math.max(260, h),
+      kb: Math.max(0, Math.min(kb, Math.round(h * 0.55)))
+    };
+  }
+
+  function finite(value, fallback) {
+    return typeof value === "number" && isFinite(value) ? value : fallback;
+  }
+
   var root = null;
   var island = null;
   var toastEl = null;
@@ -204,56 +237,85 @@
 
   function sizeFor(name) {
     var size = SIZES[name] || SIZES.idle;
-    return {
-      w: Math.min(size.w, window.innerWidth - 16),
-      h: Math.min(size.h, window.innerHeight - 90),
-      r: Math.min(size.r, size.h / 2)
-    };
+    var vp = viewport();
+    var w = Math.min(size.w, Math.max(200, vp.w - EDGE * 2));
+    var h = Math.min(size.h, Math.max(120, vp.h - BOTTOM_RESERVE));
+    return { w: Math.round(w), h: Math.round(h), r: Math.min(size.r, Math.round(h / 2)) };
+  }
+
+  /* Każde wpisanie rozmiaru przechodzi przez ten pilnik: NaN albo wartość
+     z kosmosu nie może już rozciągnąć czarnej wyspy na cały ekran. */
+  function writeBox() {
+    if (!island) return;
+    var vp = viewport();
+    var w = Math.min(Math.max(finite(box.w, 172), 40), vp.w);
+    var h = Math.min(Math.max(finite(box.h, 46), 40), vp.h);
+    var r = Math.min(Math.max(finite(box.r, 23), 8), h / 2);
+    island.style.width = w.toFixed(2) + "px";
+    island.style.height = h.toFixed(2) + "px";
+    island.style.borderRadius = r.toFixed(2) + "px";
+    island.style.marginLeft = (-w / 2).toFixed(2) + "px";
+  }
+
+  function resetBox() {
+    var size = sizeFor("idle");
+    box = { w: size.w, h: size.h, r: size.r, vw: 0, vh: 0, vr: 0, tw: size.w, th: size.h, tr: size.r };
+    lastTs = 0;
   }
 
   function tick(ts) {
-    var dt = lastTs ? Math.min((ts - lastTs) / 1000, 0.05) : 1 / 60;
+    raf = 0;
+    if (!island) return;
+
+    var dt = lastTs ? Math.min(Math.max((ts - lastTs) / 1000, 0), 0.05) : 1 / 60;
     lastTs = ts;
-    var steps = Math.max(1, Math.ceil(dt / (1 / 240)));
+    var steps = Math.max(1, Math.min(16, Math.ceil(dt / (1 / 240))));
     var step = dt / steps;
     var moving = false;
 
-    for (var i = 0; i < steps; i += 1) {
-      ["w", "h", "r"].forEach(function (key) {
-        var target = box["t" + key];
-        var value = box[key];
-        var velocity = box["v" + key];
-        var force = (target - value) * SPRING - velocity * DAMP;
-        velocity += force * step;
-        value += velocity * step;
-        box["v" + key] = velocity;
-        box[key] = value;
-      });
-    }
-
-    ["w", "h", "r"].forEach(function (key) {
-      if (Math.abs(box["t" + key] - box[key]) < 0.35 && Math.abs(box["v" + key]) < 0.35) {
-        box[key] = box["t" + key];
-        box["v" + key] = 0;
-      } else {
-        moving = true;
+    try {
+      for (var i = 0; i < steps; i += 1) {
+        ["w", "h", "r"].forEach(function (key) {
+          var target = box["t" + key];
+          var value = box[key];
+          var velocity = box["v" + key];
+          if (!isFinite(target) || !isFinite(value) || !isFinite(velocity)) {
+            throw new Error("sprężyna: nieliczba");
+          }
+          var force = (target - value) * SPRING - velocity * DAMP;
+          velocity += force * step;
+          value += velocity * step;
+          box["v" + key] = velocity;
+          box[key] = value;
+        });
       }
-    });
 
-    island.style.width = box.w.toFixed(2) + "px";
-    island.style.height = box.h.toFixed(2) + "px";
-    island.style.borderRadius = box.r.toFixed(2) + "px";
-    island.style.marginLeft = (-box.w / 2).toFixed(2) + "px";
+      ["w", "h", "r"].forEach(function (key) {
+        if (Math.abs(box["t" + key] - box[key]) < 0.35 && Math.abs(box["v" + key]) < 0.35) {
+          box[key] = box["t" + key];
+          box["v" + key] = 0;
+        } else {
+          moving = true;
+        }
+      });
+
+      writeBox();
+    } catch (e) {
+      /* Jeden zły klatka nie może zostawić wyspy w połowie animacji. */
+      resetBox();
+      try { writeBox(); } catch (ignored) { /* trudno */ }
+      moving = false;
+    }
 
     if (moving) {
       raf = window.requestAnimationFrame(tick);
     } else {
-      raf = 0;
       lastTs = 0;
     }
   }
 
   function springTo(name) {
+    if (!island) return;
     var size = sizeFor(name);
     box.tw = size.w;
     box.th = size.h;
@@ -262,6 +324,20 @@
       lastTs = 0;
       raf = window.requestAnimationFrame(tick);
     }
+  }
+
+  /* Reaguje na obrót telefonu, schowanie paska i klawiaturę. Bez tego wyspa
+     zostawała w rozmiarze z poprzedniej orientacji i wychodziła za ekran. */
+  function syncViewport() {
+    if (!island) return;
+    if (vpRaf) return;
+    vpRaf = window.requestAnimationFrame(function () {
+      vpRaf = 0;
+      try {
+        if (root) root.style.setProperty("--rj-kb", viewport().kb + "px");
+        springTo(state);
+      } catch (e) { /* trudno */ }
+    });
   }
 
   /* ---------------------------------------------------------------- HTML */
@@ -401,11 +477,33 @@
     }, 2600);
   }
 
+  var VIEWS = {
+    idle: 1, dock: 1, report: 1, search: 1, alerts: 1, now: 1,
+    profile: 1, quick: 1, theme: 1, tasks: 1, panic: 1
+  };
+
   function apply(name) {
+    if (!island) return;
+    if (!VIEWS[name]) name = "idle";
     state = name;
     island.dataset.state = name;
+    /* Rysowanie paneli jest w osłonie: wyjątek w danych nie może zostawić
+       czarnej wyspy bez treści i bez wyjścia. */
+    try {
+      paint(name);
+    } catch (error) {
+      /* Najpierw stan, potem sprzątanie — inaczej panel zostałby pusty. */
+      state = "idle";
+      island.dataset.state = "idle";
+      resetToIdle(true);
+      toast("Nie udało się otworzyć panelu — spróbuj jeszcze raz");
+      return;
+    }
     springTo(name);
+    syncViewport();
+  }
 
+  function paint(name) {
     if (name === "search") {
       renderSearch("");
       setTimeout(function () {
@@ -427,6 +525,66 @@
     if (name === "profile") renderProfile();
     if (name === "theme") syncSwitches();
     if (name === "tasks") renderTasks();
+  }
+
+  /* Awaryjny powrót do spoczynku. Nie rzuca wyjątków i nie zależy od
+     żadnego panelu, więc działa nawet gdy właśnie coś się wysypało. */
+  function resetToIdle(force) {
+    var now = Date.now();
+    if (!force && now - RESET_GUARD < 400) return;
+    RESET_GUARD = now;
+    if (raf) { window.cancelAnimationFrame(raf); raf = 0; }
+    if (!island) return;
+    state = "idle";
+    island.dataset.state = "idle";
+    island.style.display = "";
+    resetBox();
+    try { writeBox(); } catch (e) { /* trudno */ }
+    try { syncSwitches(); } catch (e) { /* trudno */ }
+  }
+
+  /* Krótka diagnoza: czy wyspa jest cała, widoczna i ma treść. */
+  function health() {
+    if (!island || !island.isConnected) return "missing";
+    if (!VIEWS[state]) return "state";
+    /* Atrybut steruje CSS-em. Gdy rozjedzie się ze stanem, żaden widok nie
+       jest widoczny — czyli dokładnie „czarna wyspa”. */
+    if (island.dataset.state !== state) return "state";
+    if (!island.querySelector(".rj-view--" + state)) return "view";
+    var w = parseFloat(island.style.width);
+    var h = parseFloat(island.style.height);
+    if (!isFinite(w) || !isFinite(h) || w < 40 || h < 40) return "size";
+    if (state !== "idle" && state !== "dock") {
+      var view = island.querySelector(".rj-view--" + state);
+      var content = view && view.querySelector("button, a, input, textarea, .rj-list, .rj-switches, .rj-now, .rj-panic-wrap, .rj-empty");
+      if (!content) return "empty";
+    }
+    return "ok";
+  }
+
+  /* Odbudowa znaczników wyspy — ratunek, gdy drzewo zostało uszkodzone. */
+  function rebuild() {
+    var host = document.getElementById("rj-island-root");
+    if (!host) { island = null; toastEl = null; mount(); return; }
+    try {
+      host.innerHTML = buildHtml();
+      island = host.querySelector(".rj-island");
+      toastEl = host.querySelector(".rj-toast");
+      var shot = island.querySelector("[data-shot]");
+      if (shot) shot.hidden = !(window.RJMedia && window.RJMedia.captureDom);
+      RESET_GUARD = 0;
+      resetToIdle();
+    } catch (e) { /* nic więcej nie zrobimy */ }
+  }
+
+  function watchdog() {
+    if (!island) return;
+    if (document.documentElement.classList.contains("rj-booting")) return;
+    var status = health();
+    if (status === "ok") return;
+    if (status === "missing" || status === "view") { rebuild(); return; }
+    /* Uszkodzony stan naprawiamy od razu — czekanie nic tu nie da. */
+    resetToIdle(true);
   }
 
   function close() {
@@ -1001,7 +1159,7 @@
       openReport(trigger.getAttribute("data-feedback-project"), trigger.getAttribute("data-feedback-type"));
     });
 
-    island.addEventListener("click", function (event) {
+    function handleClick(event) {
       var open = event.target.closest("[data-open]");
       if (open) {
         var name = open.getAttribute("data-open");
@@ -1082,14 +1240,24 @@
       if (notification) {
         markRead([notification.getAttribute("data-notification")]);
       }
+    }
+
+    /* Osłona: wyjątek w obsłudze kliknięcia nie może zostawić wyspy
+       w stanie, w którym nic nie reaguje. */
+    root.addEventListener("click", function (event) {
+      try {
+        handleClick(event);
+      } catch (error) {
+        toast("Coś poszło nie tak — spróbuj jeszcze raz");
+      }
     });
 
     /* kliknięcie w zwiniętą wyspę rozwija dock */
-    island.addEventListener("click", function (event) {
+    root.addEventListener("click", function (event) {
       if (state === "idle" && !event.target.closest("button")) toggleDock();
     });
 
-    island.addEventListener("keydown", function (event) {
+    root.addEventListener("keydown", function (event) {
       if (state !== "idle") return;
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
@@ -1104,9 +1272,13 @@
       if (!island.contains(event.target) && state !== "idle") close();
     });
 
-    var searchInput = document.getElementById("rj-island-search");
-    searchInput.addEventListener("input", function () { renderSearch(searchInput.value); });
-    searchInput.addEventListener("keydown", function (event) {
+    /* Delegacja: pole wyszukiwania powstaje na nowo po odbudowie wyspy,
+       więc nasłuch nie może wisieć na samym polu. */
+    root.addEventListener("input", function (event) {
+      if (event.target && event.target.id === "rj-island-search") renderSearch(event.target.value);
+    });
+    root.addEventListener("keydown", function (event) {
+      if (!event.target || event.target.id !== "rj-island-search") return;
       if (event.key === "ArrowDown") { event.preventDefault(); moveSearchCursor(1); }
       else if (event.key === "ArrowUp") { event.preventDefault(); moveSearchCursor(-1); }
       else if (event.key === "Enter") {
@@ -1122,14 +1294,40 @@
       if (event.key === "Escape" && state !== "idle") close();
     });
 
-    window.addEventListener("resize", function () {
-      if (state !== "idle") springTo(state);
+    /* Klawiatura pojawia się z opóźnieniem — po fokusie w polu sprawdzamy
+       widok jeszcze raz, żeby panel zdążył się podnieść. */
+    root.addEventListener("focusin", function () {
+      setTimeout(syncViewport, 320);
     });
+
+    /* Obrót telefonu, chowanie paska adresu i klawiatura ekranowa. */
+    window.addEventListener("resize", syncViewport);
+    window.addEventListener("orientationchange", syncViewport);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", syncViewport);
+      window.visualViewport.addEventListener("scroll", syncViewport);
+    }
+
+    /* Powrót z innej karty albo z pamięci podręcznej — sprężyna mogła
+       zatrzymać się w połowie, więc sprawdzamy stan. */
+    window.addEventListener("pageshow", function () { syncViewport(); watchdog(); });
+    document.addEventListener("visibilitychange", function () {
+      if (!document.hidden) { syncViewport(); watchdog(); }
+    });
+
+    /* Błąd gdziekolwiek na stronie nie może zostawić czarnej wyspy:
+       po błędzie sprawdzamy jej stan i w razie potrzeby ją odbudowujemy. */
+    window.addEventListener("error", function () { setTimeout(watchdog, 60); });
+    window.addEventListener("unhandledrejection", function () { setTimeout(watchdog, 60); });
+
+    /* Lekki pilnowacz — kilka odczytów atrybutów co 2,5 s. */
+    setInterval(watchdog, 2500);
 
     /* stan początkowy: czekamy na koniec loadera, żeby wyspa nie wyskakiwała
        przed resztą strony — chowamy ją tylko na czas `rj-booting`. */
     apply("idle");
-    syncSwitches();
+    try { syncSwitches(); } catch (e) { /* trudno */ }
+    syncViewport();
   }
 
   function toggleShot(button) {
@@ -1199,6 +1397,9 @@
   window.RejIsland = {
     open: apply,
     close: close,
+    health: health,
+    check: watchdog,
+    reset: resetToIdle,
     status: function () {
       return { state: state, unread: Number(island && island.getAttribute("data-unread")) || 0, project: projectSlug };
     }

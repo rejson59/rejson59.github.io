@@ -22,9 +22,13 @@
   --r: 23px;
   position: absolute;
   left: 50%;
-  bottom: max(16px, env(safe-area-inset-bottom));
+  bottom: calc(max(16px, env(safe-area-inset-bottom)) + var(--rj-kb, 0px));
   width: var(--w);
   height: var(--h);
+  max-width: calc(100vw - 16px);
+  /* dvh zna pasek przeglądarki na telefonie — wyspa nie wyjdzie za ekran. */
+  max-height: calc(100vh - 24px);
+  max-height: calc(100dvh - 24px);
   margin-left: calc(var(--w) / -2);
   border-radius: var(--r);
   background: #000;
@@ -36,8 +40,12 @@
     0 24px 60px -22px rgba(0, 0, 0, 0.9),
     0 4px 14px -6px rgba(0, 0, 0, 0.7);
   overflow: hidden;
-  contain: layout style paint;
-  will-change: width, height, border-radius;
+  /* Bez will-change i bez contain: paint. Wymuszona warstwa graficzna
+     zmieniana co klatkę potrafi na iOS pokazać czarny prostokąt — a to
+     właśnie zgłaszał telefon. Sam overflow: hidden wystarcza do obcinania. */
+  contain: layout style;
+  overscroll-behavior: contain;
+  touch-action: manipulation;
   pointer-events: auto;
   font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -78,10 +86,19 @@
   display: flex;
   align-items: center;
   padding: 0 14px;
+  min-width: 0;
+  overflow: hidden;
   opacity: 0;
   transform: scale(0.97);
   pointer-events: none;
   transition: opacity 0.16s ease, transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  /* Domyślnie tekst się zawija — wcześniej nowrap wypychał treść paneli
+     poza wyspę i przycisk zamykania był ucięty. */
+  white-space: normal;
+}
+
+#rj-island-root .rj-view--idle,
+#rj-island-root .rj-view--dock {
   white-space: nowrap;
 }
 
@@ -170,12 +187,18 @@
   justify-content: center;
   gap: 2px;
   padding: 0 8px;
+  width: 100%;
 }
 
 #rj-island-root .rj-dock-btn {
   display: grid;
   place-items: center;
-  width: 44px;
+  /* Szerokość dzieli się na osiem przycisków, maksymalnie 44 px.
+     Na wąskim telefonie każdy dostaje po ~36 px i nic nie wychodzi. */
+  flex: 1 1 0;
+  min-width: 0;
+  width: auto;
+  max-width: 44px;
   height: 40px;
   border: 0;
   border-radius: 14px;
@@ -232,6 +255,7 @@
 
 #rj-island-root .rj-panel {
   width: 100%;
+  min-width: 0;
   align-self: stretch;
   display: flex;
   flex-direction: column;
@@ -239,6 +263,7 @@
   padding: 11px 0 12px;
   white-space: normal;
   min-height: 0;
+  overflow: hidden;
 }
 
 #rj-island-root .rj-panel-head {
@@ -246,9 +271,14 @@
   align-items: center;
   gap: 8px;
   min-height: 26px;
+  flex: 0 0 auto;
+  min-width: 0;
 }
 
 #rj-island-root .rj-panel-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-size: 12.5px;
   font-weight: 650;
   letter-spacing: -0.01em;
@@ -322,8 +352,8 @@
 }
 
 #rj-island-root textarea.rj-input {
-  flex: 1;
-  min-height: 66px;
+  flex: 1 1 auto;
+  min-height: 52px;
 }
 
 #rj-island-root .rj-field::placeholder,
@@ -340,7 +370,9 @@
 #rj-island-root .rj-row {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 6px;
+  flex: 0 0 auto;
 }
 
 #rj-island-root .rj-ghost {
@@ -894,7 +926,7 @@
 #rj-island-root .rj-toast {
   position: absolute;
   left: 50%;
-  bottom: calc(max(16px, env(safe-area-inset-bottom)) + 74px);
+  bottom: calc(max(16px, env(safe-area-inset-bottom)) + var(--rj-kb, 0px) + 74px);
   transform: translate(-50%, 8px);
   padding: 8px 14px;
   border-radius: 999px;
@@ -906,10 +938,10 @@
   opacity: 0;
   pointer-events: none;
   transition: opacity 0.2s ease, transform 0.26s cubic-bezier(0.22, 1, 0.36, 1);
-  white-space: nowrap;
-  max-width: calc(100% - 24px);
-  overflow: hidden;
-  text-overflow: ellipsis;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: center;
+  max-width: calc(100vw - 24px);
 }
 
 #rj-island-root .rj-toast.is-on {
@@ -921,17 +953,89 @@
 
 @media (max-width: 560px) {
   #rj-island-root .rj-island {
-    bottom: max(10px, env(safe-area-inset-bottom));
+    bottom: calc(max(10px, env(safe-area-inset-bottom)) + var(--rj-kb, 0px));
+    font-size: 14px;
+  }
+  #rj-island-root .rj-view {
+    padding: 0 11px;
   }
   #rj-island-root .rj-view--dock {
     gap: 0;
-    padding: 0 4px;
+    padding: 0 5px;
   }
   #rj-island-root .rj-dock-btn {
-    width: 40px;
+    max-width: 42px;
+    height: 38px;
+    border-radius: 12px;
+  }
+  #rj-island-root .rj-dock-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+  /* 16 px jest obowiązkowe: mniejsze pole tekstowe każe Safari powiększyć
+     całą stronę przy dotknięciu — wtedy wyspa „uciekała” z ekranu. */
+  #rj-island-root .rj-field,
+  #rj-island-root textarea.rj-input {
+    font-size: 16px;
+  }
+  #rj-island-root .rj-panel {
+    padding: 9px 0 10px;
+    gap: 7px;
+  }
+  #rj-island-root .rj-panel-head {
+    min-height: 24px;
+  }
+  #rj-island-root .rj-item {
+    padding: 8px 7px;
+  }
+  #rj-island-root .rj-ghost,
+  #rj-island-root .rj-send,
+  #rj-island-root .rj-panic-actions button {
+    padding: 8px 12px;
   }
   #rj-island-root .rj-toast {
-    bottom: calc(max(10px, env(safe-area-inset-bottom)) + 66px);
+    bottom: calc(max(10px, env(safe-area-inset-bottom)) + var(--rj-kb, 0px) + 62px);
+  }
+}
+
+/* Wąskie telefony (iPhone SE, małe Androidy) — mniej ozdób, więcej miejsca. */
+@media (max-width: 380px) {
+  #rj-island-root .rj-view {
+    padding: 0 9px;
+  }
+  #rj-island-root .rj-quick {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  #rj-island-root .rj-cover {
+    width: 38px;
+    height: 38px;
+  }
+  #rj-island-root .rj-now {
+    gap: 7px;
+  }
+  #rj-island-root .rj-round {
+    width: 30px;
+    height: 30px;
+  }
+  #rj-island-root .rj-status {
+    padding: 4px 7px;
+  }
+  #rj-island-root .rj-seg button {
+    padding: 5px 8px;
+  }
+}
+
+/* Krótki ekran (telefon w poziomie) — panele nie mogą wyjść za górną krawędź. */
+@media (max-height: 560px) {
+  #rj-island-root .rj-panel {
+    padding: 7px 0 8px;
+    gap: 6px;
+  }
+  #rj-island-root .rj-panel-head {
+    min-height: 22px;
+  }
+  #rj-island-root .rj-list {
+    gap: 1px;
   }
 }
 
