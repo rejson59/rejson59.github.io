@@ -2,7 +2,7 @@ const assert=require('node:assert/strict'),{setup}=require('./studio-browser-hel
 (async()=>{const app=await setup();try{
 const ctx=await app.context(),p=await ctx.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));
 await p.goto(app.origin+'/testy#loadery');await p.locator('.studio').waitFor();assert(await p.locator('#loadery').isVisible());assert(!(await p.locator('#wyglady').isVisible()));
-assert.equal(await p.locator('[data-loader-card]').count(),12);
+assert.equal(await p.locator('[data-loader-card]').count(),16);
 for(const card of await p.locator('[data-loader-card]').all()){
  const id=await card.getAttribute('data-loader-card'),kind=await card.getAttribute('data-loader-kind');assert(await card.locator('.loader-mark b img').isVisible(),`Brak logo ${id}`);await card.locator('.loader-mark b img').evaluate(e=>e.decode());assert((await card.locator('.loader-mark b img').evaluate(e=>e.naturalWidth))>0,`Nie wczytano logo ${id}`);
  assert((await card.locator('.loader-mark').evaluate(el=>el.getAnimations({subtree:true}).length))>0,`loader ${id} nie ma animacji`);
