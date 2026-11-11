@@ -57,11 +57,27 @@ function checkStructure() {
   assert.ok(/data-feedback-project/.test(source), 'przyciski projektów otwierają wyspę');
   assert.ok(!/⌘|metaKey/.test(source), 'w wyspie nie ma już skrótu ⌘K');
   assert.ok(!/data-preview/.test(source), 'kod prototypu nie trafił do wdrożenia');
+
+  /* 5. W docku nie ma wyszukiwania — jest mini czat, a motyw ma ikonę koła. */
+  assert.ok(/data-open="chat"/.test(source), 'dock ma mini czat');
+  assert.ok(!/data-open="search"/.test(source), 'wyszukiwanie zostało usunięte');
+  assert.ok(/rejchat_room_list_v3/.test(source), 'mini czat czyta prawdziwe wiadomości');
+  assert.ok(/rejchat_room_send_v2/.test(source), 'mini czat wysyła prawdziwe wiadomości');
+  assert.ok(/ICONS\.send/.test(source), 'czat ma przycisk wysyłania');
+  assert.ok(/data-open="theme" title="Ustawienia"/.test(source), 'ustawienia opisane jako ustawienia');
+  assert.match(source, /theme: '<svg[^']*circle cx="12" cy="12" r="3\.1"/, 'ikona motywu to koło zębate');
+
+  /* 6. „Teraz gra” widzi też inne karty tej samej witryny. */
+  assert.ok(/rj_now_playing_v1/.test(source), 'wspólny klucz stanu odtwarzania');
+  assert.ok(/BroadcastChannel/.test(source), 'karty rozmawiają przez BroadcastChannel');
+  assert.ok(/readRemoteNow/.test(source), 'wyspa czyta stan z innej karty');
+  assert.ok(/data-remote-media/.test(source), 'pauza działa też dla innej karty');
+  assert.ok(/RejNowPlaying/.test(source), 'inne strony mogą publikować stan odtwarzania');
 }
 
 function buildPage() {
   return '<!doctype html><html lang="pl" data-theme="dark"><head><meta charset="utf-8">' +
-    '<script src="/hub/island.js?v=9" data-project="rejhub" data-project-name="RejHub"></script>' +
+    '<script src="/hub/island.js?v=10" data-project="rejhub" data-project-name="RejHub"></script>' +
     '</head><body>' +
     '<header class="rj-shared-header"><nav><a href="/rejchat">RejChat</a><a href="/rejfile">RejFile</a></nav></header>' +
     '<main><h1>Test</h1><button type="button" data-feedback-project="RejStream">Zgłoś</button>' +
@@ -93,6 +109,11 @@ async function checkBehaviour() {
     calls.push({ url: String(url), body });
     let payload = null;
     if (/submit_feedback/.test(url)) payload = { id: 'sub-1' };
+    else if (/rejchat_room_list_v3/.test(url)) payload = [
+      { id: 'm1', author_name: 'Lusi', content: 'Cześć z wyspy', created_at: new Date().toISOString() },
+      { id: 'm2', author_name: 'rejson59', content: 'Działa?', created_at: new Date().toISOString() }
+    ];
+    else if (/rejchat_room_send_v2/.test(url)) payload = { id: 'm3', author_name: 'rejson59', content: body.p_content, created_at: new Date().toISOString() };
     else if (/rejchat_notifications_list/.test(url)) payload = {
       unread: 2,
       items: [
@@ -180,19 +201,26 @@ async function checkBehaviour() {
   assert.equal(island.dataset.state, 'report');
   assert.ok(/RejStream/.test(ui('[data-report-project]').textContent), 'projekt trafia do zgłoszenia');
 
-  /* — wyszukiwanie: prawdziwe linki + akcje — */
+  /* — mini RejChat: prawdziwe RPC, wysyłanie, brak wyszukiwania — */
   ui('[data-close]').click();
   await wait(10);
   island.click();
   await wait(10);
-  ui('.rj-dock-btn[data-open="search"]').click();
-  await wait(20);
-  assert.equal(island.dataset.state, 'search');
-  const input = ui('#rj-island-search');
-  input.value = 'czat';
-  input.dispatchEvent(new w.Event('input', { bubbles: true }));
-  const results = uiAll('#rj-island-results .rj-item').map((el) => el.textContent);
-  assert.ok(results.some((text) => /RejChat/.test(text)), 'wyszukiwanie znajduje prawdziwy link ze strony');
+  assert.ok(!ui('.rj-dock-btn[data-open="search"]'), 'wyszukiwanie zniknęło z docku');
+  ui('.rj-dock-btn[data-open="chat"]').click();
+  await wait(60);
+  assert.equal(island.dataset.state, 'chat');
+  assert.ok(/Cześć z wyspy/.test(ui('#rj-island-chat').textContent), 'mini czat pokazuje ostatnie wiadomości');
+  const chatForm = ui('#rj-island-chat-form');
+  assert.equal(chatForm.hidden, false, 'zalogowany widzi pole pisania');
+  ui('#rj-island-chat-input').value = 'Wiadomość z wyspy';
+  chatForm.dispatchEvent(new w.Event('submit', { bubbles: true, cancelable: true }));
+  await wait(80);
+  const sent = calls.find((call) => /rejchat_room_send_v2/.test(call.url));
+  assert.ok(sent, 'wiadomość poszła do rejchat_room_send_v2');
+  assert.equal(sent.body.p_content, 'Wiadomość z wyspy');
+  assert.equal(sent.body.p_room, 'general');
+  assert.equal(ui('#rj-island-chat-input').value, '', 'pole czyści się po wysłaniu');
 
   /* — powiadomienia: prawdziwe RPC RejChat — */
   ui('[data-close]').click();
@@ -245,10 +273,10 @@ async function checkBehaviour() {
   /* — klawiatura: bez skrótów, zostaje Esc — */
   d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'k', metaKey: true, bubbles: true, cancelable: true }));
   await wait(20);
-  assert.notEqual(island.dataset.state, 'search', 'skrót klawiszowy nie otwiera już wyszukiwania');
-  ui('.rj-dock-btn[data-open="search"]').click();
+  assert.notEqual(island.dataset.state, 'chat', 'skrót klawiszowy nie otwiera czatu');
+  ui('.rj-dock-btn[data-open="chat"]').click();
   await wait(20);
-  assert.equal(island.dataset.state, 'search', 'wyszukiwanie otwiera się przyciskiem');
+  assert.equal(island.dataset.state, 'chat', 'czat otwiera się przyciskiem');
   d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
   await wait(10);
   assert.equal(island.dataset.state, 'idle', 'Esc zamyka');

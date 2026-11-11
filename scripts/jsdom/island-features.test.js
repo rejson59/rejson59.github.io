@@ -224,28 +224,25 @@ async function checkContextActions() {
   const page = await makePage('https://rejhub.vercel.app/rejfile');
   const { w, ui, uiAll } = page;
 
-  w.RejIsland.open('search');
-  await wait(60);
-  const results = uiAll('#rj-island-results .rj-item').map((el) => el.textContent);
-  assert.ok(results.some((text) => /Wgraj plik/.test(text)), 'wyszukiwanie zaczyna od akcji tej strony: ' + results.join(' | '));
+  /* Wyszukiwanie zniknęło z wyspy — akcje tej strony pokazuje panel
+     szybkich akcji (i to on musi naprawdę klikać elementy strony). */
+  assert.ok(!ui('[data-open="search"]'), 'wyszukiwanie nie wróciło do docku');
 
-  /* kliknięcie naprawdę klika element na stronie */
+  w.RejIsland.open('quick');
+  await wait(60);
+  const context = ui('[data-quick-context]');
+  assert.ok(/Dla tej strony/.test(context.textContent), 'szybkie akcje mają sekcję kontekstową');
+  assert.ok(/Wgraj plik/.test(context.textContent), 'sekcja pokazuje akcję tej podstrony: ' + context.textContent);
+
   let clicked = 0;
   page.d.querySelector('#file-input').addEventListener('click', (event) => {
     clicked += 1;
     event.preventDefault();
   });
-  const first = uiAll('#rj-island-results .rj-item')[0];
+  const first = uiAll('[data-quick-context] [data-context]')[0];
   first.click();
   await wait(60);
   assert.equal(clicked, 1, 'akcja kontekstowa klika prawdziwy element strony');
-
-  /* panel szybkich akcji też pokazuje sekcję „Dla tej strony” */
-  w.RejIsland.open('quick');
-  await wait(60);
-  const context = ui('[data-quick-context]');
-  assert.ok(/Dla tej strony/.test(context.textContent), 'szybkie akcje mają sekcję kontekstową');
-  assert.ok(/Wgraj plik/.test(context.textContent), 'sekcja pokazuje akcję tej podstrony');
 
   page.close();
 }

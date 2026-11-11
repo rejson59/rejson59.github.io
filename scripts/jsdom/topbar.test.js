@@ -133,12 +133,28 @@ function headerOf(html) {
     const theme = d.getElementById('theme-toggle');
 
     theme.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+    check('koło zębate otwiera ustawienia, a nie zmienia motywu', () => {
+      const panel = d.querySelector('.rj-settings-panel');
+      assert.ok(panel, 'brak panelu ustawień');
+      assert.equal(panel.hidden, false, 'panel ma się otworzyć');
+      assert.equal(theme.getAttribute('aria-expanded'), 'true');
+      assert.equal(d.documentElement.dataset.theme, 'dark', 'motyw bez zmian do wyboru opcji');
+    });
+
+    d.querySelector('[data-rj-setting="theme"]').click();
     check('motyw przełącza się dokładnie raz', () => {
       assert.equal(d.documentElement.dataset.theme, 'light');
       assert.equal(w.localStorage.getItem('theme'), 'light');
+      assert.equal(d.querySelector('[data-value="theme"]').textContent, 'jasny', 'panel pokazuje aktualny motyw');
     });
-    theme.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
+    d.querySelector('[data-rj-setting="theme"]').click();
     check('drugie kliknięcie wraca do ciemnego', () => assert.equal(d.documentElement.dataset.theme, 'dark'));
+
+    d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'Escape' }));
+    check('Escape zamyka ustawienia', () => {
+      assert.equal(d.querySelector('.rj-settings-panel').hidden, true);
+      assert.equal(theme.getAttribute('aria-expanded'), 'false');
+    });
 
     const menu = d.getElementById('menu-toggle');
     const nav = d.getElementById('site-nav');
