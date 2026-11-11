@@ -155,13 +155,17 @@ function fakeLoader(initial, liveAllowed) {
 
   console.log('\n=== C. HTML STRONY GŁÓWNEJ ===');
   {
-    check('przełącznik stoi na początku sekcji projektów', () => {
-      const projects = HOME.indexOf('class="projects container"');
+    check('przełącznik stoi nad wyróżnionymi projektami', () => {
+      const featured = HOME.indexOf('class="origins container"');
       const toggle = HOME.indexOf('data-preview-toggle');
+      const projects = HOME.indexOf('class="projects container"');
       const list = HOME.indexOf('class="toolbar" role="search"');
-      assert.ok(projects !== -1 && toggle !== -1 && list !== -1);
-      assert.ok(projects < toggle && toggle < list, 'kolejność: sekcja → przełącznik → lista');
+      assert.ok(featured !== -1 && toggle !== -1 && projects !== -1 && list !== -1);
+      assert.ok(toggle < featured, 'przełącznik musi być nad sekcją „Wybrane projekty”');
+      assert.ok(featured < projects && projects < list, 'kolejność sekcji bez zmian');
     });
+    check('przełącznik nie wisi na całą szerokość ekranu', () =>
+      assert.match(HOME, /<div class="container preview-mode-slot">/));
     check('dwa segmenty: plakaty i na żywo', () => {
       assert.ok(HOME.includes('data-preview-mode="poster"'));
       assert.ok(HOME.includes('data-preview-mode="live"'));

@@ -417,6 +417,12 @@ html[data-theme="light"] body :where(button, [role="button"], a.btn, .chip):wher
 
 /* ---------- przełącznik „Plakaty / Podglądy” nad listą projektów ---------- */
 
+/* Stoi nad wyróżnionymi projektami — własne marginesy, bo nie jest już
+   dzieckiem sekcji z listą. */
+.preview-mode-slot {
+  margin: 26px auto 6px;
+}
+
 .preview-mode {
   display: flex;
   flex-direction: column;
@@ -3555,6 +3561,45 @@ html[data-theme="light"] {
   --g-lens: blur(10px) saturate(165%);
   --g-lens-soft: blur(6px) saturate(155%);
   --g-lens-deep: blur(12px) saturate(170%);
+}
+
+/* ---------- hero podstron: zaokrąglona tafla zamiast prostokąta z blurem ----------
+   Wcześniej te sekcje dostawały samo `backdrop-filter` (reguła niżej), ale
+   własny arkusz strony nie dawał im ani tła, ani promienia. Efekt: rozmazany
+   PROSTOKĄT o ostrych rogach, który wyglądał jak przypadkowy kwadrat na
+   tapecie — inny niż reszta szklanych paneli. Teraz każdy hero jest normalną
+   taflą: ten sam promień, ta sama krawędź, ten sam błysk, zero rozmywania. */
+
+body:is(.rj-file, .rj-tools, .rj-board, .rj-widgets, .rj-class) :is(.hero, .tools-hero, .board-hero, .wid-hero) {
+  position: relative;
+  margin-block: 4px 18px;
+  padding-inline: clamp(16px, 2.4vw, 30px);
+  border: 1px solid var(--hub-line);
+  border-radius: 26px;
+  background:
+    linear-gradient(158deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.018)),
+    rgba(8, 14, 26, 0.3);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 30px 70px -46px rgba(0, 0, 0, 0.95);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  overflow: hidden;
+}
+
+html[data-theme="light"] body:is(.rj-file, .rj-tools, .rj-board, .rj-widgets, .rj-class) :is(.hero, .tools-hero, .board-hero, .wid-hero) {
+  background:
+    linear-gradient(158deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.55)),
+    rgba(255, 255, 255, 0.4);
+  box-shadow: inset 0 1px 0 #fff, 0 26px 60px -42px rgba(28, 54, 96, 0.5);
+}
+
+/* Małe elementy wewnątrz kart nie są taflami — rozmycie na nich dawało
+   prostokątne plamy przy przewijaniu. Dostają statyczną płytkę o tym samym
+   odcieniu, bez pracy GPU na każdą klatkę. */
+body :is(.file-item, .success, .tool, .tools-notice, .kpi-card, .store-card, .timeline-card,
+  .inspector-card, .toolbar-card, .contacts-card, .service-card, .partner-note,
+  .profile-status, .rj-page-index, .comm-online-card, .rejchat-info-tip) {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
 }
 
 /* Największe taflę: mniej mgły, więcej tapety. */

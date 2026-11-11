@@ -1735,15 +1735,23 @@
 
   /* ------------------------------------------------------------ montowanie */
 
-  /* Wersja arkusza wyspy — trzymaj w zgodzie z <script src="hub/island.js?v=…">
-     na stronach. Adres bierzemy z własnego <script>, więc działa i na
-     rejhub.vercel.app, i na GitHub Pages. */
-  var CSS_VERSION = "3";
+  /* Adres arkusza wyspy bierzemy z własnego <script>, więc działa i na
+     rejhub.vercel.app, i na GitHub Pages. Wersję dziedziczymy z `?v=` tego
+     skryptu — wcześniej była tu zaszyta stała („3”), przez co przeglądarka
+     trzymała w cache stary arkusz pod tym samym adresem i nowe elementy
+     wyspy (wybór „błąd czy pomysł”) wyświetlały się bez stylów. */
+  var CSS_VERSION = "9";
+
+  function scriptVersion(src) {
+    var match = /[?&]v=([^&#]+)/.exec(String(src || ""));
+    return match ? match[1] : CSS_VERSION;
+  }
 
   function stylesheetUrl() {
-    var base = scriptEl && scriptEl.src ? scriptEl.src.split("?")[0].split("#")[0] : "";
+    var src = scriptEl && scriptEl.src ? scriptEl.src : "";
+    var base = src.split("?")[0].split("#")[0];
     if (!base || !/island\.js$/.test(base)) base = "/hub/island.js";
-    return base.replace(/island\.js$/, "island.css") + "?v=" + CSS_VERSION;
+    return base.replace(/island\.js$/, "island.css") + "?v=" + scriptVersion(src);
   }
 
   /* Minimalne style, które muszą działać przed wczytaniem arkusza — i które
@@ -1781,6 +1789,30 @@
     "font:12.5px/1.45 system-ui,sans-serif;padding:9px 11px}" +
     "#rj-island-root textarea.rj-input{flex:1 1 auto;min-height:52px}" +
     "#rj-island-root .rj-empty{padding:9px 8px;color:rgba(232,240,252,.55);font-size:11.5px}" +
+    /* Bezpiecznik: żadna ikona w panelu nie może rozepchnąć wyspy, nawet gdy
+       arkusz się nie wczyta (wcześniej brak rozmiaru robił z ikony wielki
+       biały trójkąt zasłaniający treść). */
+    "#rj-island-root .rj-panel svg{max-width:22px;max-height:22px}" +
+    "#rj-island-root .rj-choose-btn{min-height:52px}" +
+    /* Wybór „błąd czy pomysł” musi wyglądać dobrze nawet bez arkusza. */
+    "#rj-island-root .rj-choose{display:grid;gap:7px;flex:1 1 auto;min-height:0;align-content:start}" +
+    "#rj-island-root .rj-choose-btn{display:flex;align-items:center;gap:10px;width:100%;" +
+    "padding:10px;border:1px solid rgba(255,255,255,.13);border-radius:14px;" +
+    "background:rgba(255,255,255,.06);color:#f2f6fd;text-align:left;font:inherit}" +
+    "#rj-island-root .rj-choose-icon{display:grid;place-items:center;width:30px;height:30px;" +
+    "flex:none;border-radius:10px;background:rgba(110,168,255,.18);color:#cfe2ff}" +
+    "#rj-island-root .rj-choose-icon svg{width:17px;height:17px}" +
+    "#rj-island-root .rj-choose-text{flex:1 1 auto;min-width:0;display:block}" +
+    "#rj-island-root .rj-choose-text b{display:block;font-size:12.5px;line-height:1.25}" +
+    "#rj-island-root .rj-choose-text small{display:block;margin-top:2px;font-size:10.5px;" +
+    "line-height:1.3;color:rgba(232,240,252,.55)}" +
+    "#rj-island-root .rj-choose-go{flex:none;color:rgba(232,240,252,.4);font-size:13px}" +
+    "#rj-island-root .rj-report-form{display:flex;flex-direction:column;gap:8px;flex:1 1 auto;min-height:0}" +
+    "#rj-island-root .rj-back{width:26px;height:26px;flex:none;display:grid;place-items:center;" +
+    "padding:0;border:0;border-radius:50%;background:rgba(255,255,255,.08);color:#eef5ff}" +
+    "#rj-island-root .rj-back svg{width:15px;height:15px}" +
+    "#rj-island-root .rj-profile-links{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:8px}" +
+    "#rj-island-root .rj-ghost--danger{border-color:rgba(255,138,138,.32);color:#ffc9c9}" +
     "#rj-island-root .rj-collapse{margin-left:auto;display:grid;place-items:center;" +
     "width:26px;height:26px;padding:0;border:0;border-radius:50%;" +
     "background:rgba(255,255,255,.08);color:#eef5ff;flex:none}" +
