@@ -19,7 +19,7 @@
     if(a)a.checked=true;if(c)c.checked=true;$('profile-bio-input').value=p.bio;$('nickname-input').value=p.nickname||'';
   }
   async function load(){
-    var turn=++seq,s=api.session();confirmed=null;current=null;$('profile-view').hidden=true;$('profile-editor').hidden=true;status('Ładowanie profilu…');$('profile-report').hidden=true;$('profile-block').hidden=true;
+    var turn=++seq,s=api.session();confirmed=null;current=null;$('profile-view').hidden=true;$('profile-editor').hidden=true;status('Ładowanie profilu…');$('profile-report').hidden=true;$('profile-block').hidden=true;$('profile-logout').hidden=true;
     if(target && !api.safeName(target)){status('Nieprawidłowa nazwa profilu.');return;}
     try {
       if(s){
@@ -34,6 +34,7 @@
       status('');showProfile(rows[0]);
       var own=confirmed&&confirmed.username.toLowerCase()===rows[0].username.toLowerCase();
       $('profile-login-link').hidden=!!confirmed;
+      $('profile-logout').hidden=!confirmed;
       if(own)editor(rows[0]);
       if(confirmed&&!own){$('profile-report').hidden=false;$('profile-report').dataset.reportScope='profile';$('profile-report').dataset.reportUser=rows[0].username;var block=$('profile-block');block.hidden=false;block.disabled=true;try{var state=await api.rpc('rejchat_block_status',{p_token:confirmed.token,p_username:rows[0].username});if(turn!==seq)return;block.dataset.blocked=String(!!state.blocked);block.textContent=state.blocked?'Odblokuj wiadomości':'Blokuj wiadomości';block.disabled=false;}catch(e){if(turn===seq)status('Nie udało się sprawdzić blokady. Odśwież stronę.');}}
     }catch(e){if(turn===seq)status('Nie udało się wczytać profilu. Sprawdź połączenie i spróbuj ponownie.');}
@@ -59,6 +60,18 @@
       api.invalidate(confirmed.username);var p=(await api.getMany([confirmed.username],true))[0];if(!p)throw new Error('Nie udało się odświeżyć profilu.');
       if(turn!==seq)return;showProfile(p);$('nickname-input').value=p.nickname||'';$('nickname-result').textContent='Nick zapisany.';
     }catch(err){if(turn===seq)$('nickname-result').textContent=err.message||'Nie udało się zapisać nicka.';}finally{button.disabled=false;}
+  });
+  /* Wylogowanie dokładnie tak samo jak w wyspie i na stronie logowania:
+     czyścimy jeden klucz sesji, powiadamiamy resztę strony i wracamy
+     do widoku gościa — bez szukania zakładki „Hasło i wylogowanie”. */
+  $('profile-logout').addEventListener('click',function(){
+    var btn=this;btn.disabled=true;
+    try{localStorage.removeItem('rejson_community_session_v1');}catch(e){}
+    target=null;confirmed=null;
+    try{history.replaceState(null,'','/profil');}catch(e){}
+    try{window.dispatchEvent(new Event('rj:session-change'));}catch(e){}
+    load();
+    setTimeout(function(){btn.disabled=false;},400);
   });
   window.addEventListener('rj:session-change',load);
   window.addEventListener('storage',function(e){if(e.key==='rejson_community_session_v1'||e.key===null)load();});

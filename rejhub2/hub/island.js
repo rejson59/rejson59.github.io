@@ -37,6 +37,9 @@
 
   var ICONS = {
     report: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 8v5M12 16.5h.01"/><path d="M10.3 3.6 2.4 18a1.9 1.9 0 0 0 1.7 2.8h15.8A1.9 1.9 0 0 0 21.6 18L13.7 3.6a1.9 1.9 0 0 0-3.4 0Z"/></svg>',
+    idea: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4"/><path d="M12 3a6 6 0 0 0-3.6 10.8c.5.4.8 1 .8 1.7v.5h5.6v-.5c0-.7.3-1.3.8-1.7A6 6 0 0 0 12 3Z"/></svg>',
+    back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m14 6-6 6 6 6"/></svg>',
+    logout: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 4h3.5A1.5 1.5 0 0 1 20 5.5v13a1.5 1.5 0 0 1-1.5 1.5H15M10 8l-4 4 4 4M6 12h9"/></svg>',
     search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></svg>',
     alerts: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-2 7-2 9h16c0-2-2-2-2-9M10 20h4"/></svg>',
     now: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.6"/><circle cx="16.5" cy="16" r="2.6"/></svg>',
@@ -95,10 +98,12 @@
     return value;
   }
 
+  var SESSION_KEY = "rejson_community_session_v1";
+
   function session() {
     if (window.RJProfiles && typeof window.RJProfiles.session === "function") return window.RJProfiles.session();
     try {
-      var raw = JSON.parse(localStorage.getItem("rejson_community_session_v1") || "null");
+      var raw = JSON.parse(localStorage.getItem(SESSION_KEY) || "null");
       return raw && typeof raw.token === "string" && raw.token.length >= 16 ? raw : null;
     } catch (e) {
       return null;
@@ -365,7 +370,9 @@
   var shadow = null;
   var host = null;
   var toastEl = null;
-  var report = { type: "bug", shot: null, project: "", busy: false };
+  /* Zgłoszenie ma dwa kroki: najpierw świadomy wybór „błąd czy pomysł”,
+     dopiero potem pole tekstowe. Dzięki temu nikt nie zapomni wybrać typu. */
+  var report = { type: "", stage: "choose", chosen: false, shot: null, project: "", busy: false };
   var pendingUpload = null;
   var alertsCache = null;
 
@@ -575,20 +582,32 @@
           '<button class="rj-dock-btn rj-dock-btn--collapse" type="button" data-collapse title="Schowaj wyspę" aria-label="Schowaj wyspę">' + ICONS.down + "</button>" +
         "</div>" +
 
-        '<div class="rj-view rj-view--report">' +
+        '<div class="rj-view rj-view--report" data-stage="choose">' +
           '<div class="rj-panel">' +
             '<div class="rj-panel-head">' +
-              '<div class="rj-seg" role="tablist" aria-label="Rodzaj zgłoszenia">' +
-                '<button type="button" role="tab" aria-selected="true" data-kind="bug">Błąd</button>' +
-                '<button type="button" role="tab" aria-selected="false" data-kind="idea">Pomysł</button>' +
-              "</div>" +
+              '<button class="rj-back" type="button" data-choose-back aria-label="Zmień rodzaj zgłoszenia" title="Zmień rodzaj zgłoszenia" hidden>' + ICONS.back + "</button>" +
+              '<span class="rj-panel-title"><span data-report-title>Co zgłaszasz?</span><small data-report-sub>Błąd czy pomysł — najpierw wybierz</small></span>' +
               '<button class="rj-x" type="button" data-close aria-label="Zamknij">' + ICONS.close + "</button>" +
             "</div>" +
-            '<textarea class="rj-input" id="rj-island-text" maxlength="4000" placeholder="Co się stało? Im konkrety, tym szybciej naprawię." data-rj-filter-off></textarea>' +
-            '<div class="rj-row">' +
-              '<button class="rj-ghost" type="button" data-shot aria-pressed="false" hidden>' + ICONS.photo + ' Zdjęcie</button>' +
-              '<span class="rj-hintline" data-report-project hidden></span>' +
-              '<button class="rj-send" type="button" data-send>Wyślij</button>' +
+            '<div class="rj-choose" role="group" aria-label="Rodzaj zgłoszenia">' +
+              '<button class="rj-choose-btn" type="button" data-kind="bug">' +
+                '<span class="rj-choose-icon" aria-hidden="true">' + ICONS.report + "</span>" +
+                '<span class="rj-choose-text"><b>Błąd</b><small>Coś nie działa albo wygląda źle</small></span>' +
+                '<span class="rj-choose-go" aria-hidden="true">→</span>' +
+              "</button>" +
+              '<button class="rj-choose-btn" type="button" data-kind="idea">' +
+                '<span class="rj-choose-icon" aria-hidden="true">' + ICONS.idea + "</span>" +
+                '<span class="rj-choose-text"><b>Pomysł</b><small>Coś, co warto dodać albo zmienić</small></span>' +
+                '<span class="rj-choose-go" aria-hidden="true">→</span>' +
+              "</button>" +
+            "</div>" +
+            '<div class="rj-report-form" hidden>' +
+              '<textarea class="rj-input" id="rj-island-text" maxlength="4000" placeholder="Co się stało? Im konkrety, tym szybciej naprawię." data-rj-filter-off></textarea>' +
+              '<div class="rj-row">' +
+                '<button class="rj-ghost" type="button" data-shot aria-pressed="false" hidden>' + ICONS.photo + ' Zdjęcie</button>' +
+                '<span class="rj-hintline" data-report-project hidden></span>' +
+                '<button class="rj-send" type="button" data-send>Wyślij</button>' +
+              "</div>" +
             "</div>" +
           "</div>" +
         "</div>" +
@@ -986,8 +1005,7 @@
       }, 90);
     }
     if (name === "report") {
-      var text = byId("rj-island-text");
-      if (text) setTimeout(function () { text.focus(); }, 90);
+      setReportStage(report.chosen ? "form" : "choose", true);
       var label = island.querySelector("[data-report-project]");
       if (label) {
         label.textContent = report.project ? report.project : "";
@@ -1074,12 +1092,73 @@
     apply(state === "dock" ? "idle" : "dock");
   }
 
+  /* Wylogowanie z wyspy: czyści tę samą sesję co strona logowania, więc po
+     powrocie na kartę wszystko zgadza się z serwerem i innymi zakładkami. */
+  function logout() {
+    var me = session();
+    try { localStorage.removeItem(SESSION_KEY); } catch (error) { /* tryb prywatny */ }
+    try { window.dispatchEvent(new Event("rj:session-change")); } catch (error) { /* trudno */ }
+    if (window.RJProfiles && typeof window.RJProfiles.refreshHeader === "function") {
+      try { window.RJProfiles.refreshHeader(); } catch (error) { /* trudno */ }
+    }
+    report.chosen = false;
+    report.type = "";
+    if (state === "profile") renderProfile();
+    toast(me ? "Wylogowano. Do zobaczenia, " + me.username + "!" : "Wylogowano.");
+  }
+
+  /* Krok 1 → wybór rodzaju. Krok 2 → pole tekstowe dla wybranej rzeczy.
+     Typ podany wprost (np. z przyszłego linku „?feedback=idea”) pomija pytanie. */
+  function setReportStage(stage, focus) {
+    var view = island && island.querySelector(".rj-view--report");
+    if (!view) return;
+    var wanted = stage === "form" && report.chosen ? "form" : "choose";
+    report.stage = wanted;
+    view.setAttribute("data-stage", wanted);
+
+    var choose = view.querySelector(".rj-choose");
+    var form = view.querySelector(".rj-report-form");
+    var back = view.querySelector("[data-choose-back]");
+    var title = view.querySelector("[data-report-title]");
+    var sub = view.querySelector("[data-report-sub]");
+    var idea = report.type === "idea";
+
+    if (choose) choose.hidden = wanted !== "choose";
+    if (form) form.hidden = wanted !== "form";
+    if (back) back.hidden = wanted !== "form";
+    if (title) title.textContent = wanted === "choose" ? "Co zgłaszasz?" : (idea ? "Pomysł" : "Błąd");
+    if (sub) {
+      sub.textContent = wanted === "choose"
+        ? "Błąd czy pomysł — najpierw wybierz"
+        : (idea ? "Co warto dodać albo zmienić?" : "Co się stało? Im konkrety, tym szybciej naprawię.");
+    }
+
+    var text = byId("rj-island-text");
+    if (text) {
+      text.placeholder = idea
+        ? "Co warto dodać albo zmienić?"
+        : "Co się stało? Im konkrety, tym szybciej naprawię.";
+      /* Treść z poprzedniego typu nie może wyciec do innego zgłoszenia. */
+      if (wanted === "choose") text.value = "";
+    }
+
+    if (!focus) return;
+    setTimeout(function () {
+      if (!island || report.stage !== wanted) return;
+      if (wanted === "form") {
+        if (text) { try { text.focus(); } catch (error) { /* trudno */ } }
+        return;
+      }
+      var card = view.querySelector('.rj-choose-btn[data-kind="' + (idea ? "idea" : "bug") + '"]') ||
+        view.querySelector(".rj-choose-btn");
+      if (card) { try { card.focus(); } catch (error) { /* trudno */ } }
+    }, 90);
+  }
+
   function openReport(project, type) {
     report.project = project || "";
-    report.type = type === "idea" ? "idea" : "bug";
-    Array.prototype.forEach.call(island.querySelectorAll(".rj-seg button"), function (button) {
-      button.setAttribute("aria-selected", String(button.dataset.kind === report.type));
-    });
+    report.type = type === "idea" ? "idea" : type === "bug" ? "bug" : "";
+    report.chosen = !!report.type;
     apply("report");
   }
 
@@ -1197,7 +1276,7 @@
       window.location.href = item.href;
       return;
     }
-    if (item.state === "report") openReport("", "bug");
+    if (item.state === "report") openReport("", "");
     else if (item.state) apply(item.state);
   }
 
@@ -1247,6 +1326,12 @@
 
   function submitReport() {
     if (report.busy) return;
+    /* Bez świadomego wyboru „błąd czy pomysł” nic nie wychodzi. */
+    if (!report.chosen) {
+      setReportStage("choose", true);
+      toast("Najpierw wybierz: błąd czy pomysł?");
+      return;
+    }
     var text = byId("rj-island-text");
     var value = (text && text.value || "").trim();
     if (value.length < 4) {
@@ -1582,7 +1667,10 @@
           return '<button class="rj-status' + (key === status ? " is-on" : "") + '" type="button" data-status="' + key + '">' + names[key] + "</button>";
         }).join("") +
       "</div>" +
-      '<a class="rj-ghost" style="align-self:flex-start;margin-top:8px;text-decoration:none" href="/profil">Otwórz profil</a>';
+      '<div class="rj-profile-links">' +
+        '<a class="rj-ghost" href="/profil">Otwórz profil</a>' +
+        '<button class="rj-ghost rj-ghost--danger" type="button" data-logout>' + ICONS.logout + ' Wyloguj się</button>' +
+      "</div>";
 
     if (window.RJProfiles && typeof window.RJProfiles.getMany === "function") {
       window.RJProfiles.getMany([me.username]).then(function (rows) {
@@ -1807,7 +1895,7 @@
       var open = event.target.closest("[data-open]");
       if (open) {
         var name = open.getAttribute("data-open");
-        if (name === "report") openReport("", "bug");
+        if (name === "report") openReport("", "");
         else apply(name);
         return;
       }
@@ -1822,19 +1910,18 @@
       var shot = event.target.closest("[data-shot]");
       if (shot) { toggleShot(shot); return; }
 
-      var kind = event.target.closest(".rj-seg button");
+      var logoutBtn = event.target.closest("[data-logout]");
+      if (logoutBtn) { logout(); return; }
+
+      var back = event.target.closest("[data-choose-back]");
+      if (back) { setReportStage("choose", true); return; }
+
+      var kind = event.target.closest(".rj-choose-btn[data-kind]");
       if (kind) {
-        report.type = kind.dataset.kind;
-        Array.prototype.forEach.call(island.querySelectorAll(".rj-seg button"), function (button) {
-          button.setAttribute("aria-selected", String(button === kind));
-        });
-        var field = byId("rj-island-text");
-        if (field) {
-          field.placeholder = report.type === "idea"
-            ? "Co warto dodać albo zmienić?"
-            : "Co się stało? Im konkrety, tym szybciej naprawię.";
-          field.focus();
-        }
+        report.type = kind.getAttribute("data-kind") === "idea" ? "idea" : "bug";
+        report.chosen = true;
+        announce(report.type === "idea" ? "Zgłaszasz pomysł." : "Zgłaszasz błąd.");
+        setReportStage("form", true);
         return;
       }
 

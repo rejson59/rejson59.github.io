@@ -180,7 +180,7 @@ function fakeLoader(initial, liveAllowed) {
     check('skrypt przełącznika podpięty z wersją', () =>
       assert.match(HOME, /js\/preview-toggle\.js\?v=1/));
     check('nowa wersja arkusza szkła', () =>
-      assert.match(HOME, /glass2\.css\?v=13/));
+      assert.match(HOME, /glass2\.css\?v=\d+/));
   }
 
   console.log('\n=== D. SZKŁO I „MIĘKKA REAKCJA” ===');

@@ -1215,7 +1215,11 @@
     siteNav.classList.remove("is-open");
   }
 
-  if (menuToggle && siteNav) {
+  /* Topbar RejHub 2.0 ma już wspólnego opiekuna (`shared-topbar.js`).
+     Stara witryna nie ma go wcale — tam wiążemy jak dotąd. */
+  var topbarOwned = !!(menuToggle && menuToggle.hasAttribute("data-shared-menu"));
+  if (menuToggle && siteNav && !topbarOwned) {
+    menuToggle.dataset.rjBound = "1";
     menuToggle.addEventListener("click", function (ev) {
       ev.stopPropagation();
       var isOpen = siteNav.classList.toggle("is-open");
@@ -1240,11 +1244,15 @@
     });
   }
 
-  document.getElementById("theme-toggle").addEventListener("click", function () {
-    var next = document.documentElement.dataset.theme === "light" ? "dark" : "light";
-    document.documentElement.dataset.theme = next;
-    try { localStorage.setItem("theme", next); } catch (e) { /* ignorujemy */ }
-  });
+  var themeToggle = document.getElementById("theme-toggle");
+  if (themeToggle && !themeToggle.dataset.rjBound) {
+    themeToggle.dataset.rjBound = "1";
+    themeToggle.addEventListener("click", function () {
+      var next = document.documentElement.dataset.theme === "light" ? "dark" : "light";
+      document.documentElement.dataset.theme = next;
+      try { localStorage.setItem("theme", next); } catch (e) { /* ignorujemy */ }
+    });
+  }
 
   /* ---------- Synchronizacja na żywo z API GitHuba (ETag + localStorage) ---------- */
   function readCache() {

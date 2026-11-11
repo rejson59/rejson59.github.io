@@ -1360,6 +1360,155 @@
   }
 }
 
+/* --------------------------------------------------------------------------
+   ZGŁOSZENIE W DWÓCH KROKACH
+   Najpierw pytanie „błąd czy pomysł?”, dopiero potem pole tekstowe. Kafelki
+   są duże i jednoznaczne, żeby nie dało się ich przeoczyć ani kliknąć „obok”.
+   -------------------------------------------------------------------------- */
+
+#rj-island-root .rj-back {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(240, 246, 255, 0.72);
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease;
+}
+
+#rj-island-root .rj-back:hover,
+#rj-island-root .rj-back:focus-visible {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  outline: none;
+}
+
+#rj-island-root .rj-back svg {
+  width: 15px;
+  height: 15px;
+}
+
+#rj-island-root .rj-choose {
+  display: grid;
+  gap: 7px;
+  flex: 1 1 auto;
+  min-height: 0;
+  align-content: start;
+}
+
+#rj-island-root .rj-choose-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 14px;
+  background: linear-gradient(158deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.03));
+  color: #f2f6fd;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.2s ease, transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+#rj-island-root .rj-choose-btn:hover,
+#rj-island-root .rj-choose-btn:focus-visible {
+  background: linear-gradient(158deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.06));
+  border-color: rgba(150, 190, 255, 0.5);
+  outline: none;
+}
+
+#rj-island-root .rj-choose-btn:active {
+  transform: scale(0.985);
+}
+
+#rj-island-root .rj-choose-icon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: 10px;
+  background: rgba(110, 168, 255, 0.16);
+  color: #cfe2ff;
+}
+
+#rj-island-root .rj-choose-icon svg {
+  width: 17px;
+  height: 17px;
+}
+
+#rj-island-root .rj-choose-btn[data-kind="idea"] .rj-choose-icon {
+  background: rgba(255, 215, 163, 0.18);
+  color: #ffe3bd;
+}
+
+#rj-island-root .rj-choose-text {
+  display: block;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+#rj-island-root .rj-choose-text b {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+#rj-island-root .rj-choose-text small {
+  display: block;
+  margin-top: 2px;
+  font-size: 10.5px;
+  line-height: 1.3;
+  color: rgba(232, 240, 252, 0.55);
+}
+
+#rj-island-root .rj-choose-go {
+  flex: none;
+  font-size: 13px;
+  color: rgba(232, 240, 252, 0.4);
+}
+
+#rj-island-root .rj-report-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* Linki w profilu: profil i wylogowanie stoją obok siebie, zawsze widoczne. */
+#rj-island-root .rj-profile-links {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+#rj-island-root .rj-profile-links .rj-ghost {
+  text-decoration: none;
+}
+
+#rj-island-root .rj-ghost--danger {
+  border-color: rgba(255, 138, 138, 0.3);
+  color: #ffc9c9;
+}
+
+#rj-island-root .rj-ghost--danger:hover,
+#rj-island-root .rj-ghost--danger:focus-visible {
+  background: rgba(255, 110, 110, 0.16);
+  border-color: rgba(255, 138, 138, 0.55);
+  color: #fff;
+}
+
 /* Krótki ekran (telefon w poziomie) — panele nie mogą wyjść za górną krawędź. */
 @media (max-height: 560px) {
   #rj-island-root .rj-panel {
