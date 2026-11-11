@@ -92,8 +92,8 @@ console.log('\n=== C. HERO PODSTRON: ZAOKRĄGLONA TAFLA ===');
     assert.match(block, /linear-gradient\(158deg/);
   });
   check('hero nie rozmywa już tła (to dawało prostokątną plamę)', () => {
-    assert.match(block, /backdrop-filter: none;/);
-    assert.match(block, /-webkit-backdrop-filter: none;/);
+    assert.match(block, /backdrop-filter: none !important;/);
+    assert.match(block, /-webkit-backdrop-filter: none !important;/);
   });
   check('hero ma oddech po bokach, żeby treść nie dotykała krawędzi', () =>
     assert.match(block, /padding-inline: clamp\(16px, 2\.4vw, 30px\)/));

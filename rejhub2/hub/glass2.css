@@ -3580,8 +3580,10 @@ body:is(.rj-file, .rj-tools, .rj-board, .rj-widgets, .rj-class) :is(.hero, .tool
     linear-gradient(158deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.018)),
     rgba(8, 14, 26, 0.3);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 30px 70px -46px rgba(0, 0, 0, 0.95);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
+  /* !important, bo niżej w arkuszu stoi ogólna reguła dodająca blur wszystkim
+     dużym taflom — na hero podstron wracałaby bez tego z powrotem. */
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   overflow: hidden;
 }
 
