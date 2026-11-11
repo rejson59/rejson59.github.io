@@ -259,6 +259,8 @@ async function checkOfflineQueue() {
 
   w.RejIsland.open('report');
   await wait(40);
+  ui('.rj-choose-btn[data-kind="bug"]').click();
+  await wait(30);
   ui('#rj-island-text').value = 'Nie działa podgląd, jestem offline';
   ui('[data-send]').click();
   await wait(80);

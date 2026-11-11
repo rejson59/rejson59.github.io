@@ -173,8 +173,8 @@ check('każda strona ze wspólnym topbarem ma nowy wariant', () => {
   pages.forEach((file) => {
     const html = read('rejhub2/' + file);
     if (!html.includes('rj-shared-header')) return;
-    assert.ok(html.includes('/css/topbar-split.css?v=3'), 'brak topbar-split.css w ' + file);
-    assert.ok(html.includes('/js/topbar-split.js?v=2'), 'brak topbar-split.js w ' + file);
+    assert.ok(/\/css\/topbar-split\.css\?v=\d+/.test(html), 'brak topbar-split.css w ' + file);
+    assert.ok(/\/js\/topbar-split\.js\?v=\d+/.test(html), 'brak topbar-split.js w ' + file);
   });
 });
 

@@ -1682,7 +1682,8 @@
   /* ================= MOTYW ================= */
   function setupTheme() {
     var btn = document.getElementById("theme-toggle");
-    if (!btn) return;
+    if (!btn || btn.dataset.rjBound) return;
+    btn.dataset.rjBound = "1";
     btn.addEventListener("click", function () {
       var next = document.documentElement.dataset.theme === "light" ? "dark" : "light";
       document.documentElement.dataset.theme = next;

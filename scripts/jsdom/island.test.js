@@ -23,8 +23,8 @@ function checkStructure() {
 
   /* 1. Każda zwykła podstrona RejHuba ma wyspę. */
   EXPECTED_WITH_ISLAND.forEach(({ file, html }) => {
-    assert.ok(html.includes('/hub/island.js?v=8'), file + ': brak wyspy');
-    assert.ok(html.includes('/hub/island.css?v=7'), file + ': brak arkusza wyspy');
+    assert.ok(html.includes('/hub/island.js?v=9'), file + ': brak wyspy');
+    assert.ok(html.includes('/hub/island.css?v=8'), file + ': brak arkusza wyspy');
     /* RejSejf trzyma wyłączony znacznik (type="application/json") — to nie ładowanie. */
     const widgets = html.match(/<script[^>]*src="[^"]*widget\.js[^"]*"[^>]*>/g) || [];
     const activeWidget = widgets.filter((tag) => !/application\/json/.test(tag));
@@ -61,7 +61,7 @@ function checkStructure() {
 
 function buildPage() {
   return '<!doctype html><html lang="pl" data-theme="dark"><head><meta charset="utf-8">' +
-    '<script src="/hub/island.js?v=8" data-project="rejhub" data-project-name="RejHub"></script>' +
+    '<script src="/hub/island.js?v=9" data-project="rejhub" data-project-name="RejHub"></script>' +
     '</head><body>' +
     '<header class="rj-shared-header"><nav><a href="/rejchat">RejChat</a><a href="/rejfile">RejFile</a></nav></header>' +
     '<main><h1>Test</h1><button type="button" data-feedback-project="RejStream">Zgłoś</button>' +
@@ -151,6 +151,14 @@ async function checkBehaviour() {
   ui('.rj-dock-btn[data-open="report"]').click();
   await wait(20);
   assert.equal(island.dataset.state, 'report');
+  assert.equal(ui('.rj-view--report').dataset.stage, 'choose', 'najpierw pytanie o rodzaj zgłoszenia');
+  assert.ok(ui('.rj-choose-btn[data-kind="bug"]'), 'jest kafelek „Błąd”');
+  assert.ok(ui('.rj-choose-btn[data-kind="idea"]'), 'jest kafelek „Pomysł”');
+  ui('[data-send]').click();
+  assert.ok(/wybierz/.test(ui('.rj-toast').textContent), 'bez wyboru rodzaju nic nie leci do bazy');
+  ui('.rj-choose-btn[data-kind="bug"]').click();
+  await wait(30);
+  assert.equal(ui('.rj-view--report').dataset.stage, 'form', 'po wyborze pojawia się pole tekstowe');
   ui('[data-send]').click();
   assert.ok(/Napisz/.test(ui('.rj-toast').textContent), 'puste zgłoszenie nie leci do bazy');
 

@@ -178,15 +178,27 @@
   $("account-forget").addEventListener("click", forget);
   $("account-retry").addEventListener("click", verify);
   window.addEventListener("storage", function (event) { if (event.key === SESSION || event.key === null) verify(); });
-  $("account-menu").addEventListener("click", function () {
-    var open = $("account-nav").classList.toggle("is-open");
-    this.setAttribute("aria-expanded", String(open));
-    this.setAttribute("aria-label", open ? "Zamknij menu" : "Otwórz menu");
-  });
-  $("theme-toggle").addEventListener("click", function () {
-    var next = document.documentElement.dataset.theme === "light" ? "dark" : "light";
-    document.documentElement.dataset.theme = next;
-    try { localStorage.setItem("theme", next); } catch (e) {}
-  });
+  /* Topbar jest teraz jeden dla całej witryny: te same id na każdej podstronie,
+     a motyw i menu obsługuje `shared-topbar.js`. Tu zostaje tylko awaryjna
+     obsługa starszych znaczników (bez podwójnego przełączania). */
+  var accountMenu = $("account-menu") || $("menu-toggle");
+  var accountNav = $("account-nav") || $("site-nav");
+  if (accountMenu && accountNav && !accountMenu.dataset.rjBound) {
+    accountMenu.dataset.rjBound = "1";
+    accountMenu.addEventListener("click", function () {
+      var open = accountNav.classList.toggle("is-open");
+      this.setAttribute("aria-expanded", String(open));
+      this.setAttribute("aria-label", open ? "Zamknij menu" : "Otwórz menu");
+    });
+  }
+  var themeButton = $("theme-toggle") || $("shared-theme");
+  if (themeButton && !themeButton.dataset.rjBound) {
+    themeButton.dataset.rjBound = "1";
+    themeButton.addEventListener("click", function () {
+      var next = document.documentElement.dataset.theme === "light" ? "dark" : "light";
+      document.documentElement.dataset.theme = next;
+      try { localStorage.setItem("theme", next); } catch (e) {}
+    });
+  }
   verify();
 })();
