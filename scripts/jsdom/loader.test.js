@@ -307,6 +307,8 @@ function mk(html, evalBoot, evalLoader) {
     const d = mk(CARD(0), false, LOADER_FAST), doc = d.window.document;
     const p = doc.querySelector(".card-preview"), i = doc.querySelector("iframe");
     d.window.RJLoader.scan(doc);
+    /* silnik montuje asynchronicznie (jeden slot) — czekamy na start ramki */
+    for (let k = 0; k < 30 && !p._rjMounting; k++) await wait(20);
     Object.defineProperty(i, "contentWindow", { value: { location: { href: "https://rejson59.github.io/P0/" } } });
     Object.defineProperty(i, "contentDocument", { value: { body: { children: [doc.createElement("div")], textContent: "x" } } });
     i.dispatchEvent(new d.window.Event("load"));
@@ -354,8 +356,12 @@ function mk(html, evalBoot, evalLoader) {
       maxBurst = Math.max(maxBurst, now - prev);
       prev = now;
     }
-    check("ramki startują pojedynczo, nie wszystkie naraz", maxBurst <= 2, "zryw: " + maxBurst);
-    check("ostatecznie startują wszystkie", prev === 5, "uruchomione: " + prev);
+    check("ramki startują pojedynczo, nie wszystkie naraz", maxBurst <= 1, "zryw: " + maxBurst);
+    /* Nowy silnik trzyma najwyżej MAX_LIVE_PREVIEWS żywych ramek (2 na słabym
+       sprzęcie). Kolejne karty czekają, aż poprzednie zwolnią slot. */
+    const live = w.RJLoader.liveCount();
+    check("żywych ramek nie więcej niż limit", live <= 2, "żywe: " + live);
+    check("coś się wczytało", live >= 1, "żywe: " + live);
   }
 
   console.log("\n=== H. E2E: PRAWDZIWA STRONA Z SERWERA ===");

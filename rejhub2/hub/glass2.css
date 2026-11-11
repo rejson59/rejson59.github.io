@@ -877,6 +877,44 @@ body :is(a, button, summary, input, textarea, select):focus-visible {
   outline-offset: 3px;
 }
 
+/* ---------- szkło bez liczenia: statyczna tafla zamiast backdrop-filter ----------
+   `backdrop-filter: blur(22px)` na karcie projektów oznacza, że przeglądarka
+   przy KAŻDEJ klatce przewijania od nowa rozmywa tapetę pod tą kartą — a kart
+   jest kilkanaście, każda z ramką podglądu w środku. To był drugi (po loaderze)
+   główny powód zacinania.
+
+   Zamiast tego karty dostają gotową, wcześniej rozmytą taflę tapety
+   (`wallpaper-glass.webp`, 5 kB) w tej samej kolorystyce: tapeta + zasłona +
+   blur 22 px + saturate(165%). Wygląd szkła zostaje (to dokładnie ten sam
+   obraz, który wcześniej liczył GPU), a przewijanie nie liczy już niczego.
+   Jasny motyw ma własną taflę. Panele w normalnym układzie (hero, karta
+   profilu, menu) zachowują prawdziwe rozmycie — one nie jadą pod palcem. */
+body.rj-home .project-card,
+body.rj-home .projects .project-card {
+  /* gradient szkła zostaje na wierzchu, tafla wchodzi pod niego */
+  background-image:
+    linear-gradient(158deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.02)),
+    url("/hub/wallpaper-glass.webp") !important;
+  background-size: auto, cover !important;
+  background-position: center, center !important;
+  background-repeat: no-repeat, no-repeat !important;
+  background-color: #0a0f1a !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html[data-theme="light"] body.rj-home .project-card {
+  background-image:
+    linear-gradient(158deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0.24)),
+    url("/hub/wallpaper-glass-light.webp") !important;
+  background-color: #eef2fa !important;
+}
+
+/* Karta z podglądem ma własne, ciemniejsze tło pod ramką — bez zmian. */
+body.rj-home .project-card .card-preview {
+  background-color: transparent !important;
+}
+
 /* ---------- animacje poza kadrem ----------
    Klasę `rj-anim-paused` zakłada hub/hub-shell.js, gdy element wyjedzie
    z widoku. Zatrzymanie (a nie usunięcie) animacji oznacza, że po powrocie
