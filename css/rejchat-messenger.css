@@ -3012,3 +3012,238 @@ body.rj-community .comm-chat-note[hidden] {
     padding-top: 2px !important;
   }
 }
+
+/* ============================================================================
+   18. Telefon: czat wypełnia ekran między topbarem a wyspą.
+   ----------------------------------------------------------------------------
+   Wcześniej okno czatu miało stałą wysokość liczoną od `100dvh - 220px`, a na
+   dodatek wewnątrz tafli rezerwowaliśmy 134 px na wyspę i pasek reklam. Na
+   telefonie z paskiem przeglądarki zostawało z tego ~40 px listy wiadomości.
+   Teraz `main` jest kolumną na całą wysokość, odstęp na wyspę i reklamy siedzi
+   w jego dolnym paddingu (poza taflą), a okno czatu bierze resztę miejsca.
+   ========================================================================== */
+
+@media (max-width: 860px) {
+  body.rj-community .comm-main {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    min-height: calc(100dvh - 76px) !important;
+    padding: 8px 8px calc(var(--rj-mobile-ads-height, 76px) + 58px + env(safe-area-inset-bottom, 0px) + 8px) !important;
+  }
+
+  body.rj-community .comm-hero {
+    flex: none !important;
+    margin-bottom: 0 !important;
+  }
+
+  body.rj-community .comm-layout {
+    flex: 1 1 auto !important;
+    height: auto !important;
+    max-height: none !important;
+    min-height: 320px !important;
+  }
+
+  html.has-rj-island body.rj-community .comm-chat,
+  html.has-rj-island body.rj-community .dm-view {
+    padding-bottom: 0 !important;
+  }
+
+  body.rj-community .comm-primary,
+  body.rj-community #panel-chat,
+  body.rj-community .comm-chat {
+    min-height: 0 !important;
+  }
+
+  body.rj-community .comm-chat {
+    height: 100% !important;
+  }
+
+  body.rj-community #chat-public-view > #chat-list,
+  body.rj-community #dm-thread > #dm-messages {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+  }
+}
+
+/* Na niskich ekranach (telefon z paskiem adresu) nagłówek strony jest zbędnym
+   balastem — zostaje sam przełącznik Czat/Wpisy. */
+@media (max-width: 860px) and (max-height: 760px) {
+  body.rj-community .rc-kicker,
+  body.rj-community .comm-hero h1 { display: none !important; }
+  body.rj-community .comm-hero {
+    gap: 6px !important;
+    margin-bottom: 0 !important;
+  }
+  body.rj-community .comm-layout { min-height: 260px !important; }
+  /* Nagłówek pokoju to jedna linia: nazwa + akcje, bez opisu. */
+  body.rj-community .comm-chat-head {
+    padding: 7px 12px !important;
+    gap: 8px !important;
+  }
+  body.rj-community .comm-chat-head .chat-room-heading p { display: none !important; }
+  body.rj-community .chat-room-mark {
+    width: 34px !important;
+    height: 34px !important;
+    font-size: 14px !important;
+  }
+  body.rj-community .comm-chat-list { padding-top: 10px !important; }
+  body.rj-community .chat-length { padding-bottom: 4px !important; }
+}
+
+/* 19. Telefon: kompaktowe elementy wokół rozmowy.
+   Na 351 × 633 px (Opera z paskiem adresu) dok pokoi, nagłówek pokoju,
+   composer i licznik zajmowały 245 z 357 px tafli — na wiadomości zostawało
+   ~95 px. Tutaj każdy z tych pasków chudnie, a lista dostaje resztę. */
+@media (max-width: 860px) {
+  body.rj-community .comm-sidebar {
+    padding: 6px 8px !important;
+    gap: 6px !important;
+  }
+  body.rj-community .chat-channel {
+    padding: 4px 6px !important;
+    gap: 5px !important;
+  }
+  body.rj-community .chat-channel-icon {
+    width: 30px !important;
+    height: 30px !important;
+    font-size: 13px !important;
+  }
+  body.rj-community .chat-channel strong {
+    font-size: 10.5px !important;
+    line-height: 1.1 !important;
+  }
+  body.rj-community .chat-channel small {
+    display: none !important;
+  }
+
+  body.rj-community .comm-chat-head {
+    min-height: 0 !important;
+    padding: 6px 12px !important;
+  }
+  body.rj-community .comm-chat-head .chat-room-heading { gap: 9px !important; }
+  body.rj-community .comm-chat-head .chat-room-heading h2 { font-size: 15px !important; }
+  body.rj-community .comm-chat-head button { width: 34px !important; height: 34px !important; }
+
+  body.rj-community .comm-chat-form {
+    margin: 0 10px 4px !important;
+    padding: 4px 5px 4px 10px !important;
+  }
+  body.rj-community .comm-chat-form .comm-input {
+    min-height: 38px !important;
+    height: 38px !important;
+    padding: 8px 4px !important;
+    font-size: 13px !important;
+  }
+  body.rj-community .comm-chat-form .rc-compose-tools > * {
+    width: 32px !important;
+    height: 32px !important;
+  }
+  body.rj-community .comm-chat-form #chat-send,
+  body.rj-community .comm-chat-form #dm-send {
+    width: 34px !important;
+    height: 34px !important;
+  }
+
+  body.rj-community .chat-length,
+  body.rj-community .dm-length {
+    margin: 0 12px 2px !important;
+    padding-bottom: 2px !important;
+    line-height: 1.2 !important;
+  }
+  body.rj-community .rj-tr-draft {
+    padding: 2px 7px !important;
+    font-size: 8.5px !important;
+  }
+
+  body.rj-community .comm-hero .rejchat-tabs button {
+    padding: 6px 12px !important;
+    font-size: 12px !important;
+  }
+}
+
+/* 20. Telefon: ostatnie piksele dla rozmowy.
+   Na 351 × 633 px lista wiadomości miała 83 px. Po kompakcji pasków zostaje
+   ~165 px, a licznik znaków pojawia się dopiero, gdy zaczynasz pisać —
+   pusty pasek nie zabiera miejsca bez powodu. */
+@media (max-width: 860px) {
+  body.rj-community .chat-channel {
+    min-height: 40px !important;
+  }
+  body.rj-community .comm-chat-form {
+    gap: 4px !important;
+  }
+  body.rj-community .comm-chat-form .comm-input {
+    min-height: 34px !important;
+    height: 34px !important;
+    padding: 6px 4px !important;
+  }
+  body.rj-community .comm-chat-form .rc-compose-tools {
+    height: 34px !important;
+  }
+  body.rj-community .comm-chat-form .rc-compose-tools > * {
+    width: 30px !important;
+    height: 30px !important;
+  }
+  body.rj-community .comm-chat-form #chat-send,
+  body.rj-community .comm-chat-form #dm-send {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  /* Pusty licznik nie zabiera wiersza; wraca, gdy jest co liczyć. */
+  body.rj-community .comm-chat:has(#chat-input:placeholder-shown) .chat-length,
+  body.rj-community .dm-view:has(#dm-input:placeholder-shown) .dm-length {
+    display: none !important;
+  }
+}
+
+/* 21. Telefon: prywatne rozmowy mają ten sam priorytet co czat publiczny.
+   Lista wiadomości nie może zejść do 18 px tylko dlatego, że nad nią stoją
+   „Nowa rozmowa”, skrzynka, tytuł wątku i przycisk wyszukiwania. Na niskim
+   ekranie te paski chudną, a tytuł wątku znika — odbiorcę widać z skrzynki. */
+@media (max-width: 860px) {
+  body.rj-community #dm-member { gap: 4px !important; }
+  body.rj-community .dm-new-form {
+    padding: 6px 10px !important;
+    gap: 4px !important;
+  }
+  body.rj-community .dm-new-form label {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    overflow: hidden !important;
+    clip: rect(0 0 0 0) !important;
+    white-space: nowrap !important;
+  }
+  body.rj-community .dm-new-form .comm-input {
+    min-height: 34px !important;
+    height: 34px !important;
+    padding: 6px 10px !important;
+  }
+  body.rj-community .dm-new-form button {
+    height: 34px !important;
+    padding: 0 14px !important;
+  }
+  body.rj-community #dm-inbox {
+    padding: 4px 10px !important;
+    gap: 5px !important;
+  }
+  body.rj-community .dm-conversation {
+    padding: 4px 10px !important;
+    font-size: 11px !important;
+  }
+  body.rj-community .dm-thread-title { display: none !important; }
+  body.rj-community .rc-history-search {
+    margin: 4px 10px 2px !important;
+    padding: 3px 9px !important;
+    font-size: 9.5px !important;
+  }
+  body.rj-community #dm-thread > #dm-messages { min-height: 96px !important; }
+
+  /* W otwartej rozmowie „Nowa rozmowa" nie jest potrzebna — skrzynka zostaje,
+     więc można przełączyć wątek, a pole wraca po wyjściu z rozmowy. */
+  body.rj-community #chat-private-view:has(#dm-thread:not([hidden])) .dm-new-form {
+    display: none !important;
+  }
+}

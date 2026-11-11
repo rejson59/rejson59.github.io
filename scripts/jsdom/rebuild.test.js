@@ -176,7 +176,7 @@ console.log('\n=== E. REJCHAT: OKNO, DOK I DYMKI ===');
   check('arkusz „Messenger” jest podpięty, a szkło zamyka kaskadę', () => {
     const links = Array.from(CHAT_HTML.matchAll(/<link rel="stylesheet" href="([^"]+)"/g)).map((m) => m[1]);
     assert.match(links[links.length - 1], /glass-last\.css\?v=2/);
-    assert.ok(links.some((l) => l.includes('rejchat-messenger.css?v=6')), 'brak arkusza Messengera');
+    assert.ok(links.some((l) => l.includes('rejchat-messenger.css?v=12')), 'brak arkusza Messengera');
     assert.ok(!CHAT_HTML.includes('rejchat-rebuild.css'), 'stara warstwa nadal podpięta');
     assert.ok(!fs.existsSync(path.join(root, 'css/rejchat-rebuild.css')), 'stary arkusz nadal leży w repo');
   });

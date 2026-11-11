@@ -362,22 +362,30 @@
 
   /* --------------------------------------------------------------- start --- */
 
+  /* Przycisk siedzi w pasku narzędzi composera (obok emotek), a komunikat —
+     w linii licznika. Dzięki temu ukrycie licznika na małym ekranie nie zabiera
+     możliwości przetłumaczenia szkicu. */
   function wireDraft() {
-    [['chat-input', 'chat-length'], ['dm-input', 'dm-length']].forEach(function (pair) {
-      var field = document.getElementById(pair[0]);
-      var line = document.getElementById(pair[1]);
-      if (!field || !line || line.querySelector('.rj-tr-draft')) return;
+    [['chat-input', 'chat-length', 'chat-form'], ['dm-input', 'dm-length', 'dm-send-form']].forEach(function (parts) {
+      var field = document.getElementById(parts[0]);
+      var line = document.getElementById(parts[1]);
+      var form = document.getElementById(parts[2]);
+      var tools = form && form.querySelector('.rc-compose-tools');
+      if (!field || !line || !tools || tools.querySelector('.rj-tr-draft')) return;
       var button = document.createElement('button');
       button.type = 'button';
       button.className = 'rj-tr-draft';
-      button.textContent = '⇄ Tłumacz szkic';
+      button.textContent = '⇄';
       button.title = 'Przetłumacz to, co piszesz (polski ⇄ angielski)';
+      button.setAttribute('aria-label', 'Przetłumacz szkic wiadomości');
       var status = document.createElement('span');
       status.className = 'rj-tr-draft-status';
       status.setAttribute('role', 'status');
       status.setAttribute('aria-live', 'polite');
       button.addEventListener('click', function () { translateDraft(field, button, status); });
-      line.appendChild(button);
+      var send = form.querySelector('#chat-send, #dm-send');
+      if (send && send.parentNode === tools) tools.insertBefore(button, send);
+      else tools.appendChild(button);
       line.appendChild(status);
     });
   }
