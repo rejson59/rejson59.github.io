@@ -25,17 +25,128 @@
     return true;
   }
 
-  /* Jeden zapis motywu w całym RejHubie — zgodny z tym, co robi reszta strony. */
-  function toggleTheme() {
-    var next = document.documentElement.dataset.theme === "light" ? "dark" : "light";
+  /* ---------------------------------------------------------- ustawienia ---
+     Kółko zębate w topbarze otwiera mały panel ustawień: motyw i animacje.
+     Wcześniej ten przycisk od razu przełączał motyw, a ikona słońca/księżyca
+     sugerowała tylko jedną rzecz — teraz wygląda jak to, czym jest: wejście
+     do opcji. Samo przełączanie motywu zostało dokładnie takie samo. */
+
+  var panel = null;
+
+  function themeName() {
+    return document.documentElement.dataset.theme === "light" ? "jasny" : "ciemny";
+  }
+
+  function motionOn() {
+    if (window.RejMotion && typeof window.RejMotion.status === "function") {
+      return window.RejMotion.status() === "on";
+    }
+    try { return localStorage.getItem("rejhub_motion") !== "off"; } catch (error) { return true; }
+  }
+
+  function applyTheme(next) {
     document.documentElement.dataset.theme = next;
     try { localStorage.setItem("theme", next); } catch (error) { /* tryb prywatny */ }
+    paintPanel();
+  }
+
+  function toggleTheme() {
+    applyTheme(document.documentElement.dataset.theme === "light" ? "dark" : "light");
+  }
+
+  function toggleMotion() {
+    var next = !motionOn();
+    if (window.RejMotion) {
+      if (next) window.RejMotion.on();
+      else window.RejMotion.off();
+    }
+    try { localStorage.setItem("rejhub_motion", next ? "on" : "off"); } catch (error) { /* prywatny */ }
+    paintPanel();
+  }
+
+  function buildPanel(button) {
+    /* Panel powstaje w JS, a nie w HTML-u każdej podstrony — dzięki temu nie
+       trzeba go wklejać w 19 plikach i nie może się rozjechać między nimi. */
+    if (document.querySelector(".rj-settings-panel")) {
+      return document.querySelector(".rj-settings-panel");
+    }
+    var box = document.createElement("div");
+    box.className = "rj-settings-panel";
+    box.setAttribute("role", "dialog");
+    box.setAttribute("aria-label", "Ustawienia wyglądu");
+    box.hidden = true;
+    box.innerHTML =
+      '<p class="rj-settings-title">Ustawienia</p>' +
+      '<button class="rj-settings-row" type="button" data-rj-setting="theme">' +
+        '<span>Motyw</span><b data-value="theme">ciemny</b>' +
+      '</button>' +
+      '<button class="rj-settings-row" type="button" data-rj-setting="motion">' +
+        '<span>Animacje</span><b data-value="motion">zawsze</b>' +
+      '</button>' +
+      '<a class="rj-settings-link" href="/profil">Konto i profil <span aria-hidden="true">↗</span></a>';
+
+    var host = button.closest(".header-right") || button.parentNode;
+    host.appendChild(box);
+
+    box.addEventListener("click", function (event) {
+      var row = event.target.closest("[data-rj-setting]");
+      if (!row) return;
+      if (row.getAttribute("data-rj-setting") === "theme") toggleTheme();
+      else toggleMotion();
+    });
+
+    button.setAttribute("aria-controls", "rj-settings-panel");
+    box.id = "rj-settings-panel";
+    return box;
+  }
+
+  function paintPanel() {
+    if (!panel) return;
+    var theme = panel.querySelector('[data-value="theme"]');
+    var motion = panel.querySelector('[data-value="motion"]');
+    if (theme) theme.textContent = themeName();
+    if (motion) motion.textContent = motionOn() ? "zawsze" : "zgodnie z systemem";
+  }
+
+  function setPanel(open) {
+    if (!panel) return;
+    panel.hidden = !open;
+    var button = document.querySelector(".rj-shared-header .theme-toggle");
+    if (button) button.setAttribute("aria-expanded", String(open));
+    if (open) paintPanel();
   }
 
   function setupTheme() {
     var theme = document.querySelector(".rj-shared-header [data-shared-theme], .rj-shared-header .theme-toggle");
     if (!bindOnce(theme, "theme")) return;
-    theme.addEventListener("click", toggleTheme);
+
+    panel = buildPanel(theme);
+    paintPanel();
+
+    /* Przechwytujemy kliknięcie w fazie capture, zanim dojdzie do przycisku.
+       Powód: /rejchat i /logowanie mają własne, starsze obsługi tego samego
+       przycisku (community.js, logowanie.js) i bez tego jedno kliknięcie
+       otwierałoby panel ORAZ przełączało motyw. Tutaj kliknięcie kończy się
+       wyłącznie na panelu. */
+    document.addEventListener("click", function (event) {
+      if (!event.target || !event.target.closest) return;
+      if (!event.target.closest(".rj-shared-header .theme-toggle")) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      setPanel(panel.hidden);
+    }, true);
+
+    document.addEventListener("click", function (event) {
+      if (!panel || panel.hidden) return;
+      if (panel.contains(event.target) || theme.contains(event.target)) return;
+      setPanel(false);
+    });
+
+    document.addEventListener("keydown", function (event) {
+      if (event.key !== "Escape" || !panel || panel.hidden) return;
+      setPanel(false);
+      theme.focus();
+    });
   }
 
   function setupMenu() {
@@ -116,6 +227,7 @@
 
   function start() {
     setupTheme();
+    if (panel) paintPanel();
     setupMenu();
     setupMore();
     setupCurrent();
@@ -126,4 +238,5 @@
 
   /* Nie kolidujemy z `js/topbar-split.js`, który trzyma `RejTopbar.refresh`. */
   window.RejTopbarPaint = start;
+  window.RejTopbarSettings = { paint: paintPanel, close: function () { setPanel(false); } };
 })(window, document);

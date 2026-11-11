@@ -256,6 +256,40 @@
         });
       })(btns[i]);
     }
+    /* Zapamiętujemy ostatnią sekcję — po odświeżeniu panel wraca tam, gdzie
+       skończyliśmy pracę, zamiast zawsze na Przegląd. Numer sekcji można też
+       wybrać z klawiatury: Alt+1…Alt+8 (w kolejności z szyny). */
+    var ACTIVE_KEY = "rj_admin_tab_v1";
+    function rememberTab(name) {
+      try { localStorage.setItem(ACTIVE_KEY, name); } catch (e) { /* tryb prywatny */ }
+    }
+    function restoreTab() {
+      var saved = null;
+      try { saved = localStorage.getItem(ACTIVE_KEY); } catch (e) { saved = null; }
+      if (!saved) return;
+      var target = $("tab-btn-" + saved);
+      if (target && !target.classList.contains("is-active")) target.click();
+    }
+    btns.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        rememberTab(btn.getAttribute("data-tab"));
+      });
+    });
+    document.addEventListener("keydown", function (event) {
+      if (!event.altKey || event.ctrlKey || event.metaKey) return;
+      var number = Number(event.key);
+      if (!(number >= 1 && number <= btns.length)) return;
+      var target = btns[number - 1];
+      if (!target) return;
+      /* Nie przechwytujemy skrótu, gdy ktoś pisze w polu formularza. */
+      var tag = (event.target && event.target.tagName) || "";
+      if (/^(INPUT|TEXTAREA|SELECT)$/.test(tag)) return;
+      event.preventDefault();
+      target.click();
+      target.focus();
+    });
+    window.RJAdminTabs = { restore: restoreTab };
+
     // Skróty nie omijają zwykłej obsługi sekcji (ładowania i uprawnień).
     document.querySelectorAll("[data-open-tab]").forEach(function (shortcut) {
       shortcut.addEventListener("click", function () {
@@ -296,6 +330,12 @@
     if (a) a.hidden = true;
     if (d) d.hidden = false;
     if (l) l.hidden = false;
+    /* Po zalogowaniu wracamy do ostatnio otwartej sekcji (o ile była). */
+    setTimeout(function () {
+      if (window.RJAdminTabs && typeof window.RJAdminTabs.restore === "function") {
+        window.RJAdminTabs.restore();
+      }
+    }, 0);
     startRefresh();
   }
 
@@ -1413,6 +1453,12 @@
     renderVisitorList();
     if (!visitorListData.length) fetchVisitorList();
     fetchVisitorProfile(id);
+  }
+
+  function restoreLastSection() {
+    if (window.RJAdminTabs && typeof window.RJAdminTabs.restore === "function") {
+      window.RJAdminTabs.restore();
+    }
   }
 
   function bindLiveProfileOpen() {

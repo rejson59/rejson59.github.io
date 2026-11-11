@@ -1,0 +1,860 @@
+/* © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
+   Licencja: /LICENSE, /licencja
+   ----------------------------------------------------------------------------
+   Panel admina 2.0 — warstwa wizualna.
+
+   Panel rósł zakładka po zakładce i z czasem stał się poziomym paskiem ośmiu
+   przycisków nad stosem kart. Przy tej liczbie sekcji poziomy pasek przestaje
+   być czytelny: nie widać, gdzie się jest, a każda karta wygląda tak samo.
+
+   Nowy układ:
+   - stała lewa szyna z sekcjami (pionowo, z podświetleniem aktywnej),
+   - treść po prawej, z własną szerokością i równym rytmem kart,
+   - jedna powierzchnia dla wszystkich kart: ta sama krawędź, ten sam promień,
+     ten sam nagłówek (ikona + tytuł + opis + odświeżanie),
+   - liczby są najważniejsze: duże, monospace, bez ozdobników,
+   - na telefonie szyna zamienia się w przewijany pasek na górze.
+   -------------------------------------------------------------------------- */
+
+body.rj-admin {
+  --adm-bg: #060c16;
+  --adm-surface: #0a1524;
+  --adm-surface-2: #0d1a2c;
+  --adm-raised: rgba(255, 255, 255, 0.055);
+  --adm-raised-2: rgba(255, 255, 255, 0.09);
+  --adm-line: rgba(150, 185, 235, 0.12);
+  --adm-line-2: rgba(150, 185, 235, 0.22);
+  --adm-ink: #eaf2ff;
+  --adm-sub: #94a9c7;
+  --adm-faint: #6b809e;
+  --adm-accent: #8bbdff;
+  --adm-accent-2: #4d8df6;
+  --adm-button: #d3e5ff;
+  --adm-button-ink: #061223;
+  --adm-radius: 20px;
+  --adm-radius-sm: 12px;
+  background:
+    radial-gradient(900px 520px at 12% -12%, rgba(77, 141, 246, 0.14), transparent 70%),
+    radial-gradient(760px 460px at 94% 2%, rgba(139, 189, 255, 0.08), transparent 72%),
+    var(--adm-bg);
+  background-attachment: fixed;
+  color: var(--adm-ink);
+}
+
+html[data-theme="light"] body.rj-admin {
+  --adm-bg: #eef3fb;
+  --adm-surface: #ffffff;
+  --adm-surface-2: #f7faff;
+  --adm-raised: rgba(20, 48, 92, 0.045);
+  --adm-raised-2: rgba(20, 48, 92, 0.09);
+  --adm-line: rgba(30, 66, 118, 0.14);
+  --adm-line-2: rgba(30, 66, 118, 0.26);
+  --adm-ink: #10233d;
+  --adm-sub: #47617f;
+  --adm-faint: #6a7f9b;
+  --adm-accent: #235cb3;
+  --adm-accent-2: #1a4c9c;
+  --adm-button: #1c56ab;
+  --adm-button-ink: #ffffff;
+  background:
+    radial-gradient(880px 520px at 12% -14%, rgba(77, 141, 246, 0.14), transparent 70%),
+    var(--adm-bg);
+  background-attachment: fixed;
+}
+
+/* --------------------------------------------------------------- nagłówek --- */
+
+body.rj-admin .admin-main {
+  width: 100%;
+  max-width: 1560px;
+  margin: 0 auto;
+  padding: 26px clamp(12px, 2vw, 28px) 96px;
+}
+
+body.rj-admin .admin-welcome {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+  margin: 0 0 20px;
+  padding: 0 2px;
+}
+
+body.rj-admin .admin-kicker,
+body.rj-admin .admin-welcome .admin-kicker {
+  display: inline-block;
+  margin: 0 0 8px;
+  color: var(--adm-accent);
+  font: 700 10.5px/1 "JetBrains Mono", ui-monospace, monospace;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+body.rj-admin .admin-welcome h1 {
+  margin: 0;
+  color: var(--adm-ink);
+  font: 700 clamp(28px, 3.2vw, 38px) / 1.04 "Space Grotesk", system-ui, sans-serif;
+  letter-spacing: -0.045em;
+}
+
+body.rj-admin .admin-welcome p {
+  margin: 8px 0 0;
+  max-width: 62ch;
+  color: var(--adm-sub);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+body.rj-admin .adm-welcome-side {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+body.rj-admin .adm-live-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 32px;
+  padding: 0 13px;
+  border: 1px solid var(--adm-line-2);
+  border-radius: 999px;
+  background: var(--adm-raised);
+  color: var(--adm-sub);
+  font: 650 11px/1 "Inter", system-ui, sans-serif;
+}
+
+body.rj-admin .adm-live-pill i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--adm-accent);
+  box-shadow: 0 0 0 3px rgba(139, 189, 255, 0.18);
+}
+
+body.rj-admin .admin-welcome-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 32px;
+  padding: 0 13px;
+  border: 1px dashed var(--adm-line-2);
+  border-radius: 999px;
+  color: var(--adm-faint);
+  font: 700 10px/1 "JetBrains Mono", ui-monospace, monospace;
+  letter-spacing: 0.14em;
+}
+
+/* ------------------------------------------------------------------ układ --- */
+
+body.rj-admin .adm-shell {
+  display: grid;
+  grid-template-columns: 246px minmax(0, 1fr);
+  align-items: start;
+  gap: 20px;
+}
+
+body.rj-admin .adm-body {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+}
+
+/* ------------------------------------------------------------------- szyna --- */
+
+body.rj-admin .adm-rail {
+  position: sticky;
+  top: 92px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--adm-line);
+  border-radius: var(--adm-radius);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0)), var(--adm-surface);
+  box-shadow: 0 30px 70px -50px rgba(0, 4, 12, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+body.rj-admin .adm-rail-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 6px 10px;
+  border-bottom: 1px solid var(--adm-line);
+}
+
+body.rj-admin .adm-rail-mark {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border: 1px solid rgba(139, 189, 255, 0.3);
+  border-radius: 11px;
+  background: rgba(139, 189, 255, 0.14);
+  color: #dcebff;
+  font-size: 14px;
+}
+
+body.rj-admin .adm-rail-head small {
+  display: block;
+  color: var(--adm-faint);
+  font: 700 9px/1.3 "JetBrains Mono", ui-monospace, monospace;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+body.rj-admin .adm-rail-head strong {
+  display: block;
+  margin-top: 2px;
+  color: var(--adm-ink);
+  font: 650 12.5px/1.2 "Inter", system-ui, sans-serif;
+}
+
+body.rj-admin .adm-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+body.rj-admin .adm-tab {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 11px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--adm-sub);
+  font: 600 12.5px/1.2 "Inter", system-ui, sans-serif;
+  text-align: left;
+  white-space: normal;
+  cursor: pointer;
+  transition: background 0.18s var(--hub-ease, ease), color 0.18s var(--hub-ease, ease),
+    border-color 0.18s var(--hub-ease, ease);
+}
+
+body.rj-admin .adm-tab:hover {
+  background: var(--adm-raised);
+  color: var(--adm-ink);
+}
+
+body.rj-admin .adm-tab.is-active {
+  border-color: var(--adm-line-2);
+  background: linear-gradient(90deg, rgba(77, 141, 246, 0.2), rgba(77, 141, 246, 0.07));
+  color: var(--adm-ink);
+  box-shadow: inset 2px 0 0 var(--adm-accent);
+}
+
+body.rj-admin .adm-tab-note {
+  margin-left: auto;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--adm-raised);
+  color: var(--adm-faint);
+  font: 700 8.5px/1.4 "JetBrains Mono", ui-monospace, monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+body.rj-admin .adm-tab.is-active .adm-tab-note {
+  background: rgba(139, 189, 255, 0.18);
+  color: #dcebff;
+}
+
+body.rj-admin .adm-rail-link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+  padding: 10px 11px;
+  border-top: 1px solid var(--adm-line);
+  color: var(--adm-faint);
+  font-size: 11.5px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.18s ease;
+}
+
+body.rj-admin .adm-rail-link:hover {
+  color: var(--adm-accent);
+}
+
+/* ------------------------------------------------------------------- karty --- */
+
+body.rj-admin .adm-card,
+body.rj-admin .admin-card {
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--adm-line);
+  border-radius: var(--adm-radius);
+  background: var(--adm-surface);
+  box-shadow: 0 26px 60px -54px rgba(0, 4, 12, 0.9);
+  overflow: hidden;
+}
+
+body.rj-admin .adm-card-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--adm-line);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0));
+}
+
+body.rj-admin .adm-card-ico {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border: 1px solid var(--adm-line);
+  border-radius: 11px;
+  background: var(--adm-raised);
+  color: var(--adm-accent);
+  font-size: 15px;
+  line-height: 1;
+}
+
+body.rj-admin .adm-card-titles {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+body.rj-admin .adm-card-titles h2 {
+  margin: 0;
+  color: var(--adm-ink);
+  font: 650 14.5px/1.25 "Space Grotesk", system-ui, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+body.rj-admin .adm-card-sub {
+  margin: 4px 0 0;
+  color: var(--adm-sub);
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+body.rj-admin .adm-live-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--adm-line);
+  border-radius: 999px;
+  background: var(--adm-raised);
+  color: var(--adm-faint);
+  font-size: 10.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+body.rj-admin .adm-live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--adm-accent);
+  box-shadow: 0 0 0 3px rgba(139, 189, 255, 0.16);
+}
+
+body.rj-admin .adm-refresh {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  padding: 0;
+  border: 1px solid var(--adm-line);
+  border-radius: 10px;
+  background: var(--adm-raised);
+  color: var(--adm-sub);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+
+body.rj-admin .adm-refresh:hover {
+  background: var(--adm-raised-2);
+  color: var(--adm-ink);
+  transform: rotate(25deg);
+}
+
+body.rj-admin .adm-grid2 {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+  gap: 16px;
+}
+
+/* ------------------------------------------------------------------ przegląd --- */
+
+body.rj-admin .admin-overview {
+  display: grid;
+  gap: 16px;
+}
+
+body.rj-admin .overview-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 2px;
+}
+
+body.rj-admin .overview-heading h2 {
+  margin: 0;
+  color: var(--adm-ink);
+  font: 650 clamp(18px, 2vw, 22px) / 1.15 "Space Grotesk", system-ui, sans-serif;
+  letter-spacing: -0.02em;
+}
+
+body.rj-admin .overview-heading p {
+  margin: 6px 0 0;
+  max-width: 60ch;
+  color: var(--adm-sub);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+body.rj-admin .overview-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+body.rj-admin .overview-stat {
+  display: grid;
+  gap: 6px;
+  padding: 16px;
+  border: 1px solid var(--adm-line);
+  border-radius: var(--adm-radius);
+  background: var(--adm-surface);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+body.rj-admin .overview-stat span {
+  color: var(--adm-faint);
+  font: 700 9.5px/1.3 "JetBrains Mono", ui-monospace, monospace;
+  letter-spacing: 0.14em;
+}
+
+body.rj-admin .overview-stat strong {
+  color: var(--adm-ink);
+  font: 700 clamp(26px, 3vw, 34px) / 1 "JetBrains Mono", ui-monospace, monospace;
+  letter-spacing: -0.03em;
+}
+
+body.rj-admin .overview-stat small {
+  color: var(--adm-sub);
+  font-size: 10.5px;
+  line-height: 1.35;
+}
+
+body.rj-admin .overview-status {
+  margin: 0;
+  padding: 0 2px;
+  color: var(--adm-faint);
+  font-size: 11px;
+}
+
+body.rj-admin .overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px;
+}
+
+body.rj-admin .overview-tile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px;
+  border: 1px solid var(--adm-line);
+  border-radius: 16px;
+  background: var(--adm-surface);
+  color: var(--adm-ink);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.18s ease, background 0.18s ease, transform 0.18s ease;
+}
+
+body.rj-admin .overview-tile:hover {
+  border-color: var(--adm-line-2);
+  background: var(--adm-surface-2);
+  transform: translateY(-1px);
+}
+
+body.rj-admin .overview-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border: 1px solid var(--adm-line);
+  border-radius: 11px;
+  background: var(--adm-raised);
+  color: var(--adm-accent);
+}
+
+body.rj-admin .overview-svg {
+  width: 17px;
+  height: 17px;
+}
+
+body.rj-admin .overview-tile strong {
+  display: block;
+  font: 650 12.5px/1.3 "Inter", system-ui, sans-serif;
+}
+
+body.rj-admin .overview-tile small {
+  display: block;
+  margin-top: 2px;
+  color: var(--adm-faint);
+  font-size: 10.5px;
+  line-height: 1.35;
+}
+
+body.rj-admin .overview-tile b {
+  margin-left: auto;
+  color: var(--adm-faint);
+  font-weight: 700;
+}
+
+/* --------------------------------------------------------------------- KPI --- */
+
+body.rj-admin .adm-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(178px, 1fr));
+  gap: 12px;
+}
+
+body.rj-admin .adm-kpi {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--adm-line);
+  border-radius: 16px;
+  background: var(--adm-surface);
+}
+
+body.rj-admin .adm-kpi--live {
+  border-color: rgba(139, 189, 255, 0.34);
+  background: linear-gradient(160deg, rgba(77, 141, 246, 0.16), rgba(77, 141, 246, 0.04)), var(--adm-surface);
+}
+
+body.rj-admin .adm-kpi-ico {
+  font-size: 14px;
+  line-height: 1.4;
+  opacity: 0.9;
+}
+
+body.rj-admin .adm-kpi-body {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+body.rj-admin .adm-kpi-num {
+  color: var(--adm-ink);
+  font: 700 24px/1 "JetBrains Mono", ui-monospace, monospace;
+  letter-spacing: -0.03em;
+}
+
+body.rj-admin .adm-kpi-label {
+  color: var(--adm-sub);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+body.rj-admin .adm-kpi-sub {
+  color: var(--adm-faint);
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+/* ------------------------------------------------------------------ tabele --- */
+
+body.rj-admin .adm-table-wrap {
+  overflow: auto;
+  max-height: min(60vh, 620px);
+  border: 0;
+}
+
+body.rj-admin .adm-table {
+  display: grid;
+  min-width: 720px;
+}
+
+body.rj-admin .adm-trow {
+  display: grid;
+  grid-template-columns: minmax(180px, 2fr) repeat(5, minmax(96px, 1fr));
+  gap: 10px;
+  align-items: center;
+  padding: 10px 18px;
+  border-bottom: 1px solid var(--adm-line);
+  font-size: 11.5px;
+}
+
+body.rj-admin .adm-thead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--adm-surface-2);
+  color: var(--adm-faint);
+  font: 700 9.5px/1.3 "JetBrains Mono", ui-monospace, monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+body.rj-admin .adm-trow:nth-child(even) {
+  background: rgba(255, 255, 255, 0.014);
+}
+
+body.rj-admin .adm-num {
+  text-align: right;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+}
+
+body.rj-admin .adm-histo,
+body.rj-admin .adm-map,
+body.rj-admin .adm-hourly,
+body.rj-admin .adm-chart,
+body.rj-admin .adm-topweek,
+body.rj-admin .pa-visitors,
+body.rj-admin .pa-clicks,
+body.rj-admin .pa-events,
+body.rj-admin .adm-online-users {
+  padding: 14px 18px;
+}
+
+body.rj-admin .adm-histo-empty {
+  display: block;
+  padding: 18px 0;
+  color: var(--adm-faint);
+  font-size: 11.5px;
+  text-align: center;
+}
+
+/* ------------------------------------------------------------- formularze --- */
+
+body.rj-admin .ctrl-input,
+body.rj-admin input[type="text"],
+body.rj-admin input[type="email"],
+body.rj-admin input[type="password"],
+body.rj-admin input[type="search"],
+body.rj-admin input[type="number"],
+body.rj-admin select,
+body.rj-admin textarea {
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--adm-line);
+  border-radius: 11px;
+  background: var(--adm-surface-2);
+  color: var(--adm-ink);
+  font: 400 12.5px/1.45 "Inter", system-ui, sans-serif;
+  outline: none;
+}
+
+body.rj-admin textarea {
+  padding: 9px 12px;
+}
+
+body.rj-admin .ctrl-input:focus,
+body.rj-admin input:focus,
+body.rj-admin select:focus,
+body.rj-admin textarea:focus {
+  border-color: rgba(139, 189, 255, 0.55);
+  box-shadow: 0 0 0 4px rgba(77, 141, 246, 0.1);
+}
+
+body.rj-admin .field-label {
+  color: var(--adm-sub);
+  font-size: 11px;
+  font-weight: 650;
+}
+
+body.rj-admin .btn,
+body.rj-admin .btn-primary,
+body.rj-admin .adm-refresh {
+  border-radius: 11px;
+}
+
+body.rj-admin .btn-primary {
+  border: 0;
+  background: var(--adm-button);
+  color: var(--adm-button-ink);
+  font-weight: 700;
+}
+
+body.rj-admin .btn-glass,
+body.rj-admin .btn-ghost {
+  border: 1px solid var(--adm-line);
+  background: var(--adm-raised);
+  color: var(--adm-ink);
+}
+
+body.rj-admin .auth-card {
+  max-width: 460px;
+  margin: 48px auto;
+  padding: 26px;
+  border: 1px solid var(--adm-line);
+  border-radius: 24px;
+  background: var(--adm-surface);
+  box-shadow: 0 40px 90px -60px rgba(0, 0, 0, 0.9);
+}
+
+/* ------------------------------------------------------------- logowanie --- */
+
+body.rj-admin .auth-shell {
+  padding: 0 clamp(12px, 2vw, 28px);
+}
+
+body.rj-admin .auth-card h1 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0 6px;
+  color: var(--adm-ink);
+  font: 650 24px/1.2 "Space Grotesk", system-ui, sans-serif;
+}
+
+body.rj-admin .page-mark {
+  width: 24px;
+  height: 24px;
+  color: var(--adm-accent);
+}
+
+body.rj-admin .auth-sub,
+body.rj-admin .eyebrow {
+  color: var(--adm-sub);
+}
+
+/* ------------------------------------------------------------------ toast --- */
+
+body.rj-admin .toast-banner {
+  border: 1px solid var(--adm-line-2);
+  border-radius: 13px;
+  background: var(--adm-surface-2);
+  color: var(--adm-ink);
+  box-shadow: 0 24px 60px -30px rgba(0, 0, 0, 0.9);
+}
+
+/* ------------------------------------------------------------------ dostępność --- */
+
+body.rj-admin :is(button, a, input, select, textarea, summary):focus-visible {
+  outline: 2px solid var(--adm-accent);
+  outline-offset: 2px;
+}
+
+/* -------------------------------------------------------------- responsywność --- */
+
+@media (max-width: 1100px) {
+  body.rj-admin .adm-shell {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  body.rj-admin .adm-rail {
+    position: static;
+    top: auto;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  body.rj-admin .adm-rail::-webkit-scrollbar {
+    display: none;
+  }
+  body.rj-admin .adm-rail-head {
+    display: none;
+  }
+  body.rj-admin .adm-tabs {
+    flex-direction: row;
+    gap: 4px;
+    min-width: max-content;
+  }
+  body.rj-admin .adm-tab {
+    width: auto;
+    min-height: 36px;
+    padding: 0 12px;
+    white-space: nowrap;
+  }
+  body.rj-admin .adm-rail-link {
+    margin-left: auto;
+    border-top: 0;
+    padding: 8px 10px;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 760px) {
+  body.rj-admin .admin-main {
+    padding: 16px 10px 104px;
+  }
+  body.rj-admin .admin-welcome {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+  body.rj-admin .adm-welcome-side {
+    width: 100%;
+    justify-content: space-between;
+  }
+  body.rj-admin .adm-welcome-side .admin-welcome-badge {
+    display: none;
+  }
+  body.rj-admin .adm-card-head {
+    flex-wrap: wrap;
+    padding: 13px 14px;
+  }
+  body.rj-admin .adm-card-ico {
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+    font-size: 13px;
+  }
+  body.rj-admin .adm-live-chip {
+    display: none;
+  }
+  body.rj-admin .adm-histo,
+  body.rj-admin .adm-map,
+  body.rj-admin .adm-hourly,
+  body.rj-admin .adm-chart,
+  body.rj-admin .adm-topweek,
+  body.rj-admin .pa-visitors,
+  body.rj-admin .pa-clicks,
+  body.rj-admin .pa-events,
+  body.rj-admin .adm-online-users,
+  body.rj-admin .adm-trow {
+    padding-left: 13px;
+    padding-right: 13px;
+  }
+  body.rj-admin .overview-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  body.rj-admin .auth-card {
+    margin: 20px auto;
+    padding: 20px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.rj-admin *,
+  body.rj-admin *::before,
+  body.rj-admin *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

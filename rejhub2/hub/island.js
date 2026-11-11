@@ -45,7 +45,8 @@
     now: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.6"/><circle cx="16.5" cy="16" r="2.6"/></svg>',
     quick: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2 4.5 13.5H11l-1 8.5L19 10h-6.5Z"/></svg>',
     profile: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.5" r="3.6"/><path d="M4.5 20.5a7.5 7.5 0 0 1 15 0"/></svg>',
-    theme: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.2 5.2l1.4 1.4M17.4 17.4l1.4 1.4M18.8 5.2l-1.4 1.4M6.6 17.4 5.2 18.8"/></svg>',
+    theme: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3.1"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 8.98 19.3a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.7 15a1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.7 8.98a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.7 1.7 0 0 0 9 4.7a1.7 1.7 0 0 0 1.03-1.56V3a2 2 0 1 1 4 0v.09A1.7 1.7 0 0 0 15 4.7a1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.7 1.7 0 0 0 19.3 9v.09A1.7 1.7 0 0 0 20.86 10H21a2 2 0 1 1 0 4h-.09A1.7 1.7 0 0 0 19.4 15Z"/></svg>',
+    send: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12 20 4.5 15.6 20l-3.5-5.7L4.5 12Z"/></svg>',
     tasks: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7.5 8.5 12 4l4.5 4.5"/><path d="M4.5 15v4.5h15V15"/></svg>',
     panic: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 3v9"/><path d="M6.5 6.5a7.5 7.5 0 1 0 11 0"/></svg>',
     close: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 5l14 14M19 5 5 19"/></svg>',
@@ -195,7 +196,7 @@
     idle: { w: 216, h: 46, r: 23 },
     dock: { w: 436, h: 52, r: 26 },
     report: { w: 384, h: 236, r: 24 },
-    search: { w: 384, h: 292, r: 24 },
+    chat: { w: 396, h: 404, r: 24 },
     alerts: { w: 384, h: 296, r: 24 },
     now: { w: 384, h: 112, r: 24 },
     profile: { w: 384, h: 158, r: 24 },
@@ -571,13 +572,13 @@
         "</div>" +
         '<div class="rj-view rj-view--dock">' +
           '<button class="rj-dock-btn is-primary" type="button" data-open="report" title="Zgłoś błąd lub pomysł" aria-label="Zgłoś błąd lub pomysł">' + ICONS.report + "</button>" +
-          '<button class="rj-dock-btn" type="button" data-open="search" title="Szukaj" aria-label="Szukaj">' + ICONS.search + "</button>" +
+          '<button class="rj-dock-btn rj-dock-btn--chat" type="button" data-open="chat" title="RejChat" aria-label="RejChat">' + ICONS.chat + '<span class="rj-chat-dot" data-chat-dot hidden aria-hidden="true"></span>' + "</button>" +
           '<button class="rj-dock-btn" type="button" data-open="alerts" title="Powiadomienia" aria-label="Powiadomienia">' + ICONS.alerts + "</button>" +
           '<button class="rj-dock-btn" type="button" data-open="now" title="Teraz gra" aria-label="Teraz gra">' + ICONS.now + "</button>" +
           '<span class="rj-dock-sep" aria-hidden="true"></span>' +
           '<button class="rj-dock-btn" type="button" data-open="quick" title="Szybkie akcje" aria-label="Szybkie akcje">' + ICONS.quick + "</button>" +
           '<button class="rj-dock-btn" type="button" data-open="profile" title="Profil i status" aria-label="Profil i status">' + ICONS.profile + "</button>" +
-          '<button class="rj-dock-btn" type="button" data-open="theme" title="Motyw i animacje" aria-label="Motyw i animacje">' + ICONS.theme + "</button>" +
+          '<button class="rj-dock-btn" type="button" data-open="theme" title="Ustawienia" aria-label="Ustawienia">' + ICONS.theme + "</button>" +
           '<button class="rj-dock-btn" type="button" data-open="panic" title="Autodestrukcja" aria-label="Autodestrukcja">' + ICONS.panic + "</button>" +
           '<button class="rj-dock-btn rj-dock-btn--collapse" type="button" data-collapse title="Schowaj wyspę" aria-label="Schowaj wyspę">' + ICONS.down + "</button>" +
         "</div>" +
@@ -612,13 +613,20 @@
           "</div>" +
         "</div>" +
 
-        '<div class="rj-view rj-view--search">' +
-          '<div class="rj-panel">' +
+        '<div class="rj-view rj-view--chat">' +
+          '<div class="rj-panel rj-panel--chat">' +
             '<div class="rj-panel-head">' +
-              '<input class="rj-field" id="rj-island-search" type="search" placeholder="Szukaj strony albo akcji…" aria-label="Szukaj" autocomplete="off">' +
+              '<span class="rj-chat-badge" aria-hidden="true">#</span>' +
+              '<span class="rj-panel-title">RejChat <small>czat ogólny</small></span>' +
+              '<a class="rj-link-btn" href="/rejchat">Otwórz <span aria-hidden="true">↗</span></a>' +
               '<button class="rj-x" type="button" data-close aria-label="Zamknij">' + ICONS.close + "</button>" +
             "</div>" +
-            '<div class="rj-list" id="rj-island-results" role="listbox" aria-label="Wyniki"></div>' +
+            '<div class="rj-chat-list" id="rj-island-chat" role="log" aria-live="polite" aria-label="Ostatnie wiadomości"></div>' +
+            '<form class="rj-chat-form" id="rj-island-chat-form" hidden>' +
+              '<input class="rj-field" id="rj-island-chat-input" type="text" maxlength="2000" placeholder="Napisz wiadomość…" aria-label="Wiadomość na czat" autocomplete="off">' +
+              '<button class="rj-chat-send" type="submit" data-chat-send aria-label="Wyślij wiadomość">' + ICONS.send + "</button>" +
+            "</form>" +
+            '<p class="rj-chat-note" id="rj-island-chat-note" role="status"></p>' +
           "</div>" +
         "</div>" +
 
@@ -931,7 +939,7 @@
   }
 
   var VIEWS = {
-    min: 1, idle: 1, dock: 1, report: 1, search: 1, alerts: 1, now: 1,
+    min: 1, idle: 1, dock: 1, report: 1, chat: 1, alerts: 1, now: 1,
     profile: 1, quick: 1, theme: 1, tasks: 1, panic: 1
   };
 
@@ -966,6 +974,7 @@
   function apply(name) {
     if (!island) return;
     if (!VIEWS[name]) name = "idle";
+    if (name !== "chat") stopChatPoll();
     state = name;
     island.dataset.state = name;
     /* Rysowanie paneli jest w osłonie: wyjątek w danych nie może zostawić
@@ -997,12 +1006,10 @@
   }
 
   function paint(name) {
-    if (name === "search") {
-      renderSearch("");
-      setTimeout(function () {
-        var input = byId("rj-island-search");
-        if (input) input.focus();
-      }, 90);
+    if (name === "chat") {
+      stopChatPoll();
+      loadIslandChat(true);
+      startChatPoll();
     }
     if (name === "report") {
       setReportStage(report.chosen ? "form" : "choose", true);
@@ -1027,6 +1034,7 @@
     if (!force && now - RESET_GUARD < 400) return;
     RESET_GUARD = now;
     if (raf) { window.cancelAnimationFrame(raf); raf = 0; }
+    stopChatPoll();
     if (!island) return;
     var back = isCollapsed() ? "min" : "idle";
     state = back;
@@ -1172,123 +1180,6 @@
     { label: "Zadania", hint: "Z", icon: "tasks", state: "tasks" },
     { label: "Autodestrukcja", hint: "X", icon: "panic", state: "panic" }
   ];
-
-  function pageIndex() {
-    var seen = Object.create(null);
-    var out = [];
-
-    function push(label, href, hint) {
-      var key = href.replace(/#.*$/, "");
-      if (seen[key]) return;
-      seen[key] = 1;
-      out.push({ label: label, href: href, hint: hint || "", kind: "page" });
-    }
-
-    Array.prototype.forEach.call(document.querySelectorAll("a[href]"), function (link) {
-      var url;
-      try {
-        url = new URL(link.getAttribute("href"), location.href);
-      } catch (e) {
-        return;
-      }
-      if (url.origin !== location.origin) return;
-      /* własne skróty wyspy nie są „stronami do wyszukania” */
-      if (link.closest("#rj-island-root")) return;
-      if (/\.(pdf|zip|png|jpe?g|gif|svg|webp|mp4|mp3|webm)$/i.test(url.pathname)) return;
-      if (url.pathname === location.pathname && !url.search) return;
-      var label = String(link.getAttribute("aria-label") || link.textContent || "").replace(/\s+/g, " ").trim();
-      if (!label || label.length > 56) return;
-      if (link.closest(".rj-shared-header, footer, nav")) return;
-      push(label, url.pathname + url.search, "");
-    });
-
-    /* stałe wejścia, nawet jeśli strona nie ma do nich linku w treści */
-    [
-      ["Strona główna", "/", "G"],
-      ["RejChat", "/rejchat", "C"],
-      ["RejFile", "/rejfile", "F"],
-      ["RejSejf", "/rejsejf", "S"],
-      ["RejTools", "/rejtools", "T"],
-      ["RejClass", "/rejclass", "K"],
-      ["Szklane studio", "/szklane-studio", "Z"],
-      ["Konto", "/profil", "A"],
-      ["Panel administratora", "/admin", "P"]
-    ].forEach(function (row) {
-      push(row[0], row[1], row[2]);
-    });
-
-    return out;
-  }
-
-  var searchCursor = -1;
-  var searchResults = [];
-
-  function matches(text, query) {
-    var haystack = norm(text);
-    if (!query) return true;
-    if (haystack.indexOf(query) !== -1) return true;
-    /* „czat” i „chat” to dla użytkownika to samo słowo */
-    var alt = query.replace(/cz/g, "ch");
-    return alt !== query && haystack.indexOf(alt) !== -1;
-  }
-
-  function renderSearch(query) {
-    var q = norm(query).trim();
-    var list = pageIndex().filter(function (item) {
-      return matches(item.label, q);
-    }).slice(0, 5);
-
-    var contextual = contextActions();
-    if (!q) {
-      /* Bez wpisanej frazy najpierw to, co pasuje do bieżącej podstrony. */
-      searchResults = contextual.concat(ACTIONS).slice(0, 6);
-    } else {
-      searchResults = contextual.filter(function (item) {
-        return matches(item.label, q);
-      }).concat(list, ACTIONS.filter(function (item) {
-        return matches(item.label, q);
-      })).slice(0, 6);
-    }
-    searchCursor = -1;
-
-    var host = byId("rj-island-results");
-    if (!host) return;
-    if (!searchResults.length) {
-      host.innerHTML = '<p class="rj-empty">Nic nie znaleziono. Spróbuj „czat”, „plik” albo „konto”.</p>';
-      return;
-    }
-    var marks = { report: "!", alerts: "●", theme: "◐", profile: "○", tasks: "↑", panic: "✕", file: "↑", chat: "✎", note: "▤", quick: "→" };
-    host.innerHTML = searchResults.map(function (item, index) {
-      var mark = item.kind === "page" ? "↗" : (marks[item.icon] || "•");
-      return '<button class="rj-item" type="button" role="option" data-result="' + index + '">' +
-        '<span class="rj-ico" aria-hidden="true">' + mark + "</span>" +
-        "<span>" + esc(item.label) + "</span>" +
-        '<span class="rj-key">' + esc(item.hint || "") + "</span></button>";
-    }).join("");
-  }
-
-  function openResult(index) {
-    var item = searchResults[index];
-    if (!item) return;
-    if (item.kind === "context") { runContext(item); return; }
-    if (item.kind === "page") {
-      close();
-      window.location.href = item.href;
-      return;
-    }
-    if (item.state === "report") openReport("", "");
-    else if (item.state) apply(item.state);
-  }
-
-  function moveSearchCursor(delta) {
-    var nodes = withinAll("#rj-island-results .rj-item");
-    if (!nodes.length) return;
-    searchCursor = (searchCursor + delta + nodes.length) % nodes.length;
-    nodes.forEach(function (node, index) {
-      node.classList.toggle("is-cursor", index === searchCursor);
-    });
-    nodes[searchCursor].scrollIntoView({ block: "nearest" });
-  }
 
   /* ----------------------------------------------------------- zgłoszenia */
 
@@ -1575,6 +1466,297 @@
     });
   }
 
+  /* ------------------------------------------------------------- mini czat */
+
+  /* Mini RejChat w wyspie: ostatnie wiadomości pokoju ogólnego i wysyłanie
+     bez opuszczania strony. Wcześniej w tym miejscu było wyszukiwanie stron —
+     działało, ale nikt go nie używał, bo każdy zna adresy podstron. Rozmowa
+     jest tu bardziej przydatna.
+
+     Czat korzysta z tych samych RPC co /rejchat (rejchat_room_list_v3,
+     rejchat_room_send_v2), więc nic nie jest duplikowane po stronie serwera. */
+
+  var CHAT_ROOM = "general";
+  var CHAT_SEEN_KEY = "rj_island_chat_seen_v1";
+  var chatPoll = 0;
+  var chatIdlePoll = 0;
+  var chatBusy = false;
+  var chatSignature = "";
+
+  function chatApi() {
+    return window.RJProfiles && typeof window.RJProfiles.rpc === "function"
+      ? window.RJProfiles.rpc
+      : rpc;
+  }
+
+  function stopChatPoll() {
+    if (chatPoll) { clearInterval(chatPoll); chatPoll = 0; }
+  }
+
+  function startChatPoll() {
+    stopChatPoll();
+    chatPoll = setInterval(function () {
+      if (state !== "chat" || document.hidden) return;
+      loadIslandChat(false);
+    }, 6000);
+  }
+
+  function chatSeen() {
+    var value = Number(store(CHAT_SEEN_KEY) || 0);
+    return isFinite(value) ? value : 0;
+  }
+
+  function markChatSeen(rows) {
+    var newest = 0;
+    (rows || []).forEach(function (row) {
+      var time = Date.parse(row.created_at) || 0;
+      if (time > newest) newest = time;
+    });
+    if (newest) store(CHAT_SEEN_KEY, String(newest));
+    var dot = within("[data-chat-dot]");
+    if (dot) dot.hidden = true;
+  }
+
+  function chatLine(row, me) {
+    var mine = me && me.username === row.author_name;
+    var text = String(row.content || "").replace(/\s+/g, " ").trim();
+    if (text.length > 240) text = text.slice(0, 239) + "…";
+    return '<div class="rj-chat-row' + (mine ? " is-mine" : "") + '">' +
+      '<span class="rj-chat-who">' + esc(row.author_name || "Ktoś") + "</span>" +
+      '<span class="rj-chat-when">' + esc(fmtWhen(row.created_at)) + "</span>" +
+      (text ? '<p class="rj-chat-text">' + esc(text) + "</p>" : "") +
+      (row.photo ? '<span class="rj-chat-photo">zdjęcie</span>' : "") +
+      "</div>";
+  }
+
+  function loadIslandChat(initial) {
+    var host = byId("rj-island-chat");
+    var form = byId("rj-island-chat-form");
+    var note = byId("rj-island-chat-note");
+    if (!host) return;
+    var me = session();
+
+    if (!me) {
+      chatSignature = "";
+      host.innerHTML = '<p class="rj-empty">Zaloguj się, żeby zobaczyć rozmowę. <a href="/logowanie">Konto</a></p>';
+      if (form) form.hidden = true;
+      if (note) note.textContent = "";
+      return;
+    }
+    if (form) form.hidden = false;
+    if (initial && !host.querySelector(".rj-chat-row")) {
+      host.innerHTML = '<p class="rj-empty">Wczytuję rozmowę…</p>';
+    }
+
+    chatApi()("rejchat_room_list_v3", {
+      p_token: me.token, p_room: CHAT_ROOM, p_after_id: null, p_limit: 18
+    }).then(function (rows) {
+      if (state !== "chat") return;
+      rows = Array.isArray(rows) ? rows : [];
+      var signature = rows.map(function (row) {
+        return row.id + ":" + (row.content || "").length + ":" + (row.edited_at || "");
+      }).join("|");
+      if (signature === chatSignature && host.querySelector(".rj-chat-row")) {
+        markChatSeen(rows);
+        return;
+      }
+      chatSignature = signature;
+      host.innerHTML = rows.length
+        ? rows.map(function (row) { return chatLine(row, me); }).join("")
+        : '<p class="rj-empty">Cisza w pokoju. Napisz pierwszą wiadomość.</p>';
+      if (note) note.textContent = "";
+      host.scrollTop = host.scrollHeight;
+      markChatSeen(rows);
+    }).catch(function () {
+      if (note) note.textContent = "Nie udało się wczytać rozmowy. Spróbuj za chwilę.";
+      if (!host.querySelector(".rj-chat-row")) {
+        host.innerHTML = '<p class="rj-empty">Brak połączenia z czatem.</p>';
+      }
+    });
+  }
+
+  function sendIslandChat(form) {
+    var input = byId("rj-island-chat-input");
+    var note = byId("rj-island-chat-note");
+    var me = session();
+    if (!input || !me || chatBusy) return;
+    var text = String(input.value || "").trim();
+    if (!text) return;
+
+    chatBusy = true;
+    var button = form && form.querySelector("[data-chat-send]");
+    if (button) button.disabled = true;
+    chatApi()("rejchat_room_send_v2", {
+      p_token: me.token, p_room: CHAT_ROOM, p_content: text, p_reply_to: null
+    }).then(function () {
+      input.value = "";
+      chatSignature = "";
+      if (note) note.textContent = "";
+      return loadIslandChat(false);
+    }).catch(function (error) {
+      if (note) note.textContent = (error && error.message) || "Wiadomość nie została wysłana.";
+    }).then(function () {
+      chatBusy = false;
+      if (button) button.disabled = false;
+    });
+  }
+
+  /* Licznik nowych wiadomości na przycisku czatu. Odpytywanie jest rzadkie
+     (30 s) i tylko wtedy, gdy karta jest widoczna — nie obciąża serwera. */
+  function pollChatBadge() {
+    if (document.hidden) return;
+    var me = session();
+    var dot = within("[data-chat-dot]");
+    if (!me) { if (dot) dot.hidden = true; return; }
+    if (state === "chat") { if (dot) dot.hidden = true; return; }
+    chatApi()("rejchat_room_list_v3", {
+      p_token: me.token, p_room: CHAT_ROOM, p_after_id: null, p_limit: 3
+    }).then(function (rows) {
+      if (!Array.isArray(rows) || !rows.length) return;
+      var newest = rows.reduce(function (max, row) {
+        return Math.max(max, Date.parse(row.created_at) || 0);
+      }, 0);
+      if (dot) dot.hidden = !(newest > chatSeen());
+    }).catch(function () { /* bez połączenia zostawiamy stan */ });
+  }
+
+  /* ------------------------------------------------- między kartami: co gra */
+
+  /* Przeglądarka nie pozwala zajrzeć do <audio> w innej karcie, ale karty
+     tej samej witryny mogą się dogadać przez BroadcastChannel i localStorage.
+     Każda strona RejHuba z wyspą publikuje swój stan odtwarzania; wyspa
+     pokazuje to, co gra gdzie indziej, i potrafi wysłać pauzę/play z powrotem.
+
+     Dzięki temu „Teraz gra” nie jest już puste, gdy muzyka leci w innej karcie
+     tej samej witryny (np. na rejson59.github.io/Jakuplayer/, jeśli ta strona
+     dołączy się do kanału przez window.RejNowPlaying.publish). */
+
+  var NOW_KEY = "rj_now_playing_v1";
+  var NOW_CHANNEL = "rj_now_playing";
+  var nowTabId = "tab-" + Math.random().toString(36).slice(2, 9);
+  var nowChannel = null;
+  var lastPublish = 0;
+
+  try {
+    if (window.BroadcastChannel) nowChannel = new BroadcastChannel(NOW_CHANNEL);
+  } catch (e) { nowChannel = null; }
+
+  function nowPayload(media) {
+    if (!media) return null;
+    return {
+      id: nowTabId,
+      title: mediaTitle(media),
+      playing: !media.paused && !media.ended,
+      position: Math.round((media.currentTime || 0) * 10) / 10,
+      duration: isFinite(media.duration) ? Math.round(media.duration * 10) / 10 : 0,
+      page: location.pathname,
+      at: Date.now()
+    };
+  }
+
+  function publishNow(media) {
+    var payload = nowPayload(media);
+    if (!payload) return;
+    lastPublish = Date.now();
+    try { localStorage.setItem(NOW_KEY, JSON.stringify(payload)); } catch (e) { /* tryb prywatny */ }
+    if (nowChannel && nowChannel.postMessage) {
+      try { nowChannel.postMessage({ type: "state", payload: payload }); } catch (e) { /* trudno */ }
+    }
+  }
+
+  function readRemoteNow() {
+    var payload = null;
+    try { payload = JSON.parse(localStorage.getItem(NOW_KEY) || "null"); } catch (e) { payload = null; }
+    if (!payload || payload.id === nowTabId) return null;
+    if (!payload.at || Date.now() - payload.at > 3600000) return null;
+    return payload;
+  }
+
+  function sendMediaCommand(action, position) {
+    if (!nowChannel || !nowChannel.postMessage) {
+      toast("Sterowanie tylko z karty, w której gra muzyka");
+      return;
+    }
+    try { nowChannel.postMessage({ type: "cmd", action: action, position: position }); } catch (e) { /* trudno */ }
+  }
+
+  window.RejNowPlaying = {
+    publish: function (meta) {
+      if (!meta) return;
+      var payload = {
+        id: nowTabId,
+        title: String(meta.title || "Dźwięk"),
+        playing: Boolean(meta.playing),
+        position: Number(meta.position) || 0,
+        duration: Number(meta.duration) || 0,
+        page: meta.page || location.pathname,
+        at: Date.now()
+      };
+      try { localStorage.setItem(NOW_KEY, JSON.stringify(payload)); } catch (e) { /* trudno */ }
+      if (nowChannel && nowChannel.postMessage) {
+        try { nowChannel.postMessage({ type: "state", payload: payload }); } catch (e) { /* trudno */ }
+      }
+    },
+    latest: readRemoteNow,
+    command: sendMediaCommand
+  };
+
+  function watchLocalMedia() {
+    var nodes = Array.prototype.slice.call(document.querySelectorAll("audio, video"));
+    nodes.forEach(function (media) {
+      if (media.dataset.rjNowWatched) return;
+      media.dataset.rjNowWatched = "1";
+      ["play", "pause", "ended", "seeked"].forEach(function (name) {
+        media.addEventListener(name, function () { publishNow(media); refreshNowIfOpen(); });
+      });
+      media.addEventListener("timeupdate", function () {
+        if (media.paused) return;
+        if (Date.now() - lastPublish < 2000) return;
+        publishNow(media);
+      });
+    });
+  }
+
+  function refreshNowIfOpen() {
+    if (state === "now") renderNow();
+    try { syncHandle(); } catch (e) { /* trudno */ }
+  }
+
+  if (nowChannel) {
+    nowChannel.addEventListener("message", function (event) {
+      var data = event.data || {};
+      if (data.type === "cmd") {
+        var media = currentMedia();
+        if (!media) return;
+        if (data.action === "play") {
+          if (media.paused) {
+            var played = media.play();
+            if (played && played.catch) played.catch(function () { /* autoplay */ });
+          } else {
+            media.pause();
+          }
+        } else if (data.action === "pause" && !media.paused) {
+          media.pause();
+        } else if (data.action === "seek" && isFinite(data.position)) {
+          media.currentTime = Math.max(0, Number(data.position) || 0);
+        }
+        publishNow(media);
+        return;
+      }
+      if (data.type === "state") refreshNowIfOpen();
+    });
+  }
+
+  window.addEventListener("storage", function (event) {
+    if (event.key === NOW_KEY) refreshNowIfOpen();
+  });
+  document.addEventListener("visibilitychange", function () {
+    if (!document.hidden) {
+      watchLocalMedia();
+      pollChatBadge();
+    }
+  });
+
   /* -------------------------------------------------------------- teraz gra */
 
   function currentMedia() {
@@ -1591,15 +1773,54 @@
       (media.tagName === "VIDEO" ? "Wideo na tej stronie" : "Dźwięk na tej stronie");
   }
 
+  /* Jakuplayer (osobne repozytorium) zapisuje historię w `recentlyPlayed`
+     na tej samej witrynie. Nie wiemy, co gra w tamtej karcie — przeglądarka
+     tego nie udostępnia — ale możemy pokazać ostatni utwór, żeby panel
+     „Teraz gra” nie był pusty, gdy ktoś wraca z odtwarzacza. */
+  function readRecentSong() {
+    if (location.origin !== "https://rejson59.github.io") return null;
+    var rows = null;
+    try { rows = JSON.parse(localStorage.getItem("recentlyPlayed") || "null"); } catch (e) { rows = null; }
+    if (!Array.isArray(rows) || !rows.length) return null;
+    var song = rows[0];
+    if (!song || !song.title) return null;
+    return { title: String(song.title).slice(0, 90), artist: String(song.artist || "").slice(0, 60) };
+  }
+
   function renderNow() {
     var host = byId("rj-island-now");
     if (!host) return;
     var media = currentMedia();
 
     if (!media) {
+      /* Nic nie gra na tej stronie — sprawdzamy, czy nie gra w innej karcie
+         tej samej witryny (patrz kanał „rj_now_playing”). */
+      var remote = readRemoteNow();
+      if (remote) {
+        var remotePlaying = Boolean(remote.playing);
+        host.innerHTML =
+          '<div class="rj-now"><span class="rj-cover" aria-hidden="true">' + ICONS.now + "</span>" +
+          '<span class="rj-now-meta"><b>' + esc(remote.title || "Dźwięk") + "</b><small>" +
+            (remotePlaying ? "Gra w innej karcie" : "Zatrzymane w innej karcie") + "</small></span>" +
+          '<button class="rj-round is-play" type="button" data-remote-media="play" aria-label="' +
+            (remotePlaying ? "Pauza w innej karcie" : "Odtwórz w innej karcie") + '">' +
+            (remotePlaying ? ICONS.pause : ICONS.play) + "</button>" +
+          "</div>";
+        return;
+      }
+      var recent = readRecentSong();
+      if (recent) {
+        host.innerHTML =
+          '<div class="rj-now"><span class="rj-cover" aria-hidden="true">' + ICONS.now + "</span>" +
+          '<span class="rj-now-meta"><b>' + esc(recent.title) + "</b><small>Ostatnio grane w Jakuplayerze · " +
+            esc(recent.artist || "ta przeglądarka") + "</small></span>" +
+          '<a class="rj-round" href="https://rejson59.github.io/Jakuplayer/" target="_blank" rel="noopener noreferrer" aria-label="Otwórz Jakuplayera">' + ICONS.play + "</a>" +
+          "</div>";
+        return;
+      }
       host.innerHTML =
         '<div class="rj-now"><span class="rj-cover" aria-hidden="true">' + ICONS.now + "</span>" +
-        '<span class="rj-now-meta"><b>Nic teraz nie gra</b><small>Otwórz RejStream albo Jakuplayera</small></span>' +
+        '<span class="rj-now-meta"><b>Nic teraz nie gra</b><small>Odtwórz coś w RejStream albo Jakuplayerze</small></span>' +
         "</div>";
       return;
     }
@@ -1616,7 +1837,16 @@
 
   function controlMedia(action) {
     var media = currentMedia();
-    if (!media) return;
+    if (!media) {
+      /* Sterowanie drugą kartą: wysyłamy polecenie kanałem i czekamy na
+         nowy stan w localStorage. */
+      if (!readRemoteNow()) return;
+      if (action === "play") sendMediaCommand("play");
+      else if (action === "back") sendMediaCommand("seek", Math.max(0, (readRemoteNow() || {}).position - 10));
+      else if (action === "forward") sendMediaCommand("seek", ((readRemoteNow() || {}).position || 0) + 10);
+      setTimeout(renderNow, 260);
+      return;
+    }
     if (action === "play") {
       if (media.paused) {
         var played = media.play();
@@ -1740,7 +1970,7 @@
      skryptu — wcześniej była tu zaszyta stała („3”), przez co przeglądarka
      trzymała w cache stary arkusz pod tym samym adresem i nowe elementy
      wyspy (wybór „błąd czy pomysł”) wyświetlały się bez stylów. */
-  var CSS_VERSION = "9";
+  var CSS_VERSION = "10";
 
   function scriptVersion(src) {
     var match = /[?&]v=([^&#]+)/.exec(String(src || ""));
@@ -1757,7 +1987,7 @@
   /* Minimalne style, które muszą działać przed wczytaniem arkusza — i które
      ratują sytuację, gdy arkusz się nie wczyta (słabe łącze, blokada, stara
      wersja z cache). Bez nich wyspa była czarnym prostokątem bez treści. */
-  var STATES = ["min", "idle", "dock", "report", "search", "alerts", "now",
+  var STATES = ["min", "idle", "dock", "report", "chat", "alerts", "now",
                 "profile", "quick", "theme", "tasks", "panic"];
 
   var CRITICAL_CSS =
@@ -1811,6 +2041,19 @@
     "#rj-island-root .rj-back{width:26px;height:26px;flex:none;display:grid;place-items:center;" +
     "padding:0;border:0;border-radius:50%;background:rgba(255,255,255,.08);color:#eef5ff}" +
     "#rj-island-root .rj-back svg{width:15px;height:15px}" +
+    /* Mini czat: bez tych reguł panel byłby pustym prostokątem, gdy arkusz
+       nie zdąży się wczytać. */
+    "#rj-island-root .rj-chat-list{flex:1 1 auto;min-height:0;height:220px;overflow:auto;" +
+    "display:flex;flex-direction:column;gap:3px}" +
+    "#rj-island-root .rj-chat-row{display:flex;flex-wrap:wrap;gap:6px;padding:7px 9px;" +
+    "border-radius:10px;background:rgba(255,255,255,.05);align-items:baseline}" +
+    "#rj-island-root .rj-chat-who{color:#eaf2ff;font:650 11.5px/1.3 system-ui,sans-serif}" +
+    "#rj-island-root .rj-chat-when{color:rgba(232,240,252,.42);font:500 9.5px/1.3 system-ui,sans-serif}" +
+    "#rj-island-root .rj-chat-text{flex-basis:100%;margin:1px 0 0;color:rgba(232,240,252,.86);" +
+    "font:400 12px/1.45 system-ui,sans-serif;overflow-wrap:anywhere}" +
+    "#rj-island-root .rj-chat-form{display:flex;align-items:center;gap:6px}" +
+    "#rj-island-root .rj-chat-send{display:grid;place-items:center;width:36px;height:36px;" +
+    "flex:none;border:0;border-radius:50%;background:#cfe2ff;color:#071322}" +
     "#rj-island-root .rj-profile-links{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:8px}" +
     "#rj-island-root .rj-ghost--danger{border-color:rgba(255,138,138,.32);color:#ffc9c9}" +
     "#rj-island-root .rj-collapse{margin-left:auto;display:grid;place-items:center;" +
@@ -1957,14 +2200,14 @@
         return;
       }
 
-      var result = event.target.closest("[data-result]");
-      if (result) { openResult(Number(result.getAttribute("data-result"))); return; }
-
       var readAll = event.target.closest("[data-read-all]");
       if (readAll) { markAllRead(); return; }
 
       var push = event.target.closest("[data-push]");
       if (push) { togglePush(push); return; }
+
+      var remoteMedia = event.target.closest("[data-remote-media]");
+      if (remoteMedia) { controlMedia(remoteMedia.getAttribute("data-remote-media")); return; }
 
       var media = event.target.closest("[data-media]");
       if (media) { controlMedia(media.getAttribute("data-media")); return; }
@@ -2077,27 +2320,38 @@
       if (!clickInsideIsland(event) && state !== "idle") close();
     });
 
-    /* Delegacja: pole wyszukiwania powstaje na nowo po odbudowie wyspy,
-       więc nasłuch nie może wisieć na samym polu. */
-    root.addEventListener("input", function (event) {
-      if (event.target && event.target.id === "rj-island-search") renderSearch(event.target.value);
-    });
-    root.addEventListener("keydown", function (event) {
-      if (!event.target || event.target.id !== "rj-island-search") return;
-      if (event.key === "ArrowDown") { event.preventDefault(); moveSearchCursor(1); }
-      else if (event.key === "ArrowUp") { event.preventDefault(); moveSearchCursor(-1); }
-      else if (event.key === "Enter") {
-        event.preventDefault();
-        if (searchCursor >= 0) openResult(searchCursor);
-        else if (searchResults[0]) openResult(0);
-      }
-    });
-
     /* Skróty klawiszowe zostały usunięte — wyszukiwanie otwiera
        przycisk w docku. Zostaje tylko Esc, żeby dało się zamknąć panel. */
     document.addEventListener("keydown", function (event) {
       if (event.key === "Escape" && state !== "idle") close();
     });
+
+    /* ---------- mini czat: wysyłanie i odświeżanie w tle ---------- */
+
+    root.addEventListener("submit", function (event) {
+      if (!event.target || event.target.id !== "rj-island-chat-form") return;
+      event.preventDefault();
+      sendIslandChat(event.target);
+    });
+
+    root.addEventListener("keydown", function (event) {
+      if (!event.target || event.target.id !== "rj-island-chat-input") return;
+      if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        var form = event.target.closest("form");
+        if (form) sendIslandChat(form);
+      }
+    });
+
+    /* Muzyka na tej stronie trafia do wspólnego kanału „co gra”, a licznik
+       nowych wiadomości odświeża się co 30 s (tylko gdy karta jest widoczna). */
+    watchLocalMedia();
+    pollChatBadge();
+    chatIdlePoll = setInterval(function () {
+      watchLocalMedia();
+      pollChatBadge();
+      if (state === "now") renderNow();
+    }, 30000);
 
     /* ---------- gesty: przesunięcie palcem i długie przytrzymanie ---------- */
 
