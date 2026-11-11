@@ -37,17 +37,20 @@
         --stroke: rgba(255, 255, 255, 0.16);
       }
       * { box-sizing: border-box; }
+      /* Formularz musi się przewijać: przy otwartej klawiaturze ekran maleje
+         i bez tego „Zaloguj się” oraz powrót zostają poza zasięgiem. */
       body {
         margin: 0;
         min-height: 100dvh;
-        display: grid;
-        place-items: center;
-        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        padding: clamp(14px, 4vw, 24px) clamp(14px, 4vw, 24px) calc(12px + env(safe-area-inset-bottom, 0px));
         color: var(--ink);
         background: #06070f;
         font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
         -webkit-font-smoothing: antialiased;
-        overflow: hidden;
+        overflow-x: clip;
+        -webkit-overflow-scrolling: touch;
       }
       .aurora {
         position: fixed;
@@ -66,6 +69,7 @@
       .card {
         position: relative;
         width: min(420px, 100%);
+        margin: auto;
         padding: 34px 30px;
         border-radius: 26px;
         background: linear-gradient(155deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.045));
@@ -162,6 +166,30 @@
         text-decoration: none;
         border-bottom: 1px dotted rgba(178, 187, 216, 0.4);
       }
+      .license-line {
+        position: relative;
+        z-index: 2;
+        width: min(640px, 100%);
+        margin: 14px auto 0;
+        padding: 8px 6px;
+        text-align: center;
+        font-size: 11px;
+        line-height: 1.5;
+        color: var(--muted);
+        opacity: 0.8;
+      }
+      .license-line a { color: #cfd7ff; }
+      .license-line a:hover { color: #ffffff; }
+
+      @media (max-width: 560px) {
+        body { padding: 12px 12px calc(10px + env(safe-area-inset-bottom, 0px)); }
+        .card { padding: 22px 18px; border-radius: 22px; }
+        h1 { font-size: 21px; }
+        p.lead { margin-bottom: 18px; }
+        input { padding: 12px 13px; font-size: 16px; } /* 16 px = brak auto-zoom w Safari */
+        button { min-height: 48px; }
+        .license-line { font-size: 10.5px; }
+      }
       @media (prefers-reduced-motion: reduce) { .aurora { animation: none; } }
     </style>
     <link rel="stylesheet" href="/hub/loader.css?v=4">
@@ -255,7 +283,7 @@
     <script src="/js/motion-unlock.js?v=1"></script>
     <script src="/js/shell-cache.js?v=1" defer></script>
   <script src="/hub/loader.js?v=4" defer></script>
-  <p class="license-line" role="contentinfo" style="position:fixed;left:0;right:0;bottom:0;margin:0;padding:8px 14px;text-align:center;font-size:11px;line-height:1.5;color:var(--muted,#a8b0cf);opacity:.8;z-index:9">© 2026 rejson59 — <strong>wszystkie prawa zastrzeżone</strong>. Kopiowanie, modyfikowanie i ponowne użycie bez pisemnej zgody są zabronione. <a href="/licencja">Licencja</a> · <a href="/ai.txt">ai.txt</a></p>
+  <p class="license-line" role="contentinfo">© 2026 rejson59 — <strong>wszystkie prawa zastrzeżone</strong>. Kopiowanie, modyfikowanie i ponowne użycie bez pisemnej zgody są zabronione. <a href="/licencja">Licencja</a> · <a href="/ai.txt">ai.txt</a></p>
   <script defer src="/js/text-filter.js?v=1"></script>
   <script defer src="/js/panic.js?v=3"></script>
   <script defer src="/js/topbar-split.js?v=3"></script>

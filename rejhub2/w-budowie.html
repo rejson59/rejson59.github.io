@@ -36,17 +36,26 @@
         --stroke: rgba(255, 255, 255, 0.16);
       }
       * { box-sizing: border-box; }
-      html, body { height: 100%; }
+      html { height: 100%; }
+      /* Strona musi się przewijać. Wcześniej `body` miało `height:100%` i
+         `overflow:hidden` z wyśrodkowaniem siatką — na telefonie karta była
+         wyższa od ekranu, więc dolna część (m.in. „Mam dostęp administratora”)
+         była nieosiągalna. Teraz `body` jest kolumną o minimalnej wysokości
+         ekranu, a karta centruje się przez `margin:auto`, co przy nadmiarze
+         treści poprawnie zamienia się w zwykłe przewijanie. */
       body {
         margin: 0;
+        min-height: 100%;
+        min-height: 100dvh;
         font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
         color: var(--ink);
         background: #06070f;
-        display: grid;
-        place-items: center;
-        padding: 24px;
-        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        padding: clamp(14px, 4vw, 26px) clamp(14px, 4vw, 26px) calc(12px + env(safe-area-inset-bottom, 0px));
+        overflow-x: clip;
         -webkit-font-smoothing: antialiased;
+        -webkit-overflow-scrolling: touch;
       }
       .aurora {
         position: fixed;
@@ -78,6 +87,7 @@
         position: relative;
         z-index: 2;
         width: min(560px, 100%);
+        margin: auto;
       }
       .card {
         position: relative;
@@ -203,6 +213,47 @@
         font-size: 12.5px;
         color: rgba(168, 176, 207, 0.75);
       }
+      .license-line {
+        position: relative;
+        z-index: 2;
+        width: min(720px, 100%);
+        margin: 14px auto 0;
+        padding: 8px 6px;
+        text-align: center;
+        font-size: 11px;
+        line-height: 1.5;
+        color: var(--muted);
+        opacity: 0.8;
+      }
+      .license-line a { color: #cfd7ff; }
+      .license-line a:hover { color: #ffffff; }
+
+      /* Telefon: karta bez wielkich marginesów, przyciski na całą szerokość
+         i co najmniej 44 px wysokości — inaczej „Mam dostęp administratora”
+         jest za mały do trafienia palcem. */
+      @media (max-width: 560px) {
+        body { padding: 12px 12px calc(10px + env(safe-area-inset-bottom, 0px)); }
+        .card {
+          padding: 22px 18px;
+          border-radius: 24px;
+        }
+        h1 { margin: 18px 0 10px; }
+        p { font-size: 14.5px; line-height: 1.6; }
+        .rows { margin: 20px 0 24px; gap: 8px; }
+        .row { padding: 10px 12px; font-size: 13.5px; }
+        .actions { gap: 10px; }
+        .actions .btn {
+          flex: 1 1 100%;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 46px;
+          padding: 12px 16px;
+          text-align: center;
+        }
+        .note { margin-top: 18px; }
+        .license-line { font-size: 10.5px; }
+      }
       @media (prefers-reduced-motion: reduce) {
         .aurora, .dot { animation: none; }
       }
@@ -242,7 +293,7 @@
         </p>
       </section>
     </main>
-    <p class="license-line" role="contentinfo" style="position:fixed;left:0;right:0;bottom:0;margin:0;padding:8px 14px;text-align:center;font-size:11px;line-height:1.5;color:var(--muted,#a8b0cf);opacity:.8;z-index:9">© 2026 rejson59 — <strong>wszystkie prawa zastrzeżone</strong>. Kopiowanie, modyfikowanie i ponowne użycie bez pisemnej zgody są zabronione. <a href="/licencja">Licencja</a> · <a href="/ai.txt">ai.txt</a></p>
+    <p class="license-line" role="contentinfo">© 2026 rejson59 — <strong>wszystkie prawa zastrzeżone</strong>. Kopiowanie, modyfikowanie i ponowne użycie bez pisemnej zgody są zabronione. <a href="/licencja">Licencja</a> · <a href="/ai.txt">ai.txt</a></p>
   <script defer src="/js/text-filter.js?v=1"></script>
   <script defer src="/js/panic.js?v=3"></script>
 </body>
