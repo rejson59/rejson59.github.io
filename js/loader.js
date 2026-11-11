@@ -451,6 +451,77 @@
           dokument, jego skrypty i kontekst GPU. Karta pokazuje wtedy swoją
           stałą okładkę (gradient + pasek adresu), nie czarną dziurę,
        5. po zatrzymaniu przewijania kolejna karta „budzi się” sama. */
+  /* ---------- PLANSZA CZY ŻYWA RAMKA? ----------
+     Podgląd w karcie nie jest klikalny — służy tylko za okładkę projektu.
+     Żywy dokument w <iframe> kosztuje jednak pełne skrypty, animacje i często
+     WebGL, więc ma sens wyłącznie tam, gdzie sprzęt to udźwignie. Dlatego:
+
+       auto   — żywe ramki tylko na mocnym komputerze (≥6 rdzeni, ≥8 GB,
+                ekran ≥1024 px, mysz, bez saveData i bez 2G/3G),
+       live   — wymuszone podglądy na żywo (także na telefonie),
+       poster — wyłącznie plakaty, zero iframe'ów.
+
+     Tryb można ustawić w localStorage (`rj_preview_mode_v1`) albo adresem
+     `?previews=live` / `?previews=poster`. Wybór z adresu zapisujemy, więc
+     działa też po kolejnym wejściu. */
+  var PREVIEW_MODE_KEY = "rj_preview_mode_v1";
+  var previewModeValue = "auto";
+
+  function storePreviewMode(mode) {
+    try {
+      window.localStorage.setItem(PREVIEW_MODE_KEY, mode);
+    } catch (e) { /* prywatny tryb — tryb działa tylko w tej sesji */ }
+  }
+
+  function readPreviewMode() {
+    try {
+      var fromUrl = null;
+      try {
+        fromUrl = new URLSearchParams(window.location.search).get("previews");
+      } catch (e) { fromUrl = null; }
+      if (fromUrl === "live" || fromUrl === "poster") {
+        storePreviewMode(fromUrl);
+        return fromUrl;
+      }
+      var saved = window.localStorage.getItem(PREVIEW_MODE_KEY);
+      if (saved === "live" || saved === "poster") return saved;
+    } catch (e) { /* brak storage — zostaje auto */ }
+    return "auto";
+  }
+
+  /* „Mocny komputer” to nie „każdy desktop”. Telefon, tablet i laptop
+     z 4 rdzeniami grają wtedy dokładnie tak samo płynnie jak bez podglądów,
+     bo dostają wyłącznie plakaty. */
+  function strongPreviewDevice() {
+    try {
+      var conn = navigator.connection;
+      if (conn && (conn.saveData || /(^|-)2g$|(^|-)3g$/i.test(conn.effectiveType || ""))) return false;
+      if (navigator.deviceMemory && navigator.deviceMemory < 8) return false;
+      if (navigator.hardwareConcurrency && navigator.hardwareConcurrency < 6) return false;
+      if (window.matchMedia) {
+        if (window.matchMedia("(max-width: 1023px)").matches) return false;
+        if (window.matchMedia("(pointer: coarse)").matches) return false;
+        if (window.matchMedia("(prefers-reduced-data: reduce)").matches) return false;
+      }
+    } catch (e) { /* brak API — ufamy sprzętowi */ }
+    return true;
+  }
+
+  /* Bramka działa TYLKO na stronach, które faktycznie mają plakaty
+     (js/project-posters.js). Stara strona i podstrony bez plakatów zachowują
+     dokładnie dotychczasowe zachowanie podglądów — inaczej zostałoby tam
+     puste okno, bo nie ma czym zastąpić ramki. */
+  function postersAvailable() {
+    return typeof window.RJPosters !== "undefined";
+  }
+
+  function livePreviewsAllowed() {
+    if (!postersAvailable()) return true;
+    if (previewModeValue === "poster") return false;
+    if (previewModeValue === "live") return true;
+    return strongPreviewDevice();
+  }
+
   var MAX_LIVE_PREVIEWS = weakDevice ? 2 : 3;
   var LIVE_RETAIN_PX = weakDevice ? 220 : 700;
   var MOUNT_GAP_MS = weakDevice ? 650 : 380;
@@ -523,6 +594,7 @@
   }
 
   function pump() {
+    if (!livePreviewsAllowed()) return;
     if (!pageReady || document.hidden) return;
     if (scrollBusy()) {
       schedulePump(Math.max(90, scrollQuietUntil - nowMs() + 40));
@@ -759,6 +831,7 @@
      Gwarancja: podgląd NIGDY nie kończy jako samo tło — zawsze jest kulka,
      wczytana strona, statyczny zrzut albo plakietka z ponowieniem. */
   function mountPreview(preview) {
+    if (!livePreviewsAllowed()) return;
     var iframe = preview.querySelector("iframe[data-src]");
     if (!iframe) return;
     /* Jeden dokument naraz — druga ramka poczeka na zwolnienie slotu. */
@@ -1058,6 +1131,14 @@
   function scan(root) {
     var scope = root || document;
     var previews = scope.querySelectorAll(".card-preview");
+    /* Plakaty nie potrzebują iframe'ów — silnik nie robi wtedy NIC.
+       Karty zostają dokładnie takie same (link, tytuł, akcje), zmienia się
+       tylko to, co widać w okienku podglądu. */
+    if (!livePreviewsAllowed()) {
+      try { document.documentElement.classList.add("rj-posters"); } catch (e) { /* trudno */ }
+      previews.forEach(function (p) { p._rjObserved = true; });
+      return;
+    }
     previews.forEach(function (p) {
       if (p._rjObserved) return;
       var iframe = p.querySelector("iframe[data-src]");
@@ -1149,8 +1230,38 @@
     setTimeout(sweepPreviews, delay);
   });
 
+  previewModeValue = readPreviewMode();
+
   window.RJLoader = {
     scan: scan,
+    /* Zmiana trybu w locie (np. przełącznik w ustawieniach):
+       „poster” natychmiast zwalnia wszystkie żywe ramki,
+       „live” przywraca silnik i montuje od nowa. */
+    setPreviewMode: function (mode) {
+      if (mode !== "live" && mode !== "poster" && mode !== "auto") return previewModeValue;
+      previewModeValue = mode;
+      storePreviewMode(mode);
+      try {
+        if (mode === "poster") {
+          document.documentElement.classList.add("rj-posters");
+          livePreviews().forEach(releasePreview);
+          document.querySelectorAll(".card-preview").forEach(function (p) {
+            p.classList.remove("is-loading", "is-loaded");
+          });
+        } else {
+          document.documentElement.classList.remove("rj-posters");
+          document.querySelectorAll(".card-preview").forEach(function (p) {
+            p._rjObserved = false;
+            p._rjSettled = false;
+          });
+          scheduleScan();
+          schedulePump(0);
+        }
+      } catch (e) { /* trudno */ }
+      return previewModeValue;
+    },
+    previewMode: function () { return previewModeValue; },
+    liveAllowed: function () { return livePreviewsAllowed(); },
     mountPreview: mountPreview,
     retry: retryPreview,
     sweep: sweepPreviews,
