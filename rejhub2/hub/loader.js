@@ -122,14 +122,23 @@
     return;
   }
 
+  function revealContent() {
+    /* Gdy page-reveal.js jest na stronie, to on odsłania treść w tej samej
+       klatce, w której startuje animacja wejścia. Loader nie może zdjąć
+       `rj-booting` wcześniej — powodowało to widoczny błysk treści,
+       jej zniknięcie i dopiero po chwili animację pojawiania się. */
+    if (window.RejReveal && typeof window.RejReveal.start === "function") return;
+    document.documentElement.classList.remove("rj-booting");
+  }
+
   function finish() {
     stopRotation();
     document.documentElement.classList.remove("rj-loading");
-    /* Treść odsłania się po zniknięciu nakładki — inaczej animacja wejścia
-       grałaby pod gasnącym loaderem i wyglądało to na nałożone warstwy. */
+    /* page-reveal przejmuje odsłanianie; loader tylko pilnuje bezpiecznika. */
+    setTimeout(revealContent, FADE_MS);
     setTimeout(function () {
       document.documentElement.classList.remove("rj-booting");
-    }, FADE_MS);
+    }, 7000);
   }
 
   function hide() {

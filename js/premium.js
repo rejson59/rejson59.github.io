@@ -537,7 +537,11 @@
 
   function mount() {
     var metrics = document.querySelector(".header-metrics");
-    if (metrics && !document.querySelector(".rj-chat-alerts") && !document.getElementById("rj-bell")) {
+    /* RejHub 2.0 ma powiadomienia w wyspie — nowy dzwonek nie może wracać
+       do topbaru po usunięciu starego. Stara strona (bez wyspy) działa jak dotąd. */
+    var islandOwnsAlerts = !!window.__RJ_ISLAND__ ||
+      !!document.querySelector('script[src*="hub/island.js"]');
+    if (metrics && !islandOwnsAlerts && !document.querySelector(".rj-chat-alerts") && !document.getElementById("rj-bell")) {
       metrics.insertAdjacentHTML("afterbegin", bellHTML());
       metrics.insertAdjacentHTML("afterend", panelHTML());
 

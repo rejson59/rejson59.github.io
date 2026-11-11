@@ -414,28 +414,27 @@
     }, 9000);
   }
 
-  /* Czekamy na zniknięcie nakładki: animacja jest nagrodą za wczytanie,
-     nie czymś, co dzieje się pod loaderem. */
-  /* Czas zanikania nakładki (patrz #rj-page-loader w hub/loader.css).
-     Wejście startuje dopiero PO niej — inaczej animacja grała pod gasnącym
-     loaderem i wyglądało to na dwie nachodzące na siebie warstwy. */
-  var LOADER_FADE_MS = 340;
-
+  /* Startujemy DOKŁADNIE w klatce, w której loader zaczyna znikać.
+     Wcześniej czekaliśmy dodatkowe 340 ms: treść była już odsłonięta przez
+     loader, potem page-reveal ustawiał opacity 0 i dopiero po chwili ruszała
+     animacja — na telefonie wyglądało to jak błysk, zniknięcie i opóźnione
+     pojawienie się strony. Teraz oba zdarzenia są jednym ruchem, a `rj-booting`
+     zdejmuje wyłącznie ten skrypt (loaderzy tylko pilnują bezpiecznika). */
   function whenReady(callback) {
     var overlay = document.getElementById("rj-page-loader");
     if (!overlay) {
-      window.setTimeout(callback, 90);
+      callback();
       return;
     }
     if (overlay.classList.contains("is-hidden") || overlay.style.display === "none") {
-      window.setTimeout(callback, LOADER_FADE_MS);
+      callback();
       return;
     }
     var fired = false;
     function fire() {
       if (fired) return;
       fired = true;
-      window.setTimeout(callback, LOADER_FADE_MS);
+      callback();
     }
     if (window.MutationObserver) {
       var observer = new MutationObserver(function () {

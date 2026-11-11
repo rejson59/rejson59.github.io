@@ -43,8 +43,17 @@ function checkSources() {
   /* --- jeden właściciel stylów nakładki --- */
   assert.ok(!/^#rj-page-loader\s*\{/m.test(LEGACY_CSS), 'css/loader.css nie może dublować nakładki');
 
-  /* --- wejście strony czeka na zniknięcie nakładki --- */
-  assert.match(REVEAL, /var LOADER_FADE_MS = 340;/, 'page-reveal musi czekać na zanik loadera');
+  /* --- wejście strony startuje w klatce zanikania nakładki --- */
+  assert.ok(!/LOADER_FADE_MS/.test(REVEAL), 'page-reveal nie może czekać dodatkowych 340 ms po loaderze');
+  assert.match(REVEAL, /function whenReady\(callback\)/, 'page-reveal ma wspólną bramę startu');
+  assert.match(REVEAL, /observer\.disconnect\(\);\s*fire\(\)/, 'start następuje od razu po is-hidden');
+  /* --- dokładnie jeden właściciel odsłaniania --- */
+  assert.match(LEGACY, /function revealContent\(\)/, 'js/loader.js oddaje odsłanianie page-reveal');
+  assert.match(HUB, /function revealContent\(\)/, 'hub/loader.js oddaje odsłanianie page-reveal');
+  [LEGACY, HUB].forEach((source, index) => {
+    assert.match(source, /window\.RejReveal[^\n]*start[^\n]*=== "function"[^\n]*\) return;/,
+      (index ? 'hub/loader.js' : 'js/loader.js') + ': bez RejReveal treść odsłania loader');
+  });
 
   /* --- znacznik ma płynną podmianę --- */
   assert.match(HUB_CSS, /\.loader-mark\s*\{[^}]*transition: opacity 0\.14s/, 'znacznik przygasa przy podmianie');
@@ -111,6 +120,23 @@ async function checkRotation() {
   dom.window.close();
 }
 
+async function checkHandoff() {
+  const dom = build(false);
+  const w = dom.window;
+  const d = w.document;
+  let starts = 0;
+  w.RejReveal = { start() { starts += 1; } };
+
+  await wait(340);
+  assert.ok(d.getElementById('rj-page-loader').classList.contains('is-hidden'), 'nakładka schowana');
+  assert.ok(d.documentElement.classList.contains('rj-booting'),
+    'loader nie odsłania treści, gdy page-reveal przejął wejście');
+  assert.equal(starts, 0, 'loader nie udaje page-reveal — startuje tylko prawdziwy skrypt');
+
+  d.documentElement.classList.remove('rj-booting');
+  dom.window.close();
+}
+
 async function checkLegacy() {
   const dom = build(true);
   const w = dom.window;
@@ -136,6 +162,7 @@ async function checkLegacy() {
 (async function main() {
   checkSources();
   await checkRotation();
+  await checkHandoff();
   await checkLegacy();
   console.log('loader-rules: wszystkie sprawdzenia przeszły');
 })().catch((error) => {

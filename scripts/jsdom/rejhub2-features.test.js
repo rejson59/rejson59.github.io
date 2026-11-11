@@ -204,12 +204,50 @@ check('scalanie reaguje na przewijanie', () => {
   assert.equal(header.classList.contains('is-merged'), false, 'po powrocie na górę znów dwie');
 });
 
+console.log('=== MENU I POWIADOMIENIA ===');
+check('stary dzwonek zniknął — powiadomienia są w wyspie', () => {
+  pages.forEach((file) => {
+    const html = read('rejhub2/' + file);
+    assert.ok(!/rj-chat-bell|rj-chat-alerts/.test(html), file + ': został stary dzwonek');
+  });
+  const premium = read('js/premium.js');
+  assert.ok(/islandOwnsAlerts/.test(premium), 'premium.js musi wiedzieć o wyspie');
+  assert.ok(/script\[src\*="hub\/island\.js"\]/.test(premium), 'brak wykrycia wyspy w premium.js');
+});
+
+check('menu Więcej używa tego samego szkła co topbar', () => {
+  const css = read('rejhub2/hub/glass2.css');
+  const panel = css.slice(css.indexOf('body .rj-shared-header .nav-more-panel {'));
+  assert.ok(panel.length > 0, 'brak reguły panelu menu');
+  assert.match(panel, /background:[\s\S]*?rgba\(255, 255, 255, 0\.17\)[\s\S]*?rgba\(16, 24, 39, 0\.72\)/,
+    'panel musi mieć gradient i taflę topbaru');
+  assert.match(panel, /backdrop-filter:\s*blur\(22px\) saturate\(185%\)/, 'ten sam blur co topbar');
+  assert.ok(!/rgba\(24, 33, 52, 0\.84\)/.test(css), 'stara ciemniejsza tafla nie może wrócić');
+});
+
+check('menu mieści się na telefonie i przewija ostatnie pozycje', () => {
+  const css = read('rejhub2/hub/glass2.css');
+  const phone = css.slice(css.indexOf('/* Telefon: cała nawigacja to jedna tafla'));
+  assert.match(phone, /max-height:\s*calc\(100dvh - 76px\)/, 'menu musi ograniczyć wysokość do ekranu');
+  assert.match(phone, /overflow-y:\s*auto/, 'menu musi się przewijać');
+  assert.match(phone, /left:\s*0;\s*right:\s*0;\s*width:\s*auto/, 'menu ma wypełnić kolumnę');
+  assert.match(phone, /background:\s*transparent !important/, 'wnętrze nie może być drugą szklaną kartą');
+  assert.match(phone, /grid-template-columns:\s*repeat\(2,\s*minmax\(0,\s*1fr\)\)/,
+    'dodatkowe pozycje mają iść w dwóch kolumnach, żeby menu zmieściło się bez przewijania');
+  pages.forEach((file) => {
+    const html = read('rejhub2/' + file);
+    if (!html.includes('nav-more')) return;
+    assert.ok(html.includes('class="rj-more-icon" aria-hidden="true"><svg'),
+      file + ': „Więcej” ma dostać chevron zamiast hamburgera');
+  });
+});
+
 console.log('=== WEJŚCIE STRONY ===');
 check('każda strona z loaderem ma falę wejścia', () => {
   pages.forEach((file) => {
     const html = read('rejhub2/' + file);
     if (!html.includes('rj-page-loader')) return;
-    assert.ok(html.includes('/js/page-reveal.js?v=4'), 'brak page-reveal.js w ' + file);
+    assert.ok(html.includes('/js/page-reveal.js?v=5'), 'brak page-reveal.js w ' + file);
     assert.ok(html.includes('/css/page-reveal.css?v=2'), 'brak page-reveal.css w ' + file);
   });
 });
