@@ -300,6 +300,284 @@ body :is(.btn, .primary, .secondary, .rjc-primary):disabled {
   transform: none;
 }
 
+/* ---------- SZKŁO NA KAŻDYM PRZYCISKU + „MIĘKKA REAKCJA” ----------
+
+   Dwa problemy, jedna reguła.
+
+   1. „Goły” przycisk. Element <button>, który nie ma własnej klasy, dostawał
+      wygląd przeglądarki — na ciemnej stronie wyglądał jak obcy prostokąt,
+      a przy kliknięciu mrugał systemowym kolorem. Teraz każdy taki przycisk
+      ma to samo szkło co reszta interfejsu: gradient 158°, hairline, wewnętrzny
+      błysk i delikatne rozmycie tła.
+
+   2. „Niebieski kwadrat”. To nie jest element strony, tylko stan przeglądarki:
+      - na dotyku — `-webkit-tap-highlight-color` (systemowy niebieski prostokąt
+        pod palcem),
+      - na klik myszą (Safari, częściowo Chrome) — domyślna obwódka fokusu,
+        która zapala się także przy kliknięciu, nie tylko z klawiatury.
+      Oba są wyłączone poniżej. Fokus klawiatury zostaje w pełni widoczny
+      (osobna reguła `:focus-visible` wyżej) — dostępność się nie zmienia.
+
+   Selektor bazowy używa `:where()`, więc ma zerową specyficzność: każdy
+   przycisk, który MA własny wygląd (pasek, wyspa, filtry, karty), zachowuje
+   go bez zmian. Szkło dostają wyłącznie te, które wcześniej były gołe.
+
+   „Miękka reakcja” to ta sama krzywa co w Szklanym Studiu:
+   `cubic-bezier(.22, 1, .36, 1)` — hover podnosi o 1 px, wciśnięcie opada
+   do 0 i kurczy się o ~3,5%, a powrót jest sprężysty. Animujemy wyłącznie
+   `transform`, `box-shadow` i `filter`, czyli właściwości, które nie
+   przeliczają układu strony — mimo tego, że dotyczy to wszystkich przycisków,
+   koszt przewijania się nie zmienia. */
+
+html {
+  /* Dotyk: żadnego systemowego prostokąta pod palcem. */
+  -webkit-tap-highlight-color: transparent;
+}
+
+body :where(button, [role="button"], a.btn, .chip):where(
+    :not(#rj-island-root *, #rj-page-loader *, .rj-shared-header *, .card-preview *)) {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Fokus klawiatury zostaje (reguła `:focus-visible` wyżej); obwódka od
+   samego kliknięcia znika — to ona mrugała na niebiesko. */
+body :is(a, button, summary, [role="button"]):focus:not(:focus-visible) {
+  outline: none;
+}
+
+body :where(button, [role="button"], a.btn, .chip):where(
+    :not(#rj-island-root *, #rj-page-loader *, .rj-shared-header *, .card-preview *)) {
+  border-radius: 999px;
+  border: 1px solid var(--g-edge);
+  /* Szkło bez liczenia: gradient + półprzezroczysta tafla w kolorze tła.
+     Świadomie BEZ `backdrop-filter` — ten sam wygląd, zero pracy GPU na
+     każdą klatkę, także gdy na stronie są dziesiątki przycisków. */
+  background:
+    linear-gradient(158deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.035)),
+    rgba(8, 13, 25, 0.34);
+  color: var(--s-ink);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.26), 0 12px 26px -22px rgba(0, 0, 0, 0.9);
+}
+
+/* Miękka reakcja: hover i wciśnięcie. Zerowa specyficzność = każdy własny
+   efekt (np. jelly na „Otwórz projekt”) zostaje nienaruszony. */
+body :where(button, [role="button"], a.btn, .chip, summary):where(
+    :not(#rj-island-root *, #rj-page-loader *, .rj-shared-header *)) {
+  transition:
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.2s var(--hub-ease),
+    background-color 0.2s var(--hub-ease),
+    border-color 0.2s var(--hub-ease),
+    color 0.2s var(--hub-ease);
+}
+
+body :where(button, [role="button"], a.btn, .chip, summary):where(
+    :hover:not(:disabled)):where(
+    :not(#rj-island-root *, #rj-page-loader *, .rj-shared-header *)) {
+  transform: translateY(-1px);
+  filter: brightness(1.04);
+}
+
+body :where(button, [role="button"], a.btn, .chip, summary):where(
+    :active:not(:disabled)):where(
+    :not(#rj-island-root *, #rj-page-loader *, .rj-shared-header *)) {
+  transform: translateY(0) scale(0.965);
+  transition-duration: 0.09s;
+  filter: brightness(0.98);
+}
+
+body :where(button, [role="button"], a.btn, .chip):where(
+    :disabled, [aria-disabled="true"]) {
+  transform: none;
+  filter: none;
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Jasny motyw: szkło jest mleczne, nie szare. */
+html[data-theme="light"] body :where(button, [role="button"], a.btn, .chip):where(
+    :not(#rj-island-root *, #rj-page-loader *, .rj-shared-header *, .card-preview *)) {
+  border-color: var(--g-edge);
+  background:
+    linear-gradient(158deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.52)),
+    rgba(255, 255, 255, 0.3);
+  color: var(--s-ink);
+  box-shadow: inset 0 1px 0 #fff, 0 12px 26px -22px rgba(30, 48, 82, 0.5);
+}
+
+/* Ruch ograniczony przez system: bez podskoków, tylko delikatne przyciemnienie
+   — stan wciśnięcia nadal jest widoczny. */
+@media (prefers-reduced-motion: reduce) {
+  body :where(button, [role="button"], a.btn, .chip, summary):where(:active:not(:disabled)) {
+    transform: none;
+    filter: brightness(0.94);
+  }
+}
+
+/* ---------- przełącznik „Plakaty / Podglądy” nad listą projektów ---------- */
+
+.preview-mode {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0 0 18px;
+  padding: 12px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--hub-line);
+  background: linear-gradient(158deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.022));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 18px 40px -34px rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(16px) saturate(150%);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+}
+
+.preview-mode-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+}
+
+.preview-mode-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(168, 200, 255, 0.9);
+}
+
+.preview-mode-seg {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  border: 1px solid var(--hub-line);
+  background: rgba(6, 10, 20, 0.42);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.preview-mode-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: rgba(214, 226, 248, 0.74);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 650;
+  line-height: 1;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.preview-mode-btn svg {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  opacity: 0.85;
+}
+
+.preview-mode-btn:hover {
+  color: var(--s-ink);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.preview-mode-btn[aria-pressed="true"] {
+  background: linear-gradient(160deg, #f6faff, #cfdfff);
+  border-color: rgba(255, 255, 255, 0.7);
+  color: #0a1122;
+  box-shadow: inset 0 1px 0 #fff, 0 10px 22px -14px rgba(0, 0, 0, 0.9);
+}
+
+.preview-mode-btn[aria-pressed="true"] svg {
+  opacity: 1;
+}
+
+.preview-mode-state {
+  margin-left: auto;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: rgba(190, 204, 230, 0.66);
+}
+
+.preview-mode-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: rgba(190, 204, 230, 0.6);
+}
+
+.preview-mode-note svg {
+  width: 15px;
+  height: 15px;
+  flex: none;
+  margin-top: 1px;
+  opacity: 0.75;
+}
+
+.preview-mode-note strong {
+  font-weight: 700;
+  color: rgba(214, 226, 248, 0.86);
+}
+
+.preview-mode[data-mode="live"] .preview-mode-note {
+  color: rgba(255, 215, 163, 0.82);
+}
+
+.preview-mode[data-mode="live"] .preview-mode-note strong {
+  color: #ffd7a3;
+}
+
+.preview-mode[data-mode="live"] .preview-mode-note svg {
+  opacity: 1;
+  color: #ffd7a3;
+}
+
+html[data-theme="light"] .preview-mode {
+  border-color: var(--hub-line);
+  background: linear-gradient(158deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.46));
+  box-shadow: inset 0 1px 0 #fff, 0 18px 40px -34px rgba(30, 48, 82, 0.45);
+}
+
+html[data-theme="light"] .preview-mode-label,
+html[data-theme="light"] .preview-mode-state {
+  color: rgba(43, 74, 120, 0.78);
+}
+
+html[data-theme="light"] .preview-mode-seg {
+  background: rgba(255, 255, 255, 0.66);
+}
+
+html[data-theme="light"] .preview-mode-btn {
+  color: rgba(43, 74, 120, 0.86);
+}
+
+html[data-theme="light"] .preview-mode-btn[aria-pressed="true"] {
+  background: linear-gradient(160deg, #ffffff, #dbe7ff);
+  color: #16223a;
+}
+
+html[data-theme="light"] .preview-mode-note {
+  color: rgba(43, 74, 120, 0.72);
+}
+
+html[data-theme="light"] .preview-mode-note strong {
+  color: #16223a;
+}
+
+@media (max-width: 640px) {
+  .preview-mode-state {
+    margin-left: 0;
+    flex-basis: 100%;
+  }
+}
+
 /* ---------- pola formularzy ---------- */
 body :is(input[type="text"], input[type="email"], input[type="password"], input[type="search"], input[type="number"], input[type="url"], input[type="tel"], textarea, select, .comm-input) {
   background: rgba(8, 13, 25, 0.42) !important;
