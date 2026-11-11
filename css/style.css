@@ -896,6 +896,31 @@ html.rj-tilt-off .project-card.is-tilting .card-preview-frame { will-change:auto
   display: block;
   z-index: 1;
 }
+/* Plakat projektu: warstwa POD ramką. Rysowana od razu, bez sieci, więc
+   okno podglądu nigdy nie jest puste — a na urządzeniach, które nie dostają
+   żywych ramek, to jedyna (i wystarczająca) zawartość podglądu. */
+.card-preview-poster {
+  position: absolute;
+  top: 22px;
+  left: 0;
+  width: 100%;
+  height: calc(100% - 22px);
+  display: block;
+  z-index: 0;
+  pointer-events: none;
+  background: #080f1c;
+  /* Plakat jest wektorem — skalowanie nie kosztuje ponownego rysowania bitmapy. */
+  contain: paint;
+}
+/* Tryb plakatów: na tej stronie żadna ramka nie startuje, więc animacja
+   ładowania nie ma czego zapowiadać (i nie zużywa klatek). */
+html.rj-posters .card-preview .card-preview-loader { display: none; }
+html.rj-posters .card-preview-frame::after { display: none; }
+html.rj-posters .card-preview { cursor: pointer; }
+
+/* Gdy w karcie jest plakat, shimmer ładowania nie ma czego „przykrywać”
+   na starcie — pokazujemy go tylko wtedy, gdy ramka naprawdę startuje. */
+.card-preview.has-poster:not(.is-loading) .card-preview-frame::after { display: none; }
 .card-preview-topbar { position:absolute; top:0; left:0; right:0; height:22px; background: color-mix(in srgb, var(--bg-elev) 96%, var(--bg)); border-bottom:1px solid var(--border); display:flex; align-items:center; gap:4px; padding:0 8px; z-index:2; }
 .card-preview-dot { width:7px; height:7px; border-radius:50%; background: var(--border-strong); }
 .card-preview-dot:nth-child(1){ background:#ff5f57; } .card-preview-dot:nth-child(2){ background:#ffbd2e; } .card-preview-dot:nth-child(3){ background:#28c940; }
