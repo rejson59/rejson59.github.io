@@ -66,6 +66,13 @@ function checkSources() {
   assert.match(logoRule, /margin-left:\s*-13px/, 'logo musi mieć własne poziome wyśrodkowanie');
   const dotsRule = markBase.slice(markBase.indexOf('.mark-dots span,'), markBase.indexOf('.mark-dots span:nth-child(1)'));
   assert.match(dotsRule, /top:\s*46px/, 'kropki muszą siedzieć pod logo, nie pod nim');
+  /* Kropki i kreski muszą mieć RÓŻNE pozycje w poziomie — inaczej leżą na
+     sobie (zgłoszenie: „pierwsza zawsze nachodzi na drugą”). */
+  const dots = markBase.slice(markBase.indexOf('.mark-dots span:nth-of-type(1)'), markBase.indexOf('.mark-bounce span {'));
+  assert.match(dots, /nth-of-type\(1\)[^}]*left: 12px/, 'pierwsza kropka po lewej');
+  assert.match(dots, /nth-of-type\(2\)[^}]*left: 28px/, 'druga kropka w środku');
+  assert.match(dots, /nth-of-type\(3\)[^}]*left: 44px/, 'trzecia kropka po prawej');
+
   const bounce = HUB_CSS.slice(HUB_CSS.indexOf('@keyframes loader-bounce'), HUB_CSS.indexOf('@keyframes loader-bubbles'));
   const up = Number((bounce.match(/50%\s*\{\s*transform:\s*translateY\(-(\d+)px\)/) || [])[1]);
   assert.ok(up > 0 && up <= 8, 'podskok max 8 px — inaczej kropka wchodzi w logo (' + up + ')');
@@ -174,8 +181,39 @@ async function checkLegacy() {
   dom.window.close();
 }
 
+/* Znacznik ma w HTML logo (<b>) jako PIERWSZE dziecko, a dopiero potem cztery
+   <span>. Każdy selektor `span:nth-child(N)` trafiał więc o jedno miejsce obok
+   (albo w nic), a wszystkie elementy animacji zostawały w jednym punkcie. */
+function checkMarkLayout() {
+  const dom = new JSDOM('<!doctype html><div class="loader-mark mark-dots"><b><img alt=""></b>' +
+    '<span></span><span></span><span></span><span></span></div>');
+  const d = dom.window.document;
+  assert.equal(d.querySelectorAll('.loader-mark > span').length, 4, 'znacznik ma cztery elementy animacji');
+  assert.equal(d.querySelectorAll('.loader-mark span:nth-child(1)').length, 0,
+    'pierwszym dzieckiem jest logo, więc span:nth-child(1) nie istnieje');
+  assert.equal(d.querySelectorAll('.loader-mark span:nth-of-type(1)').length, 1,
+    'pozycje elementów animacji liczymy po spanach (nth-of-type)');
+  const spans = d.querySelectorAll('.loader-mark > span');
+  assert.ok(spans[0].matches('.mark-dots span:nth-of-type(1)'), 'pierwszy span to pierwsza kropka');
+  assert.ok(spans[2].matches('.mark-dots span:nth-of-type(3)'), 'trzeci span to trzecia kropka');
+  dom.window.close();
+
+  const css = HUB_CSS.replace(/\/\*[\s\S]*?\*\//g, '');
+  assert.equal(/span:(?:nth-child|first-child|last-child)/.test(css), false,
+    'żaden selektor nie może liczyć pozycji razem z logo (nth-child)');
+
+  fs.readdirSync(path.join(root, 'rejhub2')).filter((file) => file.endsWith('.html')).forEach((file) => {
+    const html = read('rejhub2/' + file);
+    const start = html.indexOf('class="loader-mark');
+    if (start === -1) return; /* strony bez nakładki ładowania */
+    const mark = html.slice(start, start + 260);
+    assert.match(mark, /<b>[\s\S]*?<\/b>\s*<span><\/span>/, file + ': logo musi stać przed elementami animacji');
+  });
+}
+
 (async function main() {
   checkSources();
+  checkMarkLayout();
   await checkRotation();
   await checkHandoff();
   await checkLegacy();
