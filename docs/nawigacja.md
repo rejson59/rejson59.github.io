@@ -22,3 +22,12 @@ CHROME_BIN=/ścieżka/do/chromium node account-sidebar.browser.js
 Ikona domku ma własny kształt SVG w HTML (nie zależy od pobrania zewnętrznego pliku ikon), prowadzi na `/` i jest widoczna na wszystkich stronach ze wspólnym topbarem, poza zwijanym menu; działa też bez JavaScriptu. Ta sama ikona pozostaje na stronie głównej, by nie zmieniać geometrii nawigacji między stronami.
 
 Na starszych stronach przekierowujących i awaryjnych ekranach podróży domek jest osobnym odnośnikiem, bo te krótkotrwałe strony nie używają topbaru.
+
+## Pozycje menu i szkło (październik 2026)
+
+- Pozycje główne (ikony): Konto, RejFile, RejSejf, RejChat, RejTools.
+- Panel „Więcej”: Tworzenie stron, Partnerstwo, **RejClass**, Licencja, „Szklane studio” (tylko administrator), GitHub.
+- Strona `/widzety` została usunięta razem z kopią w `rejhub2/`. Stare adresy (`/widzety`, `/widzety.html`, `/board`, `/rejson-widgets/board`) przekierowują trwale (301) na `/`, a odnośnik zniknął z menu, stopki reklam i `sitemap.xml`.
+- „Szklane studio” ma w topbarze atrybut `data-admin-only`. Domyślnie jest schowane (`css/shared-topbar.css`), a pokazuje je `html.rj-admin-session` ustawiana przez `js/shared-topbar.js` na podstawie czytelnej podpowiedzi `rejhub_admin_hint`. To wyłącznie warstwa wygody — dostęp do strony nadal chroni podpisane, HttpOnly ciasteczko `rejhub_admin` i `middleware.js`.
+- Szkło jest bardziej przezroczyste: mocniejszy obiektyw (`blur(26px) saturate(175%)`), jaśniejsze refleksy i wyraźniejsza krawędź, a tapeta pod spodem ma mniejsze przyciemnienie (`brightness(1)` i lżejsza zasłona). Czytelność tekstu zapewnia kontrast tokenów `--hub-ink`/`--hub-muted`, nie ciężka mgła.
+- Panel admina na telefonie: zakładki to jedna przyklejona, przewijana linia z celami 46 px i przyciąganiem (`scroll-snap`), a kafelki przeglądu układają się w dwie kolumny.

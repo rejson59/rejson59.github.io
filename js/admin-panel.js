@@ -4,7 +4,7 @@
  *  - odwiedzający z trwałym 4-cyfrowym identyfikatorem (nikt nie jest anonimowy),
  *  - ścieżki kroków + dokładna lista akcji (co klikał i kiedy),
  *  - globalny strumień kliknięć wszystkich użytkowników,
- *  - strumień zdarzeń (zgłoszenia, polubienia, wpisy, komentarze),
+ *  - strumień zdarzeń (zgłoszenia, wpisy, komentarze),
  *  - zakładka Społeczność (członkowie, moderacja wpisów).
  * Dane: admin-only RPC public.get_admin_activity / get_admin_community.
  */
@@ -714,7 +714,7 @@
 
     if (!Array.isArray(events) || !events.length) {
       wrap.innerHTML =
-        '<div class="pa-empty">Brak zdarzeń — nowe zgłoszenia, polubienia i wpisy pojawią się tutaj na bieżąco.</div>';
+        '<div class="pa-empty">Brak zdarzeń — nowe zgłoszenia i wpisy pojawią się tutaj na bieżąco.</div>';
       return;
     }
 
@@ -1125,7 +1125,6 @@
           '<span class="pa-time-chip" title="Odwiedzone podstrony">📄 ' + fmt(p.pages) + "</span>" +
           '<span class="pa-time-chip" title="Kliknięcia i akcje">🖱 ' + fmt(p.actions) + "</span>" +
           (Number(p.submissions) > 0 ? '<span class="pa-time-chip" title="Zgłoszenia od użytkowników">📨 ' + fmt(p.submissions) + "</span>" : "") +
-          (Number(p.votes) > 0 ? '<span class="pa-time-chip" title="Głosy na pomysły">👍 ' + fmt(p.votes) + "</span>" : "") +
           (Array.isArray(p.today_pages) && p.today_pages.length
             ? '<span class="vif-row-today" title="Dziś był na: ' + esc(p.today_pages.map(prettySlug).join(" · ")) + '">' +
               "📄 dziś: " + esc(p.today_pages.slice(0, 3).map(prettySlug).join(" · ")) +
@@ -1271,7 +1270,6 @@
         '<span class="pa-time-chip">📄 ' + fmt(p.pages) + " podstron</span>" +
         '<span class="pa-time-chip">🖱 ' + fmt(p.action_count) + " akcji</span>" +
         '<span class="pa-time-chip">📨 ' + fmt(subs.length) + " zgłoszeń</span>" +
-        '<span class="pa-time-chip">👍 ' + fmt(p.votes) + " głosów</span>" +
         '<span class="pa-time-chip">📝 ' + fmt(posts.length) + " wpisów · 💬 " + fmt(comments.length) + " komentarzy</span>" +
       "</div>";
 
@@ -1309,7 +1307,6 @@
               '<span class="vif-sub-type">' + (it.type === "idea" ? "💡" : "🐞") + "</span>" +
               '<span class="vif-sub-title">' + esc(it.title || "") + "</span>" +
               '<span class="pa-time-chip">' + esc(it.status || "") + "</span>" +
-              '<span class="pa-time-chip">👍 ' + fmt(it.votes) + "</span>" +
               '<span class="pa-event-proj">' + esc(it.project || "") + "</span>" +
               '<span class="pa-event-time">' + esc(relTime(it.at)) + "</span>" +
             "</div>"

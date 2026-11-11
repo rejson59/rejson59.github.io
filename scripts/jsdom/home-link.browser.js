@@ -2,7 +2,7 @@
    Testuje geometrię mobilną bez zrzutów oraz admina na danych testowych. */
 const assert=require('node:assert/strict'),http=require('node:http'),fs=require('node:fs'),path=require('node:path'),{chromium}=require('playwright-core');
 const root=path.resolve(__dirname,'../..');if(!process.env.CHROME_BIN)throw Error('Set CHROME_BIN');
-const routes=['/','/rejtools','/rejfile','/rejchat','/logowanie','/profil','/widzety','/uslugi','/partnerstwo','/admin','/404.html','/rejson-widgets/index.html'];
+const routes=['/','/rejtools','/rejfile','/rejchat','/logowanie','/profil','/uslugi','/partnerstwo','/admin','/404.html','/rejson-widgets/index.html'];
 const server=http.createServer((req,res)=>{let u=decodeURIComponent(new URL(req.url,'http://local').pathname);if(u==='/')u='/index.html';else if(!path.extname(u)&&fs.existsSync(path.join(root,u+'.html')))u+='.html';const f=path.resolve(root,'.'+u);if(!f.startsWith(root+path.sep)||!fs.existsSync(f)||!fs.statSync(f).isFile())return res.writeHead(404).end();res.writeHead(200,{'content-type':({'.html':'text/html; charset=utf-8','.css':'text/css','.js':'text/javascript','.svg':'image/svg+xml'})[path.extname(f)]||'application/octet-stream'});fs.createReadStream(f).pipe(res)});
 async function checkHome(page,where){
  const home=page.locator('.rj-shared-header .rj-home-link');assert.equal(await home.count(),1,where+': jeden domek');assert.equal(await home.getAttribute('href'),'/');assert.equal(await home.getAttribute('aria-label'),'Strona główna');assert.equal(await home.locator('svg path').count(),1,where+': rzeczywisty rysunek, nie pusty element');assert.equal(await home.locator('svg use').count(),0,where+': nie polega na zewnętrznym sprite');

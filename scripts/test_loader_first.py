@@ -9,7 +9,7 @@ import sys
 import pathlib
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-PAGES = ["index.html", "rejchat.html", "widzety.html"]
+PAGES = ["index.html", "rejchat.html"]
 
 failures = []
 

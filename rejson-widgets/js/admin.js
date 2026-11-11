@@ -87,14 +87,19 @@
     }, 2800);
   }
 
-  /* Motyw jasny/ciemny */
-  document.getElementById("theme-toggle").addEventListener("click", function () {
-    var next = document.documentElement.dataset.theme === "light" ? "dark" : "light";
-    document.documentElement.dataset.theme = next;
-    try {
-      localStorage.setItem("theme", next);
-    } catch (e) {}
-  });
+  /* Motyw jasny/ciemny. Przycisk jest opcjonalny — w RejHubie 2.0
+     ustawienia wyglądu siedzą w wyspie, więc topbar może go nie mieć.
+     Bez tej straży brak przycisku zatrzymywał cały skrypt panelu. */
+  var themeButton = document.getElementById("theme-toggle");
+  if (themeButton) {
+    themeButton.addEventListener("click", function () {
+      var next = document.documentElement.dataset.theme === "light" ? "dark" : "light";
+      document.documentElement.dataset.theme = next;
+      try {
+        localStorage.setItem("theme", next);
+      } catch (e) {}
+    });
+  }
 
   /* Sprawdzenie statusu chmury Supabase przy starcie */
   async function initAdmin() {
@@ -241,10 +246,6 @@
     var ideas = state.items.filter(function (x) {
       return x.type === "idea";
     }).length;
-    var votes = state.items.reduce(function (acc, x) {
-      return acc + Number(x.upvotes_count || 0);
-    }, 0);
-
     var projs = {};
     state.items.forEach(function (x) {
       projs[x.project_slug] = (projs[x.project_slug] || 0) + 1;
@@ -258,7 +259,6 @@
     document.getElementById("kpi-bugs-crit").textContent =
       critBugs > 0 ? critBugs + " o wysokim priorytecie" : "Brak błędów krytycznych";
     document.getElementById("kpi-ideas").textContent = String(ideas);
-    document.getElementById("kpi-votes").textContent = votes + " polubień łącznie";
 
     /* Pigułki projektów */
     var pillsHTML =
@@ -312,7 +312,6 @@
 
     var sevRank = { critical: 4, high: 3, normal: 2, low: 1 };
     list.sort(function (a, b) {
-      if (state.sortBy === "votes") return (b.upvotes_count || 0) - (a.upvotes_count || 0);
       if (state.sortBy === "priority") {
         return (sevRank[b.severity] || 0) - (sevRank[a.severity] || 0);
       }
@@ -366,12 +365,8 @@
           '">' +
           esc(STATUS_META[it.status] || it.status) +
           "</span>" +
-          (!it.is_public ? '<span class="tag-badge">Prywatne</span>' : "") +
           (it.is_demo ? '<span class="tag-badge">DEMO</span>' : "") +
           "    </div>" +
-          '    <span class="mono" style="font-size:12px;color:#fb7185">❤ ' +
-          Number(it.upvotes_count || 0) +
-          "</span>" +
           "  </div>" +
           '  <h3 class="sub-title">' +
           esc(it.title) +
@@ -455,18 +450,6 @@
           );
         })
         .join("") +
-      "  </div>" +
-      '  <div style="display:flex;gap:18px;margin-top:12px;flex-wrap:wrap;font-size:13px">' +
-      '    <label style="display:flex;align-items:center;gap:7px;cursor:pointer">' +
-      '      <input type="checkbox" id="chk-is-public" ' +
-      (item.is_public ? "checked" : "") +
-      "> Widoczne na publicznej tablicy" +
-      "    </label>" +
-      '    <label style="display:flex;align-items:center;gap:7px;cursor:pointer">' +
-      '      <input type="checkbox" id="chk-is-pinned" ' +
-      (item.is_pinned ? "checked" : "") +
-      "> Przypnij na samej górze" +
-      "    </label>" +
       "  </div>" +
       "</div>" +
       '<div class="insp-section">' +
@@ -843,16 +826,6 @@
       button.textContent = "Kopiuj prompt projektu (" + count + ")";
       button.disabled = count === 0 || !state.itemsComplete;
       document.getElementById("ai-project-fallback").hidden = true;
-    } else if (e.target.id === "chk-is-public") {
-      patchSelectedItem(
-        { is_public: e.target.checked },
-        e.target.checked ? "Upubliczniono na tablicy" : "Ukryto przed publiczną tablicą"
-      );
-    } else if (e.target.id === "chk-is-pinned") {
-      patchSelectedItem(
-        { is_pinned: e.target.checked },
-        e.target.checked ? "Przypięto na górze tablicy" : "Odpięto zgłoszenie"
-      );
     }
   });
 

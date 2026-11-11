@@ -22,7 +22,7 @@ const server = http.createServer((req,res) => {
     const context = await browser.newContext();
     await context.route('**/*', r => r.request().url().startsWith(origin + '/') ? r.continue() : r.abort());
     const page = await context.newPage();
-    const urls = ['/index.html','/rejchat.html','/widzety.html','/logowanie.html','/.html','/admin.html','/rejfile.html','/partnerstwo.html','/rejson-widgets/index.html','/404.html'];
+    const urls = ['/index.html','/rejchat.html','/logowanie.html','/.html','/admin.html','/rejfile.html','/partnerstwo.html','/rejson-widgets/index.html','/404.html'];
     for (const width of [320,375,760,800,1024,1200,1201,1440]) {
       await page.setViewportSize({width,height:900});
       for (const url of urls) {
@@ -37,7 +37,7 @@ const server = http.createServer((req,res) => {
         });
         assert.ok(result.scroll <= width, `${url} ${width}: poziome przewijanie ${result.scroll}`);
         assert.deepEqual(result.clipped,[],`${url} ${width}: ucięte elementy nagłówka`);
-        if (width === 375 && ['/rejchat.html','/widzety.html'].includes(url)) {
+        if (width === 375 && ['/rejchat.html'].includes(url)) {
           await page.click('#liquid-menu-toggle');
           assert.equal(await page.getAttribute('#liquid-menu-toggle','aria-expanded'),'true');
           await page.keyboard.press('Escape');

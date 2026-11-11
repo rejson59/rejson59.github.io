@@ -85,7 +85,7 @@ const server = http.createServer((req, res) => {
     await page.setViewportSize({width:1440,height:850});
     await page.locator('#nav-more summary').click();
     assert.equal(await page.locator('#nav-more').evaluate(el => el.open),true);
-    for (const href of ['partnerstwo','widzety','https://github.com/rejson59']) assert.equal(await page.locator('#nav-more a[href="'+href+'"]').isVisible(),true);
+    for (const href of ['partnerstwo','rejclass','https://github.com/rejson59']) assert.equal(await page.locator('#nav-more a[href="'+href+'"]').isVisible(),true);
     await page.keyboard.press('Escape');
     assert.equal(await page.locator('#nav-more').evaluate(el => el.open),false);
     await page.locator('#nav-more summary').click();
@@ -116,7 +116,7 @@ const server = http.createServer((req, res) => {
     await configure(logged);
     await logged.addInitScript(() => localStorage.setItem('rejson_community_session_v1', JSON.stringify({username:'Tester',token:'0123456789abcdef0123456789abcdef'})));
     const lp = await logged.newPage();
-    for (const url of ['/index.html','/rejchat.html','/widzety.html','/partnerstwo.html','/.html']) {
+    for (const url of ['/index.html','/rejchat.html','/partnerstwo.html','/.html']) {
       await lp.goto(origin + url,{waitUntil:'domcontentloaded'});
       await lp.locator('.rj-header-profile').waitFor({state:'visible'});
       assert.equal(await lp.locator('header a[href$="logowanie"]').filter({visible:true}).count(),0,`${url}: konto nie jest zdublowane`);

@@ -19,7 +19,7 @@ const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 const PAGES = [
   '404.html', 'admin.html', 'index.html', 'konto-demo.html', 'licencja.html',
   'logowanie.html', 'panel.html', 'partnerstwo.html', 'profil.html', 'rejchat.html',
-  'rejclass.html', 'rejfile.html', 'rejsejf.html', 'rejtools.html', 'uslugi.html', 'widzety.html',
+  'rejclass.html', 'rejfile.html', 'rejsejf.html', 'rejtools.html', 'uslugi.html',
   'rejchat/regulamin.html'
 ];
 
@@ -178,6 +178,23 @@ function headerOf(html) {
     check('strona główna podświetla ikonę domu', () => {
       const marked = home.window.document.querySelector('.rj-home-link[aria-current="page"]');
       assert.ok(marked, 'brak podświetlenia strony głównej');
+    });
+
+    const guest = await makePage(SHELL, 'https://rejhub.vercel.app/rejfile');
+    check('gość nie widzi „Szklanego studia” w topbarze', () => {
+      const link = guest.window.document.querySelector('[data-admin-only]');
+      assert.ok(link, 'brak oznaczonego linku studia');
+      assert.equal(link.getAttribute('aria-hidden'), 'true');
+      assert.ok(!guest.window.document.documentElement.classList.contains('rj-admin-session'));
+    });
+
+    const admin = await makePage(SHELL, 'https://rejhub.vercel.app/rejfile');
+    admin.window.document.cookie = 'rejhub_admin_hint=1; path=/';
+    admin.window.RejTopbarPaint();
+    check('administrator widzi „Szklane studio” w topbarze', () => {
+      const link = admin.window.document.querySelector('[data-admin-only]');
+      assert.ok(admin.window.document.documentElement.classList.contains('rj-admin-session'));
+      assert.equal(link.hasAttribute('aria-hidden'), false);
     });
 
     check('panel „Więcej” da się zamknąć kliknięciem poza', () => {

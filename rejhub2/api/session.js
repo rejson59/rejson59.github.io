@@ -12,6 +12,11 @@
 import crypto from "node:crypto";
 
 const COOKIE_NAME = "rejhub_admin";
+/* Czytelna dla skryptów „podpowiedź”, że w tej przeglądarce jest sesja
+   administratora. Nie chroni niczego — od tego jest podpisane, HttpOnly
+   ciasteczko wyżej i brama w `middleware.js`. Służy tylko do tego, żeby
+   topbar pokazywał link „Szklane studio” wyłącznie administratorowi. */
+const HINT_COOKIE_NAME = "rejhub_admin_hint";
 const MAX_AGE_SECONDS = 60 * 60 * 12;
 
 function base64Url(buffer) {
@@ -30,6 +35,15 @@ function signSession(uid, secret) {
   return payload + "." + signature;
 }
 
+function hintCookie(maxAge) {
+  return [
+    HINT_COOKIE_NAME + "=" + (maxAge > 0 ? "1" : ""),
+    "Path=/",
+    "SameSite=Lax",
+    "Max-Age=" + maxAge
+  ].join("; ");
+}
+
 function sessionCookie(value, maxAge) {
   return [
     COOKIE_NAME + "=" + encodeURIComponent(value),
@@ -45,7 +59,7 @@ export default async function handler(request, response) {
   response.setHeader("Cache-Control", "no-store");
 
   if (request.method === "DELETE") {
-    response.setHeader("Set-Cookie", sessionCookie("", 0));
+    response.setHeader("Set-Cookie", [sessionCookie("", 0), hintCookie(0)]);
     return response.status(200).json({ ok: true });
   }
 
@@ -114,7 +128,10 @@ export default async function handler(request, response) {
       return response.status(403).json({ error: "forbidden" });
     }
 
-    response.setHeader("Set-Cookie", sessionCookie(signSession(uid, secret), MAX_AGE_SECONDS));
+    response.setHeader("Set-Cookie", [
+      sessionCookie(signSession(uid, secret), MAX_AGE_SECONDS),
+      hintCookie(MAX_AGE_SECONDS)
+    ]);
     return response.status(200).json({ ok: true });
   } catch (error) {
     return response.status(502).json({ error: "upstream_unavailable" });

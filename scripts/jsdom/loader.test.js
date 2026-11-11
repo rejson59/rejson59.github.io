@@ -172,7 +172,7 @@ function mk(html, evalBoot, evalLoader) {
     const samples = [];
     const timer = setInterval(() => samples.push({ v: scale(fill), shown: ov.classList.contains("is-shown") }), 40);
     const link = doc.createElement("a");
-    link.setAttribute("href", "/widzety");
+    link.setAttribute("href", "/rejclass");
     doc.body.appendChild(link);
     link.dispatchEvent(new w.MouseEvent("click", { bubbles: true, cancelable: true, button: 0 }));
     await wait(900);
