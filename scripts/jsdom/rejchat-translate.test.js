@@ -23,7 +23,9 @@ const dom = new JSDOM(`<!doctype html><html><body>
       <p class="chat-text">Cześć, jak się masz dzisiaj?</p>
     </div></div>
   </div>
-  <textarea id="chat-input"></textarea>
+  <form id="chat-form"><textarea id="chat-input"></textarea>
+    <div class="rc-compose-tools"><button type="submit" id="chat-send">Wyślij</button></div>
+  </form>
   <p class="chat-length" id="chat-length"><span id="chat-length-text">0 / 2000 znaków</span></p>
 </body></html>`, { url: 'https://rejhub.vercel.app/rejchat', runScripts: 'outside-only' });
 const w = dom.window;
@@ -52,7 +54,7 @@ const foreign = w.document.querySelector('[data-chat-id="m1"]');
 const polish = w.document.querySelector('[data-chat-id="m2"]');
 assert.ok(foreign.querySelector('.rj-tr-btn'), 'przycisk przy obcej wiadomości');
 assert.equal(polish.querySelector('.rj-tr-btn'), null, 'brak przycisku przy polskiej wiadomości');
-assert.ok(w.document.querySelector('#chat-length .rj-tr-draft'), 'tłumacz szkicu w linii licznika');
+assert.ok(w.document.querySelector('#chat-form .rc-compose-tools .rj-tr-draft'), 'tłumacz szkicu w pasku narzędzi');
 console.log('  ✔ przycisk tylko przy obcej wiadomości + tłumacz szkicu');
 
 foreign.querySelector('.rj-tr-btn').click();
