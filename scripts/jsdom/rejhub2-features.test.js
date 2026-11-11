@@ -74,7 +74,7 @@ check('każda strona z dzwonkiem ma panel push', () => {
   pages.forEach((file) => {
     const html = read('rejhub2/' + file);
     if (!html.includes('rejchat-notifications.js')) return;
-    assert.ok(html.includes('/js/push.js?v=1'), 'brak push.js w ' + file);
+    assert.match(html, /\/js\/push\.js\?v=\d+/, 'brak push.js w ' + file);
     assert.ok(html.includes('/css/push.css?v=1'), 'brak push.css w ' + file);
   });
 });
