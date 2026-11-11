@@ -1,0 +1,355 @@
+/* © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
+   Licencja: /LICENSE, /licencja
+   ----------------------------------------------------------------------------
+   Jedna, końcowa warstwa szkła dla panelu admina i podstron RejHub 2.0.
+
+   Powód: karty na podstronach brały tło z nieprzezroczystych tokenów
+   (--card: #12161f, --bg-elev, --input-bg), a pasek mini reklam miał wpisane
+   na sztywno #111e2a. Efekt to czarne, kanciaste prostokąty na tle tapety.
+
+   Ta warstwa jest ładowana jako ostatnia:
+   - zamienia nieprzezroczyste tokeny na półprzezroczyste,
+   - daje każdej powierzchni ten sam blur, ten sam sheen, tę samą krawędź
+     i ten sam promień (20 px; pigułki 999 px),
+   - usuwa zieleń z akcentów podstron,
+   - porządkuje układ panelu admina (box-sizing, brak poziomego przewijania).
+
+   Dynamiczna wyspa (RejIsland) jest poza tą warstwą — ma zostać czarna.
+   -------------------------------------------------------------------------- */
+
+:root {
+  color-scheme: dark;
+  --card: rgba(255, 255, 255, 0.065);
+  --card-2: rgba(255, 255, 255, 0.045);
+  --bg-elev: rgba(255, 255, 255, 0.085);
+  --input-bg: rgba(255, 255, 255, 0.055);
+  --header-bg: rgba(11, 16, 27, 0.58);
+
+  /* Wspólne szkło (rejhub2) */
+  --rj-glass-bg: rgba(23, 32, 49, 0.34);
+  --rj-glass-solid: rgba(20, 28, 43, 0.9);
+  --rj-glass-border: 1px solid rgba(178, 205, 245, 0.18);
+  --rj-glass-shadow: 0 26px 60px -34px rgba(1, 6, 18, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  --rj-glass-blur: saturate(1.8) blur(26px);
+  --rju-surface: rgba(255, 255, 255, 0.06);
+  --rju-edge: rgba(178, 205, 245, 0.18);
+
+  /* Wspólne szkło (ta warstwa) */
+  --gl-tint: rgba(11, 17, 29, 0.68);
+  --gl-fill: linear-gradient(157deg, rgba(255, 255, 255, 0.105), rgba(255, 255, 255, 0.032) 54%, rgba(255, 255, 255, 0.058));
+  --gl-fill-hi: linear-gradient(157deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.06) 54%, rgba(255, 255, 255, 0.09));
+  --gl-line: rgba(255, 255, 255, 0.16);
+  --gl-line-hi: rgba(255, 255, 255, 0.26);
+  --gl-blur: blur(26px) saturate(1.5);
+  --gl-shadow: 0 26px 60px -34px rgba(1, 6, 18, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.18), inset 0 -1px 0 rgba(255, 255, 255, 0.04);
+  --gl-radius: 20px;
+}
+
+html[data-theme="light"] {
+  color-scheme: light;
+  --card: rgba(255, 255, 255, 0.6);
+  --card-2: rgba(255, 255, 255, 0.48);
+  --bg-elev: rgba(255, 255, 255, 0.72);
+  --input-bg: rgba(255, 255, 255, 0.72);
+  --header-bg: rgba(248, 251, 255, 0.66);
+
+  --rj-glass-bg: rgba(255, 255, 255, 0.55);
+  --rj-glass-solid: rgba(255, 255, 255, 0.94);
+  --rj-glass-border: 1px solid rgba(255, 255, 255, 0.85);
+  --rj-glass-shadow: 0 24px 52px -30px rgba(45, 70, 110, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  --rju-surface: rgba(255, 255, 255, 0.6);
+  --rju-edge: rgba(255, 255, 255, 0.9);
+
+  --gl-tint: rgba(255, 255, 255, 0.72);
+  --gl-fill: linear-gradient(157deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.5) 54%, rgba(255, 255, 255, 0.66));
+  --gl-fill-hi: linear-gradient(157deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.7) 54%, rgba(255, 255, 255, 0.86));
+  --gl-line: rgba(255, 255, 255, 0.9);
+  --gl-line-hi: rgba(255, 255, 255, 1);
+  --gl-shadow: 0 26px 56px -32px rgba(38, 62, 100, 0.36), inset 0 1px 0 rgba(255, 255, 255, 0.98);
+}
+
+/* --------------------------------------------------------- wspólne szkło --- */
+
+/* Duże powierzchnie: karty, panele, szyny, tabele. */
+body :is(
+  .tool, .tools-hero, .tools-hero-art, .tools-notice, .hero, .tools-search, .tools-filters button, .tools-pills span, .tools-local,
+  .card, .glass-card, .empty-state, .stat, .metric-badge,
+  .profile-card, .profile-card-view, .card-inner, .card-metric, .card-preview, .card-preview-fallback,
+  .board-cta-inner, .comm-cta-inner, .comm-hero, .comm-sidebar, .comm-chat, .comm-chat-head, .comm-chat-form,
+  .comm-card, .comm-input, .comm-layout, .comm-online-card,
+  .partner-form-card, .partner-admin-card, .partner-home-inner, .partner-option, .partner-note,
+  .wid-card, .wid-demo, .wid-cta, .mini-studio,
+  .kpi-card, .kpi-grid > *, .toolbar, .toolbar-card, .inspector-card, .feed-list,
+  .rm-card, .rjc-card, .rjc-bio-summary, .rjc-bio-sidebar, .rjc-subject,
+  .upload.card, .safe-compose, .dropzone,
+  .universe-links a, .pa-event, .pa-fp, .pa-visitor,
+  .rj-side-ads, .rj-side-ad,
+  .adm-rail, .adm-card, .adm-kpi, .adm-table-wrap, .adm-stream, .adm-chart, .adm-map,
+  .overview-stat, .overview-tile, .adm-section-head
+) {
+  background-color: var(--gl-tint) !important;
+  background-image: var(--gl-fill) !important;
+  border: 1px solid var(--gl-line) !important;
+  border-radius: var(--gl-radius);
+  box-shadow: var(--gl-shadow) !important;
+  -webkit-backdrop-filter: var(--gl-blur);
+  backdrop-filter: var(--gl-blur);
+  -webkit-background-clip: border-box;
+  background-clip: border-box;
+}
+
+html[data-theme="light"] body :is(
+  .tool, .tools-hero, .tools-hero-art, .tools-notice, .hero, .tools-search, .tools-filters button, .tools-pills span, .tools-local,
+  .card, .glass-card, .empty-state, .stat, .metric-badge,
+  .profile-card, .profile-card-view, .card-inner, .card-metric, .card-preview, .card-preview-fallback,
+  .board-cta-inner, .comm-cta-inner, .comm-hero, .comm-sidebar, .comm-chat, .comm-chat-head, .comm-chat-form,
+  .comm-card, .comm-input, .comm-layout, .comm-online-card,
+  .partner-form-card, .partner-admin-card, .partner-home-inner, .partner-option, .partner-note,
+  .wid-card, .wid-demo, .wid-cta, .mini-studio,
+  .kpi-card, .kpi-grid > *, .toolbar, .toolbar-card, .inspector-card, .feed-list,
+  .rm-card, .rjc-card, .rjc-bio-summary, .rjc-bio-sidebar, .rjc-subject,
+  .upload.card, .safe-compose, .dropzone,
+  .universe-links a, .pa-event, .pa-fp, .pa-visitor,
+  .rj-side-ads, .rj-side-ad,
+  .adm-rail, .adm-card, .adm-kpi, .adm-table-wrap, .adm-stream, .adm-chart, .adm-map,
+  .overview-stat, .overview-tile, .adm-section-head
+) {
+  background-color: var(--gl-tint) !important;
+  background-image: var(--gl-fill) !important;
+  color: var(--text, #141922);
+}
+
+/* Pigułki, chipy i małe przyciski: to samo szkło, promień 999 px. */
+body :is(
+  .chip, .pill-opt, .seg-btn, .comm-pill-btn, .comm-user-chip, .comm-online-user,
+  .tool-actions button, .tool-download, .admin-welcome-badge, .adm-live-pill,
+  .metric-badge, .theme-toggle, .rj-home-link, .tools-filters button, .tools-pills span,
+  .rj-side-ad-icon, .toolbar .btn, .toolbar-card .btn
+) {
+  background-color: var(--gl-tint) !important;
+  background-image: var(--gl-fill) !important;
+  border: 1px solid var(--gl-line) !important;
+  border-radius: 999px !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 10px 24px -18px rgba(1, 6, 18, 0.8) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(1.6);
+  backdrop-filter: blur(18px) saturate(1.6);
+}
+
+/* Pola formularzy — szkło, nie czarne bloki. */
+body :is(
+  .tool input:not([type="checkbox"]):not([type="radio"]), .tool select, .tool textarea,
+  .ctrl-input, .ctrl-select, .search, .filter-field input, .filter-field select,
+  .comm-textarea, .comm-input input, .adm-search
+) {
+  background-color: var(--gl-tint) !important;
+  border: 1px solid var(--gl-line) !important;
+  border-radius: 14px !important;
+  color: inherit;
+  -webkit-backdrop-filter: blur(16px) saturate(1.5);
+  backdrop-filter: blur(16px) saturate(1.5);
+}
+
+html[data-theme="light"] body :is(
+  .tool input:not([type="checkbox"]):not([type="radio"]), .tool select, .tool textarea,
+  .ctrl-input, .ctrl-select, .search, .filter-field input, .filter-field select,
+  .comm-textarea, .comm-input input, .adm-search
+) {
+  background-color: var(--gl-tint) !important;
+  border-color: rgba(255, 255, 255, 0.95) !important;
+}
+
+/* Nagłówki na jasnej szybie muszą być ciemne — inaczej blakną. */
+html[data-theme="light"] body :is(h1, h2, h3, h4, h5, h6) { color: #0d1a2c; }
+html[data-theme="light"] body :is(.sec-head h2, .card h2, .card h3, .side h2, .hero h1, .tools-intro h2, .tool h2) { color: #0d1a2c !important; }
+
+/* ------------------------------------------------------- mini reklamy --- */
+
+/* Pasek i kafelki reklam miały wpisane na sztywno #111e2a / #172632. */
+body .rj-side-ads {
+  border-radius: 20px !important;
+  border-color: var(--gl-line) !important;
+}
+
+body .rj-side-ad {
+  border-radius: 16px !important;
+  border-color: var(--gl-line) !important;
+  color: #eaf2ff !important;
+}
+
+body :is(.rj-side-ad--site, .rj-side-ad--chat, .rj-side-ad--file, .rj-side-ad--offer) {
+  background-image: var(--gl-fill) !important;
+  background-color: var(--gl-tint) !important;
+}
+
+html[data-theme="light"] body .rj-side-ad { color: #16233a !important; }
+
+/* Zero zieleni w akcentach reklam i narzędzi. */
+body :is(.rj-side-ad--file .rj-side-ad-icon, .rj-side-ad-icon) {
+  color: #cfd9ff !important;
+  background: rgba(160, 190, 255, 0.12) !important;
+  border-color: rgba(190, 210, 255, 0.24) !important;
+}
+
+/* ----------------------------------------------------------- RejTools --- */
+
+body .tools-eyebrow,
+body .tools-eyebrow span,
+body .tool-type { color: #9dc0ff !important; }
+
+body :is(.tool-icon, .art-grid span) {
+  color: #cfe0ff !important;
+  background: rgba(150, 185, 255, 0.14) !important;
+  border: 1px solid rgba(190, 212, 255, 0.22) !important;
+}
+
+body :is(.tool-icon.lavender, .tool-icon.blue) { color: #d7cdff !important; background: rgba(170, 150, 255, 0.16) !important; }
+body :is(.tool-icon.pink, .tool-icon.amber) { color: #ffd3e6 !important; background: rgba(255, 160, 200, 0.14) !important; }
+
+body :is(.tool-actions button:first-child, .tool-download, .tools-filters button.is-active) {
+  color: #0b1524 !important;
+  background: linear-gradient(150deg, #eaf2ff, #cfe0ff) !important;
+  border-color: rgba(255, 255, 255, 0.6) !important;
+}
+
+body :is(.tool-more, .tool-more h2, .tool-more b) { color: #eef4ff !important; }
+body .tool-more { background-image: var(--gl-fill-hi) !important; }
+body .tool-more p { color: #c8d6ec !important; }
+
+body .tools-hero-art { border-radius: 26px !important; }
+
+/* ------------------------------------------------------- panel admina --- */
+
+body.rj-admin {
+  overflow-x: clip;
+  --adm-surface: transparent;
+  --adm-surface-2: rgba(255, 255, 255, 0.07);
+  --adm-raised: rgba(255, 255, 255, 0.09);
+  --adm-raised-2: rgba(255, 255, 255, 0.15);
+  --adm-line: rgba(255, 255, 255, 0.14);
+  --adm-line-2: rgba(255, 255, 255, 0.24);
+  --adm-glass: var(--gl-fill);
+  --adm-radius: 20px;
+}
+
+html[data-theme="light"] body.rj-admin {
+  --adm-surface: transparent;
+  --adm-surface-2: rgba(255, 255, 255, 0.62);
+  --adm-raised: rgba(255, 255, 255, 0.55);
+  --adm-raised-2: rgba(255, 255, 255, 0.75);
+  --adm-line: rgba(255, 255, 255, 0.9);
+  --adm-line-2: rgba(255, 255, 255, 1);
+}
+
+/* Układ: karta nie może wystawać poza ekran (content-box + padding = 48 px). */
+body.rj-admin .admin-main {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: min(1520px, 100%);
+  margin-inline: auto;
+}
+
+body.rj-admin .adm-shell,
+body.rj-admin .adm-body,
+body.rj-admin .adm-body > *,
+body.rj-admin .admin-overview > * { min-width: 0; }
+
+body.rj-admin :is(.adm-table-wrap, .errors-list, .vif-list, .srv-tables) {
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+/* Szyna sekcji i karty: ta sama szyba co na podstronach. */
+body.rj-admin .adm-rail,
+body.rj-admin .adm-card,
+body.rj-admin .admin-card,
+body.rj-admin .adm-kpi,
+body.rj-admin .overview-stat,
+body.rj-admin .overview-tile,
+body.rj-admin .glass-card,
+body.rj-admin .toolbar-card,
+body.rj-admin .inspector-card {
+  background-color: var(--gl-tint) !important;
+  background-image: var(--gl-fill) !important;
+  border: 1px solid var(--gl-line) !important;
+  border-radius: 20px !important;
+  box-shadow: var(--gl-shadow) !important;
+  -webkit-backdrop-filter: var(--gl-blur);
+  backdrop-filter: var(--gl-blur);
+}
+
+body.rj-admin .adm-rail { border-radius: 22px !important; }
+body.rj-admin .adm-kpi,
+body.rj-admin .overview-tile { border-radius: 18px !important; }
+
+body.rj-admin .overview-tile:hover,
+body.rj-admin .adm-rail-link:hover {
+  background-image: var(--gl-fill-hi) !important;
+  border-color: var(--gl-line-hi) !important;
+}
+
+/* Zakładki są pionową listą w szynie — zostają pigułkami, bez własnego tła. */
+body.rj-admin .adm-tabs {
+  display: grid;
+  gap: 4px;
+  padding: 0;
+  background: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+body.rj-admin .adm-tab {
+  width: 100%;
+  justify-content: flex-start;
+  border: 1px solid transparent !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  color: var(--adm-sub);
+  font-weight: 700;
+  text-align: left;
+  transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+
+body.rj-admin .adm-tab:hover { background: rgba(255, 255, 255, 0.08) !important; color: var(--adm-ink); }
+
+body.rj-admin .adm-tab.is-active,
+body.rj-admin .adm-tab[aria-selected="true"] {
+  background: rgba(255, 255, 255, 0.16) !important;
+  border-color: var(--gl-line-hi) !important;
+  color: #ffffff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+html[data-theme="light"] body.rj-admin .adm-tab[aria-selected="true"],
+html[data-theme="light"] body.rj-admin .adm-tab.is-active {
+  background: rgba(255, 255, 255, 0.94) !important;
+  color: #0e1c30;
+}
+
+/* Kafelki szybkich przejść i liczby — bez czarnych plam. */
+body.rj-admin .overview-icon,
+body.rj-admin .adm-rail-mark,
+body.rj-admin .adm-card-ico,
+body.rj-admin .adm-kpi-ico {
+  background: rgba(255, 255, 255, 0.09) !important;
+  border: 1px solid var(--gl-line) !important;
+  color: #cfe0ff !important;
+}
+
+/* Wiersze tabel i list: przejrzyste, oddzielone włoskowatą linią. */
+body.rj-admin :is(.adm-trow, .adm-thead, .vif-row, .rcmod-row, .pa-event) {
+  background: transparent !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Pasek „Wyloguj” i inne przyciski w nagłówku panelu. */
+body.rj-admin .rj-shared-context .btn { border-radius: 999px !important; }
+
+/* --------------------------------------------------------- bez blura --- */
+
+@supports not ((backdrop-filter: blur(2px)) or (-webkit-backdrop-filter: blur(2px))) {
+  :root { --gl-fill: linear-gradient(157deg, rgba(30, 40, 60, 0.94), rgba(22, 30, 46, 0.92)); }
+  :root { --rj-glass-bg: rgba(23, 32, 49, 0.94); }
+  html[data-theme="light"] { --gl-fill: linear-gradient(157deg, #ffffff, #f4f8ff); }
+}

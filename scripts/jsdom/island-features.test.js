@@ -172,6 +172,29 @@ async function checkGestures() {
   assert.ok(/Cisza na 30 min/.test(ui('.rj-toast').textContent), 'użytkownik dostaje informację o ciszy');
   assert.ok(Number(w.localStorage.getItem('rj_island_quiet_until_v1')) > Date.now(), 'cisza jest zapisana');
 
+  /* cisza nie jest pułapką: pigułka „Wróć teraz” jest widoczna i działa */
+  const unquiet = ui('[data-unquiet]');
+  assert.ok(unquiet, 'brak pigułki wyjścia z ciszy');
+  assert.equal(unquiet.hidden, false, 'pigułka jest schowana, choć cisza trwa');
+  assert.ok(/Wróć teraz/.test(unquiet.textContent), 'pigułka nie mówi, co robi');
+  assert.ok(/\d+:\d\d/.test(unquiet.textContent), 'brak odliczania do końca ciszy');
+  assert.equal(typeof w.RejIsland.unmute, 'function', 'brak API do zdjęcia ciszy');
+  assert.ok(w.RejIsland.quietLeft() > 0, 'API nie podaje pozostałego czasu');
+
+  unquiet.dispatchEvent(new w.MouseEvent('click', { bubbles: true, composed: true }));
+  await wait(60);
+  assert.equal(island.classList.contains('is-quiet'), false, 'klik nie przywrócił wyspy');
+  assert.equal(unquiet.hidden, true, 'pigułka została po zdjęciu ciszy');
+  assert.equal(w.RejIsland.quietLeft(), 0, 'cisza nadal zapisana');
+
+  /* skrót Alt+Shift+R też przywraca wyspę */
+  w.RejIsland.quiet(30);
+  await wait(40);
+  assert.equal(island.classList.contains('is-quiet'), true);
+  w.document.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'r', altKey: true, shiftKey: true, bubbles: true }));
+  await wait(40);
+  assert.equal(island.classList.contains('is-quiet'), false, 'skrót Alt+Shift+R nie działa');
+
   /* gest na liście nie chowa wyspy — tam palec ma przewijać */
   w.RejIsland.open('alerts');
   await wait(40);

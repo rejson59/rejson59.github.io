@@ -2,7 +2,9 @@
 (function () {
   'use strict';
   var $ = function (id) { return document.getElementById(id); };
-  $('tools-theme').addEventListener('click', function () {
+  /* Motyw ma dziś topbar; przycisk zostaje jako opcjonalny (starsze widoki). */
+  var themeButton = $('tools-theme');
+  if (themeButton) themeButton.addEventListener('click', function () {
     var theme = document.documentElement.dataset.theme === 'light' ? 'dark' : 'light';
     document.documentElement.dataset.theme = theme;
     try { localStorage.setItem('theme', theme); } catch (_) {}

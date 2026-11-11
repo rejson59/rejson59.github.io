@@ -13,6 +13,8 @@
   #rj-mobile-ads .rj-mobile-ads-items:focus-visible { outline:2px solid #a9eedb; outline-offset:-2px; }
   #rj-mobile-ads .rj-mobile-ad { box-sizing:border-box; display:flex; align-items:center; gap:8px; min-width:0; min-height:44px; scroll-snap-align:start; padding:4px 8px; border:1px solid #a4d4d326; border-radius:10px; color:#f2fcff; font:700 11px/1.2 system-ui,sans-serif; text-decoration:none; }
   #rj-mobile-ads .rj-mobile-ad--site { background:linear-gradient(115deg,#294a50,#1b2d3a); }
+  #rj-mobile-ads .rj-mobile-ad--chat { background:linear-gradient(115deg,#2a3a5c,#1b2434); border-color:#b9d4ff55; }
+  #rj-mobile-ads .rj-mobile-ad--chat .rj-mobile-ad-icon { color:#d8e8ff; border-color:#cfe2ff33; background:#cfe2ff1a; }
   #rj-mobile-ads .rj-mobile-ad--house { background:linear-gradient(115deg,#264b4b,#192d38); }
   #rj-mobile-ads .rj-mobile-ad--offer { background:linear-gradient(115deg,#343257,#252b41); border-color:#afa5fa55; }
   #rj-mobile-ads .rj-mobile-ad:focus-visible { outline:2px solid #a9eedb; outline-offset:-3px; }
