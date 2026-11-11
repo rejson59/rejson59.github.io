@@ -12,12 +12,12 @@
  */
 window.PROJECT_UPDATES = {
   "rejson59.github.io": { version: "v2026.11.10", note: "Społeczność 2.0: zdjęcia i filmy w postach, wątki odpowiedzi, agent AI" },
+  "RejStream": { version: "v2026.11.10" },
+  "Jakuplayer": { version: "v2026.11.10" },
   "mconline": { version: "v2026.11.08" },
   "Zayra-ai-asistant": { version: "v2026.11.06" },
   "RejVoice": { version: "v2026.11.06" },
   "RejPlay": { version: "v2026.11.05" },
-  "Jakuplayer": { version: "v2026.11.04" },
-  "RejStream": { version: "v2026.11.04" },
   "LuminoOS": { version: "v2026.11.04" },
   "mc-launcher": { version: "v2026.11.02" },
   "MyPilot": { version: "v2026.11.02" },
