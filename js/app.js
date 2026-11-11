@@ -500,7 +500,11 @@
 
   var SNAPSHOT_DB_NAME = "rejson_iframe_snapshots_v2";
   var SNAPSHOT_STORE = "snapshots";
-  var FREEZE_DELAY_MS = 5000; /* ~5 sekund na pełne zakończenie animacji ładowania wewnątrz projektu */
+  /* Ile czekamy, aż projekt wewnątrz ramki dokończy własną animację wejścia,
+     zanim zamienimy go w statyczny ekran. Na słabszym sprzęcie krócej —
+     5 sekund żywego canvasu 3D (np. mconline) to właśnie te „duże lagi”
+     podczas przewijania. Zrzut pokazuje to samo, tylko przestaje się ruszać. */
+  var FREEZE_DELAY_MS = isWeakDevice ? 1500 : 5000;
   var snapshotDbPromise = null;
 
   function openSnapshotDb() {
@@ -875,6 +879,28 @@
             scheduleFreeze();
           }
         } catch (e) { /* cross-origin */ }
+      }
+
+      /* Karta wyjeżdża z kadru — nie ma powodu trzymać żywego dokumentu,
+         skryptów i kontekstu GPU. Zamrażamy od razu (po krótkiej chwili na
+         ewentualny powrót), zamiast czekać pełny FREEZE_DELAY_MS. */
+      if ("IntersectionObserver" in window) {
+        var wasInView = false;
+        var leaveObserver = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            /* Karta, która nigdy nie była w kadrze, nie ma czego zamrażać —
+               jej ramka i tak jeszcze nic nie wczytała. */
+            if (entry.isIntersecting) { wasInView = true; return; }
+            if (!wasInView || frame._frozeOffscreen) return;
+            frame._frozeOffscreen = true;
+            setTimeout(function () {
+              if (frame.classList.contains("is-frozen")) return;
+              freezeIframeAsStaticScreen(frame, iframe, key);
+            }, 220);
+            leaveObserver.disconnect();
+          });
+        }, { rootMargin: "0px", threshold: 0 });
+        leaveObserver.observe(frame);
       }
 
       getCachedSnapshot(key).then(function (cachedDataUrl) {
