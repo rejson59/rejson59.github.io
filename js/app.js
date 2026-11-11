@@ -504,7 +504,7 @@
      zanim zamienimy go w statyczny ekran. Na słabszym sprzęcie krócej —
      5 sekund żywego canvasu 3D (np. mconline) to właśnie te „duże lagi”
      podczas przewijania. Zrzut pokazuje to samo, tylko przestaje się ruszać. */
-  var FREEZE_DELAY_MS = isWeakDevice ? 1500 : 5000;
+  var FREEZE_DELAY_MS = isWeakDevice ? 1200 : 5000;
   var snapshotDbPromise = null;
 
   function openSnapshotDb() {
@@ -643,6 +643,12 @@
         settled = true;
         frame.classList.add("is-frozen");
         if (iframe) releaseIframeRuntime(iframe);
+        /* Statyczny ekran = ramka nie jest już potrzebna. Silnik podglądów
+           dostaje wolny slot i może wczytać kolejne karty — dlatego lista
+           projektów wczytuje się „po kolei”, a nie wszystkie naraz. */
+        try {
+          if (window.RJLoader && typeof window.RJLoader.refresh === "function") window.RJLoader.refresh();
+        } catch (e) { /* trudno */ }
         resolve(true);
       }
 

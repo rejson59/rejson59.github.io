@@ -112,7 +112,7 @@
      gdy loader jeszcze gra — zabierały główny wątek i GPU, przez co kulki
      gubiły klatki. Montujemy je dopiero po zdjęciu nakładki. */
   var pageReady = false;
-  var previewQueue = [], previewQueueTimer = null;
+  var pumpTimer = 0;
   var sweepScheduled = false;
 
   /* ---------- montowanie tylko w spoczynku ----------
@@ -433,16 +433,168 @@
     return false;
   })();
 
-  var PREVIEW_RELEASE_DELAY_MS = weakDevice ? 400 : 1200;
-  var NEAR_MARGIN = weakDevice ? "360px 0px 360px 0px" : "800px 0px 800px 0px";
-  var RETAIN_MARGIN = weakDevice ? "700px 0px 700px 0px" : "1200px 0px 1200px 0px";
+  /* ---------- SILNIK SZEREGOWY PODGLĄDÓW ----------
+     Każdy podgląd to osobny dokument w <iframe> — własne skrypty, własne
+     animacje, często WebGL i wideo. Sześć takich ramek naraz to sześć
+     niezależnych pętli animacji w jednej karcie graficznej i to one powodowały
+     „straszne lagi” przy przewijaniu.
+
+     Zasady tego silnika (wygląd się nie zmienia — zmienia się tylko kolejność
+     i liczba rzeczy dziejących się jednocześnie):
+       1. żyje najwyżej MAX_LIVE_PREVIEWS ramek (telefon: 2),
+       2. nowa ramka rusza tylko w spoczynku i tylko JEDNA naraz
+          (`mountingNow`), z odstępem MOUNT_GAP_MS po poprzedniej,
+       3. kolejność wyznacza realna widoczność: najbardziej widoczna karta
+          pierwsza, przy remisie — ta bliżej środka ekranu,
+       4. ramka, która wyjechała z kadru i z pasa LIVE_RETAIN_PX, jest
+          natychmiast zwalniana — `src` znika, więc przeglądarka kasuje
+          dokument, jego skrypty i kontekst GPU. Karta pokazuje wtedy swoją
+          stałą okładkę (gradient + pasek adresu), nie czarną dziurę,
+       5. po zatrzymaniu przewijania kolejna karta „budzi się” sama. */
+  var MAX_LIVE_PREVIEWS = weakDevice ? 2 : 3;
+  var LIVE_RETAIN_PX = weakDevice ? 220 : 700;
+  var MOUNT_GAP_MS = weakDevice ? 650 : 380;
+  var FOCUS_MIN_RATIO = 0.3;
+
+  var PREVIEW_RELEASE_DELAY_MS = weakDevice ? 250 : 900;
+  var NEAR_MARGIN = weakDevice ? "300px 0px 300px 0px" : "700px 0px 700px 0px";
+  var RETAIN_MARGIN = weakDevice ? "500px 0px 500px 0px" : "1100px 0px 1100px 0px";
   var previewObserver = null, visibleObserver = null, retentionObserver = null;
+
+  /* Ramka, która właśnie się wczytuje. Jeden slot na całą stronę — dokładnie
+     to, o co chodzi w „ładuj po kolei”. */
+  var mountingNow = null;
+
+  var pumpTimer = 0;
+  function schedulePump(delay) {
+    if (pumpTimer) return;
+    pumpTimer = setTimeout(function () {
+      pumpTimer = 0;
+      if (window.requestIdleCallback) window.requestIdleCallback(pump, { timeout: 400 });
+      else pump();
+    }, typeof delay === "number" ? delay : 70);
+  }
+
+  function scrollBusy() {
+    return nowMs() < scrollQuietUntil;
+  }
+
+  function measurePreview(preview) {
+    var vh = window.innerHeight || 0;
+    var r = preview.getBoundingClientRect();
+    var top = Math.max(0, r.top);
+    var bottom = Math.min(vh, r.bottom);
+    var visibleH = Math.max(0, bottom - top);
+    return {
+      visible: visibleH > 0,
+      ratio: r.height ? Math.min(1, visibleH / r.height) : 0,
+      dist: Math.abs((r.top + r.bottom) / 2 - vh / 2)
+    };
+  }
+
+  function livePreviews() {
+    var out = [];
+    var list = document.querySelectorAll(".card-preview");
+    for (var i = 0; i < list.length; i++) {
+      if (list[i]._rjMounted) out.push(list[i]);
+    }
+    return out;
+  }
+
+  /* Kandydaci do wczytania. Źródłem prawdy jest IntersectionObserver
+     (`_rjVisible`, `_rjRatio`), a pomiar prostokąta służy tylko do kolejności
+     (środek ekranu) i do bezpiecznika, gdyby observer nie wystartował. */
+  function rankVisible() {
+    var list = document.querySelectorAll(".card-preview");
+    var out = [];
+    for (var i = 0; i < list.length; i++) {
+      var p = list[i];
+      if (!p._rjObserved || p.classList.contains("is-failed")) continue;
+      var m = measurePreview(p);
+      var ratio = Math.max(m.ratio, p._rjRatio || 0);
+      /* Bez IntersectionObserver (bardzo stare silniki) nie mamy sygnału
+         widoczności — wtedy po prostu wczytujemy karty po kolei. */
+      var visible = p._rjVisible === true || ratio > 0 || !previewObserver;
+      if (!visible) continue;
+      out.push({ preview: p, ratio: ratio, dist: m.dist });
+    }
+    out.sort(function (a, b) { return (b.ratio - a.ratio) || (a.dist - b.dist); });
+    return out;
+  }
+
+  function pump() {
+    if (!pageReady || document.hidden) return;
+    if (scrollBusy()) {
+      schedulePump(Math.max(90, scrollQuietUntil - nowMs() + 40));
+      return;
+    }
+
+    var seen = rankVisible();
+
+    /* 1. Co ma żyć: najbardziej widoczne karty. */
+    var want = [];
+    for (var i = 0; i < seen.length && want.length < MAX_LIVE_PREVIEWS; i++) {
+      want.push(seen[i].preview);
+    }
+
+    /* 1b. Jedna ramka naraz — chyba że ta, która się właśnie wczytuje,
+         przestała być potrzebna (np. użytkownik przewinął dalej). Wtedy
+         przerywamy ją i oddajemy slot karcie, którą naprawdę widać. */
+    if (mountingNow) {
+      if (want.indexOf(mountingNow) !== -1) return;
+      releasePreview(mountingNow);
+    }
+
+    /* 2. Ramki, które wyjechały poza pas zapasu, oddają zasoby od razu. */
+    var live = livePreviews();
+    for (var j = 0; j < live.length; j++) {
+      var p = live[j];
+      if (want.indexOf(p) !== -1) continue;
+      if (p._rjRetained !== false) continue;
+      releasePreview(p);
+    }
+
+    /* 3. Za dużo żywych — miejsce oddaje ta najmniej widoczna. */
+    live = livePreviews();
+    while (live.length >= MAX_LIVE_PREVIEWS) {
+      var victim = null, worstRatio = 2;
+      for (var k = 0; k < live.length; k++) {
+        if (want.indexOf(live[k]) !== -1) continue;
+        var ratio = Math.max(measurePreview(live[k]).ratio, live[k]._rjRatio || 0);
+        if (ratio < worstRatio) { victim = live[k]; worstRatio = ratio; }
+      }
+      if (!victim) break;
+      releasePreview(victim);
+      live = livePreviews();
+    }
+
+    /* 3b. Ręcznie ponowiona karta idzie przed resztą. */
+    for (var r = 0; r < want.length; r++) {
+      var retried = want[r];
+      if (!retried._rjRetryNext) continue;
+      if (retried._rjMounted || retried._rjMounting) continue;
+      retried._rjRetryNext = false;
+      mountPreview(retried);
+      return;
+    }
+
+    /* 4. Wczytaj pierwszą brakującą kartę z listy „ma żyć”. */
+    if (livePreviews().length >= MAX_LIVE_PREVIEWS) return;
+    for (var n = 0; n < want.length; n++) {
+      var next = want[n];
+      if (next._rjMounted || next._rjMounting) continue;
+      if (snapshotState(next) === "ok") continue;
+      mountPreview(next);
+      return;
+    }
+  }
+
   if ("IntersectionObserver" in window) {
     previewObserver = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
         var p = entry.target;
         p._rjNear = !!(entry.isIntersecting || entry.intersectionRatio > 0);
-        if (p._rjNear) enqueuePreview(p, p._rjVisible);
+        if (p._rjNear) { p._rjSuspended = false; schedulePump(); }
         else p._rjWantMount = false;
       });
     }, { rootMargin: NEAR_MARGIN, threshold: 0.01 });
@@ -451,12 +603,14 @@
       entries.forEach(function (entry) {
         var p = entry.target;
         p._rjVisible = !!(entry.isIntersecting || entry.intersectionRatio > 0);
-        if (p._rjVisible) { p._rjNear = true; enqueuePreview(p, true); }
+        p._rjRatio = entry.intersectionRatio || 0;
+        if (p._rjVisible) { p._rjNear = true; p._rjSuspended = false; schedulePump(); }
+        else schedulePump();
       });
     }, { threshold: 0.01 });
 
-    /* Dalekie ramki nie muszą przez całą wizytę odtwarzać własnych filmów,
-       animacji i skryptów. Wrócą automatycznie zanim karta wejdzie w widok. */
+    /* Pas zapasu: ramka może jeszcze chwilę żyć poza kadrem (żeby powrót nie
+       migał okładką), ale potem natychmiast wraca do systemu. */
     retentionObserver = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
         var p = entry.target;
@@ -527,6 +681,7 @@
 
   function settlePreview(preview, ok, safeFallback) {
     if (preview._rjSettled) return;
+    if (mountingNow === preview) mountingNow = null;
     preview._rjSettled = true;
     preview._rjMounting = false;
     stopPreviewDough(preview);
@@ -536,6 +691,9 @@
     preview.classList.toggle("is-loaded", !!ok);
     preview.classList.toggle("is-failed", !ok);
     preview.classList.toggle("is-safe-fallback", !!safeFallback);
+    /* Slot jest wolny — następna karta dostanie swoją ramkę po krótkiej pauzie,
+       żeby wstawienie nowego dokumentu nie trafiło w tę samą klatkę. */
+    schedulePump(ok ? MOUNT_GAP_MS : 1200);
     var message = preview.querySelector(".rj-fallback-message");
     if (message) message.textContent = safeFallback ? "Podgląd dostępny po otwarciu projektu" : "Podgląd chwilowo niedostępny";
 
@@ -603,6 +761,8 @@
   function mountPreview(preview) {
     var iframe = preview.querySelector("iframe[data-src]");
     if (!iframe) return;
+    /* Jeden dokument naraz — druga ramka poczeka na zwolnienie slotu. */
+    if (mountingNow && mountingNow !== preview) return;
     if (preview._rjMounting) return; /* próba już trwa */
     if (preview._rjSettled && preview.classList.contains("is-loaded")) return;
     /* po jawnym niepowodzeniu ponawiamy tylko przez przycisk „Spróbuj ponownie" */
@@ -650,6 +810,7 @@
     }
 
     preview._rjSuspended = false;
+    mountingNow = preview;
     var mountToken = preview._rjMountToken = (preview._rjMountToken || 0) + 1;
     preview._rjMounting = true;
     preview._rjMounted = true;
@@ -798,9 +959,15 @@
   /* Zwolnienie zachowuje link, geometrię karty, błędy i sprawdzone migawki.
      Nie zmieniamy licznika prób na kolejny adres z pominięciem cache: po
      powrocie jest zwykłe ładowanie, a nie ręczne ponowienie błędu. */
-  function releaseFarPreview(preview) {
-    if (!document.documentElement.contains(preview) || !preview._rjMounted || preview._rjNear === true ||
-        preview.contains(document.activeElement) || snapshotState(preview) !== "none") return;
+  /* Zwolnienie ramki: `src` znika, więc przeglądarka kasuje cały dokument
+     podglądu razem z jego skryptami, animacjami i kontekstem GPU. Zostaje
+     okładka karty (.card-preview-frame ma firmowy gradient) — nigdy czarna
+     dziura. `data-src` jest nietknięte, więc powrót to jedno przypisanie. */
+  function releasePreview(preview) {
+    if (!preview || !preview._rjMounted) return;
+    if (mountingNow === preview) mountingNow = null;
+    if (preview.contains(document.activeElement)) return;
+    if (snapshotState(preview) !== "none") return; /* jest statyczny zrzut — nie ruszamy */
     var iframe = preview.querySelector("iframe[data-src]");
     if (!iframe) return;
     var failed = preview.classList.contains("is-failed");
@@ -814,55 +981,21 @@
     preview._rjSuspended = !failed;
     if (!failed) preview._rjSettled = false;
     preview.classList.remove("is-loading", "is-loaded");
-    /* Usunięcie src zwalnia dokument ramki; data-src pozostaje nienaruszone. */
     iframe.removeAttribute("src");
     if (retentionObserver) retentionObserver.unobserve(preview);
   }
 
-  /* Jedna wspólna kolejka: priorytet mają karty już na ekranie, ale starty
-     nadal są rozłożone — nigdy nie odpalamy wszystkich w jednej klatce. */
-  function drainPreviewQueue() {
-    previewQueueTimer = null;
-
-    /* Ruch w toku: nic nie montujemy, wracamy po zatrzymaniu. Widoczna karta
-       pokazuje w tym czasie swoje kulki (czysty CSS/WAAPI), więc nic nie znika. */
-    var wait = previewQueue.length ? (scrollQuietUntil - nowMs()) : 0;
-    if (wait > 0) {
-      previewQueueTimer = setTimeout(drainPreviewQueue, wait + 30);
-      return;
-    }
-
-    var started = false;
-    while (previewQueue.length) {
-      var next = previewQueue.shift();
-      next._rjQueued = false;
-      if (!document.documentElement.contains(next) || next._rjMounting || next._rjSettled || next._rjNear === false) continue;
-      mountPreview(next);
-      started = true;
-      break;
-    }
-    if (started || previewQueue.length) {
-      var el = getOverlay(), lite = !!(el && el.classList.contains("rj-loader--lite"));
-      previewQueueTimer = setTimeout(function () {
-        if (lite && window.requestIdleCallback) {
-          window.requestIdleCallback(drainPreviewQueue, { timeout: 400 });
-        } else drainPreviewQueue();
-      }, lite ? 240 : 120);
-    }
+  /* To samo, ale tylko dla karty, której naprawdę nie ma już w pobliżu. */
+  function releaseFarPreview(preview) {
+    if (!document.documentElement.contains(preview) || preview._rjNear === true) return;
+    releasePreview(preview);
   }
-  function enqueuePreview(preview, priority) {
+
+  /* Zgłoszenie „ta karta chce podgląd”. Silnik sam zdecyduje kiedy i czy
+     w ogóle — kolejność wynika z realnej widoczności, nie z kolejności zdarzeń. */
+  function enqueuePreview(preview) {
     if (!pageReady) { preview._rjWantMount = true; return; }
-    if (preview._rjMounting || preview._rjSettled) return;
-    if (preview._rjQueued) {
-      if (priority) {
-        var index = previewQueue.indexOf(preview);
-        if (index > 0) { previewQueue.splice(index, 1); previewQueue.unshift(preview); }
-      }
-      return;
-    }
-    preview._rjQueued = true;
-    if (priority) previewQueue.unshift(preview); else previewQueue.push(preview);
-    if (!previewQueueTimer) drainPreviewQueue();
+    schedulePump(0);
   }
 
   /* Ręczne ponowienie z plakietki „Spróbuj ponownie" */
@@ -877,6 +1010,13 @@
     preview._rjAttempts = 0;
     preview.classList.remove("is-failed", "is-loaded", "is-loading");
     unfreezePreview(preview);
+    /* Ręczne ponowienie ma pierwszeństwo, ale musi zmieścić się w slocie
+       silnika — jeśli właśnie wczytuje się inna karta, ta ruszy po niej. */
+    if (mountingNow && mountingNow !== preview) {
+      preview._rjRetryNext = true;
+      schedulePump(0);
+      return;
+    }
     mountPreview(preview);
   }
 
@@ -888,14 +1028,15 @@
     var vh = window.innerHeight || 0;
     /* Ten sam zapas co observer — inaczej bezpiecznik zaciągałby ramki
        ze 800 px, niwecząc mniejszy margines na słabszym sprzęcie. */
-    var margin = weakDevice ? 360 : 800;
+    var margin = weakDevice ? 300 : 700;
     previews.forEach(function (p) {
       if (p._rjSettled || p._rjMounting) return;
       if (snapshotState(p) === "ok") return;
       var r = p.getBoundingClientRect();
       if (!r.width && !r.height) return; /* ukryta sekcja */
-      if (r.bottom > -margin && r.top < vh + margin) { p._rjNear = true; enqueuePreview(p, r.bottom > 0 && r.top < vh); }
+      if (r.bottom > -margin && r.top < vh + margin) { p._rjNear = true; p._rjSuspended = false; }
     });
+    schedulePump(0);
   }
 
   /* Skanowanie odroczone do czasu wolnego wątku: render kart przez app.js
@@ -922,12 +1063,14 @@
       var iframe = p.querySelector("iframe[data-src]");
       if (!iframe) return;
       ensurePreviewLoader(p);
+      p._rjObserved = true;
+      p._rjVisible = false;
       if (!previewObserver) {
-        /* bardzo stare przeglądarki — po prostu ładuj po kolei */
+        /* bardzo stare przeglądarki — bez sygnału widoczności silnik
+           wczytuje karty po kolei, w kolejności dokumentu */
         enqueuePreview(p);
         return;
       }
-      p._rjObserved = true;
       previewObserver.observe(p);
       if (visibleObserver) visibleObserver.observe(p);
 
@@ -1010,7 +1153,11 @@
     scan: scan,
     mountPreview: mountPreview,
     retry: retryPreview,
-    sweep: sweepPreviews
+    sweep: sweepPreviews,
+    /* `refresh` budzi silnik po zdarzeniu z zewnątrz — np. po tym, jak
+       js/app.js zamienił ciężki podgląd w statyczny zrzut. */
+    refresh: function () { schedulePump(0); },
+    liveCount: function () { return livePreviews().length; }
   };
 
   /* nakładka strony: kulki napędzone natychmiast (defer ⇒ DOM już sparsowany) */
