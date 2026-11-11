@@ -1517,92 +1517,12 @@
   }
 
   /* Zamknięcie zachęty obowiązuje do końca wizyty w tej karcie. */
-  var JOIN_NUDGE_SESSION = "rejson_join_nudge_closed_session_v2";
-  function nudgeClosed() {
-    try { return sessionStorage.getItem(JOIN_NUDGE_SESSION) === "1"; }
-    catch (e) { return false; }
-  }
-
-  function nudgeBlockedPath() {
-    var p = (location.pathname || "/").toLowerCase();
-    return /admin|spolecznosc|rejchat|profil|logowanie|partnerstwo/.test(p);
-  }
-
-  function hasCommunityAccount() {
-    try {
-      var raw = localStorage.getItem("rejson_community_session_v1");
-      if (!raw) return false;
-      var parsed = JSON.parse(raw);
-      return !!(parsed && typeof parsed.token === "string" && parsed.token.length >= 16);
-    } catch (e) { return false; }
-  }
-
-  function setupJoinNudge() {
-    if (window.self !== window.top) return;
-    if (typeof isInsideCardThumbnail === "function" && isInsideCardThumbnail()) return;
-    if (nudgeBlockedPath() || hasCommunityAccount()) return;
-
-    if (nudgeClosed()) return;
-
-    var delay = 25000;
-    setTimeout(function () {
-      if (document.visibilityState !== "visible") return;
-      if (hasCommunityAccount() || nudgeClosed()) return;
-      if (document.getElementById("join-nudge")) return;
-
-      var style = document.createElement("style");
-      style.id = "join-nudge-style";
-      style.textContent =
-        "#join-nudge{position:fixed;right:18px;bottom:18px;z-index:99990;max-width:330px;" +
-        "padding:16px 18px;border-radius:18px;color:#e7ecf3;" +
-        "background:rgba(16,22,35,0.82);border:1px solid rgba(148,163,184,0.25);" +
-        "backdrop-filter:blur(16px) saturate(1.5);-webkit-backdrop-filter:blur(16px) saturate(1.5);" +
-        "box-shadow:0 18px 46px rgba(0,0,0,0.45);font:500 13.5px/1.5 'Inter',sans-serif;" +
-        "animation:jnIn .45s cubic-bezier(.22,.9,.32,1.15)}" +
-        "@keyframes jnIn{from{opacity:0;transform:translateY(14px) scale(.96)}to{opacity:1;transform:none}}" +
-        "#join-nudge.jn-out{transition:opacity .3s,transform .3s;opacity:0;transform:translateY(10px)}" +
-        "#join-nudge h4{margin:0 24px 6px 0;font:700 14.5px/1.35 'Space Grotesk','Inter',sans-serif}" +
-        "#join-nudge p{margin:0 0 12px;color:#aeb8c8}" +
-        "#join-nudge .jn-x{position:absolute;top:8px;right:10px;border:0;background:none;" +
-        "color:#8b98ac;font-size:16px;cursor:pointer;padding:4px 6px;line-height:1}" +
-        "#join-nudge .jn-x:hover{color:#fff}" +
-        "#join-nudge .jn-actions{display:flex;gap:8px;flex-wrap:wrap}" +
-        "#join-nudge a.jn-go{display:inline-block;padding:8px 14px;border-radius:999px;" +
-        "background:linear-gradient(120deg,#2f6df6,#8b5cf6);color:#fff;text-decoration:none;font-weight:700}" +
-        "#join-nudge a.jn-go:hover{filter:brightness(1.1)}" +
-        "@media(max-width:480px){#join-nudge{right:10px;left:10px;max-width:none}}";
-      document.head.appendChild(style);
-
-      var card = document.createElement("aside");
-      card.id = "join-nudge";
-      card.setAttribute("role", "dialog");
-      card.setAttribute("aria-label", "Zachęta do dołączenia do RejChat");
-      card.innerHTML =
-        '<button class="jn-x" aria-label="Zamknij na czas wizyty">✕</button>' +
-        "<h4>✨ Twój profil. Twoje rozmowy.</h4>" +
-        '<p>Wybierz awatar, dodaj bio i dołącz do rozmów w RejChat. Konto jest darmowe: nick i hasło, bez e-maila.</p>' +
-        '<div class="jn-actions">' +
-          '<a class="jn-go" href="https://rejson59.github.io/logowanie">Załóż darmowe konto</a>' +
-        "</div>";
-      document.body.appendChild(card);
-
-      function hide() {
-        try { sessionStorage.setItem(JOIN_NUDGE_SESSION, "1"); } catch (e) { /* ignorujemy */ }
-        card.classList.add("jn-out");
-        setTimeout(function () { card.remove(); }, 350);
-      }
-      card.querySelector(".jn-x").addEventListener("click", hide);
-      card.querySelector(".jn-go").addEventListener("click", hide);
-    }, delay);
-  }
-
   /* ---------- Inicjalizacja ---------- */
   function init() {
     currentActiveSlug = detectCurrentSlug();
     loadCachedCounts();
     refreshAllDOMCounters();
     registerGlobalServiceWorker();
-    setupJoinNudge();
     bindPresenceInteractionGate();
     fetchDailySiteVisitors();
 

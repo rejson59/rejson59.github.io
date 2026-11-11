@@ -1,4 +1,5 @@
-/* Testy formularza, prywatnej skrzynki oraz zachęty na czas wizyty. */
+/* Testy formularza i prywatnej skrzynki. Zachęta „✨ Twój profil. Twoje
+   rozmowy.” została usunięta — pilnujemy, żeby nie wróciła. */
 const fs = require('fs');
 const path = require('path');
 const assert = require('assert');
@@ -46,28 +47,12 @@ const tick = () => new Promise(r => setTimeout(r,5));
   assert.equal(adminCalls[1].args.p_action,'read');
   adm.window.close();
 
+  /* Wyskakujące okienko „✨ Twój profil. Twoje rozmowy.” zostało usunięte
+     w całości: ani kodu, ani wywołania, ani zapisanej decyzji o zamknięciu. */
   const tracker=read('js/view-tracker.js');
-  const excerpt=tracker.slice(tracker.indexOf('  var JOIN_NUDGE_SESSION'),tracker.indexOf('  /* ---------- Inicjalizacja ---------- */'));
-  assert.ok(excerpt.length>200);
-  function nudge(sessionValue,legacy) {
-    const dom=new JSDOM('<html><head></head><body></body></html>',{url:'https://rejson59.github.io/',runScripts:'outside-only',pretendToBeVisual:true});
-    const w=dom.window, timers=[];
-    if(sessionValue) w.sessionStorage.setItem('rejson_join_nudge_closed_session_v2','1');
-    if(legacy) w.localStorage.setItem('rejson_join_nudge_v1',JSON.stringify({done:true}));
-    w.setTimeout=(fn,ms)=>{timers.push({fn,ms});return timers.length};
-    w.eval('(function(){function isInsideCardThumbnail(){return false;}'+excerpt+';window.runNudge=setupJoinNudge;})();');
-    w.runNudge(); return {w,timers};
-  }
-  const first=nudge(false,true);
-  assert.equal(first.timers.length,1,'legacy preference no longer hides popup');
-  first.timers[0].fn();
-  const popup=first.w.document.getElementById('join-nudge'); assert.ok(popup);
-  assert.equal(popup.querySelector('.jn-later'),null);
-  popup.querySelector('.jn-x').click();
-  assert.equal(first.w.sessionStorage.getItem('rejson_join_nudge_closed_session_v2'),'1');
-  first.w.runNudge(); assert.equal(first.timers.filter(t=>t.ms===25000).length,1);
-  first.w.close();
-  const dismissed=nudge(true,false); assert.equal(dismissed.timers.length,0); dismissed.w.close();
-  const next=nudge(false,false); assert.equal(next.timers.length,1); next.w.close();
-  console.log('Partnerstwo, skrzynka i zachęta — testy OK');
+  ['setupJoinNudge','join-nudge','JOIN_NUDGE','rejson_join_nudge','Twój profil. Twoje rozmowy']
+    .forEach((needle) => assert.ok(!tracker.includes(needle), 'w trackerze zostało: ' + needle));
+  assert.ok(!read('css/mobile-ads.css').includes('join-nudge'), 'CSS nie ma już reguły dla okienka');
+
+  console.log('Partnerstwo i skrzynka — testy OK (bez okienka z profilami)');
 })().catch(e=>{console.error(e);process.exitCode=1});
