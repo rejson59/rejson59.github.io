@@ -138,35 +138,51 @@ console.log('\n=== C. WYSPA: CZAT, KOŁO ZĘBATE, INNE KARTY ===');
   });
 }
 
-console.log('\n=== D. TOPBAR: KOŁO ZĘBATE ZAMIAST SŁOŃCA ===');
+console.log('\n=== D. TOPBAR: BEZ USTAWIEŃ, PEŁNE MENU NA TELEFONIE ===');
 {
   const pages = fs.readdirSync(path.join(root, 'rejhub2'))
     .filter((file) => file.endsWith('.html'))
-    .map((file) => ({ file, html: read('rejhub2/' + file) }))
-    .filter(({ html }) => html.includes('theme-toggle'));
+    .map((file) => ({ file, html: read('rejhub2/' + file) }));
 
-  check('żadna strona nie ma już ikony słońca/księżyca', () => {
+  check('żadna strona nie ma już przycisku ustawień w topbarze', () => {
     assert.ok(pages.length >= 15, 'za mało stron');
     pages.forEach(({ file, html }) => {
-      assert.ok(!html.includes('icon-sun'), file + ': zostało słońce');
-      assert.ok(!html.includes('icon-moon'), file + ': został księżyc');
-      assert.ok(html.includes('icon-gear'), file + ': brak koła zębatego');
+      const header = (/<header class="site-header[\s\S]*?<\/header>/.exec(html) || [''])[0];
+      assert.ok(!header.includes('theme-toggle'), file + ': został przycisk ustawień');
+      assert.ok(!header.includes('icon-gear'), file + ': zostało koło zębate');
+      assert.ok(!header.includes('Ustawienia'), file + ': został opis ustawień');
     });
   });
-  check('przycisk mówi o ustawieniach', () =>
-    assert.ok(pages.every(({ html }) => html.includes('aria-label="Ustawienia wyglądu"'))));
-  check('panel ustawień powstaje w jednym miejscu (wspólny skrypt)', () => {
-    assert.match(TOPBAR_JS, /rj-settings-panel/);
-    assert.match(TOPBAR_JS, /data-rj-setting="theme"/);
-    assert.match(TOPBAR_JS, /data-rj-setting="motion"/);
+
+  check('ustawienia są już tylko w wyspie', () => {
+    const island = read('rejhub2/hub/island.js');
+    assert.ok(island.includes('data-switch="theme"'), 'wyspa bez przełącznika motywu');
+    assert.ok(island.includes('Jasny motyw'), 'wyspa bez opisu motywu');
+    assert.ok(island.includes('data-switch="motion"'), 'wyspa bez przełącznika animacji');
   });
-  check('panel zamyka się Escape i kliknięciem poza', () => {
-    assert.match(TOPBAR_JS, /event\.key !== "Escape" \|\| !panel \|\| panel\.hidden/);
-    assert.match(TOPBAR_JS, /panel\.contains\(event\.target\) \|\| theme\.contains\(event\.target\)/);
+
+  check('wspólny skrypt nie buduje panelu ustawień', () => {
+    assert.ok(!/rj-settings-panel/.test(TOPBAR_JS), 'został kod panelu ustawień');
+    assert.ok(!/theme-toggle/.test(TOPBAR_JS), 'skrypt nadal szuka koła zębatego');
+    assert.ok(/position: static/.test(read('css/topbar-split.css')), 'brak poprawki szerokości menu');
   });
+
+  check('menu na telefonie liczy szerokość od całego topbaru', () => {
+    const css = read('css/topbar-split.css');
+    const mobile = css.slice(css.indexOf('@media (max-width: 1200px) {'));
+    assert.match(mobile, /body \.rj-shared-header \.header-right \{ position: static; \}/,
+      'menu nadal liczy szerokość od grupki ikon');
+    assert.match(mobile, /max-height: calc\(100dvh - 236px\)/, 'menu nie ma limitu wysokości nad wyspą');
+    assert.match(mobile, /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/, 'menu nie ma dwóch kolumn');
+    assert.match(mobile, /border: 0 !important/, 'podmenu nadal rysuje drugą taflę');
+    assert.match(mobile, /min-height: 46px/, 'wiersze menu za niskie do dotknięcia');
+  });
+
   check('wersje skryptu i arkusza topbaru podbite na wszystkich stronach', () => {
     pages.forEach(({ file, html }) => {
-      assert.match(html, /shared-topbar\.js\?v=6/, file + ': stary skrypt topbaru');
+      if (!html.includes('shared-topbar.js')) return;
+      assert.match(html, /shared-topbar\.js\?v=9/, file + ': stary skrypt topbaru');
+      assert.match(html, /topbar-split\.css\?v=5/, file + ': stary arkusz topbaru');
     });
   });
 }

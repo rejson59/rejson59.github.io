@@ -60,6 +60,14 @@ function headerOf(html) {
       .map((entry) => entry.file).join(', '));
   });
 
+  check('topbar nie ma już ustawień — są tylko w wyspie', () => {
+    headers.forEach(({ file, header }) => {
+      assert.ok(!header.includes('theme-toggle'), file + ': został przycisk ustawień');
+      assert.ok(!header.includes('Ustawienia'), file + ': został opis ustawień');
+      assert.ok(!/icon-gear/.test(header), file + ': zostało koło zębate');
+    });
+  });
+
   check('strona główna nie zwęża topbaru klasą .container', () => {
     headers.forEach(({ file, header }) => {
       assert.ok(!/class="container[^"]*rj-shared-inner/.test(header), file + ': topbar w węższym kontenerze');
@@ -75,9 +83,8 @@ function headerOf(html) {
 
   check('topbar ma zawsze ten sam zestaw elementów', () => {
     const header = headers[0].header;
-    ['brand', 'rj-home-link', 'mobile-account', 'site-nav', 'nav-more', 'theme-toggle', 'menu-toggle']
+    ['brand', 'rj-home-link', 'mobile-account', 'site-nav', 'nav-more', 'menu-toggle']
       .forEach((name) => assert.ok(header.includes(name), 'brak: ' + name));
-    assert.ok(header.includes('data-shared-theme'), 'motyw bez wspólnego znacznika');
     assert.ok(header.includes('data-shared-menu'), 'menu bez wspólnego znacznika');
   });
 
@@ -114,6 +121,13 @@ function headerOf(html) {
   const HEADER = headers[0].header;
   let AJS = read('js/shared-topbar.js');
 
+  check('wspólny skrypt nie buduje panelu ustawień', () => {
+    assert.ok(!/rj-settings-panel/.test(AJS), 'został kod panelu ustawień');
+    assert.ok(!/data-rj-setting/.test(AJS), 'zostały wiersze ustawień');
+    assert.ok(!/theme-toggle/.test(AJS), 'skrypt nadal szuka koła zębatego');
+    assert.match(AJS, /ustawień wyglądu NIE ma już w topbarze/i, 'brak wyjaśnienia w komentarzu');
+  });
+
   async function makePage(html, url) {
     const dom = new JSDOM(html, { url: url || 'https://rejhub.vercel.app/rejchat', runScripts: 'outside-only' });
     dom.window.eval(AJS);
@@ -131,31 +145,6 @@ function headerOf(html) {
     const dom = await makePage(SHELL);
     const w = dom.window;
     const d = w.document;
-    const theme = d.getElementById('theme-toggle');
-
-    theme.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
-    check('koło zębate otwiera ustawienia, a nie zmienia motywu', () => {
-      const panel = d.querySelector('.rj-settings-panel');
-      assert.ok(panel, 'brak panelu ustawień');
-      assert.equal(panel.hidden, false, 'panel ma się otworzyć');
-      assert.equal(theme.getAttribute('aria-expanded'), 'true');
-      assert.equal(d.documentElement.dataset.theme, 'dark', 'motyw bez zmian do wyboru opcji');
-    });
-
-    d.querySelector('[data-rj-setting="theme"]').click();
-    check('motyw przełącza się dokładnie raz', () => {
-      assert.equal(d.documentElement.dataset.theme, 'light');
-      assert.equal(w.localStorage.getItem('theme'), 'light');
-      assert.equal(d.querySelector('[data-value="theme"]').textContent, 'jasny', 'panel pokazuje aktualny motyw');
-    });
-    d.querySelector('[data-rj-setting="theme"]').click();
-    check('drugie kliknięcie wraca do ciemnego', () => assert.equal(d.documentElement.dataset.theme, 'dark'));
-
-    d.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'Escape' }));
-    check('Escape zamyka ustawienia', () => {
-      assert.equal(d.querySelector('.rj-settings-panel').hidden, true);
-      assert.equal(theme.getAttribute('aria-expanded'), 'false');
-    });
 
     const menu = d.getElementById('menu-toggle');
     const nav = d.getElementById('site-nav');
@@ -197,20 +186,6 @@ function headerOf(html) {
       d.querySelector('main').dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
       assert.equal(more.open, false);
     });
-  }
-
-  {
-    /* Strona z własną obsługą: element jest już zajęty — nie podpinamy drugi raz. */
-    AJS = read('js/shared-topbar.js');
-    const dom = new JSDOM(SHELL, { url: 'https://rejhub.vercel.app/', runScripts: 'outside-only' });
-    const w = dom.window;
-    const d = w.document;
-    const theme = d.getElementById('theme-toggle');
-    theme.dataset.rjBound = '1';
-    theme.addEventListener('click', () => { d.documentElement.dataset.theme = 'dark'; });
-    w.eval(AJS);
-    theme.dispatchEvent(new w.MouseEvent('click', { bubbles: true }));
-    check('nie ma podwójnego przełączania motywu', () => assert.equal(d.documentElement.dataset.theme, 'dark'));
   }
 
   console.log('\n=== C. SPRZĄTANIE ===');

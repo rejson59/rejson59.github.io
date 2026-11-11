@@ -241,134 +241,125 @@ html[data-motion-force="off"] body .rj-shared-header .brand::before {
   transition: none;
 }
 
-/* ---------- 9. Panel ustawień (koło zębate) ----------
-   Przycisk w topbarze nie przełącza już motywu „w ciemno” — otwiera mały
-   panel z dwiema realnymi opcjami. Panel powstaje w js/shared-topbar.js,
-   więc jego znaczniki są identyczne na wszystkich podstronach. */
+/* ---------- 9. Menu mobilne: pełna szerokość topbaru ----------
+   Ustawienia wyglądu są w wyspie, więc w topbarze został sam przycisk menu.
+   Wcześniej `.header-right` miał `position: relative`, a menu jest
+   `position: absolute; left: 0; right: 0` — szerokość liczyła się więc od
+   grupki ikon (ok. 132 px), nie od całego topbaru. Efekt: wąska kolumna
+   z etykietami wychodzącymi poza kafelki i nachodzącymi na siebie.
 
-body .rj-shared-header .header-right {
-  position: relative;
-}
+   Teraz menu liczy szerokość od .rj-shared-inner (pełna szerokość topbaru),
+   ma własne przewijanie i kończy się nad wyspą. Podmenu „Więcej” jest
+   jednokolumnowe — dwie kolumny przy 360 px ucinały etykiety. */
 
-body .rj-shared-header .theme-toggle .icon-gear {
-  display: block;
-  width: 19px;
-  height: 19px;
-}
+@media (max-width: 1200px) {
+  body .rj-shared-header .header-right { position: static; }
 
-body .rj-shared-header .theme-toggle[aria-expanded="true"] {
-  color: #eaf3ff;
-  border-color: rgba(139, 189, 255, 0.55);
-  background: rgba(139, 189, 255, 0.16);
-}
 
-body .rj-shared-header .rj-settings-panel {
-  position: absolute;
-  top: calc(100% + 12px);
-  right: 0;
-  z-index: 120;
-  display: grid;
-  gap: 2px;
-  width: 258px;
-  padding: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 18px;
-  background: rgba(11, 19, 31, 0.94);
-  -webkit-backdrop-filter: blur(20px) saturate(170%);
-  backdrop-filter: blur(20px) saturate(170%);
-  box-shadow: 0 28px 64px -34px rgba(0, 4, 12, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  color: #eaf2ff;
-  font: 400 12.5px/1.4 "Inter", system-ui, sans-serif;
-  text-align: left;
-}
+  body .rj-shared-header .site-nav,
+  body.rj-home .rj-shared-header .site-nav {
+    left: 0;
+    right: 0;
+    width: auto;
+    /* 80 px na topbar + ok. 156 px na wyspę, pasek mini reklam i margines.
+       Dzięki temu ostatnia pozycja listy nie chowa się pod wyspą. */
+    max-height: calc(100dvh - 236px);
+    padding: 10px;
+    gap: 2px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    z-index: 130;
+  }
 
-body .rj-shared-header .rj-settings-panel[hidden] {
-  display: none;
-}
+  body .rj-shared-header .site-nav a,
+  body .rj-shared-header .site-nav .nav-more > summary {
+    min-height: 46px;
+    padding: 11px 13px;
+    border-radius: 13px !important;
+  }
 
-body .rj-shared-header .rj-settings-title {
-  margin: 2px 6px 6px;
-  color: rgba(234, 242, 255, 0.5);
-  font: 700 9.5px/1.3 "JetBrains Mono", ui-monospace, monospace;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-}
+  /* Telefon: menu jako dwie kolumny kafelków. Pięć pozycji w jednej kolumnie
+     zajmowało więcej niż cały ekran i ostatnie wpisy chowały się pod wyspą.
+     Kafelki po 46 px mieszczą całą nawigację bez przewijania, także na
+     360 × 640. */
+  body .rj-shared-header .site-nav.is-open {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: stretch;
+  }
 
-body .rj-shared-header .rj-settings-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  width: 100%;
-  min-height: 38px;
-  padding: 0 10px;
-  border: 0;
-  border-radius: 11px;
-  background: transparent;
-  color: #eaf2ff;
-  font: 600 12.5px/1 "Inter", system-ui, sans-serif;
-  text-align: left;
-  cursor: pointer;
-  transition: background 0.16s ease;
-}
+  body .rj-shared-header .site-nav > a,
+  body .rj-shared-header .site-nav > details {
+    grid-column: span 1;
+    min-width: 0;
+  }
 
-body .rj-shared-header .rj-settings-row b {
-  color: #8bbdff;
-  font-weight: 650;
-  font-size: 11.5px;
-}
+  body .rj-shared-header .site-nav > details {
+    grid-column: 1 / -1;
+  }
 
-body .rj-shared-header .rj-settings-row:hover {
-  background: rgba(255, 255, 255, 0.08);
-}
+  body .rj-shared-header .site-nav > a,
+  body .rj-shared-header .site-nav .nav-more > summary {
+    min-height: 46px;
+    padding: 10px 12px;
+    border-radius: 12px !important;
+    white-space: normal;
+    line-height: 1.2;
+  }
 
-body .rj-shared-header .rj-settings-link {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 4px;
-  padding: 9px 10px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(234, 242, 255, 0.72);
-  font-size: 11.5px;
-  font-weight: 600;
-  text-decoration: none;
-}
+  body .rj-shared-header .site-nav .nav-label {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
 
-body .rj-shared-header .rj-settings-link:hover {
-  color: #fff;
-}
+  /* Podmenu bez własnej tafli: to dalszy ciąg tej samej listy. Arkusz szkła
+     (`glass2.css`) nadaje każdej `.nav-more-panel` ramkę i cień z !important,
+     dlatego tutaj też trzeba ich użyć — inaczej w karcie menu powstaje druga
+     karta, która ucina etykiety. */
+  body .rj-shared-header .site-nav .nav-more-panel {
+    /* Dwie równe kolumny na pełnej szerokości topbaru (nie 53 px, jak przy
+       menu liczącym szerokość od grupki ikon). Dzięki temu cała nawigacja
+       mieści się na jednym ekranie telefonu. */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2px;
+    padding: 6px 0 2px;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: none !important;
+    box-shadow: none !important;
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
 
-html[data-theme="light"] body .rj-shared-header .rj-settings-panel {
-  border-color: rgba(30, 66, 118, 0.18);
-  background: rgba(255, 255, 255, 0.96);
-  color: #10233d;
-  box-shadow: 0 28px 64px -34px rgba(24, 52, 96, 0.5);
-}
+  body .rj-shared-header .site-nav .nav-more-panel a {
+    min-height: 46px;
+    padding: 9px 10px;
+    gap: 7px;
+    border-radius: 11px !important;
+    font-size: 11.5px;
+    line-height: 1.25;
+    white-space: normal;
+  }
 
-html[data-theme="light"] body .rj-shared-header .rj-settings-title {
-  color: rgba(16, 35, 61, 0.5);
-}
+  body .rj-shared-header .site-nav .nav-more-panel .nav-label {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
 
-html[data-theme="light"] body .rj-shared-header .rj-settings-row {
-  color: #10233d;
-}
+  /* Rozwinięte podmenu ma być od razu w pełni widoczne — bez półprzezroczystej
+     klatki z animacji `details::details-content` na telefonie. */
+  body .rj-shared-header .nav-more[open]::details-content {
+    content-visibility: visible;
+    transition: none;
+  }
 
-html[data-theme="light"] body .rj-shared-header .rj-settings-row b {
-  color: #235cb3;
-}
-
-html[data-theme="light"] body .rj-shared-header .rj-settings-row:hover {
-  background: rgba(20, 48, 92, 0.07);
-}
-
-html[data-theme="light"] body .rj-shared-header .rj-settings-link {
-  border-top-color: rgba(30, 66, 118, 0.14);
-  color: #33507a;
-}
-
-@media (max-width: 720px) {
-  body .rj-shared-header .rj-settings-panel {
-    width: min(280px, calc(100vw - 24px));
+  body .rj-shared-header .nav-more[open] > .nav-more-panel {
+    opacity: 1 !important;
+    translate: none !important;
+    scale: 1 !important;
+    pointer-events: auto;
+    transition: none !important;
+    animation: none !important;
   }
 }
