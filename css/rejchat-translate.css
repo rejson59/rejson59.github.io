@@ -173,3 +173,63 @@ body.rj-community .rj-tr-draft-status {
 body.rj-community .rj-tr-draft-status:empty { display: none; }
 
 
+/* --------------------------------------------------- przełącznik automatu --- */
+
+body.rj-community .rj-tr-auto.is-off {
+  opacity: 0.45;
+  border-style: dashed !important;
+}
+
+body.rj-community .rj-tr-auto:hover { opacity: 1; }
+
+body.rj-community .rj-tr-auto:focus-visible {
+  outline: 2px solid var(--rm-accent, #8bbdff);
+  outline-offset: 2px;
+}
+
+/* ------------------------------------- tłumaczenie wstrzymane przez filtr --- */
+
+body.rj-community .rj-tr-blocked {
+  order: 4;
+  margin: 5px 0 0;
+  color: var(--rm-sub, #a9bcd6);
+  font: 500 10px/1.45 "Inter", system-ui, sans-serif;
+  opacity: 0.85;
+}
+
+body.rj-community .rj-tr-foot {
+  flex-wrap: wrap;
+}
+
+body.rj-community .rj-tr-note {
+  min-width: 0;
+  line-height: 1.35;
+}
+
+/* ------------------------------------------- nagłówek pokoju na telefonie --- */
+
+/* Dwa przyciski (⇄ i lupa) obok siebie w pierwszym wierszu; opis schodzi
+   niżej. Bez tego przełącznik wypadałby z siatki nagłówka. */
+@media (max-width: 760px) {
+  body.rj-community #chat-public-view .comm-chat-head {
+    grid-template-columns: minmax(0, 1fr) 42px 42px;
+  }
+
+  body.rj-community #chat-public-view .rj-tr-auto {
+    grid-column: 2;
+    grid-row: 1;
+    width: 42px !important;
+    height: 42px !important;
+    font-size: 15px;
+  }
+
+  body.rj-community #chat-public-view .rc-search-toggle {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  body.rj-community #chat-public-view .comm-chat-hint {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
