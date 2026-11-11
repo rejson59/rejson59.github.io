@@ -23,18 +23,19 @@ function checkStructure() {
 
   /* 1. Każda zwykła podstrona RejHuba ma wyspę. */
   EXPECTED_WITH_ISLAND.forEach(({ file, html }) => {
-    assert.ok(html.includes('/hub/island.js?v=7'), file + ': brak wyspy');
-    assert.ok(html.includes('/hub/island.css?v=6'), file + ': brak arkusza wyspy');
+    assert.ok(html.includes('/hub/island.js?v=8'), file + ': brak wyspy');
+    assert.ok(html.includes('/hub/island.css?v=7'), file + ': brak arkusza wyspy');
     /* RejSejf trzyma wyłączony znacznik (type="application/json") — to nie ładowanie. */
     const widgets = html.match(/<script[^>]*src="[^"]*widget\.js[^"]*"[^>]*>/g) || [];
     const activeWidget = widgets.filter((tag) => !/application\/json/.test(tag));
     assert.equal(activeWidget.length, 0, file + ': stary widget nadal się ładuje');
   });
 
-  /* 2. Stara pigułka awaryjna nie dubluje wyspy. */
+  /* 2. Stara pigułka awaryjna zniknęła razem z autodestrukcją w rogu —
+        jedynym miejscem akcji jest wyspa. */
   const shell = fs.readFileSync(path.join(root, 'rejhub2/hub/hub-shell.js'), 'utf8');
-  assert.ok(/hub\/island\.js/.test(shell), 'hub-shell ma pomijać pigułkę przy wyspie');
-  assert.ok(/__RJ_ISLAND__/.test(shell), 'hub-shell sprawdza obecność wyspy');
+  assert.equal(/\.rjhub-pill/.test(shell), false, 'hub-shell nie tworzy już pigułki');
+  assert.equal(/data-rj-panic/.test(shell), false, 'hub-shell nie tworzy już przycisku awaryjnego');
 
   /* 3. Wyspa jest czarna i nie rozmazuje tła (to dawało zacinanie). */
   const islandRule = css.slice(css.indexOf('#rj-island-root .rj-island {'), css.indexOf('#rj-island-root .rj-island::before'));
@@ -60,7 +61,7 @@ function checkStructure() {
 
 function buildPage() {
   return '<!doctype html><html lang="pl" data-theme="dark"><head><meta charset="utf-8">' +
-    '<script src="/hub/island.js?v=7" data-project="rejhub" data-project-name="RejHub"></script>' +
+    '<script src="/hub/island.js?v=8" data-project="rejhub" data-project-name="RejHub"></script>' +
     '</head><body>' +
     '<header class="rj-shared-header"><nav><a href="/rejchat">RejChat</a><a href="/rejfile">RejFile</a></nav></header>' +
     '<main><h1>Test</h1><button type="button" data-feedback-project="RejStream">Zgłoś</button>' +

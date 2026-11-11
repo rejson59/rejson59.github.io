@@ -1,8 +1,11 @@
 /* ============================================================================
-   Szybka autodestrukcja — RejHub (wersja 2)
+   Szybka autodestrukcja — RejHub (wersja 3)
    ----------------------------------------------------------------------------
-   Przycisk siedzi w dolnej pigułce RejHuba (tam, gdzie wcześniej był link do
-   strony głównej). Skrót Ctrl+Shift+X (Cmd+Shift+X) działa bez pytania.
+   Jedynym widocznym wejściem jest DYNAMICZNA WYSPA (przycisk w docku →
+   potwierdzenie „Zamknij”). Ten plik nie tworzy już żadnego pływającego
+   przycisku ani pigułki w rogu ekranu — zostały usunięte na życzenie
+   właściciela. Zostaje samo działanie: rejestr kart, zamykanie okien
+   i skrót Ctrl+Shift+X (Cmd+Shift+X).
 
    Co robi po kliknięciu:
      1. zamyka okna, które ta karta otworzyła sama (window.open),
@@ -248,9 +251,6 @@
 
   /* ---------- przycisk ---------- */
 
-  var ICON = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
-    '<path d="M12 3v9" /><path d="M6.5 6.5a7.5 7.5 0 1 0 11 0" /></svg>';
-
   function wire(button) {
     if (!button || button.__rjPanicWired) return;
     button.__rjPanicWired = true;
@@ -268,25 +268,14 @@
     });
   }
 
-  function buildButton() {
-    var button = document.createElement("button");
-    button.type = "button";
-    button.className = "rj-panic";
-    button.innerHTML = ICON;
-    document.body.appendChild(button);
-    wire(button);
-  }
-
-  /* Pigułka RejHuba (tworzona przez hub-shell.js) ma pierwszeństwo —
-     wtedy nie dokładamy osobnego przycisku w rogu. */
+  /* RejHub 2.0: autodestrukcja mieszka WYŁĄCZNIE w dynamicznej wyspie
+     (dock → potwierdzenie). Tutaj nie powstaje żaden przycisk — ani kółko
+     w prawym dolnym rogu, ani pigułka. `mount()` podpina tylko elementy,
+     które strona sama oznaczyła atrybutem `data-rj-panic`. */
   function mount() {
     if (document.documentElement.hasAttribute("data-rj-panic-off")) return;
     var mounts = document.querySelectorAll("[data-rj-panic]");
-    if (mounts.length) {
-      Array.prototype.forEach.call(mounts, wire);
-      return;
-    }
-    buildButton();
+    Array.prototype.forEach.call(mounts, wire);
   }
 
   function start() {

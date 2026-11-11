@@ -6,7 +6,9 @@ const { JSDOM, VirtualConsole } = require('jsdom');
 
 const root = path.resolve(__dirname, '../..');
 const source = fs.readFileSync(path.join(root, 'js/panic.js'), 'utf8');
-const css = fs.readFileSync(path.join(root, 'css/panic.css'), 'utf8');
+const islandJs = fs.readFileSync(path.join(root, 'rejhub2/hub/island.js'), 'utf8');
+const islandCss = fs.readFileSync(path.join(root, 'rejhub2/hub/island.css'), 'utf8');
+const hubShell = fs.readFileSync(path.join(root, 'rejhub2/hub/hub-shell.js'), 'utf8');
 
 /* jsdom nie umie nawigować — „Not implemented: navigation” to oczekiwany szum. */
 const virtualConsole = new VirtualConsole();
@@ -42,20 +44,24 @@ function run(dom) {
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 (async function main() {
-  /* 1. Przycisk istnieje, jest mały i opisany. */
+  /* 1. Autodestrukcja mieszka WYŁĄCZNIE w dynamicznej wyspie. */
   {
     const w = run(makeWindow());
-    const button = w.document.querySelector('[data-rj-panic]');
-    assert.ok(button, 'brak przycisku autodestrukcji');
-    assert.equal(button.tagName, 'BUTTON');
-    assert.ok(button.getAttribute('aria-label').includes('autodestrukcja'));
-    assert.ok(button.title.includes('Ctrl+Shift+X'), 'podpowiedź ma podawać skrót');
-    assert.equal(w.document.querySelectorAll('[data-rj-panic]').length, 1, 'przycisk nie może się dublować');
-    assert.ok(css.includes('.rj-panic'), 'brak stylu przycisku');
-    /* ramka awaryjna nie może zasłaniać pigułki „powrót do RejHub” (lewy dół) */
-    assert.ok(/\.rj-panic\s*\{[^}]*right:/s.test(css), 'przycisk ma stać po prawej stronie');
-    assert.ok(/\.rj-panic\s*\{[^}]*width:\s*30px/s.test(css), 'przycisk ma być mały');
-    assert.ok(css.includes('prefers-reduced-motion'), 'ma respektować ograniczony ruch');
+    assert.equal(w.document.querySelector('[data-rj-panic]'), null,
+      'zwykła strona nie może już dostać pływającego przycisku w rogu');
+    assert.equal(w.document.querySelector('.rj-panic'), null, 'brak kółka awaryjnego');
+    assert.equal(w.document.querySelector('.rjhub-pill'), null, 'brak pigułki w rogu');
+    assert.equal(fs.existsSync(path.join(root, 'css/panic.css')), false,
+      'styl pływającego przycisku nie jest już potrzebny');
+
+    /* Wyspa: przycisk w docku i potwierdzenie w panelu. */
+    assert.ok(/data-open="panic"/.test(islandJs), 'dock wyspy ma wejście do autodestrukcji');
+    assert.ok(/data-panic/.test(islandJs), 'panel potwierdzenia ma przycisk „Zamknij”');
+    assert.ok(/RejPanic\.run/.test(islandJs), 'potwierdzenie woła prawdziwy RejPanic');
+    assert.ok(/#rj-island-root \.rj-panic-actions button/.test(islandCss), 'są style potwierdzenia w wyspie');
+
+    /* hub-shell nie dokłada już pigułki. */
+    assert.equal(/\.rjhub-pill/.test(hubShell), false, 'hub-shell nie może tworzyć pigułki');
   }
 
   /* 2. Karta zgłasza się do wspólnego rejestru kart. */
@@ -100,44 +106,38 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
     assert.equal(w.__channels.length, 1, 'nasłuch na inne karty ma zostać');
   }
 
-  /* 6. Każda strona RejHuba ma podpięty przycisk i styl. */
+  /* 6. Każda strona RejHuba ma logikę autodestrukcji, ale nie jej styl. */
   {
     const dir = path.join(root, 'rejhub2');
     const pages = fs.readdirSync(dir).filter((file) => file.endsWith('.html'));
     assert.ok(pages.length > 10, 'brak stron RejHuba');
     pages.forEach((file) => {
       const html = fs.readFileSync(path.join(dir, file), 'utf8');
-      assert.ok(html.includes('/js/panic.js?v=2'), 'brak skryptu autodestrukcji w ' + file);
-      assert.ok(html.includes('/css/panic.css?v=2'), 'brak stylu autodestrukcji w ' + file);
+      assert.ok(html.includes('/js/panic.js?v=3'), 'brak skryptu autodestrukcji w ' + file);
+      assert.equal(/panic\.css/.test(html), false, 'stary styl przycisku w ' + file);
+      assert.equal(/class="rjhub-pill/.test(html), false, 'pigułka w ' + file);
     });
   }
 
   /* 7. Studio podmienia cały dokument — brama musi wnieść przycisk do treści. */
   {
     const gate = fs.readFileSync(path.join(root, 'js/private-studio-gate.js'), 'utf8');
-    assert.ok(gate.includes('/js/panic.js?v=2'), 'brama studia ma wstrzykiwać autodestrukcję');
-    assert.ok(gate.includes('/css/panic.css?v=2'), 'brama studia ma wstrzykiwać styl autodestrukcji');
+    assert.ok(gate.includes('/js/panic.js?v=3'), 'brama studia ma wstrzykiwać autodestrukcję');
+    assert.equal(/panic\.css/.test(gate), false, 'brama nie wstrzykuje już stylu przycisku');
     const shell = fs.readFileSync(path.join(root, 'rejhub2/szklane-studio.html'), 'utf8');
     assert.ok(shell.includes('/js/private-studio-gate.js?v=4'), 'powłoka studia ma świeżą wersję bramy');
   }
 
 
-  /* 8. Pigułka w lewym dolnym rogu jest przyciskiem autodestrukcji, nie linkiem do huba. */
+  /* 8. Powłoka RejHuba nie tworzy już żadnej pigułki w rogu. */
   {
     const html = '<!doctype html><html><body><header class="rj-shared-header"></header></body></html>';
     const dom = makeWindow(html);
     const w = dom.window;
-    w.eval(fs.readFileSync(path.join(root, 'rejhub2/hub/hub-shell.js'), 'utf8'));
+    w.eval(hubShell);
     w.document.dispatchEvent(new w.Event('DOMContentLoaded'));
-    const pill = w.document.querySelector('.rjhub-pill');
-    assert.ok(pill, 'brak pigułki');
-    assert.equal(pill.tagName, 'BUTTON', 'pigułka ma być przyciskiem');
-    assert.ok(pill.hasAttribute('data-rj-panic'), 'pigułka ma być przyciskiem autodestrukcji');
-    assert.equal(pill.getAttribute('href'), null, 'nie może prowadzić na stronę główną');
-    assert.ok(pill.textContent.includes('Autodestrukcja'), 'czytelna etykieta');
-    assert.equal(w.document.querySelectorAll('a.rjhub-pill').length, 0, 'stary link do huba zniknął');
-    assert.ok(fs.readFileSync(path.join(root, 'css/panic.css'), 'utf8').includes('.rjhub-pill--panic'),
-      'brak stylu pigułki awaryjnej');
+    assert.equal(w.document.querySelector('.rjhub-pill'), null, 'pigułka została usunięta');
+    assert.equal(w.document.querySelector('[data-rj-panic]'), null, 'brak zapasowego przycisku');
   }
 
   /* 9. Autodestrukcja nie otwiera nowych pustych kart (źródło starego błędu). */

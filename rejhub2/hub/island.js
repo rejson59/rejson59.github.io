@@ -187,7 +187,7 @@
     /* Schowany uchwyt pokazujący, co gra — szerszy i wyższy, żeby zmieścił
        tytuł, pasek postępu i pauzę. */
     minPlay: { w: 244, h: 34, r: 17 },
-    idle: { w: 172, h: 46, r: 23 },
+    idle: { w: 216, h: 46, r: 23 },
     dock: { w: 436, h: 52, r: 26 },
     report: { w: 384, h: 236, r: 24 },
     search: { w: 384, h: 292, r: 24 },
