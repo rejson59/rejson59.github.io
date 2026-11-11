@@ -8,8 +8,13 @@
  *    nakłada loader, a po ~200 ms przechodzi dalej.
  * 3. Odroczone podglądy projektów: karty mają <iframe data-src="...">,
  *    a prawdziwy src wskakuje dopiero, gdy podgląd zbliża się do viewportu
- *    (IntersectionObserver, rootMargin 800px). Strona ładuje się najpierw,
- *    podglądy potem — i tylko te, które faktycznie dojedziesz.
+ *    (IntersectionObserver). Strona ładuje się najpierw, podglądy potem —
+ *    i tylko te, które faktycznie dojedziesz.
+ * 4. Nowa ramka NIGDY nie startuje w środku przewijania. Wstawienie iframe'a
+ *    (nowy dokument, skrypty, kontekst GPU) w trakcie ruchu to gubiona klatka;
+ *    kolejka czeka, aż strona się zatrzyma. Na słabszym sprzęcie (oszczędzanie
+ *    danych / mało pamięci lub rdzeni / telefon) trzymamy też mniej żywych
+ *    ramek i zwalniamy je szybciej — animacje strony zostają bez zmian.
  */
 (function () {
   "use strict";
@@ -109,6 +114,33 @@
   var pageReady = false;
   var previewQueue = [], previewQueueTimer = null;
   var sweepScheduled = false;
+
+  /* ---------- montowanie tylko w spoczynku ----------
+     Nowy iframe to nowy dokument, skrypty i kontekst GPU. Wstawienie go
+     w środku przewijania zawsze kończy się zgubioną klatką (na telefonie
+     kilkoma). Dlatego kolejka podglądów czeka, aż strona przestanie się
+     ruszać — 180 ms po ostatnim zdarzeniu przewijania. */
+  var SCROLL_SETTLE_MS = 180;
+  var scrollQuietUntil = 0;
+  var scrollProbeRaf = 0;
+
+  function nowMs() {
+    return (window.performance && performance.now) ? performance.now() : Date.now();
+  }
+
+  function noteScroll() {
+    if (scrollProbeRaf) return;
+    var request = window.requestAnimationFrame ? window.requestAnimationFrame.bind(window) : null;
+    var run = function () {
+      scrollProbeRaf = 0;
+      scrollQuietUntil = nowMs() + SCROLL_SETTLE_MS;
+    };
+    scrollProbeRaf = request ? request(run) : window.setTimeout(run, 16);
+  }
+
+  window.addEventListener("scroll", noteScroll, { passive: true });
+  /* RejChat i inne strony z własnym przewijaniem też muszą być spokojne. */
+  document.addEventListener("scroll", noteScroll, { passive: true, capture: true });
 
   function markPageReady() {
     if (pageReady) return;
@@ -387,7 +419,23 @@
     }
   }
 
-  var PREVIEW_RELEASE_DELAY_MS = 1200;
+  /* Profil urządzenia — te same fakty, których używa js/app.js (zamrażanie
+     podglądów). Na słabszym sprzęcie: mniejszy zapas wczytywania, krótsze
+     trzymanie ramki poza kadrem. Wygląd i animacje się nie zmieniają — zmienia
+     się tylko to, ile ramek żyje jednocześnie. */
+  var weakDevice = (function () {
+    try {
+      if (navigator.connection && navigator.connection.saveData) return true;
+      if (navigator.deviceMemory && navigator.deviceMemory <= 4) return true;
+      if (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) return true;
+      if (window.matchMedia && window.matchMedia("(pointer: coarse), (max-width: 820px)").matches) return true;
+    } catch (e) { /* brak API — zostaje tryb pełny */ }
+    return false;
+  })();
+
+  var PREVIEW_RELEASE_DELAY_MS = weakDevice ? 400 : 1200;
+  var NEAR_MARGIN = weakDevice ? "360px 0px 360px 0px" : "800px 0px 800px 0px";
+  var RETAIN_MARGIN = weakDevice ? "700px 0px 700px 0px" : "1200px 0px 1200px 0px";
   var previewObserver = null, visibleObserver = null, retentionObserver = null;
   if ("IntersectionObserver" in window) {
     previewObserver = new IntersectionObserver(function (entries) {
@@ -397,7 +445,7 @@
         if (p._rjNear) enqueuePreview(p, p._rjVisible);
         else p._rjWantMount = false;
       });
-    }, { rootMargin: "800px 0px 800px 0px", threshold: 0.01 });
+    }, { rootMargin: NEAR_MARGIN, threshold: 0.01 });
 
     visibleObserver = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
@@ -420,7 +468,7 @@
           }, PREVIEW_RELEASE_DELAY_MS);
         }
       });
-    }, { rootMargin: "1200px 0px 1200px 0px", threshold: 0 });
+    }, { rootMargin: RETAIN_MARGIN, threshold: 0 });
   }
 
   /* Ciężkie projekty (np. RejStream z osadzonym wideo) potrzebują czasu:
@@ -775,6 +823,15 @@
      nadal są rozłożone — nigdy nie odpalamy wszystkich w jednej klatce. */
   function drainPreviewQueue() {
     previewQueueTimer = null;
+
+    /* Ruch w toku: nic nie montujemy, wracamy po zatrzymaniu. Widoczna karta
+       pokazuje w tym czasie swoje kulki (czysty CSS/WAAPI), więc nic nie znika. */
+    var wait = previewQueue.length ? (scrollQuietUntil - nowMs()) : 0;
+    if (wait > 0) {
+      previewQueueTimer = setTimeout(drainPreviewQueue, wait + 30);
+      return;
+    }
+
     var started = false;
     while (previewQueue.length) {
       var next = previewQueue.shift();
@@ -829,12 +886,15 @@
     if (!pageReady) return; /* loader jeszcze gra — nie zabieramy mu klatek */
     var previews = document.querySelectorAll(".card-preview");
     var vh = window.innerHeight || 0;
+    /* Ten sam zapas co observer — inaczej bezpiecznik zaciągałby ramki
+       ze 800 px, niwecząc mniejszy margines na słabszym sprzęcie. */
+    var margin = weakDevice ? 360 : 800;
     previews.forEach(function (p) {
       if (p._rjSettled || p._rjMounting) return;
       if (snapshotState(p) === "ok") return;
       var r = p.getBoundingClientRect();
       if (!r.width && !r.height) return; /* ukryta sekcja */
-      if (r.bottom > -800 && r.top < vh + 800) { p._rjNear = true; enqueuePreview(p, r.bottom > 0 && r.top < vh); }
+      if (r.bottom > -margin && r.top < vh + margin) { p._rjNear = true; enqueuePreview(p, r.bottom > 0 && r.top < vh); }
     });
   }
 

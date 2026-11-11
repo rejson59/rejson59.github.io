@@ -877,6 +877,18 @@ body :is(a, button, summary, input, textarea, select):focus-visible {
   outline-offset: 3px;
 }
 
+/* ---------- animacje poza kadrem ----------
+   Klasę `rj-anim-paused` zakłada hub/hub-shell.js, gdy element wyjedzie
+   z widoku. Zatrzymanie (a nie usunięcie) animacji oznacza, że po powrocie
+   w kadr gra dalej od tego samego miejsca — wygląd się nie zmienia,
+   a przeglądarka nie liczy klatek dla treści, której nikt nie widzi. */
+.rj-anim-paused,
+.rj-anim-paused *,
+.rj-anim-paused *::before,
+.rj-anim-paused *::after {
+  animation-play-state: paused !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   body::before {
     animation: none;
@@ -1061,20 +1073,13 @@ body.rj-home .project-card .card-preview {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
 
-/* --- nakładka ładowania: szyba, przez którą nadal widać kolor tapety --- */
-body #rj-page-loader {
-  background:
-    radial-gradient(90% 70% at 50% 18%, rgba(74, 96, 158, 0.34), transparent 70%),
-    rgba(5, 8, 15, 0.5) !important;
-  backdrop-filter: blur(18px) saturate(150%);
-  -webkit-backdrop-filter: blur(18px) saturate(150%);
-}
-
-html[data-theme="light"] body #rj-page-loader {
-  background:
-    radial-gradient(90% 70% at 50% 18%, rgba(255, 255, 255, 0.42), transparent 70%),
-    rgba(14, 20, 34, 0.46) !important;
-}
+/* --- nakładka ładowania: PEŁNE krycie, bez rozmywania tła ---
+   Wcześniej ta reguła robiła z loadera półprzezroczystą „szybę” z
+   `backdrop-filter: blur(18px)` na cały ekran. Przez trzy sekundy każda
+   klatka musiała rozmyć całą stronę pod nakładką — to była najdroższa rzecz
+   na ekranie i główna przyczyna zacinania na słabszych urządzeniach.
+   Teraz wygląd loadera bierze się wyłącznie z hub/loader.css (pełne tło,
+   bez filtra), więc nic pod nim nie prześwieca i nie ma czego rozmywać. */
 
 /* --- RejClass: etapy nauki jako segmentowana pigułka (jak zakładki studia) --- */
 body .rjc-bio-modes {
