@@ -2694,3 +2694,321 @@ html[data-theme="light"] body.rj-community .chat-bubble :is(.rejchat-edited) {
 html[data-theme="light"] body.rj-community .chat-msg.is-mine .chat-bubble :is(.rejchat-edited) {
   color: rgba(240, 247, 255, 0.78) !important;
 }
+
+/* ============================================================================
+   Poprawki wyglądu (RejChat 3.1) — wrzesień 2026
+   ----------------------------------------------------------------------------
+   Co było nie tak i dlaczego:
+   1. Nad paskiem aplikacji wisiał niewidoczny spis treści (`.rj-page-index`,
+      opacity 0, 86 px wysokości) — zabierał miejsce i wypychał czat poza ekran.
+   2. Zakładka „Wpisy” miała filtr blur(6px) — wyglądała jak rozmazany błąd.
+   3. Wysokość okna była liczona od `100dvh - 190px`, ale nad nim stały jeszcze
+      pasek i hero, więc composer i stopka wpadały pod dolną krawędź.
+   Teraz: aplikacja zajmuje dokładnie tyle, ile zostało po topbarze, a jej
+   wewnętrzne listy przewijają się same.
+   -------------------------------------------------------------------------- */
+
+/* 1. Spis treści na RejChat jest zbędny — aplikacja ma własne zakładki. */
+body.rj-community .rj-page-index,
+body.rj-community .rj-page-index * {
+  display: none !important;
+}
+
+/* 2. Żadnych rozmytych przycisków. Nieaktywna zakładka jest wyciszona kolorem. */
+body.rj-community .rejchat-tabs button {
+  filter: none !important;
+  opacity: 1 !important;
+}
+
+body.rj-community .rejchat-tabs button[aria-selected="false"] {
+  color: var(--rm-sub) !important;
+  background: transparent !important;
+}
+
+body.rj-community .rejchat-tabs button[aria-selected="false"]:hover {
+  color: var(--rm-ink) !important;
+  background: var(--rm-raise) !important;
+}
+
+body.rj-community .rejchat-tabs button[aria-selected="true"] {
+  background: linear-gradient(150deg, #ffffff, #dfe9fb) !important;
+  color: #0a1220 !important;
+  box-shadow: inset 0 1px 0 #ffffff, 0 8px 20px -14px rgba(0, 0, 0, 0.9) !important;
+}
+
+html[data-theme="light"] body.rj-community .rejchat-tabs button[aria-selected="true"] {
+  background: #12386e !important;
+  color: #f4f8ff !important;
+}
+
+/* 3. Okno aplikacji wypełnia resztę ekranu — bez przewijania całej strony. */
+@media (min-width: 861px) {
+  body.rj-community .comm-main {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    min-height: calc(100dvh - 76px) !important;
+    padding-bottom: 14px !important;
+  }
+
+  body.rj-community .comm-hero {
+    flex: none !important;
+    margin-bottom: 0 !important;
+  }
+
+  body.rj-community .comm-layout {
+    flex: 1 1 auto !important;
+    height: auto !important;
+    min-height: 440px !important;
+  }
+
+  body.rj-community .comm-primary,
+  body.rj-community #panel-chat,
+  body.rj-community .comm-chat {
+    min-height: 0 !important;
+  }
+
+  body.rj-community .comm-chat {
+    height: 100% !important;
+  }
+
+  body.rj-community .comm-chat-list {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+  }
+}
+
+/* 4. Dymki i nagłówek pokoju: czytelniejszy rytm, bez „pływających” ikon. */
+body.rj-community .comm-chat-head {
+  gap: 12px !important;
+}
+
+body.rj-community .chat-meta {
+  gap: 8px !important;
+}
+
+body.rj-community .chat-bubble {
+  padding: 11px 15px !important;
+  border-radius: 18px !important;
+}
+
+body.rj-community .chat-text {
+  font-size: 13.5px !important;
+  line-height: 1.55 !important;
+}
+
+/* 5. Stopka czatu: przyciski nie wystają poza zaokrągloną taflę. */
+body.rj-community .comm-chat-note {
+  margin-inline: 14px !important;
+}
+
+/* 6. `[hidden]` musi wygrywać z `display:inline-flex !important`.
+   Bez tego „Dołącz do rozmowy” pokazywało się dwa razy (przycisk i zapasowy
+   link), a ukryte panele dalej zajmowały miejsce. */
+body.rj-community [hidden],
+body.rj-community #chat-join[hidden],
+body.rj-community #chat-join-fallback[hidden] {
+  display: none !important;
+}
+
+/* 7. Pasek „Zaloguj się…” na dole czatu: jedna linia, jeden przycisk. */
+body.rj-community #chat-note {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+  min-height: 48px !important;
+  margin: 0 18px 14px !important;
+  padding: 10px 16px !important;
+  text-align: center !important;
+}
+
+body.rj-community #chat-note .chat-join,
+body.rj-community #chat-note #chat-join-fallback {
+  margin-left: 0 !important;
+  flex: none;
+}
+
+/* 8. Licznik znaków pokazujemy tylko wtedy, gdy można pisać. */
+body.rj-community .comm-chat:has(#chat-form[hidden]) .chat-length,
+body.rj-community .dm-view:has(#dm-send-form[hidden]) .dm-length {
+  display: none !important;
+}
+
+/* 9. Dok pokoi: „Twój profil” nie może być przycięty przy dolnej krawędzi. */
+body.rj-community .comm-sidebar {
+  padding-bottom: 16px !important;
+}
+
+body.rj-community .rc-side-link {
+  margin-top: auto !important;
+  max-width: 100% !important;
+}
+
+/* 10. Na wąskim ekranie dolny pasek nie może zasłaniać composera. */
+@media (max-width: 860px) {
+  body.rj-community .comm-layout {
+    height: auto !important;
+    max-height: calc(100dvh - 150px) !important;
+  }
+}
+
+/* 11. Dynamiczna wyspa siedzi na dolnej krawędzi — okno czatu ustępuje jej
+   miejsca, żeby nie zasłaniała composera ani przycisku dołączenia. */
+html.has-rj-island body.rj-community .comm-chat,
+html.has-rj-island body.rj-community .dm-view {
+  padding-bottom: calc(58px + env(safe-area-inset-bottom, 0px)) !important;
+}
+
+/* Na telefonie pasek mini reklam jest niżej — wyspa stoi nad nim, więc
+   dodatkowy odstęp liczymy razem z paskiem. */
+@media (max-width: 860px) {
+  html.has-rj-island body.rj-community .comm-chat,
+  html.has-rj-island body.rj-community .dm-view {
+    padding-bottom: calc(var(--rj-mobile-ads-height, 76px) + 58px) !important;
+  }
+}
+
+/* ============================================================================
+   12. Karta „Zasady RejChat" — link do osobnej strony regulaminu
+   ----------------------------------------------------------------------------
+   Wcześniej był tu rozwijany <details> z regulaminem w kolumnie bocznej.
+   Zasady mają teraz własną stronę (/rejchat/regulamin), więc w czacie zostaje
+   jedna prowadząca do niej karta — ten sam szklany prostokąt co sąsiednie.
+   ========================================================================== */
+
+body.rj-community a.rejchat-rules {
+  display: flex !important;
+  align-items: center !important;
+  gap: 9px !important;
+  padding: 10px 12px !important;
+  margin: 0 !important;
+  border: 1px solid var(--rm-line) !important;
+  border-radius: 16px !important;
+  background: var(--rm-raise) !important;
+  color: inherit !important;
+  text-decoration: none !important;
+  transition: border-color 0.18s ease, background 0.18s ease;
+}
+
+body.rj-community a.rejchat-rules:hover {
+  border-color: var(--rm-line-2, var(--rm-line)) !important;
+  background: var(--rm-raise-2, var(--rm-raise)) !important;
+}
+
+body.rj-community a.rejchat-rules:focus-visible {
+  outline: 2px solid var(--rm-accent, #8bbdff) !important;
+  outline-offset: 2px;
+}
+
+body.rj-community .rejchat-rules-mark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--rm-line);
+  border-radius: 9px;
+  color: var(--rm-accent, #8bbdff);
+  font-size: 11px;
+}
+
+body.rj-community .rejchat-rules-text {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+body.rj-community .rejchat-rules-text strong {
+  color: var(--rm-ink);
+  font: 650 11.5px/1.25 "Inter", system-ui, sans-serif;
+}
+
+body.rj-community .rejchat-rules-text small {
+  color: var(--rm-faint);
+  font: 500 9.5px/1.3 "Inter", system-ui, sans-serif;
+}
+
+body.rj-community .rejchat-rules-go {
+  flex: none;
+  margin-left: auto;
+  color: var(--rm-sub);
+  font-size: 13px;
+  transition: transform 0.18s ease, color 0.18s ease;
+}
+
+body.rj-community a.rejchat-rules:hover .rejchat-rules-go {
+  color: var(--rm-ink);
+  transform: translate(1px, -1px);
+}
+
+/* ============================================================================
+   13. Reklamy boczne nie mogą wchodzić na czat.
+   ----------------------------------------------------------------------------
+   side-ads.css zwęża `main` tylko wtedy, gdy jest bezpośrednim dzieckiem body
+   i nie ma własnego `width !important`. Czat ma własną szerokość, więc przy
+   1200–1560 px reklamy nachodziły na taflę. Tutaj main zwęża się dokładnie
+   o kolumnę reklam (420 px), tak jak reszta RejHubu.
+   ========================================================================== */
+
+@media (min-width: 1200px) {
+  body.rj-community.rj-side-ads-enabled .comm-main {
+    width: calc(100% - 420px) !important;
+    max-width: 1180px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+}
+
+/* 14. Etykieta „+ Zdjęcie” to ikona: tekst nie może wystawać z 36-px okręgu. */
+body.rj-community .rejchat-photo-picker > label > span {
+  display: none !important;
+}
+
+/* 15. Ukryty pasek „Zaloguj się…” nie może zajmować miejsca. */
+body.rj-community #chat-note[hidden],
+body.rj-community .comm-chat-note[hidden] {
+  display: none !important;
+}
+
+/* 16. Telefon: okno czatu ma wypełniać ekran, a nie kończyć się na 420 px.
+   ----------------------------------------------------------------------------
+   Wcześniej `height:auto` + `min-height:420px` zostawiało pod czatem pustą
+   połowę ekranu, a padding na wyspę (76 px paska + 58 px) zjadał listę
+   wiadomości do 18 px. Teraz okno liczy wysokość od viewportu, odstęp na wyspę
+   zostaje, a pasek mini reklam (76 px) jest już poza taflą. */
+@media (max-width: 860px) {
+  body.rj-community .comm-layout {
+    height: calc(100dvh - 220px) !important;
+    max-height: none !important;
+    min-height: 430px !important;
+  }
+  html.has-rj-island body.rj-community .comm-chat,
+  html.has-rj-island body.rj-community .dm-view {
+    padding-bottom: calc(58px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  body.rj-community #chat-public-view > #chat-list,
+  body.rj-community #dm-thread > #dm-messages {
+    min-height: 140px !important;
+  }
+}
+
+/* 17. Telefon: pole pisania nie może być ściśnięte do 197 px przez narzędzia.
+   Formularz DM zawija narzędzia pod pole, dzięki czemu placeholder mieści się
+   w jednej linii, a wysyłanie zostaje po prawej. */
+@media (max-width: 620px) {
+  body.rj-community .comm-chat-form {
+    flex-wrap: wrap !important;
+    align-items: flex-end !important;
+  }
+  body.rj-community .comm-chat-form .comm-input {
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    min-height: 46px;
+  }
+  body.rj-community .comm-chat-form .rc-compose-tools {
+    margin-left: auto !important;
+    padding-top: 2px !important;
+  }
+}

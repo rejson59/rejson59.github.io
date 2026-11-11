@@ -1,0 +1,453 @@
+/* © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
+   Licencja: /LICENSE, /licencja
+   ----------------------------------------------------------------------------
+   Regulamin RejChat — dokument, nie landing page.
+
+   Układ: lewa szyna ze spisem treści (przyklejona), po prawej karty sekcji.
+   Wszystko na tej samej szybie co reszta RejHub (tokeny --gl-* z glass-last.css),
+   z jednym wyjątkiem: sekcja o odpowiedzialności jest wyróżniona mocniejszą
+   krawędzią, bo to najważniejszy paragraf dla czytelnika.
+   -------------------------------------------------------------------------- */
+
+.rr-page {
+  --rr-ink: #eef4ff;
+  --rr-sub: #a9bcd6;
+  --rr-faint: #7d90ab;
+  --rr-line: rgba(178, 205, 245, 0.16);
+  --rr-line-2: rgba(178, 205, 245, 0.3);
+  --rr-accent: #8fbdff;
+  --rr-key: rgba(143, 189, 255, 0.1);
+  background:
+    radial-gradient(900px 520px at 84% -10%, rgba(79, 140, 255, 0.18), transparent 68%),
+    radial-gradient(700px 480px at 2% 104%, rgba(58, 106, 190, 0.16), transparent 66%),
+    #070b15;
+}
+
+html[data-theme="light"] .rr-page {
+  --rr-ink: #0d1a2c;
+  --rr-sub: #40567a;
+  --rr-faint: #63799a;
+  --rr-line: rgba(28, 66, 122, 0.14);
+  --rr-line-2: rgba(28, 66, 122, 0.3);
+  --rr-accent: #1e56b8;
+  --rr-key: rgba(30, 86, 184, 0.07);
+  background:
+    radial-gradient(900px 520px at 84% -10%, rgba(79, 140, 255, 0.18), transparent 68%),
+    #eaf0fa;
+}
+
+.rr-page .rr-main {
+  width: min(100% - 32px, 1180px);
+  margin: 0 auto;
+  padding: 26px 0 64px;
+}
+
+/* --------------------------------------------------------------- ścieżka --- */
+
+.rr-crumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px;
+  color: var(--rr-faint);
+  font: 600 11px/1.4 "JetBrains Mono", ui-monospace, monospace;
+  letter-spacing: 0.06em;
+}
+
+.rr-crumbs a {
+  color: var(--rr-sub);
+  text-decoration: none;
+}
+
+.rr-crumbs a:hover { color: var(--rr-ink); }
+.rr-crumbs span[aria-current] { color: var(--rr-ink); }
+
+/* ---------------------------------------------------------------- nagłówek --- */
+
+.rr-hero {
+  padding: 26px clamp(18px, 3vw, 34px);
+  border: 1px solid var(--rr-line);
+  border-radius: 26px;
+  background-image: var(--gl-fill);
+  background-color: var(--gl-tint);
+  box-shadow: var(--gl-shadow);
+  -webkit-backdrop-filter: var(--gl-blur);
+  backdrop-filter: var(--gl-blur);
+}
+
+.rr-kicker {
+  margin: 0 0 10px;
+  color: var(--rr-accent);
+  font: 700 10px/1 "JetBrains Mono", ui-monospace, monospace;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.rr-hero h1 {
+  margin: 0;
+  color: var(--rr-ink);
+  font: 700 clamp(30px, 4.4vw, 46px) / 1.03 "Space Grotesk", system-ui, sans-serif;
+  letter-spacing: -0.045em;
+}
+
+.rr-lead {
+  max-width: 70ch;
+  margin: 14px 0 0;
+  color: var(--rr-sub);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.rr-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 20px 0 0;
+}
+
+.rr-facts div {
+  min-width: 132px;
+  padding: 9px 13px;
+  border: 1px solid var(--rr-line);
+  border-radius: 14px;
+  background-image: var(--gl-fill);
+  background-color: var(--gl-tint);
+  -webkit-backdrop-filter: var(--gl-blur);
+  backdrop-filter: var(--gl-blur);
+}
+
+.rr-facts dt {
+  color: var(--rr-faint);
+  font: 700 8.5px/1.4 "JetBrains Mono", ui-monospace, monospace;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.rr-facts dd {
+  margin: 3px 0 0;
+  color: var(--rr-ink);
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.rr-lang-note {
+  margin: 16px 0 0;
+  color: var(--rr-faint);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+/* ------------------------------------------------------------------ układ --- */
+
+.rr-grid {
+  display: grid;
+  grid-template-columns: 244px minmax(0, 1fr);
+  grid-auto-columns: minmax(0, 1fr);
+  align-items: start;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+/* --------------------------------------------------------------- spis treści --- */
+
+.rr-toc {
+  position: sticky;
+  top: 96px;
+  padding: 16px;
+  border: 1px solid var(--rr-line);
+  border-radius: 22px;
+  background-image: var(--gl-fill);
+  background-color: var(--gl-tint);
+  box-shadow: var(--gl-shadow);
+  -webkit-backdrop-filter: var(--gl-blur);
+  backdrop-filter: var(--gl-blur);
+}
+
+.rr-toc-title {
+  margin: 0 0 10px;
+  color: var(--rr-faint);
+  font: 700 9px/1.4 "JetBrains Mono", ui-monospace, monospace;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.rr-toc ol {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: rr;
+}
+
+.rr-toc li { counter-increment: rr; }
+
+.rr-toc a {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  padding: 7px 9px;
+  border-radius: 11px;
+  color: var(--rr-sub);
+  font-size: 12px;
+  line-height: 1.35;
+  text-decoration: none;
+  transition: background 0.16s ease, color 0.16s ease;
+}
+
+.rr-toc a::before {
+  content: counter(rr, decimal-leading-zero);
+  color: var(--rr-faint);
+  font: 600 9.5px/1 "JetBrains Mono", ui-monospace, monospace;
+  flex: none;
+}
+
+.rr-toc a:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--rr-ink);
+}
+
+.rr-toc-back {
+  display: inline-flex;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--rr-line);
+  color: var(--rr-accent);
+  font-size: 11.5px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* ------------------------------------------------------------------- karty --- */
+
+.rr-doc {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 14px;
+  min-width: 0;
+}
+
+.rr-card {
+  min-width: 0;
+  overflow-wrap: break-word;
+  padding: 22px clamp(16px, 2.6vw, 28px);
+  border: 1px solid var(--rr-line);
+  border-radius: 22px;
+  background-image: var(--gl-fill);
+  background-color: var(--gl-tint);
+  box-shadow: var(--gl-shadow);
+  -webkit-backdrop-filter: var(--gl-blur);
+  backdrop-filter: var(--gl-blur);
+  scroll-margin-top: 96px;
+}
+
+.rr-card h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 11px;
+  margin: 0 0 12px;
+  color: var(--rr-ink);
+  font: 700 clamp(17px, 1.9vw, 21px) / 1.2 "Space Grotesk", system-ui, sans-serif;
+  letter-spacing: -0.025em;
+}
+
+.rr-num {
+  flex: none;
+  min-width: 30px;
+  padding: 3px 7px;
+  border: 1px solid var(--rr-line-2);
+  border-radius: 9px;
+  color: var(--rr-accent);
+  font: 700 11px/1 "JetBrains Mono", ui-monospace, monospace;
+  text-align: center;
+}
+
+.rr-card p {
+  margin: 0 0 10px;
+  color: var(--rr-sub);
+  font-size: 13.5px;
+  line-height: 1.68;
+}
+
+.rr-card p:last-child { margin-bottom: 0; }
+
+.rr-list {
+  margin: 0;
+  padding-left: 20px;
+  color: var(--rr-sub);
+  font-size: 13.5px;
+  line-height: 1.68;
+}
+
+.rr-list li { margin: 0 0 8px; }
+.rr-list li:last-child { margin-bottom: 0; }
+.rr-list--plain { padding-left: 0; list-style: none; }
+
+.rr-card strong { color: var(--rr-ink); font-weight: 650; }
+
+.rr-card a {
+  color: var(--rr-accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+.rr-card a:hover { color: var(--rr-ink); }
+
+/* Najważniejszy paragraf: odpowiedzialność za treści. */
+.rr-card--key {
+  border-color: var(--rr-line-2);
+  background-image:
+    linear-gradient(157deg, rgba(143, 189, 255, 0.12), rgba(143, 189, 255, 0.03) 60%),
+    var(--gl-fill);
+  box-shadow: var(--gl-shadow), 0 0 0 1px rgba(143, 189, 255, 0.12) inset;
+}
+
+.rr-strong {
+  padding: 12px 14px;
+  border-left: 3px solid var(--rr-accent);
+  border-radius: 0 12px 12px 0;
+  background: var(--rr-key);
+  color: var(--rr-ink) !important;
+  font-size: 13.5px !important;
+  font-weight: 600;
+}
+
+.rr-note {
+  margin-top: 12px !important;
+  color: var(--rr-faint) !important;
+  font-size: 11.5px !important;
+}
+
+/* ------------------------------------------------------------------- dalej --- */
+
+.rr-next {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.rr-next-card {
+  display: grid;
+  gap: 2px;
+  padding: 14px 16px;
+  border: 1px solid var(--rr-line);
+  border-radius: 18px;
+  background-image: var(--gl-fill);
+  background-color: var(--gl-tint);
+  box-shadow: var(--gl-shadow);
+  -webkit-backdrop-filter: var(--gl-blur);
+  backdrop-filter: var(--gl-blur);
+  color: var(--rr-ink);
+  text-decoration: none;
+  transition: border-color 0.18s ease, background 0.18s ease, transform 0.18s ease;
+}
+
+.rr-next-card span {
+  color: var(--rr-faint);
+  font: 700 8.5px/1.4 "JetBrains Mono", ui-monospace, monospace;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.rr-next-card strong { font-size: 13.5px; font-weight: 650; }
+.rr-next-card small { color: var(--rr-faint); font-size: 10.5px; line-height: 1.4; }
+
+.rr-next-card:hover {
+  border-color: var(--rr-line-2);
+  transform: translateY(-1px);
+}
+
+.rr-toc a:focus-visible,
+.rr-next-card:focus-visible,
+.rr-toc-back:focus-visible {
+  outline: 2px solid var(--rr-accent);
+  outline-offset: 2px;
+}
+
+/* ------------------------------------------------------------------ stopka --- */
+
+.rr-page .site-footer {
+  border-top: 0;
+  background: none;
+  padding: 8px 0 44px;
+}
+
+.rr-page .footer-inner {
+  padding: 15px 20px;
+  border: 1px solid var(--rr-line);
+  border-radius: 20px;
+  background-image: var(--gl-fill);
+  background-color: var(--gl-tint);
+  box-shadow: var(--gl-shadow);
+  -webkit-backdrop-filter: var(--gl-blur);
+  backdrop-filter: var(--gl-blur);
+  color: var(--rr-sub);
+  font-size: 12.5px;
+}
+
+.rr-page .footer-links { flex-wrap: wrap; row-gap: 4px; }
+.rr-page .footer-links a { color: var(--rr-ink); }
+.rr-page .footer-links a:hover { color: var(--rr-accent); }
+.rr-page .footer-links span { color: var(--rr-faint); }
+
+.rr-page .footer-note {
+  color: var(--rr-faint);
+  border-top-color: var(--rr-line);
+  padding-top: 10px;
+}
+
+/* ------------------------------------------------------------ motyw jasny --- */
+
+html[data-theme="light"] .rr-card,
+html[data-theme="light"] .rr-toc,
+html[data-theme="light"] .rr-hero {
+  --gl-fill: linear-gradient(157deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.74) 54%, rgba(255, 255, 255, 0.88));
+  --gl-tint: rgba(255, 255, 255, 0.8);
+  --gl-line: rgba(255, 255, 255, 0.95);
+  --gl-shadow: 0 22px 48px -30px rgba(38, 62, 100, 0.32), inset 0 1px 0 #ffffff;
+}
+
+html[data-theme="light"] .rr-toc a:hover {
+  background: rgba(255, 255, 255, 0.95);
+}
+
+/* ------------------------------------------------------------ responsywność --- */
+
+@media (max-width: 980px) {
+  .rr-grid { grid-template-columns: minmax(0, 1fr); }
+  .rr-toc {
+    position: static;
+    order: -1;
+  }
+  .rr-toc ol {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .rr-page .rr-main { width: min(100% - 20px, 1180px); padding-top: 16px; }
+  .rr-hero { border-radius: 20px; padding: 20px 16px; }
+  .rr-card { border-radius: 18px; padding: 18px 15px; }
+  .rr-toc { padding: 12px; border-radius: 18px; }
+  .rr-toc-title { margin-bottom: 8px; }
+  .rr-toc ol {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+  .rr-toc ol::-webkit-scrollbar { display: none; }
+  .rr-toc a {
+    white-space: nowrap;
+    padding: 6px 11px;
+    border: 1px solid var(--rr-line);
+    border-radius: 999px;
+    font-size: 11.5px;
+  }
+  .rr-toc-back { margin-top: 10px; padding-top: 9px; }
+  .rr-next { grid-template-columns: minmax(0, 1fr); }
+  .rr-facts div { flex: 1 1 calc(50% - 10px); min-width: 0; }
+}

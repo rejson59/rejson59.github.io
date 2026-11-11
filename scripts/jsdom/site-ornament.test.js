@@ -18,5 +18,5 @@ for (const f of files(root)) {
 const page = fs.readFileSync(path.join(root,'rejchat.html'),'utf8');
 assert(!page.includes('rc-chat-guide'));
 assert(page.includes('Odczyty i reakcje są widoczne') && page.includes('Zdjęcia w pokojach widzą'));
-assert(page.includes('brak szyfrowania end-to-end'));
+assert(!page.includes('rc-dm-privacy') && !page.includes('O prywatności'));
 console.log('PASS: brak znaczka w dekoracjach stron, brak przycisku Prywatność i zachowane ważne informacje');

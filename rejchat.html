@@ -601,13 +601,12 @@
               <button class="btn btn-primary btn-sm" id="chat-send" type="submit" disabled>Wyślij <span aria-hidden="true">↗</span></button>
             </div>
           </form>
-          <p class="chat-length" id="chat-length">0 / 2000 znaków · Enter — wyślij, Shift+Enter — nowa linia</p>
+          <p class="chat-length" id="chat-length"><span id="chat-length-text">0 / 2000 znaków · Enter — wyślij, Shift+Enter — nowa linia</span></p>
           <p id="chat-send-status" class="comm-chat-note" role="status" aria-live="polite"></p>
           <p class="comm-chat-note" id="chat-note"><span>Zaloguj się, aby zobaczyć rozmowy.</span> <button type="button" class="chat-join" id="chat-join" hidden>Dołącz do rozmowy ↗</button><a id="chat-join-fallback" href="logowanie">Dołącz do rozmowy ↗</a></p>
         </section>
         <section class="comm-chat glass-card dm-view" id="chat-private-view" aria-label="Prywatne rozmowy" hidden>
           <header class="comm-chat-head"><div class="chat-room-heading"><span class="chat-room-mark" aria-hidden="true">✉</span><div><h2>Prywatne rozmowy</h2><p>Wiadomości widzą tylko uczestnicy rozmowy.</p></div></div></header>
-          <details class="rc-dm-privacy"><summary>O prywatności · brak szyfrowania end-to-end</summary><p class="dm-privacy">Wiadomości i zdjęcia są przechowywane na serwerze i nie są szyfrowane end-to-end. Zdjęcia mogą zawierać metadane, np. lokalizację. Automatyczne reguły antyspamowe i globalny filtr fraz obejmują także rozmowy prywatne; panel moderacji nie pokazuje rozmów; uczestnik może świadomie zgłosić tekst pojedynczej wiadomości, bez zdjęcia. Obrazy nie są automatycznie skanowane. JPG, PNG i WebP do 10 MiB zmniejszamy w razie potrzeby do JPG, GIF do 1 MiB. Zdjęcia wygasają po 14 dniach. Plik w RejFile przygotujesz dla odbiorcy — nic nie jest wysyłane automatycznie. Kopie zapisane w RejSejfie nie wygasają automatycznie. Nie wysyłaj haseł ani innych poufnych danych.</p></details>
           <p id="dm-guest" class="comm-chat-note">Zaloguj się, aby rozpocząć prywatną rozmowę. <a href="/logowanie">Konto ↗</a></p>
           <div id="dm-member" hidden>
             <form id="dm-new-form" class="dm-new-form"><label for="dm-username">Nowa rozmowa — nazwa konta</label><div><input id="dm-username" class="comm-input" autocomplete="off" maxlength="24" placeholder="Nazwa użytkownika" required><button class="btn btn-primary btn-sm" type="submit">Otwórz</button></div></form>
@@ -618,7 +617,7 @@
               <form id="dm-send-form" class="comm-chat-form"><textarea id="dm-input" class="comm-input" rows="2" maxlength="1000" placeholder="Napisz prywatną wiadomość…" aria-label="Prywatna wiadomość"></textarea>
                 <div class="rc-compose-tools"><div class="rejchat-photo-picker" id="dm-photo-picker"><label for="dm-photo" aria-label="Dodaj zdjęcie" title="JPG, PNG, WebP do 10 MiB, GIF do 1 MiB; zdjęcie wygasa po 14 dniach">+ <span>Zdjęcie</span></label><input id="dm-photo" type="file" accept="image/jpeg,image/png,image/webp,image/gif"><span id="dm-photo-name" aria-live="polite">Do 10 MiB (GIF do 1 MiB). Większe zdjęcia zmniejszymy do JPG. Wygasa po 14 dniach.</span><button id="dm-photo-clear" type="button" hidden>Usuń zdjęcie</button></div>
                 <div class="rc-emoji-wrap"><button class="rc-emoji-toggle" type="button" aria-label="Wybierz emotkę" aria-expanded="false" aria-controls="dm-emojis">☺ <span>Emotki</span></button><div id="dm-emojis" class="rc-emoji-panel" hidden></div></div><a class="rc-compose-file" aria-label="Przygotuj prywatny plik w RejFile" id="dm-rejfile" href="/rejfile" target="_blank" rel="noopener noreferrer" title="Przygotuj plik dla odbiorcy w RejFile; nic nie wyśle się automatycznie">↗ <span>RejFile</span></a><button class="btn btn-primary btn-sm" type="submit" id="dm-send">Wyślij <span aria-hidden="true">↗</span></button></div></form>
-              <p class="dm-length" id="dm-length">0 / 1000 znaków · Enter — wyślij, Shift+Enter — nowa linia</p></div>
+              <p class="dm-length" id="dm-length"><span id="dm-length-text">0 / 1000 znaków · Enter — wyślij, Shift+Enter — nowa linia</span></p></div>
           </div>
         </section>
 

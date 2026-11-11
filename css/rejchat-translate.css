@@ -1,0 +1,175 @@
+/* © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
+   Licencja: /LICENSE, /licencja
+   ----------------------------------------------------------------------------
+   Tłumaczenie wiadomości RejChat — przycisk, panel tłumaczenia, szkic.
+
+   Wszystko siedzi w dymku wiadomości (albo w linii licznika znaków), więc nie
+   zmienia siatki czatu. Ten sam szklany język co reszta Messengera: tokeny
+   --rm-*, zaokrąglenia 12–14 px, bez zieleni.
+   -------------------------------------------------------------------------- */
+
+/* ---------------------------------------------------- przycisk przy dymku --- */
+
+body.rj-community .rj-tr-btn {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  order: 2;
+  gap: 5px;
+  margin: 4px 0 0;
+  padding: 4px 9px;
+  border: 1px solid var(--rm-line, rgba(140, 175, 235, 0.2));
+  border-radius: 999px;
+  background: var(--rm-raise, rgba(255, 255, 255, 0.06));
+  color: var(--rm-sub, #a9bcd6);
+  font: 600 9.5px/1.2 "Inter", system-ui, sans-serif;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: color 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+}
+
+body.rj-community .rj-tr-btn::before {
+  content: "⇄";
+  font-size: 11px;
+  line-height: 1;
+}
+
+body.rj-community .rj-tr-btn:hover {
+  color: var(--rm-ink, #eaf1fb);
+  border-color: var(--rm-line-2, rgba(140, 175, 235, 0.3));
+  background: var(--rm-raise-2, rgba(255, 255, 255, 0.1));
+}
+
+body.rj-community .rj-tr-btn:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+body.rj-community .rj-tr-btn:focus-visible,
+body.rj-community .rj-tr-toggle:focus-visible,
+body.rj-community .rj-tr-draft:focus-visible {
+  outline: 2px solid var(--rm-accent, #8bbdff);
+  outline-offset: 2px;
+}
+
+/* ------------------------------------------------------- panel tłumaczenia --- */
+
+body.rj-community .rj-tr-panel {
+  order: 3;
+  align-self: stretch;
+  margin: 4px 0 0;
+  padding: 8px 11px 7px;
+  border: 1px solid var(--rm-line-2, rgba(140, 175, 235, 0.24));
+  border-left: 2px solid var(--rm-accent, #8bbdff);
+  border-radius: 4px 12px 12px 12px;
+  background: linear-gradient(160deg, rgba(139, 189, 255, 0.12), rgba(139, 189, 255, 0.04));
+}
+
+html[data-theme="light"] body.rj-community .rj-tr-panel {
+  background: linear-gradient(160deg, rgba(35, 92, 179, 0.1), rgba(35, 92, 179, 0.03));
+}
+
+body.rj-community .rj-tr-text {
+  margin: 0;
+  color: var(--rm-ink, #eaf1fb);
+  font-size: 12.5px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+body.rj-community .rj-tr-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+body.rj-community .rj-tr-note {
+  color: var(--rm-faint, #7d90ab);
+  font: 600 8.5px/1.2 "JetBrains Mono", ui-monospace, monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+body.rj-community .rj-tr-toggle {
+  margin-left: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--rm-sub, #a9bcd6);
+  font: 600 9.5px/1.2 "Inter", system-ui, sans-serif;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+body.rj-community .rj-tr-toggle:hover { color: var(--rm-ink, #eaf1fb); }
+
+body.rj-community .rj-tr-panel.is-original .rj-tr-text { display: none; }
+
+body.rj-community .chat-text.rj-tr-original-hidden { display: none !important; }
+
+body.rj-community .rj-tr-error {
+  order: 4;
+  margin: 6px 0 0;
+  color: #ffb4b4;
+  font-size: 10.5px;
+  line-height: 1.4;
+}
+
+html[data-theme="light"] body.rj-community .rj-tr-error { color: #b02a2a; }
+
+/* --------------------------------------------------------- tłumacz szkicu --- */
+
+body.rj-community .chat-length,
+body.rj-community .dm-length {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  white-space: normal !important;
+}
+
+body.rj-community #chat-length-text,
+body.rj-community #dm-length-text {
+  min-width: 0;
+  margin-left: auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.rj-community .rj-tr-draft {
+  flex: none;
+  order: -1;
+  padding: 3px 8px;
+  border: 1px solid var(--rm-line, rgba(140, 175, 235, 0.2));
+  border-radius: 999px;
+  background: var(--rm-raise, rgba(255, 255, 255, 0.06));
+  color: var(--rm-sub, #a9bcd6);
+  font: 600 9px/1.2 "Inter", system-ui, sans-serif;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.16s ease, border-color 0.16s ease;
+}
+
+body.rj-community .rj-tr-draft:hover {
+  color: var(--rm-ink, #eaf1fb);
+  border-color: var(--rm-line-2, rgba(140, 175, 235, 0.3));
+}
+
+body.rj-community .rj-tr-draft:disabled { opacity: 0.6; cursor: progress; }
+
+body.rj-community .rj-tr-draft-status {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--rm-faint, #7d90ab);
+  font: 500 9px/1.3 "Inter", system-ui, sans-serif;
+  text-align: left;
+}
+
+body.rj-community .rj-tr-draft-status:empty { display: none; }
+
+@media (max-width: 760px) {
+  body.rj-community .rj-tr-draft { display: none; }
+  body.rj-community .rj-tr-draft-status { display: none; }
+}

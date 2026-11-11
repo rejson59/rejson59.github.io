@@ -19,7 +19,8 @@ const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 const PAGES = [
   '404.html', 'admin.html', 'index.html', 'konto-demo.html', 'licencja.html',
   'logowanie.html', 'panel.html', 'partnerstwo.html', 'profil.html', 'rejchat.html',
-  'rejclass.html', 'rejfile.html', 'rejsejf.html', 'rejtools.html', 'uslugi.html', 'widzety.html'
+  'rejclass.html', 'rejfile.html', 'rejsejf.html', 'rejtools.html', 'uslugi.html', 'widzety.html',
+  'rejchat/regulamin.html'
 ];
 
 const HEADER_CSS = [

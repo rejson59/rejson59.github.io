@@ -4,6 +4,10 @@
   "trailingSlash": false,
   "rewrites": [
     {
+      "source": "/rejchat",
+      "destination": "/rejchat.html"
+    },
+    {
       "source": "/css/:path*",
       "destination": "https://rejson59.github.io/css/:path*"
     },
