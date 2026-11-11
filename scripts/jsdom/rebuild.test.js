@@ -5,7 +5,7 @@
  *   1) przełącznik plakatów stoi nad WYRÓŻNIONYMI projektami,
  *   2) wyspa zawsze dostaje właściwą wersję arkusza,
  *   3) hero podstron to zaokrąglona tafla, nie prostokąt z blurem,
- *   4) RejChat przebudowany: jedna przestrzeń zamiast stosu kart,
+ *   4) RejChat przebudowany od zera: okno aplikacji, dok pokoi, dymki,
  *   5) wyspa: mini czat zamiast wyszukiwania, koło zębate w topbarze,
  *      „Teraz gra” widzi inne karty,
  *   6) panel admina: szyna sekcji, zapamiętana zakładka, skróty Alt+1…8.
@@ -29,7 +29,7 @@ const ISLAND = read('rejhub2/hub/island.js');
 const ISLAND_CSS = read('rejhub2/hub/island.css');
 const GLASS = read('rejhub2/hub/glass2.css');
 const CHAT_HTML = read('rejhub2/rejchat.html');
-const CHAT_CSS = read('css/rejchat-rebuild.css');
+const CHAT_CSS = read('css/rejchat-messenger.css');
 const ADMIN_HTML = read('rejhub2/admin.html');
 const ADMIN_CSS = read('css/admin-rebuild.css');
 const ADMIN_JS = read('js/admin-panel.js');
@@ -171,56 +171,72 @@ console.log('\n=== D. TOPBAR: KOŁO ZĘBATE ZAMIAST SŁOŃCA ===');
   });
 }
 
-console.log('\n=== E. REJCHAT: JEDNA PRZESTRZEŃ ===');
+console.log('\n=== E. REJCHAT: OKNO, DOK I DYMKI ===');
 {
-  check('arkusz przebudowy jest podpięty jako ostatni', () => {
+  check('arkusz „Messenger” jest podpięty jako ostatni', () => {
     const links = Array.from(CHAT_HTML.matchAll(/<link rel="stylesheet" href="([^"]+)"/g)).map((m) => m[1]);
-    assert.match(links[links.length - 1], /rejchat-rebuild\.css\?v=2/);
+    assert.match(links[links.length - 1], /rejchat-messenger\.css\?v=1/);
+    assert.ok(!CHAT_HTML.includes('rejchat-rebuild.css'), 'stara warstwa nadal podpięta');
+    assert.ok(!fs.existsSync(path.join(root, 'css/rejchat-rebuild.css')), 'stary arkusz nadal leży w repo');
   });
-  check('nagłówek to typografia, nie karta', () => {
-    const hero = CHAT_CSS.slice(CHAT_CSS.indexOf('body.rj-community .comm-hero {'), CHAT_CSS.indexOf('body.rj-community .rc-hero-copy'));
-    assert.match(hero, /background: none;/);
-    assert.match(hero, /border: 0;/);
-    assert.match(hero, /box-shadow: none;/);
+  check('pasek aplikacji to typografia, nie karta', () => {
+    const hero = CHAT_CSS.slice(CHAT_CSS.indexOf('body.rj-community .comm-hero {'), CHAT_CSS.indexOf('body.rj-community .rc-kicker'));
+    assert.match(hero, /background: none !important;/);
+    assert.match(hero, /border: 0 !important;/);
+    assert.match(hero, /box-shadow: none !important;/);
+    assert.match(hero, /backdrop-filter: none !important;/);
   });
-  check('przełącznik Czat/Wpisy siedzi w nagłówku, nie w szynie', () => {
+  check('przełącznik Czat/Wpisy siedzi w pasku, nie w szynie', () => {
     const hero = CHAT_HTML.slice(CHAT_HTML.indexOf('class="comm-hero"'), CHAT_HTML.indexOf('class="comm-layout"'));
     assert.match(hero, /id="chat-tab"/);
     assert.match(hero, /id="posts-tab"/);
     assert.ok(!CHAT_HTML.includes('chat-navigation'), 'został stary blok „Co dziś wybierasz?”');
   });
-  check('cała rozmowa to jedna tafla z trzema kolumnami', () => {
-    assert.match(CHAT_CSS, /grid-template-columns: 248px minmax\(0, 1fr\) 272px/);
-    assert.match(CHAT_CSS, /border-radius: var\(--rc-radius\)/);
-    assert.match(CHAT_CSS, /border-right: 1px solid var\(--rc-line\)/);
-    assert.match(CHAT_CSS, /border-left: 1px solid var\(--rc-line\)/);
+  check('okno aplikacji: dok pokoi, rozmowa, panel informacji', () => {
+    assert.match(CHAT_CSS, /grid-template-columns: 92px minmax\(0, 1fr\) 248px !important;/);
+    assert.match(CHAT_CSS, /height: clamp\(520px, calc\(100dvh - 190px\), 860px\) !important;/);
+    assert.match(CHAT_CSS, /body\.rj-community \.comm-layout \{[\s\S]{0,900}border-radius: var\(--rm-radius\) !important;/);
+    assert.match(CHAT_CSS, /\.chat-channel \{[\s\S]{0,700}flex-direction: column !important;/);
+    assert.match(CHAT_CSS, /\.chat-channel\.is-active::before \{/);
   });
-  check('wiadomości nie są pudełkami — tylko własne mają tło', () => {
-    const bubbles = CHAT_CSS.slice(CHAT_CSS.indexOf('body.rj-community .chat-bubble {'), CHAT_CSS.indexOf('body.rj-community .chat-msg.is-mine .chat-bubble'));
-    assert.match(bubbles, /border: 0;/);
-    assert.match(bubbles, /background: none;/);
-    assert.match(CHAT_CSS, /body\.rj-community \.chat-msg\.is-mine \.chat-bubble \{[\s\S]{0,220}background: linear-gradient/);
+  check('wiadomości to dymki: nazwa nad, treść w środku, własne po prawej', () => {
+    assert.match(CHAT_CSS, /\.chat-bubble \{[\s\S]{0,400}border-radius: 16px 16px 16px 5px !important;/);
+    assert.match(CHAT_CSS, /\.chat-msg\.is-mine \.chat-bubble \{[\s\S]{0,400}justify-self: end !important;/);
+    assert.match(CHAT_CSS, /\.chat-msg\.is-mine \.chat-bubble \{[\s\S]{0,400}border-radius: 16px 16px 5px 16px !important;/);
+    assert.match(CHAT_CSS, /\.chat-meta \{\n  display: contents !important;/);
+    assert.match(CHAT_CSS, /\.chat-author,[\s\S]{0,120}top: -17px !important;/);
   });
-  check('pole pisania to jedna zaokrąglona belka', () => {
-    assert.match(CHAT_CSS, /\.comm-chat-form \{[\s\S]{0,320}border-radius: 18px/);
-    assert.match(CHAT_CSS, /\.comm-chat-form:focus-within/);
+  check('grupowanie: kolejne wiadomości tej samej osoby bez nazwy i awatara', () => {
+    assert.match(CHAT_CSS, /\.chat-msg\.is-grouped \.chat-author,[\s\S]{0,200}display: none !important;/);
+    assert.match(CHAT_CSS, /\.chat-msg\.is-grouped \.comm-avatar \{[\s\S]{0,60}visibility: hidden !important;/);
+    assert.match(CHAT_CSS, /\.chat-msg\.is-grouped \.chat-bubble \{[\s\S]{0,80}margin-top: 5px !important;/);
+  });
+  check('pole pisania to pigułka z okrągłym przyciskiem wysyłania', () => {
+    assert.match(CHAT_CSS, /\.comm-chat-form \{[\s\S]{0,600}border-radius: 24px !important;/);
+    assert.match(CHAT_CSS, /\.comm-chat-form:focus-within \{/);
+    assert.match(CHAT_CSS, /#chat-send::after \{\n  content: "↑";/);
   });
   check('lista wiadomości nie rozmywa tła i nie skacze przy scrollu', () => {
     const list = CHAT_CSS.slice(CHAT_CSS.indexOf('body.rj-community .comm-chat-list {'), CHAT_CSS.indexOf('body.rj-community .comm-chat-list::-webkit-scrollbar'));
-    assert.ok(!/backdrop-filter/.test(list), 'lista rozmywa tło');
-    assert.match(list, /overflow-anchor: none/);
+    assert.ok(!/backdrop-filter:\s*blur/.test(list), 'lista rozmywa tło');
+    assert.match(list, /overflow-anchor: none !important;/);
+    assert.match(list, /flex: 1 1 0 !important;/);
   });
   check('paleta: błękit na granacie, zero fioletu i zieleni', () => {
-    assert.match(CHAT_CSS, /--rc-accent: #8bbdff/);
-    assert.match(CHAT_CSS, /--rc-accent-2: #4d8df6/);
-    assert.match(CHAT_CSS, /--rc-bg: #060c16/);
-    ['#c8b8ff', '#a6efd6', '#675fbd', '#34d399', 'magenta', 'fuchsia'].forEach((color) => {
+    assert.match(CHAT_CSS, /--rm-accent: #5a95ff;/);
+    assert.match(CHAT_CSS, /--rm-accent-2: #4f8cff;/);
+    assert.match(CHAT_CSS, /--rm-page: #070b15;/);
+    ['#c8b8ff', '#a6efd6', '#675fbd', '#34d399', '#46c98a', 'magenta', 'fuchsia'].forEach((color) => {
       assert.ok(!CHAT_CSS.includes(color), 'został kolor ' + color);
     });
   });
-  check('na telefonie jedna kolumna i pozioma nawigacja', () => {
-    assert.match(CHAT_CSS, /@media \(max-width: 980px\)[\s\S]{0,900}grid-template-columns: minmax\(0, 1fr\)/);
-    assert.match(CHAT_CSS, /@media \(max-width: 980px\)[\s\S]{0,900}overflow-x: auto/);
+  check('na telefonie dok jest poziomy, a rama niższa', () => {
+    assert.match(CHAT_CSS, /@media \(max-width: 860px\)[\s\S]{0,1400}flex-direction: row !important;/);
+    assert.match(CHAT_CSS, /@media \(max-width: 860px\)[\s\S]{0,1600}grid-template-rows: auto minmax\(0, 1fr\) !important;/);
+    assert.match(CHAT_CSS, /@media \(max-width: 560px\)[\s\S]{0,2400}max-width: 90% !important;/);
+  });
+  check('reklamy boczne nie ściskają rozmowy', () => {
+    assert.match(CHAT_CSS, /\.rj-side-ads-enabled \.rejchat-info \{[\s\S]{0,80}display: none !important;/);
   });
   check('wszystkie zaczepy JS nadal są w HTML-u', () => {
     ['chat-list', 'chat-form', 'chat-input', 'chat-send', 'chat-public-view', 'chat-private-view',
