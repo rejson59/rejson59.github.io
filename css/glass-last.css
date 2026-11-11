@@ -23,7 +23,7 @@
   --card-2: rgba(255, 255, 255, 0.045);
   --bg-elev: rgba(255, 255, 255, 0.085);
   --input-bg: rgba(255, 255, 255, 0.055);
-  --header-bg: rgba(11, 16, 27, 0.58);
+  --header-bg: rgba(11, 16, 27, 0.46);
 
   /* Wspólne szkło (rejhub2) */
   --rj-glass-bg: rgba(23, 32, 49, 0.34);
@@ -35,12 +35,12 @@
   --rju-edge: rgba(178, 205, 245, 0.18);
 
   /* Wspólne szkło (ta warstwa) */
-  --gl-tint: rgba(11, 17, 29, 0.68);
-  --gl-fill: linear-gradient(157deg, rgba(255, 255, 255, 0.105), rgba(255, 255, 255, 0.032) 54%, rgba(255, 255, 255, 0.058));
+  --gl-tint: rgba(11, 17, 29, 0.5);
+  --gl-fill: linear-gradient(157deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04) 54%, rgba(255, 255, 255, 0.07));
   --gl-fill-hi: linear-gradient(157deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.06) 54%, rgba(255, 255, 255, 0.09));
   --gl-line: rgba(255, 255, 255, 0.16);
   --gl-line-hi: rgba(255, 255, 255, 0.26);
-  --gl-blur: blur(26px) saturate(1.5);
+  --gl-blur: blur(30px) saturate(1.65);
   --gl-shadow: 0 26px 60px -34px rgba(1, 6, 18, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.18), inset 0 -1px 0 rgba(255, 255, 255, 0.04);
   --gl-radius: 20px;
 }
@@ -51,7 +51,7 @@ html[data-theme="light"] {
   --card-2: rgba(255, 255, 255, 0.48);
   --bg-elev: rgba(255, 255, 255, 0.72);
   --input-bg: rgba(255, 255, 255, 0.72);
-  --header-bg: rgba(248, 251, 255, 0.66);
+  --header-bg: rgba(248, 251, 255, 0.58);
 
   --rj-glass-bg: rgba(255, 255, 255, 0.55);
   --rj-glass-solid: rgba(255, 255, 255, 0.94);
@@ -60,8 +60,8 @@ html[data-theme="light"] {
   --rju-surface: rgba(255, 255, 255, 0.6);
   --rju-edge: rgba(255, 255, 255, 0.9);
 
-  --gl-tint: rgba(255, 255, 255, 0.72);
-  --gl-fill: linear-gradient(157deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.5) 54%, rgba(255, 255, 255, 0.66));
+  --gl-tint: rgba(255, 255, 255, 0.6);
+  --gl-fill: linear-gradient(157deg, rgba(255, 255, 255, 0.74), rgba(255, 255, 255, 0.36) 54%, rgba(255, 255, 255, 0.52));
   --gl-fill-hi: linear-gradient(157deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.7) 54%, rgba(255, 255, 255, 0.86));
   --gl-line: rgba(255, 255, 255, 0.9);
   --gl-line-hi: rgba(255, 255, 255, 1);

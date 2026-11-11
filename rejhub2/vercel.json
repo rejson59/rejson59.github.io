@@ -118,17 +118,27 @@
     },
     {
       "source": "/board",
-      "destination": "/widzety",
+      "destination": "/",
       "permanent": true
     },
     {
       "source": "/rejson-widgets/board",
-      "destination": "/widzety",
+      "destination": "/",
       "permanent": true
     },
     {
       "source": "/rejson-widgets/board.html",
-      "destination": "/widzety",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/widzety",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/widzety.html",
+      "destination": "/",
       "permanent": true
     }
   ]

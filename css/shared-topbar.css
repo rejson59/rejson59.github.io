@@ -96,3 +96,8 @@ body .rj-shared-header .rj-header-profile::after { content:"Konto"; color:var(--
  body .rj-shared-header .rj-header-profile img { width:30px; height:30px; }
  body .rj-shared-header .rj-header-profile::after { font-size:10px; }
 }
+
+/* Linki zastrzeżone dla administratora (np. Szklane studio). Domyślnie
+   schowane; pokazuje je dopiero stan sesji dodany przez js/shared-topbar.js. */
+.rj-shared-header [data-admin-only] { display:none!important; }
+html.rj-admin-session .rj-shared-header [data-admin-only] { display:flex!important; }

@@ -18,8 +18,8 @@
 
 body.rj-admin {
   --adm-bg: #060c16;
-  --adm-surface: #0a1524;
-  --adm-surface-2: #0d1a2c;
+  --adm-surface: rgba(10, 21, 36, 0.62);
+  --adm-surface-2: rgba(13, 26, 44, 0.74);
   --adm-raised: rgba(255, 255, 255, 0.055);
   --adm-raised-2: rgba(255, 255, 255, 0.09);
   --adm-line: rgba(150, 185, 235, 0.12);
@@ -43,8 +43,8 @@ body.rj-admin {
 
 html[data-theme="light"] body.rj-admin {
   --adm-bg: #eef3fb;
-  --adm-surface: #ffffff;
-  --adm-surface-2: #f7faff;
+  --adm-surface: rgba(255, 255, 255, 0.7);
+  --adm-surface-2: rgba(247, 250, 255, 0.8);
   --adm-raised: rgba(20, 48, 92, 0.045);
   --adm-raised-2: rgba(20, 48, 92, 0.09);
   --adm-line: rgba(30, 66, 118, 0.14);
@@ -857,4 +857,111 @@ body.rj-admin :is(button, a, input, select, textarea, summary):focus-visible {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* ==========================================================================
+   Telefon — panel admina w jednej, wygodnej kolumnie
+   --------------------------------------------------------------------------
+   Szyna zakładek nie zajmuje już połowy ekranu: to jedna przewijana linia
+   przyklejona pod topbarem, z celami dotyku 46 px i przyciąganiem do
+   krawędzi. Kafelki przeglądu mają dwie kolumny, a nie trzy ściśnięte.
+   ========================================================================== */
+
+@media (max-width: 760px) {
+  body.rj-admin .adm-shell {
+    gap: 10px;
+  }
+
+  /* Zakładki: pływająca szyna, zawsze pod ręką */
+  body.rj-admin .adm-rail {
+    position: sticky;
+    top: 70px;
+    z-index: 24;
+    gap: 6px;
+    padding: 6px;
+    border-radius: 18px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    background: var(--adm-surface);
+    -webkit-backdrop-filter: blur(24px) saturate(160%);
+    backdrop-filter: blur(24px) saturate(160%);
+    box-shadow: 0 18px 40px -30px rgba(0, 4, 12, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  }
+  body.rj-admin .adm-rail::-webkit-scrollbar { display: none; }
+
+  body.rj-admin .adm-tabs {
+    flex: 1 1 auto;
+    gap: 6px;
+    min-width: max-content;
+    overflow: visible; /* przewija się szyna, nie dwie warstwy naraz */
+    scroll-snap-type: x proximity;
+  }
+
+  body.rj-admin .adm-tab {
+    width: auto;
+    min-height: 46px;
+    padding: 0 15px;
+    border-radius: 13px;
+    font-size: 13px;
+    scroll-snap-align: start;
+    scroll-margin-inline: 6px;
+  }
+  body.rj-admin .adm-tab.is-active {
+    box-shadow: inset 0 0 0 1px rgba(139, 189, 255, 0.34), 0 10px 22px -16px rgba(77, 141, 246, 0.95);
+  }
+  body.rj-admin .adm-tab-note { display: none; }
+
+  /* Skrót do Szklanego studia jako ostatni, równy kafelek */
+  body.rj-admin .adm-rail-link {
+    min-height: 46px;
+    margin: 0;
+    padding: 0 14px;
+    border: 1px solid var(--adm-line);
+    border-radius: 13px;
+    background: var(--adm-raised);
+    color: var(--adm-sub);
+    white-space: nowrap;
+    scroll-snap-align: end;
+  }
+  body.rj-admin .adm-rail-link:hover { color: var(--adm-ink); }
+
+  /* Powitanie i przegląd: mniej pionu, więcej treści na ekranie */
+  body.rj-admin .admin-welcome { gap: 8px; padding-top: 6px; }
+  body.rj-admin .admin-welcome h1 { font-size: 27px; }
+  body.rj-admin .admin-welcome p { font-size: 12.5px; }
+  body.rj-admin .adm-live-pill { min-height: 32px; }
+
+  body.rj-admin .overview-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  body.rj-admin .overview-stat {
+    gap: 6px;
+    padding: 14px;
+    border-radius: 16px;
+  }
+  body.rj-admin .overview-stat strong { font-size: 24px; }
+  body.rj-admin .overview-stat small { font-size: 11px; }
+  body.rj-admin .overview-stat:last-child { grid-column: 1 / -1; }
+
+  body.rj-admin .overview-heading { gap: 10px; margin: 14px 0 12px; }
+  body.rj-admin .overview-heading h2 { font-size: 21px; }
+  body.rj-admin .overview-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+  body.rj-admin .overview-tile {
+    padding: 13px 14px;
+    border-radius: 16px;
+  }
+  body.rj-admin .overview-tile strong { font-size: 14px; }
+  body.rj-admin .overview-tile small { font-size: 11.5px; }
+}
+
+@media (max-width: 380px) {
+  body.rj-admin .overview-stats { grid-template-columns: minmax(0, 1fr); }
+  body.rj-admin .overview-stat:last-child { grid-column: auto; }
 }

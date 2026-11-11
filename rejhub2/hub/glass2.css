@@ -31,10 +31,10 @@
   --hub-accent-2: var(--s-accent-2);
 
   /* szkło — jedna recepta dla całego serwisu */
-  --g-hi: rgba(255, 255, 255, 0.12);
-  --g-lo: rgba(255, 255, 255, 0.025);
-  --g-edge: rgba(255, 255, 255, 0.26);
-  --g-lens: blur(22px) saturate(165%);
+  --g-hi: rgba(255, 255, 255, 0.16);
+  --g-lo: rgba(255, 255, 255, 0.05);
+  --g-edge: rgba(255, 255, 255, 0.3);
+  --g-lens: blur(26px) saturate(175%);
   --g-shadow: 0 30px 70px -34px rgba(2, 6, 18, 0.95), 0 2px 8px rgba(2, 6, 18, 0.35);
   --g-inset: inset 0 1px 0 rgba(255, 255, 255, 0.34), inset 0 -1px 0 rgba(255, 255, 255, 0.12);
   --hub-lens: var(--g-lens);
@@ -57,9 +57,9 @@ html[data-theme="light"] {
   --hub-dim: #6b7893;
   --hub-line: rgba(20, 40, 74, 0.16);
   --hub-line-soft: rgba(20, 40, 74, 0.08);
-  --g-hi: rgba(255, 255, 255, 0.72);
-  --g-lo: rgba(255, 255, 255, 0.34);
-  --g-edge: rgba(255, 255, 255, 0.9);
+  --g-hi: rgba(255, 255, 255, 0.58);
+  --g-lo: rgba(255, 255, 255, 0.24);
+  --g-edge: rgba(255, 255, 255, 0.8);
   --g-shadow: 0 26px 60px -34px rgba(28, 48, 84, 0.5);
   --g-inset: inset 0 1px 0 #ffffff, inset 0 -1px 0 rgba(20, 40, 74, 0.06);
   color-scheme: light;
@@ -94,7 +94,7 @@ body::before {
   background-image: url("/hub/wallpaper-1280.webp");
   background-size: cover;
   background-position: center;
-  filter: saturate(112%) brightness(0.92);
+  filter: saturate(114%) brightness(1);
   transform: translateZ(0);
 }
 
@@ -106,16 +106,16 @@ body::after {
   z-index: -1;
   pointer-events: none;
   background:
-    radial-gradient(120% 90% at 50% -10%, rgba(8, 13, 25, 0.42), transparent 70%),
-    radial-gradient(90% 70% at 50% 108%, rgba(8, 13, 25, 0.72), transparent 72%),
-    linear-gradient(180deg, rgba(6, 10, 20, 0.58), rgba(6, 10, 20, 0.7) 42%, rgba(5, 8, 16, 0.86));
+    radial-gradient(120% 90% at 50% -10%, rgba(8, 13, 25, 0.26), transparent 70%),
+    radial-gradient(90% 70% at 50% 108%, rgba(8, 13, 25, 0.5), transparent 72%),
+    linear-gradient(180deg, rgba(6, 10, 20, 0.34), rgba(6, 10, 20, 0.46) 42%, rgba(5, 8, 16, 0.62));
 }
 
 @media (max-width: 700px) {
   body::before {
     background-image: url("/hub/wallpaper-mobile.webp");
     background-position: center top;
-    filter: saturate(108%) brightness(0.82);
+    filter: saturate(110%) brightness(0.94);
   }
 }
 
@@ -124,8 +124,8 @@ html[data-theme="light"] body::before {
 }
 html[data-theme="light"] body::after {
   background:
-    radial-gradient(120% 90% at 50% -10%, rgba(255, 255, 255, 0.62), transparent 70%),
-    linear-gradient(180deg, rgba(238, 242, 250, 0.84), rgba(238, 242, 250, 0.9) 46%, rgba(232, 238, 249, 0.96));
+    radial-gradient(120% 90% at 50% -10%, rgba(255, 255, 255, 0.46), transparent 70%),
+    linear-gradient(180deg, rgba(238, 242, 250, 0.62), rgba(238, 242, 250, 0.72) 46%, rgba(232, 238, 249, 0.82));
 }
 
 /* stare pełnoekranowe dekoracje nie są już potrzebne */
@@ -3757,7 +3757,7 @@ body .rj-shared-header .nav-more-panel {
   border: 1px solid rgba(255, 255, 255, 0.3);
   background:
     linear-gradient(150deg, rgba(255, 255, 255, 0.17), rgba(255, 255, 255, 0.035)),
-    rgba(16, 24, 39, 0.72);
+    rgba(16, 24, 39, 0.56);
   box-shadow:
     0 18px 44px -26px rgba(1, 5, 16, 0.95),
     inset 0 1px 0 rgba(255, 255, 255, 0.4);
@@ -3797,8 +3797,8 @@ body .rj-shared-header .nav-more-panel a:focus-visible {
 
 html[data-theme="light"] body .rj-shared-header .nav-more-panel {
   background:
-    linear-gradient(150deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.55)),
-    rgba(246, 250, 255, 0.8);
+    linear-gradient(150deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.42)),
+    rgba(246, 250, 255, 0.68);
   border-color: rgba(255, 255, 255, 0.95);
   box-shadow:
     0 18px 44px -30px rgba(30, 60, 110, 0.45),

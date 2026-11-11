@@ -181,7 +181,7 @@ console.log('\n=== D. TOPBAR: BEZ USTAWIEŃ, PEŁNE MENU NA TELEFONIE ===');
   check('wersje skryptu i arkusza topbaru podbite na wszystkich stronach', () => {
     pages.forEach(({ file, html }) => {
       if (!html.includes('shared-topbar.js')) return;
-      assert.match(html, /shared-topbar\.js\?v=9/, file + ': stary skrypt topbaru');
+      assert.match(html, /shared-topbar\.js\?v=10/, file + ': stary skrypt topbaru');
       assert.match(html, /topbar-split\.css\?v=5/, file + ': stary arkusz topbaru');
     });
   });
@@ -191,7 +191,7 @@ console.log('\n=== E. REJCHAT: OKNO, DOK I DYMKI ===');
 {
   check('arkusz „Messenger” jest podpięty, a szkło zamyka kaskadę', () => {
     const links = Array.from(CHAT_HTML.matchAll(/<link rel="stylesheet" href="([^"]+)"/g)).map((m) => m[1]);
-    assert.match(links[links.length - 1], /glass-last\.css\?v=2/);
+    assert.match(links[links.length - 1], /glass-last\.css\?v=3/);
     assert.ok(links.some((l) => l.includes('rejchat-messenger.css?v=12')), 'brak arkusza Messengera');
     assert.ok(!CHAT_HTML.includes('rejchat-rebuild.css'), 'stara warstwa nadal podpięta');
     assert.ok(!fs.existsSync(path.join(root, 'css/rejchat-rebuild.css')), 'stary arkusz nadal leży w repo');
@@ -268,8 +268,8 @@ console.log('\n=== F. PANEL ADMINA: SZYNA I SKRÓTY ===');
 {
   check('panel kończy się wspólną warstwą szkła', () => {
     const links = Array.from(ADMIN_HTML.matchAll(/<link rel="stylesheet" href="([^"]+)"/g)).map((m) => m[1]);
-    assert.match(links[links.length - 1], /glass-last\.css\?v=2/);
-    assert.ok(links.some((l) => l.includes('admin-rebuild.css?v=1')), 'brak warstwy panelu');
+    assert.match(links[links.length - 1], /glass-last\.css\?v=3/);
+    assert.ok(links.some((l) => l.includes('admin-rebuild.css?v=2')), 'brak warstwy panelu');
   });
   check('sekcje są w pionowej szynie po lewej', () => {
     assert.match(ADMIN_HTML, /<aside class="adm-rail"/);
@@ -302,6 +302,59 @@ console.log('\n=== F. PANEL ADMINA: SZYNA I SKRÓTY ===');
   });
   check('panel nie przechwytuje skrótu podczas pisania w polu', () =>
     assert.match(ADMIN_JS, /\^\(INPUT\|TEXTAREA\|SELECT\)\$/));
+}
+
+console.log('\n=== G. MENU, SZKŁO I PANEL BEZ ZBĘDNYCH PRZEŁĄCZNIKÓW ===');
+{
+  const WIDGET_ADMIN_JS = read('rejson-widgets/js/admin.js');
+  /* Tylko strony ze wspólnym topbarem — logowanie i plansza „w budowie”
+     są celowo bez nawigacji. */
+  const PAGES2 = fs.readdirSync(path.join(root, 'rejhub2')).filter((file) =>
+    file.endsWith('.html') && read('rejhub2/' + file).includes('rj-shared-header'));
+
+  check('menu „Więcej” prowadzi do RejClass, a Widżety zniknęły z serwisu', () => {
+    PAGES2.forEach((file) => {
+      const html = read('rejhub2/' + file);
+      assert.ok(html.includes('href="/rejclass"'), file + ': brak RejClass w menu');
+      assert.ok(!html.includes('/widzety'), file + ': został odnośnik do Widżetów');
+    });
+    assert.ok(!fs.existsSync(path.join(root, 'widzety.html')), 'została strona /widzety');
+    assert.ok(!fs.existsSync(path.join(root, 'rejhub2/widzety.html')), 'została kopia /widzety');
+    assert.match(read('vercel.json'), /"source": "\/widzety"/, 'brak przekierowania starego adresu');
+  });
+
+  check('„Szklane studio” widzi tylko administrator', () => {
+    PAGES2.forEach((file) => {
+      const html = read('rejhub2/' + file);
+      assert.match(html, /data-admin-only[^>]*href="\/szklane-studio"|href="\/szklane-studio"[^>]*data-admin-only/,
+        file + ': link do studia nie jest oznaczony jako administratorski');
+    });
+    assert.match(TOPBAR_JS, /rejhub_admin_hint=1/, 'topbar nie sprawdza sesji administratora');
+    assert.match(read('css/shared-topbar.css'), /\[data-admin-only\]/, 'brak reguły ukrywającej link');
+    assert.match(read('rejhub2/api/session.js'), /HINT_COOKIE_NAME/, 'logowanie nie ustawia podpowiedzi sesji');
+  });
+
+  check('panel nie pokazuje polubień zgłoszeń ani przełączników tablicy', () => {
+    [read('rejhub2/admin.html'), read('admin.html')].forEach((html) => {
+      ['kpi-votes', 'Najwięcej polubień', 'chk-is-public', 'chk-is-pinned', 'publicznej tablicy']
+        .forEach((needle) => assert.ok(!html.includes(needle), 'zostało: ' + needle));
+    });
+    ['upvotes_count', 'is_pinned', 'chk-is-public', 'sortBy === "votes"']
+      .forEach((needle) => assert.ok(!WIDGET_ADMIN_JS.includes(needle), 'admin.js nadal ma: ' + needle));
+  });
+
+  check('szkło jest bardziej przezroczyste, a tapeta mniej przyciemniona', () => {
+    assert.match(read('css/glass-last.css'), /--gl-tint: rgba\(11, 17, 29, 0\.5\)/, 'tinta szkła została za gęsta');
+    assert.match(GLASS, /--g-lens: blur\(26px\) saturate\(175%\)/, 'obiektyw szkła bez zmian');
+    assert.ok(!GLASS.includes('brightness(0.92)'), 'tapeta nadal przyciemniona o 8%');
+    assert.ok(!/rgba\(5, 8, 16, 0\.86\)/.test(GLASS), 'zasłona nadal mocno przyciemnia dół');
+  });
+
+  check('telefon: zakładki panelu mają 46 px i przyciąganie do krawędzi', () => {
+    assert.match(ADMIN_CSS, /min-height: 46px/, 'za małe cele dotyku');
+    assert.match(ADMIN_CSS, /scroll-snap-type: x proximity/, 'brak przyciągania zakładek');
+    assert.match(ADMIN_CSS, /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/, 'kafelki przeglądu nadal ściśnięte');
+  });
 }
 
 console.log('\n========================================================');

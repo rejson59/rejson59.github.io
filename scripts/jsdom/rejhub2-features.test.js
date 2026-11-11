@@ -141,7 +141,7 @@ check('scalanie i zapominanie nazw jest w panelu', () => {
 
 console.log('=== DŁUGIE PODSTRONY ===');
 check('długie strony mają spis sekcji', () => {
-  ['rejfile', 'rejsejf', 'rejtools', 'rejclass', 'uslugi', 'partnerstwo', 'widzety', 'licencja'].forEach((name) => {
+  ['rejfile', 'rejsejf', 'rejtools', 'rejclass', 'uslugi', 'partnerstwo', 'rejclass', 'licencja'].forEach((name) => {
     const html = read('rejhub2/' + name + '.html');
     assert.ok(html.includes('/js/page-index.js?v=1'), 'brak spisu w ' + name);
   });

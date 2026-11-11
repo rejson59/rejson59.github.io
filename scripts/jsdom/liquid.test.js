@@ -5,7 +5,7 @@ const path = require('node:path');
 const { JSDOM } = require('jsdom');
 const root = path.resolve(__dirname, '../..');
 const read = file => fs.readFileSync(path.join(root, file), 'utf8');
-const pages = ['index.html','rejchat.html','profil.html','logowanie.html','partnerstwo.html','rejfile.html','widzety.html','admin.html','404.html','licencja.html','rejson-widgets/index.html'];
+const pages = ['index.html','rejchat.html','profil.html','logowanie.html','partnerstwo.html','rejfile.html','admin.html','404.html','licencja.html','rejson-widgets/index.html'];
 for (const page of pages) {
   const document = new JSDOM(read(page)).window.document;
   assert.ok(document.querySelector('link[href^="/css/liquid.css?v="]'), `${page}: wspólny arkusz`);
@@ -32,7 +32,7 @@ assert.ok(comm.querySelector('.comm-primary #chat-list'));
 assert.ok(comm.querySelector('#panel-posts[hidden] #posts-feed'));
 assert.ok(comm.querySelector('#chat-tab[aria-selected="true"]'));
 assert.match(read('spolecznosc.html'), /location.replace\('\/rejchat'/);
-for (const page of ['rejchat.html','widzety.html']) {
+for (const page of ['rejchat.html']) {
   const dom = new JSDOM(read(page), {url:'https://rejson59.github.io/',runScripts:'outside-only'});
   const {document, KeyboardEvent, MouseEvent} = dom.window;
   dom.window.eval(read('js/liquid-nav.js'));

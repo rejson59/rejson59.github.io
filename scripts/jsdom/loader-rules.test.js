@@ -27,7 +27,7 @@ function checkSources() {
   assert.match(HUB, /var DIP_MS = 140;/, 'przygaszenie przy podmianie znacznika');
 
   /* --- pasek postępu na trzech stronach ze starym loaderem --- */
-  ['index.html', 'rejchat.html', 'widzety.html'].forEach((file) => {
+  ['index.html', 'rejchat.html'].forEach((file) => {
     const html = read('rejhub2/' + file);
     assert.match(html, /var CURVE_S = 3\.0;/, file + ': pasek musi mieć 3 s');
   });

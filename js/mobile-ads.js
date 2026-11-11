@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   // Reklamy należą do stron serwisu z wyjątkiem panelu admina; nigdy do osobnych projektów.
-  if (!/^\/(?:index|404|logowanie|partnerstwo|profil|konto-demo|rejchat|rejfile|rejsejf|rejtools|uslugi|widzety)?(?:\.html)?\/?$/i.test(location.pathname)) return;
+  if (!/^\/(?:index|404|logowanie|partnerstwo|profil|konto-demo|rejchat|rejfile|rejsejf|rejtools|uslugi)?(?:\.html)?\/?$/i.test(location.pathname)) return;
   try { if (window.top !== window.self) return; } catch (e) { return; }
   if (!document.body || document.getElementById('rj-mobile-ads')) return;
   var probe = document.createElement('div'); probe.id = 'rj-mobile-ads-check';

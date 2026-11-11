@@ -1,7 +1,7 @@
 /* © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
    Licencja: /LICENSE, /licencja */
 /*!
- * RejHub 2.0 — wspólna obsługa topbaru (v9).
+ * RejHub 2.0 — wspólna obsługa topbaru (v10).
  *
  * Jeden binder dla wszystkich podstron: menu mobilne, panel „Więcej”, Escape
  * i podświetlenie bieżącej strony. Znaczniki są identyczne w każdej podstronie
@@ -105,7 +105,26 @@
     }
   }
 
+  /* „Szklane studio” jest tylko dla administratora. Serwerowe ciasteczko
+     sesji jest HttpOnly, więc sam stan interfejsu czytamy z lekkiej
+     podpowiedzi `rejhub_admin_hint` (ustawia ją /api/session po udanym
+     logowaniu). Brak podpowiedzi = link schowany; dostęp do strony i tak
+     pilnuje middleware po stronie serwera. */
+  function setupAdminOnly() {
+    var root = document.documentElement;
+    var allowed = document.cookie.split(";").some(function (part) {
+      return part.trim().indexOf("rejhub_admin_hint=1") === 0;
+    });
+    root.classList.toggle("rj-admin-session", allowed);
+    var nodes = document.querySelectorAll("[data-admin-only]");
+    for (var i = 0; i < nodes.length; i++) {
+      if (allowed) nodes[i].removeAttribute("aria-hidden");
+      else nodes[i].setAttribute("aria-hidden", "true");
+    }
+  }
+
   function start() {
+    setupAdminOnly();
     setupMenu();
     setupMore();
     setupCurrent();

@@ -3,7 +3,7 @@ const assert=require('node:assert/strict'),http=require('node:http'),fs=require(
 const {chromium}=require('playwright-core'),root=path.resolve(__dirname,'../..');
 if(!process.env.CHROME_BIN)throw Error('Set CHROME_BIN');
 const server=http.createServer((req,res)=>{let u=new URL(req.url,'http://local').pathname;if(u==='/')u='/index.html';else if(!path.extname(u)&&fs.existsSync(path.join(root,u+'.html')))u+='.html';const f=path.resolve(root,'.'+u);if(!f.startsWith(root+path.sep)||!fs.existsSync(f)||!fs.statSync(f).isFile()){res.writeHead(404);return res.end();}res.writeHead(200,{'content-type':({'.html':'text/html','.css':'text/css','.js':'text/javascript','.svg':'image/svg+xml'})[path.extname(f)]||'application/octet-stream'});fs.createReadStream(f).pipe(res);});
-const pages=['/','/rejchat','/rejfile','/rejtools','/logowanie','/profil','/admin','/uslugi','/partnerstwo','/widzety','/404.html','/rejson-widgets/index.html'];
+const pages=['/','/rejchat','/rejfile','/rejtools','/logowanie','/profil','/admin','/uslugi','/partnerstwo','/404.html','/rejson-widgets/index.html'];
 (async()=>{await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin=`http://127.0.0.1:${server.address().port}`,browser=await chromium.launch({executablePath:process.env.CHROME_BIN,headless:true,args:['--no-sandbox','--disable-webgl']});
 try {
  for(const theme of ["dark","light"]) for(const logged of [false,true]) for(const width of [320,375,1201,1440]) {
