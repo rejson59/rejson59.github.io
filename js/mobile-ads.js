@@ -1,4 +1,19 @@
-/* Stałe, lokalne promocje mobilne bez śledzenia. */
+/* © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
+   Licencja: /LICENSE, /licencja */
+/*!
+ * Mini reklamy mobilne (v8).
+ *
+ * Zmiany względem poprzedniej wersji:
+ *  - pasek stoi POD topbarem (sticky), a nie na dole ekranu — nie zasłania
+ *    treści i nie koliduje z wyspą;
+ *  - kafelki przewijają się same: jedno przesunięcie co 2 sekundy, w kółko;
+ *  - podpis „przesuń →” zniknął, bo pasek sam pokazuje kolejne promocje;
+ *  - rezygnujemy z pustego „spacera” na dole strony.
+ *
+ * Autoprzesuwanie zatrzymuje się, gdy ktoś dotknie paska albo kafelka,
+ * gdy karta jest w tle i gdy system prosi o mniej ruchu. Nadal zero
+ * śledzenia: wszystko dzieje się lokalnie, w tej karcie.
+ */
 (function () {
   'use strict';
   // Reklamy należą do stron serwisu z wyjątkiem panelu admina; nigdy do osobnych projektów.
@@ -11,11 +26,106 @@
   try { var cs = getComputedStyle(probe); styled = cs.position === 'fixed' && cs.zIndex === '2147482999'; } catch (e) {}
   probe.remove();
   if (!styled) return;
+
   var bar = document.createElement('aside');
   bar.id = 'rj-mobile-ads';
   bar.setAttribute('aria-label', 'Mini reklamy i promocje');
-  bar.innerHTML = '<span class="rj-mobile-ads-label">mini reklamy i promocje :) <span class="rj-mobile-ads-hint">przesuń →</span></span><div class="rj-mobile-ads-items" tabindex="0" aria-label="Przewijane mini reklamy"><a class="rj-mobile-ad rj-mobile-ad--chat" href="/rejchat"><span class="rj-mobile-ad-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H10l-5 4v-4H4z"/><path d="M8 9h8M8 12h5"/></svg></span><span>RejChat · pogadaj</span></a><a class="rj-mobile-ad rj-mobile-ad--site" href="/uslugi"><span class="rj-mobile-ad-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01M8 14h8"/></svg></span><span>Masz pomysł na swoją stronę?</span></a><a class="rj-mobile-ad rj-mobile-ad--offer" href="/partnerstwo#propozycja"><span class="rj-mobile-ad-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m4 10 11-5v14L4 14zM4 10v4m3.5 1 1.5 4h3l-1-3.3M18 9l2-2m-2 5h3m-3 3 2 2"/></svg></span><span>Masz coś, czym chcesz się podzielić?</span></a><a class="rj-mobile-ad rj-mobile-ad--house" href="/rejfile"><span class="rj-mobile-ad-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v13H6z"/><path d="M14 3v5h4M12 16V10m-2 2 2-2 2 2"/></svg></span><span>RejFile · wyślij plik</span></a></div>';
-  var spacer = document.createElement('div'); spacer.className = 'rj-mobile-ads-spacer'; spacer.setAttribute('aria-hidden', 'true');
-  document.body.appendChild(spacer); document.body.appendChild(bar);
+  bar.innerHTML = '<span class="rj-mobile-ads-label">mini reklamy</span><div class="rj-mobile-ads-items" tabindex="0" aria-label="Mini reklamy i promocje (przewijane)"><a class="rj-mobile-ad rj-mobile-ad--chat" href="/rejchat"><span class="rj-mobile-ad-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H10l-5 4v-4H4z"/><path d="M8 9h8M8 12h5"/></svg></span><span>RejChat · pogadaj</span></a><a class="rj-mobile-ad rj-mobile-ad--site" href="/uslugi"><span class="rj-mobile-ad-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01M8 14h8"/></svg></span><span>Masz pomysł na swoją stronę?</span></a><a class="rj-mobile-ad rj-mobile-ad--offer" href="/partnerstwo#propozycja"><span class="rj-mobile-ad-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m4 10 11-5v14L4 14zM4 10v4m3.5 1 1.5 4h3l-1-3.3M18 9l2-2m-2 5h3m-3 3 2 2"/></svg></span><span>Masz coś, czym chcesz się podzielić?</span></a><a class="rj-mobile-ad rj-mobile-ad--house" href="/rejfile"><span class="rj-mobile-ad-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v13H6z"/><path d="M14 3v5h4M12 16V10m-2 2 2-2 2 2"/></svg></span><span>RejFile · wyślij plik</span></a></div>';
+
+  /* Pasek wchodzi zaraz pod topbar, żeby sticky `top` liczył się od jego
+     dolnej krawędzi. Gdy strona nie ma topbaru, ląduje na początku body. */
+  var header = document.querySelector('.rj-shared-header');
+  if (header && header.parentNode) header.parentNode.insertBefore(bar, header.nextSibling);
+  else document.body.insertBefore(bar, document.body.firstChild);
+
+  var lastTop = -1;
+  function measure() {
+    /* Liczy się dolna krawędź topbaru względem okna, nie sama wysokość:
+       nad nagłówkiem bywa jeszcze kilka pikseli odstępu strony. */
+    var top = header ? Math.round(header.getBoundingClientRect().bottom) : 0;
+    if (top < 0) top = 0;
+    if (top === lastTop) return;
+    lastTop = top;
+    bar.style.setProperty('--rj-ads-top', top + 'px');
+  }
+  measure();
+
+  /* Topbar zwija się po przewinięciu (64 → 60 px) i ma animację wejścia —
+     pasek musi podążać za jego dolną krawędzią, żeby nie było szpary. */
+  var measuring = false;
+  function remeasure() {
+    if (measuring) return;
+    measuring = true;
+    var run = function () { measuring = false; measure(); };
+    if (window.requestAnimationFrame) window.requestAnimationFrame(run);
+    else window.setTimeout(run, 16);
+  }
+  window.addEventListener('scroll', remeasure, { passive: true });
+  window.setTimeout(measure, 300);
+  window.setTimeout(measure, 1200);
+
   document.documentElement.classList.add('rj-mobile-ads-active');
+
+  /* --------------------------------------------------- autoprzesuwanie --- */
+
+  var frame = bar.querySelector('.rj-mobile-ads-items');
+  var STEP_MS = 2000;
+  var timer = 0;
+  var paused = false;
+  var resumeTimer = 0;
+
+  function phone() {
+    try { return window.matchMedia('(max-width: 1199px)').matches; }
+    catch (e) { return window.innerWidth <= 1199; }
+  }
+
+  function step() {
+    if (!frame || paused || document.hidden || !phone()) return;
+    var card = frame.querySelector('.rj-mobile-ad');
+    if (!card) return;
+    var styles = getComputedStyle(frame);
+    var gap = parseFloat(styles.columnGap || styles.gap) || 6;
+    var distance = card.getBoundingClientRect().width + gap;
+    if (!distance || frame.scrollWidth <= frame.clientWidth + 2) return;
+    var max = frame.scrollWidth - frame.clientWidth;
+    var next = frame.scrollLeft + distance;
+    if (next >= max - 4) {
+      /* Koniec listy — wracamy na początek, ale bez cofania całej drogi. */
+      next = 0;
+    }
+    try {
+      frame.scrollTo({ left: next, behavior: 'smooth' });
+    } catch (e) {
+      frame.scrollLeft = next;
+    }
+  }
+
+  function play() {
+    if (timer || !frame) return;
+    timer = window.setInterval(step, STEP_MS);
+  }
+
+  function stop() {
+    if (timer) window.clearInterval(timer);
+    timer = 0;
+  }
+
+  /* Dotknięcie, kółko myszy i sam gest przewijania wstrzymują jazdę na 6 s —
+     nikt nie walczy z paskiem, który właśnie chwycił. */
+  function hold() {
+    paused = true;
+    if (resumeTimer) window.clearTimeout(resumeTimer);
+    resumeTimer = window.setTimeout(function () { paused = false; }, 6000);
+  }
+
+  ['pointerdown', 'touchstart', 'wheel', 'keydown'].forEach(function (name) {
+    bar.addEventListener(name, hold, { passive: true });
+  });
+  document.addEventListener('visibilitychange', function () {
+    if (document.hidden) stop(); else play();
+  });
+  window.addEventListener('resize', remeasure, { passive: true });
+  window.addEventListener('load', measure);
+
+  play();
 })();

@@ -1,25 +1,156 @@
-/* Stały pasek: dwa widoczne kafelki i kolejne dostępne przez przesunięcie. */
+/* © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
+   Licencja: /LICENSE, /licencja
+   ----------------------------------------------------------------------------
+   Mini reklamy na telefonie: pasek przyklejony POD topbarem, nie u dołu.
+
+   Powód: dolny pasek zabierał miejsce nad wyspą i zasłaniał treść, a na
+   podstronach z formularzem (partnerstwo, zgłoszenia) trzeba było walczyć
+   o każdy piksel. U góry pasek jest częścią nagłówka: przewija się razem
+   z nim, a pod nim zostaje cała wysokość na treść.
+
+   Kafelki przewijają się same (jedno przesunięcie co 2 s — patrz
+   js/mobile-ads.js). Podpis „przesuń →” zniknął, bo nie ma już czego
+   tłumaczyć; gest przewijania działa dalej.
+   -------------------------------------------------------------------------- */
+
 #rj-mobile-ads-check { position:fixed !important; z-index:2147482999 !important; visibility:hidden !important; width:0 !important; height:0 !important; pointer-events:none !important; }
-#rj-mobile-ads,.rj-mobile-ads-spacer { display:none; }
+/* Pasek istnieje tylko na telefonie i tablecie — na desktopie są banery boczne. */
+#rj-mobile-ads { display:none; }
+
 @media (max-width:1199px) {
-  html { scroll-padding-bottom:calc(94px + env(safe-area-inset-bottom, 0px)); }
-  html.rj-mobile-ads-active { --rj-mobile-ads-height:76px; }
-  .rj-mobile-ads-spacer { display:block; height:calc(var(--rj-mobile-ads-height, 76px) + env(safe-area-inset-bottom, 0px)); clear:both; }
-  #rj-mobile-ads { position:fixed; box-sizing:border-box; inset:auto 0 0; z-index:99980; display:grid; grid-template-rows:14px 1fr; gap:2px; height:calc(var(--rj-mobile-ads-height, 76px) + env(safe-area-inset-bottom, 0px)); padding:4px max(8px,env(safe-area-inset-right, 0px)) calc(5px + env(safe-area-inset-bottom, 0px)) max(8px,env(safe-area-inset-left, 0px)); border-top:1px solid #93c9da55; background:#101a27; box-shadow:0 -8px 24px #0004; color:#effaff; font:400 12px/1.2 system-ui,sans-serif; }
-  #rj-mobile-ads .rj-mobile-ads-label { color:#c3dce4; font:700 10px/14px system-ui,sans-serif; }
-  #rj-mobile-ads .rj-mobile-ads-hint { float:right; color:#9eb8c7; font-weight:400; }
-  #rj-mobile-ads .rj-mobile-ads-items { min-width:0; display:grid; grid-auto-flow:column; grid-auto-columns:calc((100% - 6px) / 2); gap:6px; overflow-x:auto; overscroll-behavior-x:contain; scroll-snap-type:x proximity; scrollbar-width:none; }
-  #rj-mobile-ads .rj-mobile-ads-items::-webkit-scrollbar { display:none; }
-  #rj-mobile-ads .rj-mobile-ads-items:focus-visible { outline:2px solid #a9eedb; outline-offset:-2px; }
-  #rj-mobile-ads .rj-mobile-ad { box-sizing:border-box; display:flex; align-items:center; gap:8px; min-width:0; min-height:44px; scroll-snap-align:start; padding:4px 8px; border:1px solid #a4d4d326; border-radius:10px; color:#f2fcff; font:700 11px/1.2 system-ui,sans-serif; text-decoration:none; }
-  #rj-mobile-ads .rj-mobile-ad--site { background:linear-gradient(115deg,#294a50,#1b2d3a); }
-  #rj-mobile-ads .rj-mobile-ad--chat { background:linear-gradient(115deg,#2a3a5c,#1b2434); border-color:#b9d4ff55; }
-  #rj-mobile-ads .rj-mobile-ad--chat .rj-mobile-ad-icon { color:#d8e8ff; border-color:#cfe2ff33; background:#cfe2ff1a; }
-  #rj-mobile-ads .rj-mobile-ad--house { background:linear-gradient(115deg,#264b4b,#192d38); }
-  #rj-mobile-ads .rj-mobile-ad--offer { background:linear-gradient(115deg,#343257,#252b41); border-color:#afa5fa55; }
-  #rj-mobile-ads .rj-mobile-ad:focus-visible { outline:2px solid #a9eedb; outline-offset:-3px; }
+  /* Pasek nie leży już na dole, więc nie rezerwujemy miejsca pod wyspą. */
+  html.rj-mobile-ads-active { --rj-mobile-ads-height:0px; --rj-top-ads-height:60px; }
+  html.rj-mobile-ads-active { scroll-padding-top:calc(var(--rj-ads-top, 60px) + 60px); }
+
+  .rj-mobile-ads-spacer { display:none !important; }
+
+  #rj-mobile-ads {
+    position:sticky;
+    /* Wysokość topbaru ustawia skrypt (--rj-ads-top), więc pasek zawsze
+       przylega do jego dolnej krawędzi, także po zwężeniu okna. */
+    top:var(--rj-ads-top, 60px);
+    z-index:40;
+    box-sizing:border-box;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    width:100%;
+    height:60px;
+    margin:0;
+    padding:5px max(8px, env(safe-area-inset-right, 0px)) 5px max(8px, env(safe-area-inset-left, 0px));
+    border-top:1px solid rgba(255, 255, 255, 0.06);
+    border-bottom:1px solid rgba(168, 199, 244, 0.16);
+    background:
+      linear-gradient(150deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02)),
+      rgba(14, 21, 34, 0.66);
+    -webkit-backdrop-filter:blur(22px) saturate(165%);
+    backdrop-filter:blur(22px) saturate(165%);
+    box-shadow:0 14px 30px -26px rgba(1, 6, 18, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    color:#eff6ff;
+    font:400 12px/1.2 "Inter", system-ui, sans-serif;
+  }
+
+  html[data-theme="light"] #rj-mobile-ads {
+    border-bottom-color:rgba(20, 40, 74, 0.12);
+    background:
+      linear-gradient(150deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.42)),
+      rgba(240, 246, 255, 0.7);
+    color:#132138;
+  }
+
+  /* Na wąskim telefonie etykieta zjada miejsce, którego brakuje kafelkom:
+     chowamy ją i oddajemy całą szerokość dwóm promocjom. */
+  @media (max-width: 560px) {
+    #rj-mobile-ads .rj-mobile-ads-label { display:none; }
+    #rj-mobile-ads .rj-mobile-ads-items { grid-auto-columns:calc((100% - 6px) / 2); }
+  }
+
+  /* Wersja bez JavaScriptu: pasek z <noscript> stoi na końcu dokumentu,
+     więc przyklejamy go do góry ekranu tuż pod topbarem. */
+  html:not(.rj-mobile-ads-active) #rj-mobile-ads { position:fixed; top:var(--rj-ads-top, 60px); }
+
+  #rj-mobile-ads .rj-mobile-ads-label {
+    flex:none;
+    max-width:30vw;
+    color:rgba(198, 216, 240, 0.72);
+    font:700 9px/1.15 "JetBrains Mono", ui-monospace, monospace;
+    letter-spacing:0.1em;
+    text-transform:uppercase;
+  }
+  html[data-theme="light"] #rj-mobile-ads .rj-mobile-ads-label { color:rgba(35, 60, 95, 0.6); }
+  /* Podpis „przesuń →” nie jest już potrzebny — kafelki jadą same. */
+  #rj-mobile-ads .rj-mobile-ads-hint { display:none; }
+
+  #rj-mobile-ads .rj-mobile-ads-items {
+    flex:1 1 auto;
+    min-width:0;
+    display:grid;
+    grid-auto-flow:column;
+    grid-auto-columns:minmax(156px, 1fr);
+    gap:6px;
+    overflow-x:auto;
+    overscroll-behavior-x:contain;
+    scroll-snap-type:x proximity;
+    scroll-behavior:smooth;
+    padding-bottom:1px;
+    scrollbar-width:thin;
+    scrollbar-color:rgba(168, 199, 244, 0.28) transparent;
+  }
+  @media (prefers-reduced-motion:reduce) {
+    #rj-mobile-ads .rj-mobile-ads-items { scroll-behavior:auto; }
+  }
+  /* Przewijanie poziome: cienki, spokojny suwak zamiast domyślnego. */
+  #rj-mobile-ads .rj-mobile-ads-items::-webkit-scrollbar { height:3px; }
+  #rj-mobile-ads .rj-mobile-ads-items::-webkit-scrollbar-track { background:transparent; }
+  #rj-mobile-ads .rj-mobile-ads-items::-webkit-scrollbar-thumb {
+    border:0;
+    border-radius:999px;
+    background:rgba(168, 199, 244, 0.26);
+  }
+  #rj-mobile-ads .rj-mobile-ads-items:focus-visible { outline:2px solid rgba(168, 199, 244, 0.75); outline-offset:-2px; }
+
+  #rj-mobile-ads .rj-mobile-ad {
+    box-sizing:border-box;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    min-width:0;
+    min-height:48px;
+    scroll-snap-align:start;
+    padding:4px 9px 4px 4px;
+    border:1px solid rgba(168, 199, 244, 0.16);
+    border-radius:999px;
+    background:rgba(255, 255, 255, 0.055);
+    color:#eef5ff;
+    font:650 11px/1.2 "Inter", system-ui, sans-serif;
+    text-decoration:none;
+    transition:background-color 0.2s ease, border-color 0.2s ease;
+  }
+  #rj-mobile-ads .rj-mobile-ad:hover { background:rgba(255, 255, 255, 0.1); border-color:rgba(168, 199, 244, 0.3); }
+  #rj-mobile-ads .rj-mobile-ad--chat { background:rgba(90, 132, 208, 0.18); border-color:rgba(160, 195, 255, 0.28); }
+  #rj-mobile-ads .rj-mobile-ad--offer { background:rgba(126, 120, 208, 0.16); border-color:rgba(180, 172, 255, 0.26); }
+  #rj-mobile-ads .rj-mobile-ad--house { background:rgba(96, 150, 180, 0.14); }
+  html[data-theme="light"] #rj-mobile-ads .rj-mobile-ad { color:#16233a; background:rgba(255, 255, 255, 0.6); border-color:rgba(20, 40, 74, 0.12); }
+  html[data-theme="light"] #rj-mobile-ads .rj-mobile-ad--chat { background:rgba(120, 160, 235, 0.22); }
+  html[data-theme="light"] #rj-mobile-ads .rj-mobile-ad--offer { background:rgba(150, 145, 230, 0.2); }
+  #rj-mobile-ads .rj-mobile-ad:focus-visible { outline:2px solid rgba(168, 199, 244, 0.8); outline-offset:-3px; }
   #rj-mobile-ads .rj-mobile-ad span { overflow-wrap:anywhere; }
-  #rj-mobile-ads .rj-mobile-ad-icon { display:grid; place-items:center; flex:none; width:30px; height:30px; border:1px solid #c8f4df33; border-radius:9px; background:#b6f3d51a; color:#baf4db; }
-  #rj-mobile-ads .rj-mobile-ad--offer .rj-mobile-ad-icon { color:#e0d5ff; border-color:#ddd4ff33; background:#ddd4ff1a; }
-  #rj-mobile-ads .rj-mobile-ad-icon svg { display:block; width:19px; height:19px; }
+  #rj-mobile-ads .rj-mobile-ad-icon {
+    display:grid;
+    place-items:center;
+    flex:none;
+    width:32px;
+    height:32px;
+    border:1px solid rgba(190, 214, 255, 0.22);
+    border-radius:999px;
+    background:rgba(160, 190, 255, 0.14);
+    color:#d8e6ff;
+  }
+  html[data-theme="light"] #rj-mobile-ads .rj-mobile-ad-icon { color:#2a4a7a; background:rgba(120, 160, 230, 0.16); }
+  #rj-mobile-ads .rj-mobile-ad-icon svg { display:block; width:17px; height:17px; }
+}
+
+/* Bez animacji: pasek stoi, kafelki przewijają się skokowo co 2 s. */
+@media (prefers-reduced-motion:reduce) {
+  #rj-mobile-ads .rj-mobile-ad { transition:none; }
 }

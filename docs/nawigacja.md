@@ -31,3 +31,11 @@ Na starszych stronach przekierowujących i awaryjnych ekranach podróży domek j
 - „Szklane studio” ma w topbarze atrybut `data-admin-only`. Domyślnie jest schowane (`css/shared-topbar.css`), a pokazuje je `html.rj-admin-session` ustawiana przez `js/shared-topbar.js` na podstawie czytelnej podpowiedzi `rejhub_admin_hint`. To wyłącznie warstwa wygody — dostęp do strony nadal chroni podpisane, HttpOnly ciasteczko `rejhub_admin` i `middleware.js`.
 - Szkło jest bardziej przezroczyste: mocniejszy obiektyw (`blur(26px) saturate(175%)`), jaśniejsze refleksy i wyraźniejsza krawędź, a tapeta pod spodem ma mniejsze przyciemnienie (`brightness(1)` i lżejsza zasłona). Czytelność tekstu zapewnia kontrast tokenów `--hub-ink`/`--hub-muted`, nie ciężka mgła.
 - Panel admina na telefonie: zakładki to jedna przyklejona, przewijana linia z celami 46 px i przyciąganiem (`scroll-snap`), a kafelki przeglądu układają się w dwie kolumny.
+
+## Mini reklamy na telefonie i pasek przewijania (listopad 2026)
+
+- Pasek mini reklam **nie leży już na dole ekranu** — stoi tuż pod topbarem (`position: sticky`, `top` mierzone skryptem z dolnej krawędzi nagłówka i aktualizowane przy przewijaniu). Dzięki temu nie koliduje z wyspą, formularzami ani stopką, a pod nim zostaje cała wysokość na treść. Pusty „spacer” na dole strony zniknął.
+- Kafelki przewijają się **same: jedno przesunięcie co 2 sekundy** (w kółko). Gdy ktoś dotknie paska, kafelka albo użyje kółka, jazda zatrzymuje się na 6 sekund; w tle karty i przy `prefers-reduced-motion` nie startuje. Podpis „przesuń →” został usunięty.
+- Na wąskim telefonie (≤560 px) etykieta „mini reklamy” chowa się, żeby dwie promocje mieściły się obok siebie; kafelek ma 50 px wysokości, a pasek 60 px.
+- **Pasek przewijania** (`css/scrollbar.css` + `js/scrollbar.js`) jest wspólny dla całego serwisu: zaokrąglona „kropla” na desktopie, na telefonie 4 px i prawie przezroczysta, dopóki strona stoi. Klasa `rj-scrolling` (dodawana na 700 ms po ruchu) rozjaśnia suwak tylko wtedy, gdy naprawdę się przewija.
+- Panel admina na telefonie: pozioma, przyklejona szyna zakładek (46 px, `scroll-snap`), a nie kolumna pigułek. Wcześniejsza reguła `grid` + `width: 100%` w `css/glass-last.css` działa teraz wyłącznie od 1101 px — na telefonie to ona rozdmuchiwała listę sekcji na cały ekran.
