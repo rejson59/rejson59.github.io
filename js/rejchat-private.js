@@ -88,7 +88,7 @@
   inboxEl.addEventListener('click',function(e){var b=e.target.closest('[data-thread]');if(b)select(b.dataset.thread);});
   document.getElementById('dm-new-form').addEventListener('submit',function(e){e.preventDefault();openUser(document.getElementById('dm-username').value);});
   input.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing&&!e.ctrlKey&&!e.altKey&&!e.metaKey){e.preventDefault();if(!sendBusy)document.getElementById('dm-send-form').requestSubmit();}});
-  input.addEventListener('input',function(){document.getElementById('dm-length').textContent=input.value.length+' / 1000 znaków · Enter — wyślij, Shift+Enter — nowa linia';});
+  input.addEventListener('input',function(){(document.getElementById('dm-length-text')||document.getElementById('dm-length')).textContent=input.value.length+' / 1000 znaków · Enter — wyślij, Shift+Enter — nowa linia';});
   document.getElementById('dm-send-form').addEventListener('submit',function(e){
     e.preventDefault();var s=session(),content=input.value.trim(),file=photoPicker&&photoPicker.file();if(!s||!selected||(!content&&!file)||sendBusy)return;
     if(file&&composeMode&&composeMode.kind==='edit'){status.textContent='Podczas edycji usuń wybrane nowe zdjęcie. Istniejące zdjęcie pozostanie przy wiadomości.';return;}

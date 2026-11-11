@@ -1449,7 +1449,7 @@
     if (!btn || !input) return;
     btn.disabled = !session || chatBusy || (!(input.value || "").trim() && !(chatPhotoPicker && chatPhotoPicker.file()));
     if(chatPhotoPicker)chatPhotoPicker.disabled(chatBusy);
-    var length = document.getElementById("chat-length");
+    var length = document.getElementById("chat-length-text") || document.getElementById("chat-length");
     if (length) length.textContent = (input.value || "").length + " / 2000 znaków · Enter — wyślij, Shift+Enter — nowa linia";
   }
 

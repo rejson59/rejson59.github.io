@@ -70,8 +70,10 @@ html[data-theme="light"] {
 
 /* --------------------------------------------------------- wspólne szkło --- */
 
-/* Duże powierzchnie: karty, panele, szyny, tabele. */
-body :is(
+/* RejChat ma własny, kompletny arkusz („Messenger”) i własne, kryjące
+   powierzchnie — wspólna szyba nie może mu ich rozjaśniać. Dlatego cała
+   ta warstwa obowiązuje wszędzie POZA body.rj-community. */
+body:not(.rj-community) :is(
   .tool, .tools-hero, .tools-hero-art, .tools-notice, .hero, .tools-search, .tools-filters button, .tools-pills span, .tools-local,
   .card, .glass-card, .empty-state, .stat, .metric-badge,
   .profile-card, .profile-card-view, .card-inner, .card-metric, .card-preview, .card-preview-fallback,
@@ -98,7 +100,7 @@ body :is(
   background-clip: border-box;
 }
 
-html[data-theme="light"] body :is(
+html[data-theme="light"] body:not(.rj-community) :is(
   .tool, .tools-hero, .tools-hero-art, .tools-notice, .hero, .tools-search, .tools-filters button, .tools-pills span, .tools-local,
   .card, .glass-card, .empty-state, .stat, .metric-badge,
   .profile-card, .profile-card-view, .card-inner, .card-metric, .card-preview, .card-preview-fallback,
@@ -120,7 +122,7 @@ html[data-theme="light"] body :is(
 }
 
 /* Pigułki, chipy i małe przyciski: to samo szkło, promień 999 px. */
-body :is(
+body:not(.rj-community) :is(
   .chip, .pill-opt, .seg-btn, .comm-pill-btn, .comm-user-chip, .comm-online-user,
   .tool-actions button, .tool-download, .admin-welcome-badge, .adm-live-pill,
   .metric-badge, .theme-toggle, .rj-home-link, .tools-filters button, .tools-pills span,
@@ -136,7 +138,7 @@ body :is(
 }
 
 /* Pola formularzy — szkło, nie czarne bloki. */
-body :is(
+body:not(.rj-community) :is(
   .tool input:not([type="checkbox"]):not([type="radio"]), .tool select, .tool textarea,
   .ctrl-input, .ctrl-select, .search, .filter-field input, .filter-field select,
   .comm-textarea, .comm-input input, .adm-search
@@ -149,7 +151,7 @@ body :is(
   backdrop-filter: blur(16px) saturate(1.5);
 }
 
-html[data-theme="light"] body :is(
+html[data-theme="light"] body:not(.rj-community) :is(
   .tool input:not([type="checkbox"]):not([type="radio"]), .tool select, .tool textarea,
   .ctrl-input, .ctrl-select, .search, .filter-field input, .filter-field select,
   .comm-textarea, .comm-input input, .adm-search
