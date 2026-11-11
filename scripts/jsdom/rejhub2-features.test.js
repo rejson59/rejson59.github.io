@@ -247,7 +247,7 @@ check('każda strona z loaderem ma falę wejścia', () => {
   pages.forEach((file) => {
     const html = read('rejhub2/' + file);
     if (!html.includes('rj-page-loader')) return;
-    assert.ok(html.includes('/js/page-reveal.js?v=5'), 'brak page-reveal.js w ' + file);
+    assert.ok(html.includes('/js/page-reveal.js?v=6'), 'brak page-reveal.js w ' + file);
     assert.ok(html.includes('/css/page-reveal.css?v=2'), 'brak page-reveal.css w ' + file);
   });
 });

@@ -88,6 +88,20 @@
   top: 7px;
 }
 
+/* WAŻNE: w kontenerze grid statyczna pozycja dziecka `position: absolute`
+   to lewy górny róg — bez tego logo lądowało pod pierwszym elementem
+   animacji i „podskakujące kropki” nachodziły na znak marki. */
+.mark-dots b,
+.mark-bounce b,
+.mark-bubbles b,
+.mark-typing b,
+.mark-wave b {
+  left: 50%;
+  width: 26px;
+  margin-left: -13px;
+  justify-items: center;
+}
+
 .mark-dots span,
 .mark-bounce span,
 .mark-bubbles span {
@@ -96,7 +110,8 @@
   border: 1px solid #ffffffb0;
   border-radius: 50%;
   background: #ffffffa0;
-  top: 44px;
+  /* 46 px, nie 44: przy podskoku o 9 px kropka ma jeszcze zapas do logo. */
+  top: 46px;
   animation: loader-dot 1.35s ease-in-out infinite;
 }
 
@@ -241,6 +256,10 @@
   position: absolute;
   top: 2px;
   z-index: 2;
+  left: 50%;
+  width: 26px;
+  margin-left: -13px;
+  justify-items: center;
 }
 .mark-typing span {
   width: 4px;
@@ -322,7 +341,7 @@
 }
 @keyframes loader-bounce {
   0%, 100% { transform: translateY(5px); }
-  50% { transform: translateY(-9px); }
+  50% { transform: translateY(-8px); }
 }
 @keyframes loader-bubbles {
   0%, 100% { transform: translateX(0); opacity: 0.55; }

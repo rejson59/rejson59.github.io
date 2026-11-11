@@ -45,11 +45,12 @@
     html = html.replace(scriptLink, '')
       .replace('</body>', '<script>' + data.javascript + '</script></body>');
     html = html.replace('<head>', '<head><meta name="robots" content="noindex,nofollow,noarchive"><meta name="referrer" content="no-referrer">');
-    /* Studio podmienia cały dokument (document.write), więc przycisk szybkiej
-       autodestrukcji trzeba wstawić do treści z bazy — inaczej zniknąłby wraz
-       z powłoką strony. */
+    /* Studio podmienia cały dokument (document.write), więc obsługę skrótu
+       awaryjnego trzeba wstawić do treści z bazy — inaczej zniknęłaby wraz
+       z powłoką strony. Widoczny przycisk autodestrukcji rysuje wyłącznie
+       dynamiczna wyspa, więc nie ma tu już żadnego stylu przycisku. */
     if (html.indexOf('/js/panic.js') === -1) {
-      html = html.replace('</head>', '<link rel="stylesheet" href="/css/panic.css?v=2"><script defer src="/js/panic.js?v=2"></script></head>');
+      html = html.replace('</head>', '<script defer src="/js/panic.js?v=3"></script></head>');
     }
     document.open(); document.write(html); document.close();
     // Zmiana sesji w innej karcie i powrót z bfcache wymagają ponownej kontroli.

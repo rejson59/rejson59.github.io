@@ -45,7 +45,6 @@
     "#rj-mobile-ads",
     "footer",
     ".rj-home-stats",
-    ".rjhub-pill",
     "main button",
     "main .btn",
     "main .button",
@@ -158,17 +157,6 @@
         duration: 820,
         easing: "cubic-bezier(.16,.92,.24,1)",
         delay: 620
-      };
-    }
-    if (el.classList.contains("rjhub-pill") || el.hasAttribute("data-rj-panic")) {
-      return {
-        frames: [
-          { opacity: 0, transform: "translate3d(-16px,24px,0) scale(.9)" },
-          { opacity: 1, transform: "translate3d(0,0,0) scale(1)" }
-        ],
-        duration: 780,
-        easing: "cubic-bezier(.18,1.3,.36,1)",
-        delay: 760
       };
     }
     return null;

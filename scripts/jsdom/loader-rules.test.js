@@ -55,6 +55,21 @@ function checkSources() {
       (index ? 'hub/loader.js' : 'js/loader.js') + ': bez RejReveal treść odsłania loader');
   });
 
+  /* --- znaczniki nie mogą nachodzić na logo (kropki/bounce/cyfry) --- */
+  const markBase = HUB_CSS.slice(0, HUB_CSS.indexOf('#rj-page-loader {'));
+  const centered = ['.mark-dots b,', '.mark-bounce b,', '.mark-bubbles b,'];
+  centered.forEach((sel) => {
+    assert.ok(markBase.includes(sel), 'brak selektora logo dla ' + sel);
+  });
+  const logoRule = markBase.slice(markBase.indexOf('.mark-dots b,\n.mark-bounce b,\n.mark-bubbles b,'), markBase.indexOf('.mark-dots span,'));
+  assert.match(logoRule, /left:\s*50%/, 'logo ma być wyśrodkowane, nie w lewym górnym rogu');
+  assert.match(logoRule, /margin-left:\s*-13px/, 'logo musi mieć własne poziome wyśrodkowanie');
+  const dotsRule = markBase.slice(markBase.indexOf('.mark-dots span,'), markBase.indexOf('.mark-dots span:nth-child(1)'));
+  assert.match(dotsRule, /top:\s*46px/, 'kropki muszą siedzieć pod logo, nie pod nim');
+  const bounce = HUB_CSS.slice(HUB_CSS.indexOf('@keyframes loader-bounce'), HUB_CSS.indexOf('@keyframes loader-bubbles'));
+  const up = Number((bounce.match(/50%\s*\{\s*transform:\s*translateY\(-(\d+)px\)/) || [])[1]);
+  assert.ok(up > 0 && up <= 8, 'podskok max 8 px — inaczej kropka wchodzi w logo (' + up + ')');
+
   /* --- znacznik ma płynną podmianę --- */
   assert.match(HUB_CSS, /\.loader-mark\s*\{[^}]*transition: opacity 0\.14s/, 'znacznik przygasa przy podmianie');
 }

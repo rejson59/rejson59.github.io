@@ -127,15 +127,21 @@
 /* ---------- zwinięta ---------- */
 
 #rj-island-root .rj-view--idle {
-  gap: 9px;
-  padding-left: 7px;
+  gap: 8px;
+  /* Lewy margines na logo, prawy na strzałkę — oba przyciski muszą zostać
+     WEWNĄTRZ czarnej pigułki, także gdy nazwa projektu jest długa. */
+  padding: 0 8px 0 7px;
   cursor: pointer;
 }
 
 /* mała strzałka w dół — schowanie wyspy do uchwytu przy dolnej krawędzi */
 #rj-island-root .rj-collapse {
   margin-left: auto;
-  flex: none;
+  /* Stała szerokość i brak kurczenia: tytuł zwęża się pierwszy, więc
+     strzałka nigdy nie wyjeżdża poza wyspę (zgłoszenie z telefonu). */
+  flex: 0 0 26px;
+  position: relative;
+  z-index: 3;
   display: grid;
   place-items: center;
   width: 26px;
@@ -195,6 +201,13 @@
 }
 
 #rj-island-root .rj-title {
+  /* Jedyne, co może się zwężać. Bez `min-width: 0` długi tytuł wypychał
+     przycisk zamykania poza krawędź wyspy. */
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   font-size: 13px;
   font-weight: 650;
   letter-spacing: -0.01em;
@@ -204,6 +217,10 @@
 
 #rj-island-root .rj-title small {
   display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   font-size: 10px;
   font-weight: 500;
   color: rgba(232, 240, 252, 0.52);
@@ -1270,6 +1287,9 @@
   #rj-island-root .rj-view {
     padding: 0 11px;
   }
+  #rj-island-root .rj-view--idle {
+    padding: 0 8px 0 7px;
+  }
   #rj-island-root .rj-view--dock {
     gap: 0;
     padding: 0 5px;
@@ -1313,6 +1333,10 @@
 @media (max-width: 380px) {
   #rj-island-root .rj-view {
     padding: 0 9px;
+  }
+  #rj-island-root .rj-view--idle {
+    padding: 0 7px 0 6px;
+    gap: 7px;
   }
   #rj-island-root .rj-quick {
     grid-template-columns: repeat(2, minmax(0, 1fr));

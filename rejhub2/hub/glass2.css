@@ -833,61 +833,6 @@ body .site-footer a {
   color: rgba(200, 214, 240, 0.86) !important;
 }
 
-/* --- pływający powrót do RejHub --- */
-.rjhub-pill {
-  position: fixed;
-  left: 16px;
-  bottom: 16px;
-  z-index: 9000;
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  padding: 9px 15px 9px 10px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  background: linear-gradient(158deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.05));
-  box-shadow: 0 18px 40px -18px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.34);
-  backdrop-filter: var(--g-lens);
-  -webkit-backdrop-filter: var(--g-lens);
-  color: var(--s-ink) !important;
-  font-size: 12.5px;
-  font-weight: 600;
-  text-decoration: none !important;
-  transition: transform 0.18s var(--hub-ease), background 0.18s var(--hub-ease);
-}
-
-.rjhub-pill:hover {
-  transform: translateY(-1px);
-  background: linear-gradient(158deg, rgba(255, 255, 255, 0.26), rgba(255, 255, 255, 0.09));
-}
-
-.rjhub-pill .rjhub-pill-mark {
-  width: 24px;
-  height: 24px;
-  border-radius: 8px;
-  display: grid;
-  place-items: center;
-  font-size: 13px;
-  font-weight: 800;
-  color: #080b16;
-  background: linear-gradient(140deg, #cfe1ff, #a8c8ff);
-  box-shadow: inset 0 1px 0 #fff;
-}
-
-.rjhub-pill .rjhub-pill-arrow {
-  opacity: 0.6;
-  font-weight: 500;
-}
-
-@media (max-width: 720px) {
-  .rjhub-pill {
-    left: 12px;
-    bottom: 12px;
-    padding: 8px 12px 8px 8px;
-    font-size: 12px;
-  }
-}
-
 /* ---------- akcenty i drobne elementy ---------- */
 :root,
 body,
@@ -936,8 +881,7 @@ body :is(a, button, summary, input, textarea, select):focus-visible {
   body::before {
     animation: none;
   }
-  body.rj-home .project-card,
-  .rjhub-pill {
+  body.rj-home .project-card {
     transition: none;
   }
   html {
@@ -1448,12 +1392,6 @@ html[data-theme="light"] body :is(.comm-chat-note, .origins-note) { color: #5b68
 html[data-theme="light"] body .comm-chat-empty {
   background: rgba(255, 255, 255, 0.6) !important;
   border-color: rgba(20, 40, 74, 0.1) !important;
-}
-
-html[data-theme="light"] :is(.rjhub-pill) {
-  background: linear-gradient(158deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.66));
-  border-color: #ffffff;
-  color: #16223a !important;
 }
 
 html[data-theme="light"] body :is(.btn-ghost, .secondary, .btn-secondary, .account-link, .btn-journey) {

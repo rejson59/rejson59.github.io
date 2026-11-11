@@ -33,6 +33,19 @@ function checkSources() {
   assert.match(islandRule, /max-width:\s*calc\(100vw - 16px\)/, 'wyspa nie może być szersza niż ekran');
   assert.match(islandRule, /var\(--rj-kb, 0px\)/, 'wyspa musi ustępować klawiaturze ekranowej');
 
+  /* --- strzałka schowania MUSI zostać w pigułce (zgłoszenie z telefonu) --- */
+  const idleRule = css.slice(css.indexOf('#rj-island-root .rj-view--idle {'), css.indexOf('#rj-island-root .rj-collapse {'));
+  assert.match(idleRule, /padding:\s*0 8px 0 7px/, 'zwinięta wyspa ma odkładać miejsce na strzałkę');
+  const collapseRule = css.slice(css.indexOf('#rj-island-root .rj-collapse {'), css.indexOf('#rj-island-root .rj-collapse svg'));
+  assert.match(collapseRule, /flex:\s*0 0 26px/, 'strzałka nie może się kurczyć');
+  assert.match(collapseRule, /margin-left:\s*auto/, 'strzałka trzyma się prawej krawędzi');
+  const titleRule = css.slice(css.indexOf('#rj-island-root .rj-title {'), css.indexOf('#rj-island-root .rj-title small'));
+  assert.match(titleRule, /min-width:\s*0/, 'to tytuł ma się zwężać, nie przyciski');
+  assert.match(titleRule, /text-overflow:\s*ellipsis/, 'długi tytuł kończy się wielokropkiem');
+  assert.match(titleRule, /flex:\s*1 1 auto/, 'tytuł zajmuje wolną przestrzeń, ale jej nie wymusza');
+  assert.match(source, /idle: \{ w: (\d+)/, 'zwinięta wyspa ma zdefiniowaną szerokość');
+  assert.ok(Number(source.match(/idle: \{ w: (\d+)/)[1]) >= 200, 'pigułka musi pomieścić logo, tytuł i strzałkę');
+
   /* --- zawijanie treści zamiast wypychania poza krawędź --- */
   const viewRule = css.slice(css.indexOf('#rj-island-root .rj-view {'), css.indexOf('#rj-island-root .rj-island[data-state="idle"] .rj-view--idle'));
   assert.match(viewRule, /white-space:\s*normal/, 'panele mają zawijać tekst');
@@ -83,7 +96,7 @@ function checkSources() {
 
 function buildPage() {
   return '<!doctype html><html lang="pl" data-theme="dark"><head><meta charset="utf-8">' +
-    '<script src="/hub/island.js?v=7" data-project="rejhub" data-project-name="RejHub"></script>' +
+    '<script src="/hub/island.js?v=8" data-project="rejhub" data-project-name="RejHub"></script>' +
     '</head><body><header class="rj-shared-header"><nav><a href="/rejchat">RejChat</a></nav></header>' +
     '<main><h1>Test</h1></main></body></html>';
 }
