@@ -1759,6 +1759,34 @@ body.rj-community ::selection {
   }
 }
 
+/* Gdy po prawej stoją reklamy, `main` jest węższy o 420 px. Trzy kolumny
+   zmieściłyby się wtedy tylko na szerokim ekranie, więc kolumna informacyjna
+   schodzi pod czat już od 1440 px — nic nie nachodzi na reklamy i nie ściska
+   rozmowy do ~340 px. */
+@media (min-width: 1200px) and (max-width: 1440px) {
+  body.rj-community.rj-side-ads-enabled .comm-layout {
+    grid-template-columns: 232px minmax(0, 1fr);
+  }
+  body.rj-community.rj-side-ads-enabled .rejchat-info {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    align-items: start;
+    border-left: 0;
+    border-top: 1px solid var(--rc-line);
+  }
+  body.rj-community.rj-side-ads-enabled .rejchat-info-heading {
+    grid-column: 1 / -1;
+  }
+  body.rj-community.rj-side-ads-enabled .rejchat-info > * {
+    border-top: 0;
+  }
+  body.rj-community.rj-side-ads-enabled .comm-chat-list {
+    height: clamp(320px, calc(100vh - 340px), 560px);
+  }
+}
+
 @media (max-width: 980px) {
   body.rj-community .comm-main {
     padding: 20px 14px 96px;
