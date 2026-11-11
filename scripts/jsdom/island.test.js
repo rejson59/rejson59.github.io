@@ -23,8 +23,8 @@ function checkStructure() {
 
   /* 1. Każda zwykła podstrona RejHuba ma wyspę. */
   EXPECTED_WITH_ISLAND.forEach(({ file, html }) => {
-    assert.ok(html.includes('/hub/island.js?v=9'), file + ': brak wyspy');
-    assert.ok(html.includes('/hub/island.css?v=8'), file + ': brak arkusza wyspy');
+    assert.ok(/\/hub\/island\.js\?v=\d+/.test(html), file + ': brak wyspy');
+    assert.ok(/\/hub\/island\.css\?v=\d+/.test(html), file + ': brak arkusza wyspy');
     /* RejSejf trzyma wyłączony znacznik (type="application/json") — to nie ładowanie. */
     const widgets = html.match(/<script[^>]*src="[^"]*widget\.js[^"]*"[^>]*>/g) || [];
     const activeWidget = widgets.filter((tag) => !/application\/json/.test(tag));

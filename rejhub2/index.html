@@ -293,13 +293,13 @@
   <noscript><link rel="stylesheet" href="/css/shared-topbar-nojs.css?v=2"></noscript>
   <link rel="stylesheet" href="/css/rejchat-notifications.css?v=3">
   <link rel="stylesheet" href="/css/glass-update.css?v=5">
-  <link rel="stylesheet" href="/hub/glass2.css?v=13" />
+  <link rel="stylesheet" href="/hub/glass2.css?v=14" />
   <link rel="stylesheet" href="/hub/loader.css?v=4">
   <link rel="stylesheet" href="/css/text-filter.css?v=1" />
   <link rel="stylesheet" href="/css/push.css?v=1" />
   <link rel="stylesheet" href="/css/topbar-split.css?v=3" />
   <link rel="stylesheet" href="/css/page-reveal.css?v=2" />
-  <link rel="stylesheet" href="/hub/island.css?v=8">
+  <link rel="stylesheet" href="/hub/island.css?v=9">
 </head>
 <body class="rj-home">
     <div id="rj-page-loader" data-legacy="1" aria-hidden="true">
@@ -710,6 +710,30 @@
       </div>
     </section>
 
+    <div class="container preview-mode-slot">
+      <!-- Plakaty czy żywe podglądy? Domyślnie plakaty (lekkie, bez iframe'ów).
+           Wybór jest zapamiętywany w przeglądarce i steruje silnikiem podglądów. -->
+      <div class="preview-mode" data-preview-toggle data-mode="auto">
+        <div class="preview-mode-row">
+          <span class="preview-mode-label" id="preview-mode-label">Podglądy projektów</span>
+          <div class="preview-mode-seg" role="group" aria-labelledby="preview-mode-label">
+            <button class="preview-mode-btn" type="button" data-preview-mode="poster" aria-pressed="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="m4.5 16 4.2-4.2a2 2 0 0 1 2.8 0l3.4 3.4M15 13.4l1.5-1.5a2 2 0 0 1 2.8 0L21 13"/><circle cx="9" cy="8.6" r="1.3"/></svg>
+              <span>Plakaty</span>
+            </button>
+            <button class="preview-mode-btn" type="button" data-preview-mode="live" aria-pressed="false">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="15" rx="2.5"/><path d="M3 8.5h18"/><circle cx="6.2" cy="6.5" r=".9" fill="currentColor" stroke="none"/><circle cx="9" cy="6.5" r=".9" fill="currentColor" stroke="none"/><path d="M10.4 12.2 15 14.7l-4.6 2.5z" fill="currentColor" stroke="none"/></svg>
+              <span>Na żywo</span>
+            </button>
+          </div>
+          <span class="preview-mode-state" data-preview-state role="status" aria-live="polite"></span>
+        </div>
+        <p class="preview-mode-note" data-preview-note>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4.2 21 20H3z"/><path d="M12 9.6v4.6"/><circle cx="12" cy="17.1" r=".9" fill="currentColor" stroke="none"/></svg>
+          <span><strong>Podglądy na żywo</strong> uruchamiają prawdziwą stronę w każdej karcie projektu — to może powodować lagi i zacinanie się strony, zwłaszcza na telefonie i słabszym laptopie. Plakaty są lekkie i zawsze ostre.</span>
+        </p>
+      </div>
+    </div>
     <!-- ============ WYRÓŻNIONE: POCZĄTKI ORAZ NAJLEPSZA STRONA ============ -->
     <section class="origins container" aria-labelledby="showcase-title">
       <div class="showcase-heading"><div><p class="showcase-kicker">✦ WARTO ZAJRZEĆ</p><h2 id="showcase-title">Wybrane projekty</h2><p>Od pierwszej strony po najnowsze pomysły.</p></div><a href="#projekty">Zobacz pozostałe <span aria-hidden="true">↓</span></a></div>
@@ -1128,28 +1152,6 @@
         <p class="result-count mono" id="result-count" role="status"></p>
       </div>
 
-      <!-- Plakaty czy żywe podglądy? Domyślnie plakaty (lekkie, bez iframe'ów).
-           Wybór jest zapamiętywany w przeglądarce i steruje silnikiem podglądów. -->
-      <div class="preview-mode" data-preview-toggle data-mode="auto">
-        <div class="preview-mode-row">
-          <span class="preview-mode-label" id="preview-mode-label">Podglądy projektów</span>
-          <div class="preview-mode-seg" role="group" aria-labelledby="preview-mode-label">
-            <button class="preview-mode-btn" type="button" data-preview-mode="poster" aria-pressed="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2.5"/><path d="m4.5 16 4.2-4.2a2 2 0 0 1 2.8 0l3.4 3.4M15 13.4l1.5-1.5a2 2 0 0 1 2.8 0L21 13"/><circle cx="9" cy="8.6" r="1.3"/></svg>
-              <span>Plakaty</span>
-            </button>
-            <button class="preview-mode-btn" type="button" data-preview-mode="live" aria-pressed="false">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4.5" width="18" height="15" rx="2.5"/><path d="M3 8.5h18"/><circle cx="6.2" cy="6.5" r=".9" fill="currentColor" stroke="none"/><circle cx="9" cy="6.5" r=".9" fill="currentColor" stroke="none"/><path d="M10.4 12.2 15 14.7l-4.6 2.5z" fill="currentColor" stroke="none"/></svg>
-              <span>Na żywo</span>
-            </button>
-          </div>
-          <span class="preview-mode-state" data-preview-state role="status" aria-live="polite"></span>
-        </div>
-        <p class="preview-mode-note" data-preview-note>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4.2 21 20H3z"/><path d="M12 9.6v4.6"/><circle cx="12" cy="17.1" r=".9" fill="currentColor" stroke="none"/></svg>
-          <span><strong>Podglądy na żywo</strong> uruchamiają prawdziwą stronę w każdej karcie projektu — to może powodować lagi i zacinanie się strony, zwłaszcza na telefonie i słabszym laptopie. Plakaty są lekkie i zawsze ostre.</span>
-        </p>
-      </div>
 
       <div class="toolbar" role="search">
         <div class="toolbar-primary">
