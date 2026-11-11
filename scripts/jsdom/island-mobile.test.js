@@ -16,7 +16,7 @@ const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 
 const SIZES = {
   idle: 46, dock: 52, report: 236, search: 292, alerts: 296,
-  now: 96, profile: 158, quick: 152, theme: 156, tasks: 208, panic: 160
+  now: 112, profile: 158, quick: 152, theme: 156, tasks: 208, panic: 160
 };
 
 function checkSources() {
@@ -83,7 +83,7 @@ function checkSources() {
 
 function buildPage() {
   return '<!doctype html><html lang="pl" data-theme="dark"><head><meta charset="utf-8">' +
-    '<script src="/hub/island.js?v=6" data-project="rejhub" data-project-name="RejHub"></script>' +
+    '<script src="/hub/island.js?v=7" data-project="rejhub" data-project-name="RejHub"></script>' +
     '</head><body><header class="rj-shared-header"><nav><a href="/rejchat">RejChat</a></nav></header>' +
     '<main><h1>Test</h1></main></body></html>';
 }
@@ -157,7 +157,7 @@ async function checkPhone() {
     assert.ok(visible, name + ': widok ma treść (nie czarna plama)');
     assert.equal(w.RejIsland.health(), 'ok', name + ': wyspa zdrowa');
 
-    if (!['dock', 'now'].includes(name)) {
+    if (name !== 'dock') {
       assert.ok(view.querySelector('[data-close]'), name + ': jest czym zamknąć panel');
     }
     w.RejIsland.open('idle');

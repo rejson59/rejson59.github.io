@@ -192,7 +192,7 @@
     report: { w: 384, h: 236, r: 24 },
     search: { w: 384, h: 292, r: 24 },
     alerts: { w: 384, h: 296, r: 24 },
-    now: { w: 384, h: 96, r: 24 },
+    now: { w: 384, h: 112, r: 24 },
     profile: { w: 384, h: 158, r: 24 },
     quick: { w: 384, h: 250, r: 24 },
     theme: { w: 384, h: 226, r: 24 },
@@ -617,6 +617,10 @@
 
         '<div class="rj-view rj-view--now">' +
           '<div class="rj-panel">' +
+            '<div class="rj-panel-head">' +
+              '<span class="rj-panel-title">Teraz gra</span>' +
+              '<button class="rj-x" type="button" data-close aria-label="Zamknij">' + ICONS.close + "</button>" +
+            "</div>" +
             '<div class="rj-now" id="rj-island-now"></div>' +
           "</div>" +
         "</div>" +

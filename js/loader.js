@@ -146,6 +146,13 @@
     hideTimers.length = 0;
   }
 
+  function revealContent() {
+    /* page-reveal.js zdejmie klasę sam, w tej samej klatce co pierwsza
+       animacja wejścia — bez tego była widoczna „klatka prawdy” i mignięcie. */
+    if (window.RejReveal && typeof window.RejReveal.start === "function") return;
+    document.documentElement.classList.remove("rj-booting");
+  }
+
   function hideOverlay(inst) {
     var el = getOverlay();
     if (!el || el._done) return;
@@ -154,10 +161,13 @@
     function doHide() {
       el.classList.remove("is-shown");
       el.classList.add("is-hidden");
-      /* Najpierw nakładka znika, dopiero potem odsłaniamy treść. Wcześniej oba
-         działy się w tej samej klatce: animacja wejścia grała pod gasnącym
-         loaderem i wyglądało to, jakby jedna warstwa nachodziła na drugą. */
-      later(FADE_MS, function () {
+      /* Odsłanianie należy do jednego właściciela. Gdy na stronie jest
+         page-reveal.js, to on zdejmuje `rj-booting` dokładnie w klatce startu
+         animacji wejścia — loader nie może zrobić tego wcześniej, bo treść
+         mignie, zniknie i wróci z opóźnieniem. */
+      later(FADE_MS, revealContent);
+      later(7000, function () {
+        /* Bezpiecznik: gdyby page-reveal nie wystartował, treść i tak wraca. */
         document.documentElement.classList.remove("rj-booting");
       });
       markPageReady();

@@ -23,8 +23,8 @@ function checkStructure() {
 
   /* 1. Każda zwykła podstrona RejHuba ma wyspę. */
   EXPECTED_WITH_ISLAND.forEach(({ file, html }) => {
-    assert.ok(html.includes('/hub/island.js?v=6'), file + ': brak wyspy');
-    assert.ok(html.includes('/hub/island.css?v=5'), file + ': brak arkusza wyspy');
+    assert.ok(html.includes('/hub/island.js?v=7'), file + ': brak wyspy');
+    assert.ok(html.includes('/hub/island.css?v=6'), file + ': brak arkusza wyspy');
     /* RejSejf trzyma wyłączony znacznik (type="application/json") — to nie ładowanie. */
     const widgets = html.match(/<script[^>]*src="[^"]*widget\.js[^"]*"[^>]*>/g) || [];
     const activeWidget = widgets.filter((tag) => !/application\/json/.test(tag));
@@ -60,7 +60,7 @@ function checkStructure() {
 
 function buildPage() {
   return '<!doctype html><html lang="pl" data-theme="dark"><head><meta charset="utf-8">' +
-    '<script src="/hub/island.js?v=6" data-project="rejhub" data-project-name="RejHub"></script>' +
+    '<script src="/hub/island.js?v=7" data-project="rejhub" data-project-name="RejHub"></script>' +
     '</head><body>' +
     '<header class="rj-shared-header"><nav><a href="/rejchat">RejChat</a><a href="/rejfile">RejFile</a></nav></header>' +
     '<main><h1>Test</h1><button type="button" data-feedback-project="RejStream">Zgłoś</button>' +
