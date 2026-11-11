@@ -1,0 +1,2696 @@
+/* © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
+   Licencja: /LICENSE, /licencja
+   ----------------------------------------------------------------------------
+   RejChat 3 — „Messenger”.
+
+   Ten plik ZASTĘPUJE poprzednią warstwę (rejchat-rebuild.css). Nie jest kolejną
+   korektą tamtego układu: zmienia się pomysł na całą stronę.
+
+   Poprzednio: trzy kolumny na jednej tafli, wiadomości jako wiersze na osi,
+   wąskie włoskowate linie. Teraz: okno aplikacji z dokiem, rozmowa w dymkach,
+   composer-pigułka, informacje w osobnym panelu.
+
+   Zasady, które muszą zostać:
+   - każda powierzchnia szklana i zaokrąglona, żadnych prostokątów z blurem,
+   - jedna paleta: granat + błękit, zero zieleni i fioletu,
+   - zero lagów w scrollu: przewija się tylko lista wiadomości (własna warstwa),
+   - animacje zostają, tylko są tańsze (transform/opacity),
+   - motyw jasny ma własne, papierowe odpowiedniki kolorów.
+   -------------------------------------------------------------------------- */
+
+body.rj-community {
+  --rm-page: #070b15;
+  --rm-frame: #0f1728;
+  --rm-frame-2: #0b1220;
+  --rm-chat: #0d1524;
+  --rm-bubble: #1a2740;
+  --rm-bubble-mine-a: #3d7cf0;
+  --rm-bubble-mine-b: #2a5cc0;
+  --rm-raise: rgba(255, 255, 255, 0.055);
+  --rm-raise-2: rgba(255, 255, 255, 0.09);
+  --rm-line: rgba(140, 175, 235, 0.13);
+  --rm-line-2: rgba(140, 175, 235, 0.26);
+  --rm-ink: #eaf1fb;
+  --rm-sub: #96a8c4;
+  --rm-faint: #6d7f9b;
+  --rm-accent: #5a95ff;
+  --rm-accent-2: #4f8cff;
+  --rm-accent-soft: rgba(90, 149, 255, 0.16);
+  --rm-accent-ink: #04101f;
+  --rm-radius: 28px;
+  --rm-pill: 22px;
+  --rm-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --rm-shadow: 0 40px 90px -55px rgba(0, 3, 10, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  /* starsze warstwy czytają te same zmienne — muszą dostać nowe wartości */
+  --accent: #5a95ff;
+  --accent-strong: #4f8cff;
+  --accent-ink: #04101f;
+}
+
+html[data-theme="light"] body.rj-community {
+  --rm-page: #e9eefa;
+  --rm-frame: #ffffff;
+  --rm-frame-2: #f4f7fe;
+  --rm-chat: #f7faff;
+  --rm-bubble: #eef3fc;
+  --rm-bubble-mine-a: #3d7cf0;
+  --rm-bubble-mine-b: #2a5cc0;
+  --rm-raise: rgba(24, 60, 118, 0.05);
+  --rm-raise-2: rgba(24, 60, 118, 0.09);
+  --rm-line: rgba(28, 66, 122, 0.15);
+  --rm-line-2: rgba(28, 66, 122, 0.3);
+  --rm-ink: #0f2240;
+  --rm-sub: #47607f;
+  --rm-faint: #6b7f9c;
+  --rm-accent: #2459b8;
+  --rm-accent-2: #1c4c9e;
+  --rm-accent-soft: rgba(36, 89, 184, 0.12);
+  --rm-accent-ink: #ffffff;
+  --accent: #2459b8;
+  --accent-strong: #1c4c9e;
+  --accent-ink: #ffffff;
+  --rm-shadow: 0 30px 70px -50px rgba(24, 52, 96, 0.5), inset 0 1px 0 #ffffff;
+}
+
+/* --------------------------------------------------------------- tapeta --- */
+
+body.rj-community {
+  background-color: var(--rm-page) !important;
+  background-image:
+    radial-gradient(900px 520px at 82% -8%, rgba(79, 140, 255, 0.2), transparent 68%),
+    radial-gradient(760px 520px at 4% 108%, rgba(36, 74, 140, 0.24), transparent 66%),
+    radial-gradient(520px 320px at 46% 48%, rgba(58, 106, 190, 0.08), transparent 70%) !important;
+  background-attachment: fixed;
+}
+
+html[data-theme="light"] body.rj-community {
+  background-image:
+    radial-gradient(900px 520px at 82% -8%, rgba(79, 140, 255, 0.18), transparent 68%),
+    radial-gradient(760px 520px at 4% 108%, rgba(120, 158, 220, 0.22), transparent 66%) !important;
+}
+
+/* ------------------------------------------------------- pasek aplikacji --- */
+
+body.rj-community .comm-main {
+  width: 100% !important;
+  max-width: 1380px !important;
+  margin: 0 auto !important;
+  padding: 16px clamp(10px, 2vw, 26px) 44px !important;
+}
+
+body.rj-community .comm-hero {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: wrap !important;
+  gap: 12px 18px !important;
+  min-height: 0 !important;
+  margin: 0 0 12px !important;
+  padding: 0 4px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  overflow: visible !important;
+  color: var(--rm-ink) !important;
+  text-align: left !important;
+}
+
+body.rj-community .comm-hero::after,
+body.rj-community .comm-hero::before {
+  content: none !important;
+}
+
+body.rj-community .rc-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0 0 3px;
+  color: var(--rm-accent);
+  font: 700 9.5px/1 "JetBrains Mono", ui-monospace, monospace;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+body.rj-community .rc-live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--rm-accent);
+  box-shadow: 0 0 0 3px var(--rm-accent-soft);
+  animation: rmPulse 2.6s var(--rm-ease) infinite;
+}
+
+@keyframes rmPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.42; }
+}
+
+body.rj-community .comm-hero h1 {
+  margin: 0 !important;
+  color: var(--rm-ink) !important;
+  font: 650 clamp(20px, 2.4vw, 25px)/1.1 "Space Grotesk", system-ui, sans-serif !important;
+  letter-spacing: -0.03em !important;
+}
+
+body.rj-community .rc-hero-sub {
+  display: none !important;
+}
+
+body.rj-community .rc-hero-right {
+  margin-left: auto;
+}
+
+/* przełącznik widoków: segmentowany, w pasku aplikacji */
+body.rj-community .rejchat-tabs {
+  display: inline-flex !important;
+  gap: 2px !important;
+  padding: 3px !important;
+  border: 1px solid var(--rm-line) !important;
+  border-radius: 999px !important;
+  background: var(--rm-raise) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body.rj-community .rejchat-tabs button {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  min-height: 34px !important;
+  padding: 0 15px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  color: var(--rm-sub) !important;
+  font: 600 12.5px/1 "Inter", system-ui, sans-serif !important;
+  cursor: pointer;
+  transition: background 0.2s var(--rm-ease), color 0.2s var(--rm-ease);
+}
+
+body.rj-community .rejchat-tabs button:hover {
+  color: var(--rm-ink) !important;
+  background: var(--rm-raise) !important;
+}
+
+body.rj-community .rejchat-tabs button[aria-selected="true"] {
+  background: var(--rm-ink) !important;
+  color: #0a1220 !important;
+  box-shadow: 0 8px 18px -12px #000;
+}
+
+html[data-theme="light"] body.rj-community .rejchat-tabs button[aria-selected="true"] {
+  background: var(--rm-accent-2) !important;
+  color: #ffffff !important;
+}
+
+body.rj-community .rejchat-tabs .ui-icon {
+  width: 14px;
+  height: 14px;
+}
+
+body.rj-community .rejchat-tab-icon {
+  font-size: 12px;
+  line-height: 1;
+}
+
+/* --------------------------------------------------------- okno aplikacji --- */
+
+body.rj-community .comm-layout {
+  display: grid !important;
+  grid-template-columns: 92px minmax(0, 1fr) 248px !important;
+  grid-template-rows: minmax(0, 1fr) !important;
+  gap: 0 !important;
+  align-items: stretch !important;
+  height: clamp(520px, calc(100dvh - 190px), 860px) !important;
+  min-height: 0 !important;
+  border: 1px solid var(--rm-line) !important;
+  border-radius: var(--rm-radius) !important;
+  background:
+    radial-gradient(620px 320px at 88% 0%, rgba(79, 140, 255, 0.1), transparent 70%),
+    linear-gradient(180deg, var(--rm-frame), var(--rm-frame-2)) !important;
+  box-shadow: var(--rm-shadow) !important;
+  overflow: hidden !important;
+  isolation: isolate;
+}
+
+html[data-theme="light"] body.rj-community .comm-layout {
+  background:
+    radial-gradient(620px 320px at 88% 0%, rgba(79, 140, 255, 0.1), transparent 70%),
+    var(--rm-frame) !important;
+}
+
+body.rj-community .comm-sidebar,
+body.rj-community .comm-primary,
+body.rj-community .rejchat-info {
+  min-width: 0 !important;
+  min-height: 0 !important;
+}
+
+/* -------------------------------------------------------------- dok pokoi --- */
+
+body.rj-community .comm-sidebar {
+  grid-column: 1 !important;
+  grid-row: 1 !important;
+  position: relative !important;
+  inset: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 14px 8px 12px !important;
+  border: 0 !important;
+  border-right: 1px solid var(--rm-line) !important;
+  border-radius: 0 !important;
+  background: linear-gradient(180deg, var(--rm-accent-soft), transparent 58%) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  overflow: visible !important;
+}
+
+body.rj-community .chat-channel-list {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: 100% !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: none !important;
+}
+
+body.rj-community .chat-channel-label {
+  display: block !important;
+  width: 100% !important;
+  margin: 0 0 2px !important;
+  padding: 0 !important;
+  color: var(--rm-faint) !important;
+  font: 700 8px/1.3 "JetBrains Mono", ui-monospace, monospace !important;
+  letter-spacing: 0.16em !important;
+  text-transform: uppercase !important;
+  text-align: center !important;
+}
+
+body.rj-community .chat-channel {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  width: 100% !important;
+  padding: 7px 3px !important;
+  border: 1px solid transparent !important;
+  border-radius: 16px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--rm-sub) !important;
+  text-align: center !important;
+  cursor: pointer;
+  transition: background 0.2s var(--rm-ease), border-color 0.2s var(--rm-ease);
+}
+
+body.rj-community .chat-channel:hover {
+  transform: none !important;
+  background: var(--rm-raise) !important;
+}
+
+body.rj-community .chat-channel.is-active {
+  border-color: var(--rm-line-2) !important;
+  background: var(--rm-accent-soft) !important;
+  box-shadow: none !important;
+}
+
+body.rj-community .chat-channel.is-active::before {
+  content: "";
+  position: absolute;
+  left: -10px;
+  top: 50%;
+  width: 3px;
+  height: 24px;
+  translate: 0 -50%;
+  border-radius: 0 3px 3px 0;
+  background: var(--rm-accent);
+}
+
+body.rj-community .chat-channel-icon {
+  display: grid !important;
+  place-items: center !important;
+  width: 38px !important;
+  height: 38px !important;
+  flex: none !important;
+  border: 1px solid var(--rm-line) !important;
+  border-radius: 13px !important;
+  background: var(--rm-raise) !important;
+  color: #bcd5ff !important;
+  font-size: 16px !important;
+  line-height: 1 !important;
+  transition: background 0.2s var(--rm-ease), color 0.2s var(--rm-ease), box-shadow 0.2s var(--rm-ease);
+}
+
+html[data-theme="light"] body.rj-community .chat-channel-icon {
+  color: var(--rm-accent-2) !important;
+}
+
+html[data-theme="light"] body.rj-community .chat-channel.is-active {
+  border-color: rgba(36, 89, 184, 0.28) !important;
+  background: rgba(36, 89, 184, 0.09) !important;
+}
+
+html[data-theme="light"] body.rj-community .chat-channel.is-active .chat-channel-icon {
+  border-color: transparent !important;
+  background: linear-gradient(150deg, #4d8bf0, #2459b8) !important;
+  color: #ffffff !important;
+  box-shadow: 0 10px 22px -14px rgba(36, 89, 184, 0.9) !important;
+}
+
+body.rj-community .chat-channel.is-active .chat-channel-icon {
+  border-color: transparent !important;
+  background: linear-gradient(150deg, #6aa5ff, #2f63cf) !important;
+  color: #f2f8ff !important;
+  box-shadow: 0 10px 22px -12px rgba(79, 140, 255, 0.9);
+}
+
+body.rj-community .chat-channel strong {
+  display: block !important;
+  width: 100% !important;
+  padding: 0 2px !important;
+  color: var(--rm-sub) !important;
+  font: 600 9px/1.25 "Inter", system-ui, sans-serif !important;
+  letter-spacing: 0.01em;
+  overflow-wrap: anywhere;
+  text-align: center !important;
+}
+
+body.rj-community .chat-channel.is-active strong {
+  color: var(--rm-ink) !important;
+}
+
+body.rj-community .chat-channel small {
+  display: none !important;
+}
+
+body.rj-community .dm-unread {
+  position: absolute !important;
+  top: 5px !important;
+  right: 11px !important;
+  display: inline-grid !important;
+  place-items: center !important;
+  min-width: 16px !important;
+  height: 16px !important;
+  padding: 0 4px !important;
+  border-radius: 999px !important;
+  background: var(--rm-accent) !important;
+  color: #06101f !important;
+  font: 800 9px/1 "Inter", system-ui, sans-serif !important;
+}
+
+body.rj-community .rc-side-link {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 3px !important;
+  width: 100% !important;
+  margin-top: auto !important;
+  padding: 8px 4px !important;
+  border: 0 !important;
+  border-radius: 14px !important;
+  background: var(--rm-raise) !important;
+  color: var(--rm-faint) !important;
+  font: 600 9px/1.25 "Inter", system-ui, sans-serif !important;
+  text-align: center;
+  text-decoration: none !important;
+}
+
+body.rj-community .rc-side-link b {
+  display: none !important;
+}
+
+body.rj-community .rc-side-link:hover {
+  color: var(--rm-ink) !important;
+  background: var(--rm-raise-2) !important;
+}
+
+/* ------------------------------------------------------------ panel czatu --- */
+
+body.rj-community .comm-primary {
+  grid-column: 2 !important;
+  grid-row: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transition: box-shadow 0.24s var(--rm-ease);
+}
+
+body.rj-community #panel-chat {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+}
+
+body.rj-community #panel-chat[hidden],
+body.rj-community #panel-posts[hidden],
+body.rj-community .comm-chat[hidden],
+body.rj-community #dm-thread[hidden],
+body.rj-community #dm-member[hidden],
+body.rj-community #dm-inbox[hidden] {
+  display: none !important;
+}
+
+/* Starsze warstwy przewijały cały panel czatu (razem z nagłówkiem i polem
+   pisania). Tutaj przewija się wyłącznie lista wiadomości, więc te dwa
+   kontenery muszą być przycięte — inaczej composer ucieka przy scrollu. */
+body.rj-community #chat-public-view,
+body.rj-community #chat-private-view {
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+body.rj-community #panel-chat,
+body.rj-community #panel-posts {
+  position: relative !important;
+}
+
+body.rj-community .rejchat-info {
+  position: static !important;
+}
+
+body.rj-community .comm-chat,
+body.rj-community .comm-chat.glass-card {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  overflow: hidden !important;
+}
+
+body.rj-community .comm-chat-head {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  flex-wrap: nowrap !important;
+  gap: 12px !important;
+  margin: 0 !important;
+  padding: 13px 20px !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--rm-line) !important;
+  border-radius: 0 !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.035), transparent) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html[data-theme="light"] body.rj-community .comm-chat-head {
+  background: linear-gradient(180deg, rgba(28, 66, 122, 0.04), transparent) !important;
+}
+
+body.rj-community .chat-room-heading {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  min-width: 0 !important;
+}
+
+body.rj-community .chat-room-mark {
+  display: grid !important;
+  place-items: center !important;
+  width: 44px !important;
+  height: 44px !important;
+  flex: none !important;
+  border: 1px solid rgba(120, 160, 230, 0.35) !important;
+  border-radius: 50% !important;
+  background: linear-gradient(150deg, #2c4372, #1b2946) !important;
+  color: #cfe0ff !important;
+  font: 700 18px/1 "Space Grotesk", system-ui, sans-serif !important;
+  box-shadow: 0 8px 20px -14px #000;
+}
+
+html[data-theme="light"] body.rj-community .chat-room-mark {
+  background: linear-gradient(150deg, #dbe8fd, #c3d8f7) !important;
+  border-color: rgba(28, 66, 122, 0.2) !important;
+  color: var(--rm-accent-2) !important;
+}
+
+body.rj-community .room-eyebrow {
+  display: none !important;
+}
+
+body.rj-community .chat-room-heading h2,
+body.rj-community .comm-chat-head h2 {
+  margin: 0 !important;
+  color: var(--rm-ink) !important;
+  font: 650 16px/1.2 "Space Grotesk", system-ui, sans-serif !important;
+  letter-spacing: -0.02em !important;
+}
+
+body.rj-community .chat-room-heading p,
+body.rj-community .comm-chat-head p {
+  margin: 2px 0 0 !important;
+  color: var(--rm-sub) !important;
+  font: 500 11.5px/1.35 "Inter", system-ui, sans-serif !important;
+}
+
+body.rj-community .rc-room-actions {
+  display: flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  margin-left: auto !important;
+}
+
+body.rj-community .comm-chat-hint {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  color: var(--rm-sub) !important;
+  font: 600 11px/1.3 "Inter", system-ui, sans-serif !important;
+  white-space: nowrap !important;
+}
+
+body.rj-community .comm-chat-dot {
+  width: 6px !important;
+  height: 6px !important;
+  border-radius: 50% !important;
+  background: var(--rm-accent) !important;
+  box-shadow: 0 0 0 3px var(--rm-accent-soft) !important;
+  animation: rmPulse 2.6s var(--rm-ease) infinite;
+}
+
+body.rj-community .rc-search-toggle,
+body.rj-community .rc-room-actions > button {
+  display: grid !important;
+  place-items: center !important;
+  width: 36px !important;
+  height: 36px !important;
+  padding: 0 !important;
+  border: 1px solid var(--rm-line) !important;
+  border-radius: 50% !important;
+  background: var(--rm-raise) !important;
+  color: var(--rm-sub) !important;
+  cursor: pointer;
+  transition: background 0.2s var(--rm-ease), color 0.2s var(--rm-ease);
+}
+
+body.rj-community .rc-search-toggle:hover,
+body.rj-community .rc-room-actions > button:hover {
+  background: var(--rm-raise-2) !important;
+  color: var(--rm-ink) !important;
+}
+
+body.rj-community .rc-search-toggle svg {
+  width: 15px !important;
+  height: 15px !important;
+}
+
+body.rj-community .rc-search-panel {
+  display: flex !important;
+  align-items: center !important;
+  gap: 9px !important;
+  flex-wrap: wrap !important;
+  padding: 10px 20px !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--rm-line) !important;
+  background: rgba(4, 8, 16, 0.35) !important;
+}
+
+body.rj-community .rejchat-search {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  flex: 1 1 220px !important;
+  min-width: 0 !important;
+  min-height: 38px !important;
+  padding: 0 14px !important;
+  border: 1px solid var(--rm-line) !important;
+  border-radius: 999px !important;
+  background: var(--rm-raise) !important;
+}
+
+body.rj-community .rejchat-search .search-mark {
+  color: var(--rm-faint) !important;
+}
+
+body.rj-community .rejchat-search input {
+  flex: 1 !important;
+  min-width: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: var(--rm-ink) !important;
+  font: 500 12.5px/1.4 "Inter", system-ui, sans-serif !important;
+  outline: none !important;
+}
+
+body.rj-community .rejchat-search-hint {
+  flex-basis: 100% !important;
+  margin: 0 !important;
+  color: var(--rm-faint) !important;
+  font-size: 10.5px !important;
+}
+
+body.rj-community .rc-pinned {
+  display: flex !important;
+  align-items: baseline !important;
+  gap: 8px !important;
+  margin: 10px 20px 0 !important;
+  padding: 8px 12px !important;
+  border: 1px solid var(--rm-line) !important;
+  border-left: 3px solid var(--rm-accent) !important;
+  border-radius: 12px !important;
+  background: var(--rm-accent-soft) !important;
+  color: var(--rm-sub) !important;
+  font-size: 11.5px !important;
+  line-height: 1.4 !important;
+}
+
+/* ------------------------------------------------------------ lista rozmowy --- */
+
+body.rj-community .comm-chat-list {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  flex: 1 1 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  padding: 16px 20px 4px !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  overflow-y: auto !important;
+  overflow-anchor: none !important;
+  overscroll-behavior: contain !important;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(140, 175, 235, 0.3) transparent;
+}
+
+body.rj-community .comm-chat-list::-webkit-scrollbar {
+  width: 9px;
+}
+
+body.rj-community .comm-chat-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+body.rj-community .comm-chat-list::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background: rgba(140, 175, 235, 0.28);
+  background-clip: content-box;
+}
+
+body.rj-community .comm-chat-empty {
+  align-self: center !important;
+  max-width: 380px !important;
+  margin: auto !important;
+  padding: 22px !important;
+  border: 1px solid var(--rm-line) !important;
+  border-radius: 20px !important;
+  background: var(--rm-raise) !important;
+  color: var(--rm-sub) !important;
+  font-size: 12.5px !important;
+  text-align: center !important;
+}
+
+/* ---------------------------------------------------------------- dymki --- */
+
+body.rj-community .chat-msg {
+  position: relative !important;
+  display: grid !important;
+  grid-template-columns: 30px minmax(0, 1fr) !important;
+  column-gap: 9px !important;
+  align-items: end !important;
+  padding: 2px 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  transition: none !important;
+}
+
+body.rj-community .chat-msg:hover {
+  background: none !important;
+}
+
+body.rj-community .chat-msg .comm-avatar {
+  width: 30px !important;
+  height: 30px !important;
+  margin: 0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  border-radius: 50% !important;
+  background: linear-gradient(150deg, #24344f, #1a2740) !important;
+  color: #cfe0ff !important;
+  font: 700 11px/1 "Inter", system-ui, sans-serif !important;
+  align-self: end !important;
+  overflow: hidden;
+}
+
+html[data-theme="light"] body.rj-community .chat-msg .comm-avatar {
+  background: linear-gradient(150deg, #dbe8fd, #c3d8f7) !important;
+  border-color: rgba(28, 66, 122, 0.16) !important;
+  color: var(--rm-accent-2) !important;
+}
+
+body.rj-community .chat-msg .comm-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+body.rj-community .chat-msg.is-mine {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+body.rj-community .chat-msg.is-mine .comm-avatar {
+  display: none !important;
+}
+
+body.rj-community .chat-bubble {
+  position: relative !important;
+  justify-self: start !important;
+  min-width: 0 !important;
+  max-width: min(76%, 520px) !important;
+  margin: 16px 0 0 !important;
+  padding: 8px 13px 9px !important;
+  border: 1px solid rgba(255, 255, 255, 0.055) !important;
+  border-radius: 16px 16px 16px 5px !important;
+  background: var(--rm-bubble) !important;
+  box-shadow: 0 14px 30px -24px rgba(0, 3, 10, 0.9) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html[data-theme="light"] body.rj-community .chat-bubble {
+  border-color: rgba(28, 66, 122, 0.1) !important;
+}
+
+body.rj-community .chat-msg.is-mine .chat-bubble {
+  justify-self: end !important;
+  margin-left: auto !important;
+  padding: 8px 13px 9px !important;
+  border-color: transparent !important;
+  border-radius: 16px 16px 5px 16px !important;
+  background: linear-gradient(150deg, var(--rm-bubble-mine-a), var(--rm-bubble-mine-b)) !important;
+  box-shadow: 0 16px 30px -22px rgba(31, 75, 160, 0.9) !important;
+}
+
+/* Nazwa i godzina leżą NAD dymkiem, poza jego tłem. `.chat-meta` jest
+   „przezroczyste" dla układu (display: contents), więc jego dzieci trafiają
+   wprost do dymka: nazwę i czas wypychamy absolutnie nad niego, a reakcje
+   zostają w środku jako ostatni wiersz treści. Bez nowego wrappera w DOM,
+   więc renderowanie czatu w community.js działa bez zmian. */
+body.rj-community .chat-bubble {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+}
+
+body.rj-community .chat-meta {
+  display: contents !important;
+  position: static !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: none !important;
+}
+
+body.rj-community .chat-author,
+body.rj-community .chat-meta > strong {
+  position: absolute !important;
+  left: 4px !important;
+  top: -17px !important;
+  z-index: 1;
+  max-width: 62% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+  color: #b9cbe6 !important;
+  font: 650 11.5px/1 "Inter", system-ui, sans-serif !important;
+  letter-spacing: 0.01em;
+}
+
+html[data-theme="light"] body.rj-community .chat-author,
+html[data-theme="light"] body.rj-community .chat-meta > strong {
+  color: #33507a !important;
+}
+
+body.rj-community .chat-msg.is-mine .chat-author,
+body.rj-community .chat-msg.is-mine .chat-meta > strong {
+  left: auto !important;
+  right: 4px !important;
+  color: var(--rm-accent) !important;
+}
+
+html[data-theme="light"] body.rj-community .chat-msg.is-mine .chat-author {
+  color: var(--rm-accent-2) !important;
+}
+
+body.rj-community .chat-time {
+  position: absolute !important;
+  right: 4px !important;
+  top: -16px !important;
+  z-index: 1;
+  color: var(--rm-faint) !important;
+  font: 500 10px/1 "JetBrains Mono", ui-monospace, monospace !important;
+  letter-spacing: 0 !important;
+}
+
+body.rj-community .chat-msg.is-mine .chat-time {
+  right: auto !important;
+  left: 4px !important;
+  color: rgba(180, 205, 240, 0.8) !important;
+}
+
+html[data-theme="light"] body.rj-community .chat-msg.is-mine .chat-time {
+  color: #5c789f !important;
+}
+
+body.rj-community .chat-meta .comm-owner-badge,
+body.rj-community .chat-meta .comm-bot-badge {
+  position: absolute !important;
+  top: -19px !important;
+  left: 0 !important;
+  translate: 0 0;
+  font-size: 8.5px !important;
+  padding: 1px 5px !important;
+  border-radius: 5px !important;
+  line-height: 1.4 !important;
+  z-index: 2;
+}
+
+body.rj-community .rejchat-reply-quote { order: 0; }
+body.rj-community .chat-text { order: 1; }
+body.rj-community .chat-bubble > div:not(.rejchat-reply-quote):not(.chat-meta) { order: 2; }
+body.rj-community .rejchat-edited { order: 4; }
+
+body.rj-community .chat-text {
+  margin: 0 !important;
+  color: #e2ebfa !important;
+  font: 400 13.5px/1.55 "Inter", system-ui, sans-serif !important;
+  overflow-wrap: anywhere;
+}
+
+html[data-theme="light"] body.rj-community .chat-text {
+  color: #16263d !important;
+}
+
+body.rj-community .chat-msg.is-mine .chat-text {
+  color: #f4f9ff !important;
+}
+
+body.rj-community .chat-text a,
+body.rj-community .comm-link {
+  color: #a9c9ff !important;
+  text-decoration-color: rgba(169, 201, 255, 0.45) !important;
+  text-underline-offset: 2px;
+}
+
+body.rj-community .chat-msg.is-mine .chat-text a {
+  color: #ffffff !important;
+  text-decoration-color: rgba(255, 255, 255, 0.6) !important;
+}
+
+html[data-theme="light"] body.rj-community .chat-text a {
+  color: #1b4f9e !important;
+}
+
+/* cytat odpowiedzi */
+body.rj-community .rejchat-reply-quote {
+  margin: 0 0 6px !important;
+  padding: 4px 0 4px 9px !important;
+  border: 0 !important;
+  border-left: 2px solid rgba(140, 175, 235, 0.45) !important;
+  border-radius: 0 !important;
+  background: none !important;
+  color: rgba(200, 216, 240, 0.82) !important;
+  font: 400 11.5px/1.45 "Inter", system-ui, sans-serif !important;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+body.rj-community .chat-msg.is-mine .rejchat-reply-quote {
+  border-left-color: rgba(255, 255, 255, 0.55) !important;
+  color: rgba(240, 247, 255, 0.86) !important;
+}
+
+html[data-theme="light"] body.rj-community .rejchat-reply-quote {
+  color: #44618a !important;
+  border-left-color: rgba(28, 66, 122, 0.3) !important;
+}
+
+body.rj-community .rejchat-edited {
+  display: block !important;
+  margin-top: 4px !important;
+  color: var(--rm-faint) !important;
+  font: 500 9.5px/1 "Inter", system-ui, sans-serif !important;
+}
+
+body.rj-community .chat-msg.is-mine .rejchat-edited {
+  color: rgba(230, 241, 255, 0.7) !important;
+}
+
+/* zdjęcia w dymku */
+body.rj-community .chat-bubble .rejchat-photo,
+body.rj-community .chat-bubble img.rejchat-photo {
+  display: block !important;
+  width: auto !important;
+  max-width: 100% !important;
+  max-height: 320px !important;
+  margin-top: 6px !important;
+  border: 0 !important;
+  border-radius: 12px !important;
+}
+
+body.rj-community .rejchat-photo-load {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin-top: 6px !important;
+  padding: 7px 12px !important;
+  border: 1px solid var(--rm-line-2) !important;
+  border-radius: 999px !important;
+  background: var(--rm-raise) !important;
+  color: var(--rm-ink) !important;
+  font: 600 11.5px/1 "Inter", system-ui, sans-serif !important;
+  cursor: pointer;
+}
+
+body.rj-community .chat-msg.is-mine .rejchat-photo-load {
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+}
+
+body.rj-community .rejchat-photo-expired {
+  display: block !important;
+  margin-top: 5px !important;
+  color: var(--rm-faint) !important;
+  font-size: 11px !important;
+}
+
+/* ------------------------------------------------------------ grupowanie --- */
+
+body.rj-community .chat-msg.is-grouped .chat-author,
+body.rj-community .chat-msg.is-grouped .chat-time,
+body.rj-community .chat-msg.is-grouped .chat-meta > strong {
+  display: none !important;
+}
+
+body.rj-community .chat-msg.is-grouped .comm-avatar {
+  visibility: hidden !important;
+}
+
+body.rj-community .chat-msg.is-grouped .chat-bubble {
+  margin-top: 5px !important;
+  border-radius: 16px !important;
+}
+
+body.rj-community .chat-msg.is-grouped.is-mine .chat-bubble {
+  border-radius: 16px !important;
+}
+
+
+
+/* reakcje: pod tekstem, nadal wewnątrz dymka */
+body.rj-community .rc-reaction-summary {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+  align-self: flex-start !important;
+  max-width: 100% !important;
+  max-height: 24px !important;
+  margin: 3px 0 0 !important;
+  overflow: hidden !important;
+  order: 3;
+}
+
+body.rj-community .rc-reaction-count {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+  min-height: 20px !important;
+  padding: 0 7px !important;
+  border: 1px solid rgba(140, 175, 235, 0.24) !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.07) !important;
+  color: #c8d8ef !important;
+  font: 600 10.5px/1 "Inter", system-ui, sans-serif !important;
+  cursor: pointer;
+}
+
+body.rj-community .rc-reaction-count[aria-pressed="true"] {
+  border-color: rgba(120, 175, 255, 0.6) !important;
+  background: rgba(90, 149, 255, 0.22) !important;
+  color: #eaf3ff !important;
+}
+
+body.rj-community .chat-msg.is-mine .rc-reaction-count {
+  border-color: rgba(255, 255, 255, 0.35) !important;
+  background: rgba(255, 255, 255, 0.16) !important;
+  color: #f2f8ff !important;
+}
+
+/* menu wiadomości (⋯) i skrót do DM */
+body.rj-community .chat-private-start,
+body.rj-community .chat-delete,
+body.rj-community .rc-message-menu > summary {
+  display: inline-grid !important;
+  place-items: center !important;
+  width: 20px !important;
+  height: 20px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 7px !important;
+  background: transparent !important;
+  color: var(--rm-faint) !important;
+  font: 600 12px/1 "Inter", system-ui, sans-serif !important;
+  cursor: pointer;
+  list-style: none;
+  opacity: 0;
+  transition: opacity 0.16s var(--rm-ease), background 0.16s var(--rm-ease), color 0.16s var(--rm-ease);
+}
+
+body.rj-community .chat-msg:hover .chat-private-start,
+body.rj-community .chat-msg:hover .chat-delete,
+body.rj-community .chat-msg:hover .rc-message-menu > summary,
+body.rj-community .chat-msg:focus-within .chat-private-start,
+body.rj-community .chat-msg:focus-within .chat-delete,
+body.rj-community .chat-msg:focus-within .rc-message-menu > summary {
+  opacity: 1;
+}
+
+body.rj-community .chat-private-start:hover,
+body.rj-community .chat-delete:hover,
+body.rj-community .rc-message-menu > summary:hover {
+  background: var(--rm-raise-2) !important;
+  color: var(--rm-ink) !important;
+}
+
+body.rj-community .rc-message-menu {
+  position: absolute !important;
+  top: 4px !important;
+  right: 4px !important;
+  z-index: 4;
+  display: inline-block !important;
+  margin: 0 !important;
+}
+
+body.rj-community .rc-message-menu > summary::-webkit-details-marker {
+  display: none !important;
+}
+
+body.rj-community .rc-message-menu .rc-menu-items {
+  display: grid !important;
+  gap: 2px !important;
+  min-width: 224px !important;
+  padding: 7px !important;
+  border: 1px solid var(--rm-line-2) !important;
+  border-radius: 16px !important;
+  background: #0e1728 !important;
+  box-shadow: 0 30px 60px -28px rgba(0, 3, 10, 0.95) !important;
+  z-index: 60;
+}
+
+html[data-theme="light"] body.rj-community .rc-message-menu .rc-menu-items {
+  background: #ffffff !important;
+}
+
+body.rj-community .rc-message-menu .rc-menu-items button {
+  justify-content: flex-start !important;
+  width: 100% !important;
+  padding: 8px 10px !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  background: transparent !important;
+  color: var(--rm-ink) !important;
+  font: 500 12px/1.3 "Inter", system-ui, sans-serif !important;
+  text-align: left !important;
+  cursor: pointer;
+}
+
+body.rj-community .rc-message-menu .rc-menu-items button:hover {
+  background: var(--rm-raise-2) !important;
+}
+
+body.rj-community .rc-message-menu .rc-menu-items .chat-delete,
+body.rj-community .rc-message-menu .rc-menu-items .rejchat-message-action {
+  display: flex !important;
+  width: 100% !important;
+  height: auto !important;
+  opacity: 1 !important;
+}
+
+body.rj-community .rc-reaction-picker {
+  display: flex !important;
+  gap: 2px !important;
+  padding-bottom: 5px !important;
+  border-bottom: 1px solid var(--rm-line) !important;
+  margin-bottom: 4px !important;
+}
+
+body.rj-community .rc-reaction-picker .rejchat-reaction {
+  width: 30px !important;
+  height: 30px !important;
+  border: 0 !important;
+  border-radius: 9px !important;
+  background: transparent !important;
+  font-size: 16px !important;
+  line-height: 1 !important;
+  cursor: pointer;
+}
+
+body.rj-community .rc-reaction-picker .rejchat-reaction:hover {
+  background: var(--rm-raise-2) !important;
+}
+
+body.rj-community .rc-reaction-picker .rejchat-reaction[aria-pressed="true"] {
+  background: var(--rm-accent-soft) !important;
+}
+
+/* ------------------------------------------------------------ pisanie --- */
+
+body.rj-community .rejchat-compose-context {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin: 0 18px 8px !important;
+  padding: 8px 12px !important;
+  border: 1px solid var(--rm-line) !important;
+  border-radius: 14px !important;
+  background: var(--rm-accent-soft) !important;
+  color: var(--rm-ink) !important;
+  font: 500 11.5px/1.4 "Inter", system-ui, sans-serif !important;
+}
+
+body.rj-community .rejchat-compose-context button {
+  margin-left: auto !important;
+  padding: 3px 9px !important;
+  border: 1px solid var(--rm-line-2) !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  color: var(--rm-sub) !important;
+  font: 600 10.5px/1.4 "Inter", system-ui, sans-serif !important;
+  cursor: pointer;
+}
+
+body.rj-community .comm-chat-form {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: flex-end !important;
+  gap: 6px !important;
+  margin: 0 16px 6px !important;
+  padding: 7px !important;
+  border: 1px solid rgba(140, 175, 235, 0.2) !important;
+  border-radius: 24px !important;
+  background: rgba(8, 14, 26, 0.78) !important;
+  box-shadow: 0 20px 45px -30px rgba(0, 3, 10, 0.95) !important;
+  backdrop-filter: blur(14px) saturate(150%) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(150%) !important;
+  transition: border-color 0.2s var(--rm-ease), box-shadow 0.2s var(--rm-ease);
+}
+
+html[data-theme="light"] body.rj-community .comm-chat-form {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border-color: rgba(28, 66, 122, 0.16) !important;
+}
+
+body.rj-community .comm-chat-form:focus-within {
+  border-color: rgba(120, 175, 255, 0.6) !important;
+  box-shadow: 0 0 0 3px rgba(90, 149, 255, 0.14), 0 20px 45px -30px rgba(0, 3, 10, 0.95) !important;
+}
+
+body.rj-community .comm-chat-form .comm-input,
+body.rj-community .comm-chat-form textarea {
+  flex: 1 1 220px !important;
+  min-width: 0 !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  max-height: 96px !important;
+  margin: 0 !important;
+  padding: 9px 8px !important;
+  border: 0 !important;
+  border-radius: 16px !important;
+  background: transparent !important;
+  color: var(--rm-ink) !important;
+  font: 400 13.5px/1.5 "Inter", system-ui, sans-serif !important;
+  resize: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+body.rj-community .comm-chat-form .comm-input::placeholder,
+body.rj-community .comm-chat-form textarea::placeholder {
+  color: var(--rm-faint) !important;
+}
+
+body.rj-community .rc-compose-tools {
+  display: flex !important;
+  align-items: center !important;
+  gap: 2px !important;
+  margin: 0 0 0 auto !important;
+  padding: 0 !important;
+}
+
+body.rj-community .rc-compose-tools > * {
+  flex: none;
+}
+
+body.rj-community .rc-emoji-toggle,
+body.rj-community .rc-compose-file,
+body.rj-community .rejchat-photo-picker > label {
+  display: grid !important;
+  place-items: center !important;
+  width: 36px !important;
+  height: 36px !important;
+  padding: 0 !important;
+  border: 1px solid transparent !important;
+  border-radius: 50% !important;
+  background: transparent !important;
+  color: var(--rm-sub) !important;
+  font: 600 14px/1 "Inter", system-ui, sans-serif !important;
+  text-decoration: none !important;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+body.rj-community .rc-emoji-toggle span,
+body.rj-community .rc-compose-file span {
+  display: none !important;
+}
+
+body.rj-community .rc-emoji-toggle:hover,
+body.rj-community .rc-compose-file:hover,
+body.rj-community .rejchat-photo-picker > label:hover {
+  border-color: var(--rm-line) !important;
+  background: var(--rm-raise) !important;
+  color: var(--rm-ink) !important;
+}
+
+body.rj-community .rejchat-photo-picker {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  min-width: 0 !important;
+}
+
+body.rj-community .rejchat-photo-picker input[type="file"] {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+body.rj-community .rejchat-photo-picker > span {
+  display: none !important;
+  color: var(--rm-sub) !important;
+  font: 500 10.5px/1.4 "Inter", system-ui, sans-serif !important;
+}
+
+body.rj-community .rejchat-photo-picker.has-file > span {
+  display: block !important;
+  max-width: 190px !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+body.rj-community .rejchat-photo-picker > button {
+  padding: 3px 8px !important;
+  border: 1px solid var(--rm-line-2) !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  color: var(--rm-sub) !important;
+  font: 600 10px/1.4 "Inter", system-ui, sans-serif !important;
+  cursor: pointer;
+}
+
+body.rj-community .comm-chat-form .btn-primary,
+body.rj-community .comm-chat-form #chat-send,
+body.rj-community .comm-chat-form #dm-send {
+  display: grid !important;
+  place-items: center !important;
+  width: 38px !important;
+  height: 38px !important;
+  min-width: 38px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+  background: linear-gradient(150deg, var(--rm-bubble-mine-a), var(--rm-bubble-mine-b)) !important;
+  color: #ffffff !important;
+  font: 700 13px/1 "Inter", system-ui, sans-serif !important;
+  box-shadow: 0 12px 24px -14px rgba(79, 140, 255, 0.95) !important;
+  cursor: pointer;
+  overflow: hidden;
+  text-indent: 0;
+  transition: filter 0.18s var(--rm-ease), transform 0.18s var(--rm-ease);
+}
+
+body.rj-community .comm-chat-form .btn-primary span {
+  display: none !important;
+}
+
+body.rj-community .comm-chat-form #chat-send::after {
+  content: "↑";
+  font-size: 16px;
+  line-height: 1;
+}
+
+body.rj-community .comm-chat-form #chat-send {
+  font-size: 0 !important;
+}
+
+body.rj-community .comm-chat-form #dm-send::after {
+  content: "↑";
+  font-size: 16px;
+  line-height: 1;
+}
+
+body.rj-community .comm-chat-form #dm-send {
+  font-size: 0 !important;
+}
+
+body.rj-community .comm-chat-form .btn-primary:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+body.rj-community .comm-chat-form .btn-primary:disabled,
+body.rj-community .comm-chat-form #chat-send:disabled,
+body.rj-community .comm-chat-form #dm-send:disabled {
+  background: var(--rm-raise-2) !important;
+  color: var(--rm-faint) !important;
+  box-shadow: none !important;
+  cursor: not-allowed;
+}
+
+body.rj-community .chat-length,
+body.rj-community .dm-length {
+  margin: 0 24px 4px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  line-height: 1.3 !important;
+  color: var(--rm-faint) !important;
+  font: 500 9.5px/1.4 "Inter", system-ui, sans-serif !important;
+  text-align: right !important;
+}
+
+body.rj-community .comm-chat-note {
+  margin: 0 24px 4px !important;
+  padding: 0 !important;
+  background: none !important;
+  color: var(--rm-faint) !important;
+  font: 500 10.5px/1.45 "Inter", system-ui, sans-serif !important;
+  text-align: center !important;
+}
+
+body.rj-community .comm-chat-note:empty {
+  display: none !important;
+}
+
+body.rj-community #chat-note {
+  margin: 0 20px 16px !important;
+  padding: 14px 16px !important;
+  border: 1px solid var(--rm-line) !important;
+  border-radius: 16px !important;
+  background: var(--rm-raise) !important;
+  color: var(--rm-sub) !important;
+  font-size: 12px !important;
+}
+
+body.rj-community .chat-join,
+body.rj-community #chat-join-fallback {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  margin-left: 8px !important;
+  padding: 7px 14px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: linear-gradient(150deg, var(--rm-bubble-mine-a), var(--rm-bubble-mine-b)) !important;
+  color: #ffffff !important;
+  font: 650 11.5px/1 "Inter", system-ui, sans-serif !important;
+  text-decoration: none !important;
+  cursor: pointer;
+}
+
+body.rj-community .chat-jump {
+  position: absolute !important;
+  bottom: 92px !important;
+  left: 50% !important;
+  translate: -50% 0;
+  z-index: 5;
+  padding: 7px 14px !important;
+  border: 1px solid var(--rm-line-2) !important;
+  border-radius: 999px !important;
+  background: #16233a !important;
+  color: var(--rm-ink) !important;
+  font: 650 11px/1 "Inter", system-ui, sans-serif !important;
+  box-shadow: 0 16px 30px -20px #000 !important;
+  cursor: pointer;
+}
+
+/* szkice z RejFile / RejSejfu */
+body.rj-community .rejchat-file-draft {
+  margin: 0 16px 8px !important;
+  padding: 11px 13px !important;
+  border: 1px dashed var(--rm-line-2) !important;
+  border-radius: 16px !important;
+  background: var(--rm-raise) !important;
+  color: var(--rm-sub) !important;
+  font: 400 11.5px/1.5 "Inter", system-ui, sans-serif !important;
+}
+
+body.rj-community .rejchat-file-draft strong {
+  display: block !important;
+  margin-bottom: 3px !important;
+  color: var(--rm-ink) !important;
+  font-size: 12px !important;
+}
+
+body.rj-community .rejchat-file-draft > div {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 7px !important;
+  margin-top: 8px !important;
+}
+
+body.rj-community .rejchat-file-draft .btn {
+  padding: 6px 11px !important;
+  border-radius: 999px !important;
+  font-size: 11px !important;
+}
+
+/* panel emotek */
+body.rj-community .rc-emoji-panel {
+  border: 1px solid var(--rm-line-2) !important;
+  border-radius: 18px !important;
+  background: #0e1728 !important;
+  box-shadow: 0 30px 60px -28px rgba(0, 3, 10, 0.95) !important;
+}
+
+html[data-theme="light"] body.rj-community .rc-emoji-panel {
+  background: #ffffff !important;
+}
+
+/* ---------------------------------------------------------- prywatne DM --- */
+
+body.rj-community .dm-view .comm-chat-head {
+  padding-bottom: 12px !important;
+}
+
+body.rj-community .rc-dm-privacy {
+  margin: 10px 20px 0 !important;
+  padding: 0 !important;
+  border: 1px solid var(--rm-line) !important;
+  border-radius: 14px !important;
+  background: var(--rm-raise) !important;
+  color: var(--rm-sub) !important;
+  font-size: 11px !important;
+  overflow: hidden;
+}
+
+body.rj-community .rc-dm-privacy summary {
+  padding: 9px 12px !important;
+  color: var(--rm-sub) !important;
+  font: 600 11px/1.4 "Inter", system-ui, sans-serif !important;
+  cursor: pointer;
+}
+
+body.rj-community .rc-dm-privacy p {
+  margin: 0 !important;
+  padding: 0 12px 11px !important;
+  color: var(--rm-faint) !important;
+  font-size: 11px !important;
+  line-height: 1.5 !important;
+}
+
+body.rj-community #dm-member {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+}
+
+body.rj-community .dm-new-form {
+  margin: 10px 20px 0 !important;
+  padding: 0 !important;
+}
+
+body.rj-community .dm-new-form label {
+  display: block !important;
+  margin-bottom: 5px !important;
+  color: var(--rm-faint) !important;
+  font: 700 9px/1.3 "JetBrains Mono", ui-monospace, monospace !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase !important;
+}
+
+body.rj-community .dm-new-form > div {
+  display: flex !important;
+  gap: 7px !important;
+}
+
+body.rj-community .dm-new-form .comm-input {
+  flex: 1 !important;
+  min-width: 0 !important;
+  min-height: 36px !important;
+  padding: 7px 14px !important;
+  border: 1px solid var(--rm-line) !important;
+  border-radius: 999px !important;
+  background: var(--rm-raise) !important;
+  color: var(--rm-ink) !important;
+  font: 400 12.5px/1.4 "Inter", system-ui, sans-serif !important;
+  outline: none !important;
+}
+
+body.rj-community .dm-new-form .btn {
+  border-radius: 999px !important;
+  font-size: 11.5px !important;
+}
+
+body.rj-community .dm-inbox {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+  margin: 10px 20px 0 !important;
+  padding: 0 0 10px !important;
+  border: 0 !important;
+  border-bottom: 1px solid var(--rm-line) !important;
+  background: none !important;
+}
+
+body.rj-community .dm-conversation {
+  padding: 6px 12px !important;
+  border: 1px solid var(--rm-line) !important;
+  border-radius: 999px !important;
+  background: var(--rm-raise) !important;
+  color: var(--rm-sub) !important;
+  font: 600 11.5px/1.3 "Inter", system-ui, sans-serif !important;
+  cursor: pointer;
+}
+
+body.rj-community .dm-conversation[aria-pressed="true"] {
+  border-color: transparent !important;
+  background: linear-gradient(150deg, var(--rm-bubble-mine-a), var(--rm-bubble-mine-b)) !important;
+  color: #ffffff !important;
+}
+
+body.rj-community #dm-thread {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+}
+
+body.rj-community .dm-thread-title {
+  margin: 12px 20px 0 !important;
+  color: var(--rm-ink) !important;
+  font: 650 14px/1.2 "Space Grotesk", system-ui, sans-serif !important;
+}
+
+body.rj-community .rc-history-search,
+body.rj-community .dm-older {
+  align-self: flex-start !important;
+  margin: 8px 20px 0 !important;
+  padding: 5px 11px !important;
+  border: 1px solid var(--rm-line) !important;
+  border-radius: 999px !important;
+  background: var(--rm-raise) !important;
+  color: var(--rm-sub) !important;
+  font: 600 10.5px/1.4 "Inter", system-ui, sans-serif !important;
+  cursor: pointer;
+}
+
+/* w DM nie ma awatarów w wierszach — dymki trzymają tylko treść */
+body.rj-community #dm-messages {
+  padding: 16px 20px 4px !important;
+}
+
+body.rj-community #dm-messages .chat-msg,
+body.rj-community #dm-messages .chat-msg.is-mine {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+body.rj-community #dm-messages .chat-bubble {
+  max-width: min(82%, 520px) !important;
+}
+
+
+
+/* ---------------------------------------------------------------- wpisy --- */
+
+body.rj-community #panel-posts {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  padding: 14px clamp(12px, 2vw, 20px) 18px !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+  scrollbar-width: thin;
+}
+
+body.rj-community #panel-posts[hidden] {
+  display: none !important;
+}
+
+body.rj-community .rejchat-target-note {
+  margin: 0 !important;
+  padding: 9px 13px !important;
+  border: 1px solid var(--rm-line) !important;
+  border-radius: 14px !important;
+  background: var(--rm-accent-soft) !important;
+  color: var(--rm-sub) !important;
+  font-size: 11.5px !important;
+}
+
+body.rj-community .comm-composer,
+body.rj-community .comm-composer.glass-card {
+  margin: 0 !important;
+  padding: 13px !important;
+  border: 1px solid var(--rm-line) !important;
+  border-radius: 20px !important;
+  background: var(--rm-raise) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body.rj-community .comm-user-row {
+  display: flex !important;
+  align-items: center !important;
+  gap: 9px !important;
+  margin-bottom: 9px !important;
+}
+
+body.rj-community .comm-user-chip {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  color: var(--rm-ink) !important;
+  font: 600 12px/1.2 "Inter", system-ui, sans-serif !important;
+}
+
+body.rj-community .comm-composer .comm-textarea {
+  width: 100% !important;
+  min-height: 74px !important;
+  padding: 10px 12px !important;
+  border: 1px solid var(--rm-line) !important;
+  border-radius: 14px !important;
+  background: rgba(4, 8, 16, 0.34) !important;
+  color: var(--rm-ink) !important;
+  font: 400 13px/1.55 "Inter", system-ui, sans-serif !important;
+  resize: vertical !important;
+  outline: none !important;
+}
+
+html[data-theme="light"] body.rj-community .comm-composer .comm-textarea {
+  background: #ffffff !important;
+}
+
+body.rj-community .comm-composer-foot {
+  display: flex !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  margin-top: 9px !important;
+}
+
+body.rj-community .comm-pill-btn {
+  padding: 6px 12px !important;
+  border: 1px solid var(--rm-line) !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  color: var(--rm-sub) !important;
+  font: 600 11px/1.4 "Inter", system-ui, sans-serif !important;
+  cursor: pointer;
+}
+
+body.rj-community .comm-counter {
+  margin-left: auto !important;
+  color: var(--rm-faint) !important;
+  font-size: 10px !important;
+}
+
+body.rj-community .comm-feed {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+}
+
+body.rj-community .comm-feed-head {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 0 2px !important;
+}
+
+body.rj-community .comm-feed-head h2 {
+  margin: 0 !important;
+  color: var(--rm-ink) !important;
+  font: 650 14px/1.2 "Space Grotesk", system-ui, sans-serif !important;
+}
+
+body.rj-community .comm-feed-head .btn {
+  margin-left: auto !important;
+  padding: 5px 11px !important;
+  border: 1px solid var(--rm-line) !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  color: var(--rm-sub) !important;
+  font: 600 10.5px/1.4 "Inter", system-ui, sans-serif !important;
+  cursor: pointer;
+}
+
+body.rj-community #posts-feed {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+}
+
+body.rj-community .post-card {
+  margin: 0 !important;
+  padding: 13px 14px !important;
+  border: 1px solid var(--rm-line) !important;
+  border-radius: 18px !important;
+  background: var(--rm-raise) !important;
+  box-shadow: none !important;
+}
+
+body.rj-community .post-head {
+  display: flex !important;
+  align-items: center !important;
+  gap: 9px !important;
+}
+
+body.rj-community .post-author {
+  color: var(--rm-ink) !important;
+  font: 650 12.5px/1.2 "Inter", system-ui, sans-serif !important;
+}
+
+body.rj-community .post-time {
+  color: var(--rm-faint) !important;
+  font-size: 10.5px !important;
+}
+
+body.rj-community .post-content {
+  margin: 8px 0 0 !important;
+  color: #dbe6f6 !important;
+  font: 400 13px/1.6 "Inter", system-ui, sans-serif !important;
+  overflow-wrap: anywhere;
+}
+
+html[data-theme="light"] body.rj-community .post-content {
+  color: #182942 !important;
+}
+
+body.rj-community .post-media,
+body.rj-community .post-media-item,
+body.rj-community .post-media-img,
+body.rj-community .post-media-video {
+  border-radius: 14px !important;
+  overflow: hidden !important;
+}
+
+body.rj-community .post-foot {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin-top: 9px !important;
+  padding-top: 9px !important;
+  border-top: 1px solid var(--rm-line) !important;
+}
+
+body.rj-community .comm-like-btn {
+  border: 1px solid var(--rm-line) !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  color: var(--rm-sub) !important;
+  font: 600 11px/1.4 "Inter", system-ui, sans-serif !important;
+  padding: 4px 10px !important;
+  cursor: pointer;
+}
+
+body.rj-community .comm-like-btn.is-liked {
+  border-color: transparent !important;
+  background: var(--rm-accent-soft) !important;
+  color: var(--rm-accent) !important;
+}
+
+body.rj-community .post-tag,
+body.rj-community .comm-tag-chip {
+  padding: 3px 9px !important;
+  border: 1px solid var(--rm-line) !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  color: var(--rm-sub) !important;
+  font: 600 10px/1.5 "Inter", system-ui, sans-serif !important;
+  cursor: pointer;
+}
+
+body.rj-community .comm-tag-chip.is-active {
+  border-color: transparent !important;
+  background: var(--rm-accent-soft) !important;
+  color: var(--rm-accent) !important;
+}
+
+body.rj-community .comm-feed-note {
+  margin: 0 0 4px !important;
+  color: var(--rm-faint) !important;
+  font: 500 10.5px/1.4 "Inter", system-ui, sans-serif !important;
+  text-align: center !important;
+}
+
+body.rj-community .comments-list,
+body.rj-community .comment-form {
+  margin-top: 9px !important;
+  padding-top: 9px !important;
+  border-top: 1px solid var(--rm-line) !important;
+}
+
+body.rj-community .comment-input {
+  width: 100% !important;
+  padding: 8px 12px !important;
+  border: 1px solid var(--rm-line) !important;
+  border-radius: 14px !important;
+  background: rgba(4, 8, 16, 0.3) !important;
+  color: var(--rm-ink) !important;
+  font: 400 12px/1.5 "Inter", system-ui, sans-serif !important;
+  outline: none !important;
+}
+
+/* ---------------------------------------------------------- panel informacji --- */
+
+body.rj-community .rejchat-info {
+  grid-column: 3 !important;
+  grid-row: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+  padding: 16px 14px !important;
+  border: 0 !important;
+  border-left: 1px solid var(--rm-line) !important;
+  border-radius: 0 !important;
+  background: linear-gradient(200deg, rgba(79, 140, 255, 0.07), transparent 62%) !important;
+  box-shadow: none !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+  scrollbar-width: thin;
+}
+
+body.rj-community .rejchat-info-heading {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px !important;
+  margin: 0 !important;
+  padding: 0 2px !important;
+  border: 0 !important;
+}
+
+body.rj-community .rejchat-info-heading span {
+  color: var(--rm-faint) !important;
+  font: 700 8.5px/1.3 "JetBrains Mono", ui-monospace, monospace !important;
+  letter-spacing: 0.16em !important;
+  text-transform: uppercase !important;
+}
+
+body.rj-community .rejchat-info-heading strong {
+  color: var(--rm-ink) !important;
+  font: 650 15px/1.2 "Space Grotesk", system-ui, sans-serif !important;
+}
+
+body.rj-community .comm-online-card,
+body.rj-community .comm-online-card.glass-card {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+body.rj-community .comm-online-card h2 {
+  display: flex !important;
+  align-items: center !important;
+  gap: 7px !important;
+  margin: 0 0 8px !important;
+  color: var(--rm-sub) !important;
+  font: 700 9px/1.3 "JetBrains Mono", ui-monospace, monospace !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase !important;
+}
+
+body.rj-community .comm-online-dot {
+  width: 6px !important;
+  height: 6px !important;
+  border-radius: 50% !important;
+  background: var(--rm-accent) !important;
+  box-shadow: 0 0 0 3px var(--rm-accent-soft) !important;
+}
+
+body.rj-community .comm-online {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(58px, 1fr)) !important;
+  gap: 7px !important;
+  margin: 0 !important;
+}
+
+body.rj-community .comm-online-user {
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 4px !important;
+  padding: 8px 3px 6px !important;
+  border: 1px solid var(--rm-line) !important;
+  border-radius: 14px !important;
+  background: var(--rm-raise) !important;
+  color: var(--rm-sub) !important;
+  font: 600 9px/1.25 "Inter", system-ui, sans-serif !important;
+  text-align: center !important;
+  overflow: hidden !important;
+}
+
+body.rj-community .comm-online-user .comm-avatar {
+  width: 28px !important;
+  height: 28px !important;
+  border-radius: 50% !important;
+  font-size: 10.5px !important;
+  position: relative;
+  z-index: 1;
+}
+
+body.rj-community .comm-online-user > a {
+  color: var(--rm-ink) !important;
+  text-decoration: none !important;
+  font: 650 9.5px/1.2 "Inter", system-ui, sans-serif !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+body.rj-community .comm-online-user .comm-online-dot {
+  position: absolute !important;
+  top: 7px !important;
+  right: 8px !important;
+  width: 6px !important;
+  height: 6px !important;
+  box-shadow: none !important;
+}
+
+body.rj-community .comm-online-count {
+  display: none !important;
+}
+
+body.rj-community .comm-online-empty {
+  grid-column: 1 / -1 !important;
+  padding: 10px !important;
+  border: 1px dashed var(--rm-line-2) !important;
+  border-radius: 14px !important;
+  color: var(--rm-faint) !important;
+  font: 500 10.5px/1.45 "Inter", system-ui, sans-serif !important;
+  text-align: center !important;
+}
+
+body.rj-community .rejchat-online-note {
+  margin: 7px 0 0 !important;
+  color: var(--rm-faint) !important;
+  font: 500 9.5px/1.4 "Inter", system-ui, sans-serif !important;
+}
+
+body.rj-community .rejchat-rules {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 1px solid var(--rm-line) !important;
+  border-radius: 16px !important;
+  background: var(--rm-raise) !important;
+  overflow: hidden !important;
+}
+
+body.rj-community .rejchat-rules summary {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 10px 12px !important;
+  color: var(--rm-sub) !important;
+  cursor: pointer;
+  list-style: none;
+}
+
+body.rj-community .rejchat-rules summary::-webkit-details-marker {
+  display: none !important;
+}
+
+body.rj-community .rejchat-rules summary strong {
+  display: block !important;
+  color: var(--rm-ink) !important;
+  font: 650 11.5px/1.25 "Inter", system-ui, sans-serif !important;
+}
+
+body.rj-community .rejchat-rules summary small {
+  display: block !important;
+  color: var(--rm-faint) !important;
+  font: 500 9.5px/1.3 "Inter", system-ui, sans-serif !important;
+}
+
+body.rj-community .rejchat-rules summary::after {
+  content: "+" !important;
+  flex: none !important;
+  display: grid !important;
+  place-items: center !important;
+  width: 22px !important;
+  height: 22px !important;
+  margin-left: auto !important;
+  border: 1px solid var(--rm-line) !important;
+  border-radius: 50% !important;
+  color: var(--rm-sub) !important;
+  font: 600 14px/1 "Inter", system-ui, sans-serif !important;
+}
+
+body.rj-community .rejchat-rules[open] summary::after {
+  content: "−" !important;
+}
+
+body.rj-community .rejchat-rules summary > span:first-child {
+  display: none !important;
+}
+
+body.rj-community .rejchat-rules[open] summary {
+  border-bottom: 1px solid var(--rm-line) !important;
+}
+
+body.rj-community .rejchat-rules-body {
+  padding: 10px 12px 12px !important;
+  color: var(--rm-faint) !important;
+  font: 400 10.5px/1.55 "Inter", system-ui, sans-serif !important;
+}
+
+body.rj-community .rejchat-rules-body h2 {
+  margin: 0 0 6px !important;
+  color: var(--rm-ink) !important;
+  font: 650 12px/1.3 "Space Grotesk", system-ui, sans-serif !important;
+}
+
+body.rj-community .rejchat-rules-body ol {
+  margin: 0 0 8px !important;
+  padding-left: 16px !important;
+}
+
+body.rj-community .rejchat-rules-body p {
+  margin: 0 0 6px !important;
+}
+
+body.rj-community .rejchat-info-tip {
+  display: flex !important;
+  gap: 9px !important;
+  margin-top: auto !important;
+  padding: 11px 12px !important;
+  border: 1px solid var(--rm-line) !important;
+  border-radius: 16px !important;
+  background: var(--rm-raise) !important;
+  color: var(--rm-faint) !important;
+  font: 400 10.5px/1.45 "Inter", system-ui, sans-serif !important;
+}
+
+body.rj-community .rejchat-info-tip strong {
+  color: var(--rm-ink) !important;
+  font-size: 11.5px !important;
+}
+
+body.rj-community .rejchat-info-tip a {
+  color: var(--rm-accent) !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+}
+
+body.rj-community .rejchat-info-tip p {
+  margin: 0 !important;
+}
+
+body.rj-community #comm-online ~ .rejchat-online-note,
+body.rj-community .rejchat-info > * {
+  min-width: 0;
+}
+
+/* --------------------------------------------------------------- logowanie --- */
+
+body.rj-community .chat-auth-dialog {
+  width: min(440px, calc(100% - 24px)) !important;
+  padding: 0 !important;
+  border: 1px solid var(--rm-line-2) !important;
+  border-radius: 24px !important;
+  background: #0c1524 !important;
+  color: var(--rm-ink) !important;
+  box-shadow: 0 40px 100px -40px #000 !important;
+  overflow: hidden !important;
+}
+
+html[data-theme="light"] body.rj-community .chat-auth-dialog {
+  background: #ffffff !important;
+}
+
+body.rj-community .chat-auth-dialog::backdrop {
+  background: rgba(3, 7, 14, 0.62) !important;
+  backdrop-filter: blur(6px) !important;
+  -webkit-backdrop-filter: blur(6px) !important;
+}
+
+body.rj-community .chat-auth-close {
+  position: absolute !important;
+  top: 10px !important;
+  right: 10px !important;
+  z-index: 2;
+  width: 32px !important;
+  height: 32px !important;
+  border: 1px solid var(--rm-line) !important;
+  border-radius: 50% !important;
+  background: var(--rm-raise) !important;
+  color: var(--rm-sub) !important;
+  font-size: 16px !important;
+  cursor: pointer;
+}
+
+body.rj-community .comm-auth-inner,
+body.rj-community .comm-auth {
+  padding: 22px !important;
+  background: none !important;
+}
+
+body.rj-community .comm-auth h2 {
+  margin: 0 0 6px !important;
+  color: var(--rm-ink) !important;
+  font: 650 20px/1.2 "Space Grotesk", system-ui, sans-serif !important;
+  letter-spacing: -0.02em !important;
+}
+
+body.rj-community .comm-auth-sub {
+  margin: 0 0 8px !important;
+  color: var(--rm-sub) !important;
+  font: 400 11.5px/1.55 "Inter", system-ui, sans-serif !important;
+}
+
+body.rj-community .comm-auth label {
+  display: block !important;
+  margin: 10px 0 4px !important;
+  color: var(--rm-faint) !important;
+  font: 700 9px/1.3 "JetBrains Mono", ui-monospace, monospace !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase !important;
+}
+
+body.rj-community .comm-auth input[type="text"],
+body.rj-community .comm-auth input[type="password"] {
+  width: 100% !important;
+  min-height: 40px !important;
+  padding: 8px 14px !important;
+  border: 1px solid var(--rm-line-2) !important;
+  border-radius: 999px !important;
+  background: var(--rm-raise) !important;
+  color: var(--rm-ink) !important;
+  font: 400 13px/1.4 "Inter", system-ui, sans-serif !important;
+  outline: none !important;
+}
+
+body.rj-community .comm-auth .btn {
+  width: 100% !important;
+  margin-top: 12px !important;
+  padding: 11px 14px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: linear-gradient(150deg, var(--rm-bubble-mine-a), var(--rm-bubble-mine-b)) !important;
+  color: #ffffff !important;
+  font: 650 12.5px/1 "Inter", system-ui, sans-serif !important;
+  cursor: pointer;
+}
+
+/* --------------------------------------------------- stany i dostępność --- */
+
+body.rj-community .comm-layout :is(a, button, input, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--rm-accent) !important;
+  outline-offset: 2px !important;
+  border-radius: 8px;
+}
+
+body.rj-community .chat-msg.is-highlight,
+body.rj-community .chat-msg.is-target {
+  background: var(--rm-accent-soft) !important;
+  border-radius: 14px !important;
+}
+
+body.rj-community .rejchat-mute-notice {
+  margin: 0 0 10px !important;
+  padding: 10px 14px !important;
+  border: 1px solid rgba(255, 190, 120, 0.4) !important;
+  border-radius: 16px !important;
+  background: rgba(255, 190, 120, 0.1) !important;
+  color: #ffe2bd !important;
+  font-size: 11.5px !important;
+}
+
+/* ------------------------------------------------------- responsywność --- */
+
+@media (max-width: 1240px) {
+  body.rj-community .comm-layout {
+    grid-template-columns: 84px minmax(0, 1fr) 222px !important;
+  }
+  body.rj-community .chat-channel-icon {
+    width: 34px !important;
+    height: 34px !important;
+  }
+  body.rj-community .rejchat-info {
+    padding: 14px 11px !important;
+  }
+}
+
+@media (max-width: 1080px) {
+  body.rj-community .comm-layout {
+    grid-template-columns: 80px minmax(0, 1fr) !important;
+  }
+  body.rj-community .rejchat-info {
+    display: none !important;
+  }
+}
+
+@media (max-width: 860px) {
+  body.rj-community .comm-main {
+    padding: 12px 10px 28px !important;
+  }
+  body.rj-community .comm-layout {
+    height: calc(100dvh - 170px) !important;
+    min-height: 420px !important;
+    border-radius: 22px !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    grid-template-rows: auto minmax(0, 1fr) !important;
+  }
+  body.rj-community .comm-sidebar {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    flex-direction: row !important;
+    min-width: 0 !important;
+    padding-right: 8px !important;
+    align-items: center !important;
+    gap: 8px !important;
+    padding: 8px 10px !important;
+    border-right: 0 !important;
+    border-bottom: 1px solid var(--rm-line) !important;
+    background: linear-gradient(90deg, var(--rm-accent-soft), transparent 70%) !important;
+    overflow-x: auto !important;
+    scrollbar-width: none;
+  }
+  body.rj-community .comm-sidebar::-webkit-scrollbar {
+    display: none;
+  }
+  body.rj-community .chat-channel-list {
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 6px !important;
+    width: auto !important;
+  }
+  body.rj-community .chat-channel-label {
+    display: none !important;
+  }
+  body.rj-community .chat-channel {
+    flex-direction: row !important;
+    gap: 7px !important;
+    width: auto !important;
+    padding: 5px 11px 5px 6px !important;
+    border-radius: 999px !important;
+  }
+  body.rj-community .chat-channel.is-active::before {
+    display: none !important;
+  }
+  body.rj-community .chat-channel-icon {
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 9px !important;
+    font-size: 13px !important;
+  }
+  body.rj-community .chat-channel strong {
+    width: auto !important;
+    font-size: 10.5px !important;
+    white-space: nowrap !important;
+  }
+  body.rj-community .dm-unread {
+    position: static !important;
+    margin-left: 2px !important;
+  }
+  body.rj-community .rc-side-link {
+    margin: 0 0 0 auto !important;
+    flex-direction: row !important;
+    width: auto !important;
+    padding: 7px 11px !important;
+    font-size: 10px !important;
+  }
+  body.rj-community .comm-primary {
+    grid-column: 1 !important;
+    grid-row: 2 !important;
+  }
+  body.rj-community .comm-chat-head {
+    padding: 10px 12px !important;
+  }
+  body.rj-community .chat-room-mark {
+    width: 38px !important;
+    height: 38px !important;
+    font-size: 15px !important;
+  }
+  body.rj-community .comm-chat-list,
+  body.rj-community #dm-messages {
+    padding: 14px 12px 4px !important;
+  }
+  body.rj-community .chat-bubble {
+    max-width: 84% !important;
+  }
+  body.rj-community .comm-chat-form {
+    margin: 0 10px 6px !important;
+  }
+  body.rj-community .chat-length,
+  body.rj-community .dm-length,
+  body.rj-community .comm-chat-note {
+    margin-inline: 14px !important;
+  }
+  /* na telefonie nie ma Entera — licznik z podpowiedzią klawiszy tylko zabiera miejsce */
+  body.rj-community .chat-length,
+  body.rj-community .dm-length {
+    display: none !important;
+  }
+}
+
+@media (max-width: 560px) {
+  /* trzy pokoje dzielą szerokość równo — żaden nie jest ucinany przez ramę */
+  body.rj-community .chat-channel-list {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+  }
+  body.rj-community .chat-channel {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    gap: 4px !important;
+    padding: 4px 5px !important;
+  }
+  body.rj-community .chat-channel-icon {
+    width: 24px !important;
+    height: 24px !important;
+    border-radius: 8px !important;
+    font-size: 12px !important;
+  }
+  body.rj-community .chat-channel strong {
+    min-width: 0 !important;
+    max-width: none !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    font-size: 9.5px !important;
+    text-align: left !important;
+  }
+  /* profil i ustawienia są w topbarze — dok zostaje przy samych pokojach */
+  body.rj-community .rc-side-link {
+    display: none !important;
+  }
+  body.rj-community .comm-hero {
+    gap: 8px !important;
+    margin-bottom: 8px !important;
+  }
+  body.rj-community .rc-kicker {
+    display: none !important;
+  }
+  body.rj-community .rejchat-tabs {
+    width: 100% !important;
+  }
+  body.rj-community .rejchat-tabs button {
+    flex: 1 1 0 !important;
+    justify-content: center !important;
+  }
+  body.rj-community .comm-layout {
+    height: calc(100dvh - 168px) !important;
+    border-radius: 18px !important;
+  }
+  body.rj-community .chat-bubble {
+    max-width: 90% !important;
+  }
+  body.rj-community .chat-msg {
+    grid-template-columns: 26px minmax(0, 1fr) !important;
+    column-gap: 7px !important;
+  }
+  body.rj-community .chat-msg .comm-avatar {
+    width: 26px !important;
+    height: 26px !important;
+    font-size: 10px !important;
+  }
+  body.rj-community .comm-chat-hint {
+    display: none !important;
+  }
+  body.rj-community .rc-compose-tools {
+    gap: 0 !important;
+  }
+  body.rj-community .rejchat-photo-picker.has-file > span {
+    display: none !important;
+  }
+}
+
+/* przy włączonych reklamach bocznych `main` jest węższy o 420 px —
+   panel informacji schodzi wtedy wcześniej, żeby czat nie był ściśnięty */
+@media (min-width: 1200px) and (max-width: 1560px) {
+  body.rj-community.rj-side-ads-enabled .rejchat-info {
+    display: none !important;
+  }
+  body.rj-community.rj-side-ads-enabled .comm-layout {
+    grid-template-columns: 84px minmax(0, 1fr) !important;
+  }
+}
+
+/* na niskich ekranach composer i nagłówek muszą zostać widoczne */
+@media (max-height: 620px) and (min-width: 861px) {
+  body.rj-community .comm-layout {
+    height: calc(100dvh - 150px) !important;
+  }
+  body.rj-community .comm-chat-head {
+    padding: 8px 16px !important;
+  }
+  body.rj-community .chat-room-mark {
+    width: 34px !important;
+    height: 34px !important;
+    font-size: 14px !important;
+  }
+  body.rj-community .comm-chat-list {
+    padding-top: 12px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.rj-community .rc-live-dot,
+  body.rj-community .comm-chat-dot {
+    animation: none !important;
+  }
+  body.rj-community .comm-chat-form,
+  body.rj-community .chat-channel,
+  body.rj-community .rejchat-tabs button {
+    transition: none !important;
+  }
+}
+
+
+/* --------------------------------------------------- widoki ukryte naprawdę ---
+   `#chat-private-view` i `#chat-public-view` mają klasę `.comm-chat` z
+   `display: flex !important`, więc sam atrybut [hidden] przegrywał i oba widoki
+   rysowały się jeden pod drugim. Ten blok stoi na końcu arkusza i rozstrzyga
+   to na korzyść atrybutu. */
+body.rj-community .comm-chat[hidden],
+body.rj-community .comm-chat.glass-card[hidden],
+body.rj-community #chat-public-view[hidden],
+body.rj-community #chat-private-view[hidden],
+body.rj-community #panel-chat[hidden],
+body.rj-community #panel-posts[hidden],
+body.rj-community #dm-thread[hidden],
+body.rj-community #dm-member[hidden],
+body.rj-community #dm-inbox[hidden],
+body.rj-community #dm-guest[hidden],
+body.rj-community .rejchat-rules-body[hidden] {
+  display: none !important;
+}
+
+/* ------------------------------------------------------------- dok: finisz ---
+   `hub/glass2.css` maluje dok twardymi kolorami dla ciemnego motywu
+   (`color: #f4f8ff` na etykiecie, jasny gradient na aktywnym kafelku, ikony
+   SVG z jasnym obrysem). Ten blok stoi na samym końcu arkusza i rozstrzyga
+   kolory w obu motywach, żeby w jasnym nic nie zostawało ciemne. */
+body.rj-community .chat-channel strong {
+  color: var(--rm-sub) !important;
+}
+
+body.rj-community .chat-channel.is-active strong {
+  color: var(--rm-ink) !important;
+}
+
+body.rj-community .chat-channel.is-active {
+  border-color: var(--rm-line-2) !important;
+  background: var(--rm-accent-soft) !important;
+  box-shadow: none !important;
+}
+
+body.rj-community .chat-channel-icon {
+  border: 1px solid var(--rm-line) !important;
+  background: var(--rm-raise) !important;
+  background-image: none !important;
+  color: #bcd5ff !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="light"] body.rj-community .chat-channel-icon {
+  background: rgba(24, 60, 118, 0.06) !important;
+  background-image: none !important;
+  color: var(--rm-accent-2) !important;
+}
+
+body.rj-community .chat-channel.is-active .chat-channel-icon,
+html[data-theme="light"] body.rj-community .chat-channel.is-active .chat-channel-icon {
+  border-color: transparent !important;
+  background: linear-gradient(150deg, #6aa5ff, #2f63cf) !important;
+  background-image: linear-gradient(150deg, #6aa5ff, #2f63cf) !important;
+  color: #ffffff !important;
+  box-shadow: 0 10px 22px -12px rgba(79, 140, 255, 0.9) !important;
+}
+
+/* ikony „Linki” i „Prywatne” w glass2 to wbudowane SVG z jasnym obrysem —
+   w jasnym motywie byłyby prawie niewidoczne, więc rysujemy je kolorem tekstu */
+html[data-theme="light"] body.rj-community #channel-links .chat-channel-icon,
+html[data-theme="light"] body.rj-community #channel-private .chat-channel-icon {
+  color: var(--rm-accent-2) !important;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232459b8' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 17 17 7M9 7h8v8'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 17px 17px !important;
+  font-size: 0 !important;
+}
+
+html[data-theme="light"] body.rj-community #channel-private .chat-channel-icon {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232459b8' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5.5' width='18' height='13' rx='2.5'/%3E%3Cpath d='m4.5 8 7.5 5.5L19.5 8'/%3E%3C/svg%3E") !important;
+}
+
+body.rj-community #channel-links .chat-channel-icon,
+body.rj-community #channel-private .chat-channel-icon {
+  font-size: 0 !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 17px 17px !important;
+}
+
+body.rj-community #channel-links .chat-channel-icon {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e4eeff' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 17 17 7M9 7h8v8'/%3E%3C/svg%3E") !important;
+}
+
+body.rj-community #channel-private .chat-channel-icon {
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e4eeff' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='5.5' width='18' height='13' rx='2.5'/%3E%3Cpath d='m4.5 8 7.5 5.5L19.5 8'/%3E%3C/svg%3E") !important;
+}
+
+body.rj-community .chat-channel.is-active #channel-links .chat-channel-icon,
+body.rj-community .chat-channel.is-active .chat-channel-icon {
+  background-color: transparent !important;
+}
+
+/* --------------------------------------------------- motyw jasny: ostatnie ---
+   glass2.css ma na końcu sekcję jasną z twardymi kolorami ciemnego motywu
+   (m.in. `#f4f8ff` na etykiecie aktywnego pokoju i jasne obrysy ikon).
+   Selektory poniżej mają tę samą lub wyższą specyficzność i stoją później,
+   więc w jasnym motywie nic nie zostaje „ciemne na ciemnym”. */
+html[data-theme="light"] body.rj-community .chat-channel :is(strong) {
+  color: var(--rm-sub) !important;
+}
+
+html[data-theme="light"] body.rj-community .chat-channel.is-active :is(strong) {
+  color: var(--rm-ink) !important;
+}
+
+html[data-theme="light"] body.rj-community .chat-channel :is(.chat-channel-icon) {
+  border-color: var(--rm-line) !important;
+  background: rgba(24, 60, 118, 0.06) !important;
+  background-image: none !important;
+  color: var(--rm-accent-2) !important;
+  box-shadow: none !important;
+}
+
+html[data-theme="light"] body.rj-community .chat-channel.is-active :is(.chat-channel-icon) {
+  border-color: transparent !important;
+  background: linear-gradient(150deg, #4d8bf0, #2459b8) !important;
+  color: #ffffff !important;
+  box-shadow: 0 10px 22px -14px rgba(36, 89, 184, 0.85) !important;
+}
+
+html[data-theme="light"] body.rj-community #channel-links :is(.chat-channel-icon),
+html[data-theme="light"] body.rj-community #channel-private :is(.chat-channel-icon) {
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  background-size: 17px 17px !important;
+}
+
+html[data-theme="light"] body.rj-community .chat-bubble :is(.rc-reaction-count) {
+  border-color: rgba(28, 66, 122, 0.18) !important;
+  background: #e3ebf9 !important;
+  color: #2b4a74 !important;
+}
+
+html[data-theme="light"] body.rj-community .chat-bubble :is(.rc-reaction-count)[aria-pressed="true"] {
+  border-color: rgba(36, 89, 184, 0.4) !important;
+  background: rgba(36, 89, 184, 0.14) !important;
+  color: #1c4c9e !important;
+}
+
+html[data-theme="light"] body.rj-community .chat-msg.is-mine .chat-bubble :is(.rc-reaction-count) {
+  border-color: rgba(255, 255, 255, 0.42) !important;
+  background: rgba(255, 255, 255, 0.18) !important;
+  color: #ffffff !important;
+}
+
+html[data-theme="light"] body.rj-community .chat-bubble :is(.chat-time) {
+  color: #6b7f9c !important;
+}
+
+html[data-theme="light"] body.rj-community .chat-msg.is-mine .chat-bubble :is(.chat-time) {
+  color: rgba(240, 247, 255, 0.85) !important;
+}
+
+html[data-theme="light"] body.rj-community .chat-bubble :is(.rejchat-edited) {
+  color: #78909f !important;
+}
+
+html[data-theme="light"] body.rj-community .chat-msg.is-mine .chat-bubble :is(.rejchat-edited) {
+  color: rgba(240, 247, 255, 0.78) !important;
+}
