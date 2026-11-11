@@ -58,7 +58,7 @@
     next: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM5 5v14l10-7z"/></svg>',
     photo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M21 12.5 12.6 21a5 5 0 0 1-7-7l8.6-8.6a3.4 3.4 0 0 1 4.8 4.8l-8.5 8.5a1.8 1.8 0 0 1-2.6-2.6l7.8-7.8"/></svg>',
     note: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.5h14v15H5z"/><path d="M8.5 9h7M8.5 12.5h7M8.5 16h4"/></svg>',
-    chat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 5.5h15v11h-9l-4.5 3.5v-3.5h-1.5z"/></svg>',
+    chat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H10l-5 4v-4H4z"/><path d="M8 9h8M8 12h5"/></svg>',
     file: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7.5 8.5 12 4l4.5 4.5"/><path d="M4.5 15v4.5h15V15"/></svg>',
     link: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M9.5 14.5 14.5 9.5"/><path d="M11 6.5 13 4.5a4.2 4.2 0 0 1 6 6l-2 2"/><path d="M13 17.5 11 19.5a4.2 4.2 0 0 1-6-6l2-2"/></svg>'
   };
@@ -290,25 +290,76 @@
     return quietUntil() > Date.now();
   }
 
+  /* Ile zostało ciszy — w milisekundach (0 = cisza nie trwa). */
+  function quietLeft() {
+    return Math.max(0, quietUntil() - Date.now());
+  }
+
+  function quietLabel(ms) {
+    var total = Math.ceil(ms / 1000);
+    var minutes = Math.floor(total / 60);
+    var seconds = total % 60;
+    return "cisza " + minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+  }
+
+  /* Pigułka „Wróć teraz” — jedyne wyjście z ciszy i jedyny ślad, że wyspa
+     w ogóle istnieje. Widoczna od pierwszej sekundy ciszy do jej końca. */
+  function syncQuietPill() {
+    var pill = within("[data-unquiet]");
+    if (!pill) return;
+    var left = quietLeft();
+    var on = left > 0;
+    pill.hidden = !on;
+    if (!on) {
+      clearInterval(syncQuietPill._timer);
+      return;
+    }
+    var label = pill.querySelector("[data-unquiet-left]");
+    if (label) label.textContent = quietLabel(left);
+    pill.setAttribute("aria-label", "Wróć teraz — wyspa ukryta jeszcze przez " + quietLabel(left).replace("cisza ", ""));
+    clearInterval(syncQuietPill._timer);
+    syncQuietPill._timer = setInterval(function () {
+      var rest = quietLeft();
+      var text = pill.querySelector("[data-unquiet-left]");
+      if (!pill.isConnected) { clearInterval(syncQuietPill._timer); return; }
+      if (rest <= 0) {
+        pill.hidden = true;
+        clearInterval(syncQuietPill._timer);
+        return;
+      }
+      if (text) text.textContent = quietLabel(rest);
+    }, 1000);
+  }
+
   function quiet(minutes) {
     var ms = Math.max(1, Number(minutes) || 30) * 60000;
     store(QUIET_KEY, String(Date.now() + ms));
     if (island) island.classList.add("is-quiet");
-    toast("Cisza na " + Math.round(ms / 60000) + " min — wrócę sam");
+    syncQuietPill();
+    toast("Cisza na " + Math.round(ms / 60000) + " min — wróć przyciskiem u dołu albo Alt+Shift+R");
     clearTimeout(quiet._timer);
     quiet._timer = setTimeout(function () {
       store(QUIET_KEY, "0");
       if (!island) return;
       island.classList.remove("is-quiet");
+      syncQuietPill();
       resetToIdle(true);
       toast("Wyspa wróciła");
     }, ms);
   }
 
-  function endQuiet() {
+  /* Koniec ciszy — wołane przez pigułkę, skrót i API. Wyspa wraca od razu,
+     w tym samym miejscu, w którym była (bez przeładowania strony). */
+  function endQuiet(options) {
+    var wasQuiet = isQuiet();
     store(QUIET_KEY, "0");
     clearTimeout(quiet._timer);
     if (island) island.classList.remove("is-quiet");
+    syncQuietPill();
+    if (!wasQuiet) return false;
+    apply(isCollapsed() ? "min" : "idle");
+    if (!options || !options.silent) toast("Wyspa wróciła — miłego!");
+    return true;
   }
 
   /* -------------------------------------------------- kolejka offline */
@@ -541,6 +592,7 @@
       vpRaf = 0;
       try {
         if (root) root.style.setProperty("--rj-kb", viewport().kb + "px");
+        syncAdsOffset();
         springTo(state);
       } catch (e) { /* trudno */ }
     });
@@ -688,6 +740,7 @@
               '<button type="button" data-corner="right" aria-pressed="false">Prawo</button>' +
             "</div>" +
             '<button class="rj-switch-row" type="button" data-quiet><span class="rj-label">Cisza na 30 minut</span><span class="rj-quiet-hint">ukryj</span></button>' +
+            '<p class="rj-hintline">Ciszę cofniesz od razu: przycisk „Wróć teraz” u dołu ekranu albo skrót Alt+Shift+R.</p>' +
             '<p class="rj-hintline">Animacje omijają systemowe blokady ruchu — tak, jak w Szklanym studiu.</p>' +
           "</div>" +
         "</div>" +
@@ -713,11 +766,32 @@
           "</div>" +
         "</div>" +
       "</div>" +
+      /* Cisza nie może być pułapką: dopóki trwa, na dole ekranu wisi
+         pigułka „Wróć teraz” z odliczaniem. Mieszka poza .rj-island,
+         bo tamten element jest w ciszy ukrywany. */
+      '<button class="rj-unquiet" type="button" data-unquiet hidden>' +
+        '<span class="rj-unquiet-ico" aria-hidden="true">' + ICONS.up + "</span>" +
+        '<span class="rj-unquiet-text"><b>Wróć teraz</b><small data-unquiet-left>cisza 30 min</small></span>' +
+      "</button>" +
       '<div class="rj-toast" role="status" aria-live="polite"></div>' +
       /* Niewidoczny, ale czytany przez czytniki — informuje o schowaniu,
          rozwinięciu i o tym, co wyspa właśnie zrobiła. */
       '<span class="rj-sr" role="status" aria-live="polite" data-live></span>'
     );
+  }
+
+  /* Ile miejsca zajmuje dolny pasek mini reklam (telefon). Wyspa jest
+     w shadow DOM, więc nie widzi klas na <html> — wysokość przekazujemy
+     zmienną --rj-ads ustawianą na hoście. */
+  function syncAdsOffset() {
+    if (!root) return;
+    var height = 0;
+    var bar = document.getElementById("rj-mobile-ads");
+    if (bar) {
+      var rect = bar.getBoundingClientRect();
+      if (rect.height > 0) height = Math.round(rect.height);
+    }
+    root.style.setProperty("--rj-ads", height ? height + "px" : "0px");
   }
 
   /* ------------------------------------------------------------- widoki */
@@ -2086,6 +2160,19 @@
     "background:rgba(255,255,255,.14);overflow:hidden}" +
     "#rj-island-root .rj-handle-bar i{display:block;height:100%;width:0;background:#6ea8ff}" +
     "#rj-island-root .rj-island.is-quiet{display:none}" +
+    /* Cisza nie może zostawić użytkownika bez wyjścia — pigułka działa
+       nawet wtedy, gdy arkusz wyspy się nie wczyta. */
+    "#rj-island-root .rj-unquiet{position:absolute;left:50%;bottom:calc(max(16px,env(safe-area-inset-bottom)) + 12px);" +
+    "transform:translateX(-50%);display:inline-flex;align-items:center;gap:9px;min-height:44px;" +
+    "padding:6px 15px 6px 7px;border:1px solid rgba(255,255,255,.16);border-radius:999px;" +
+    "background:#05070c;color:#f2f7ff;font:600 12px/1.1 system-ui,sans-serif;pointer-events:auto;" +
+    "box-shadow:0 18px 44px -20px rgba(0,0,0,.95);z-index:3}" +
+    "#rj-island-root .rj-unquiet[hidden]{display:none!important}" +
+    "#rj-island-root .rj-unquiet-ico{display:grid;place-items:center;width:30px;height:30px;" +
+    "flex:none;border-radius:50%;background:rgba(255,255,255,.1)}" +
+    "#rj-island-root .rj-unquiet-ico svg{width:14px;height:14px}" +
+    "#rj-island-root .rj-unquiet-text{display:grid;gap:2px;text-align:left}" +
+    "#rj-island-root .rj-unquiet-text small{color:rgba(214,228,248,.62);font:600 10px/1 ui-monospace,monospace}" +
     "#rj-island-root .rj-island.is-left{left:10px;margin-left:0!important}" +
     "#rj-island-root .rj-island.is-right{left:auto;right:10px;margin-left:0!important}" +
     "#rj-island-root .rj-corner{display:flex;gap:4px;width:100%}" +
@@ -2243,6 +2330,8 @@
       var quietBtn = event.target.closest("[data-quiet]");
       if (quietBtn) { quiet(30); return; }
 
+      if (event.target.closest("[data-unquiet]")) { endQuiet(); return; }
+
       var ctx = event.target.closest("[data-context]");
       if (ctx) {
         var ctxItems = contextActions();
@@ -2271,6 +2360,16 @@
       } catch (error) {
         toast("Coś poszło nie tak — spróbuj jeszcze raz");
       }
+    });
+
+    /* Skrót z każdego miejsca strony: Alt+Shift+R przywraca wyspę z ciszy. */
+    document.addEventListener("keydown", function (event) {
+      if (!event.altKey || !event.shiftKey) return;
+      var key = String(event.key || "");
+      if (key.toLowerCase() !== "r" && event.code !== "KeyR") return;
+      if (!isQuiet()) return;
+      event.preventDefault();
+      endQuiet();
     });
 
     /* kliknięcie w zwiniętą wyspę rozwija dock */
@@ -2486,6 +2585,14 @@
     /* Lekki pilnowacz — kilka odczytów atrybutów co 2,5 s. */
     setInterval(watchdog, 2500);
 
+    /* Pasek mini reklam pojawia się po swoim skrypcie — obserwujemy DOM,
+       żeby wyspa od razu ustąpiła mu miejsca. */
+    syncAdsOffset();
+    if (window.MutationObserver) {
+      new MutationObserver(function () { syncAdsOffset(); })
+        .observe(document.body, { childList: true });
+    }
+
     /* stan początkowy: czekamy na koniec loadera, żeby wyspa nie wyskakiwała
        przed resztą strony — chowamy ją tylko na czas `rj-booting`. */
     /* Jeśli użytkownik schował wyspę, zostaje schowana także tutaj. */
@@ -2499,14 +2606,18 @@
     /* Cisza z poprzedniej wizyty: wyspa zostaje ukryta do końca odliczania. */
     if (isQuiet()) {
       island.classList.add("is-quiet");
-      var left = quietUntil() - Date.now();
+      var left = quietLeft();
+      syncQuietPill();
       clearTimeout(quiet._timer);
       quiet._timer = setTimeout(function () {
         store(QUIET_KEY, "0");
         if (!island) return;
         island.classList.remove("is-quiet");
+        syncQuietPill();
         resetToIdle(true);
       }, Math.max(1000, left));
+    } else {
+      syncQuietPill();
     }
 
     /* Zaległe zgłoszenia z poprzedniej wizyty, gdy sieć już jest. */
@@ -2584,6 +2695,12 @@
     expand: expand,
     collapsed: isCollapsed,
     quiet: quiet,
+    unmute: function () {
+      var restored = endQuiet();
+      if (!restored) toast("Cisza już nie trwa");
+      return restored;
+    },
+    quietLeft: quietLeft,
     corner: setCorner,
     online: online,
     queueSize: function () { return queue().length; },
