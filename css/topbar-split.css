@@ -182,9 +182,25 @@ body .rj-shared-header .header-right {
 }
 
 @media (max-width: 700px) {
+  /* Telefon: topbar chudnie o kilka pikseli, bo pod nim stoi jeszcze pasek
+     mini reklam. Ikony zostają w kółkach 40 px — poniżej tego trudno trafić
+     palcem, a wygląda to gorzej niż te 8 px zaoszczędzone na wysokości. */
+  body .rj-shared-header .rj-shared-inner {
+    min-height: 56px !important;
+  }
   body .rj-shared-header .brand {
     padding: 4px 10px 4px 4px;
     gap: 7px;
+    font-size: 14.5px !important;
+  }
+  body .rj-shared-header .brand-mark {
+    width: 28px;
+    height: 28px;
+    padding: 4px;
+  }
+  body .rj-shared-header :is(.hamburger-btn, .mobile-account) {
+    width: 40px;
+    height: 40px;
   }
   body .rj-shared-header .header-right {
     gap: 6px;

@@ -182,7 +182,7 @@ console.log('\n=== D. TOPBAR: BEZ USTAWIEŃ, PEŁNE MENU NA TELEFONIE ===');
     pages.forEach(({ file, html }) => {
       if (!html.includes('shared-topbar.js')) return;
       assert.match(html, /shared-topbar\.js\?v=10/, file + ': stary skrypt topbaru');
-      assert.match(html, /topbar-split\.css\?v=5/, file + ': stary arkusz topbaru');
+      assert.match(html, /topbar-split\.css\?v=6/, file + ': stary arkusz topbaru');
     });
   });
 }
@@ -191,8 +191,8 @@ console.log('\n=== E. REJCHAT: OKNO, DOK I DYMKI ===');
 {
   check('arkusz „Messenger” jest podpięty, a szkło zamyka kaskadę', () => {
     const links = Array.from(CHAT_HTML.matchAll(/<link rel="stylesheet" href="([^"]+)"/g)).map((m) => m[1]);
-    assert.match(links[links.length - 1], /glass-last\.css\?v=3/);
-    assert.ok(links.some((l) => l.includes('rejchat-messenger.css?v=12')), 'brak arkusza Messengera');
+    assert.match(links[links.length - 1], /glass-last\.css\?v=4/);
+    assert.ok(links.some((l) => l.includes('rejchat-messenger.css?v=13')), 'brak arkusza Messengera');
     assert.ok(!CHAT_HTML.includes('rejchat-rebuild.css'), 'stara warstwa nadal podpięta');
     assert.ok(!fs.existsSync(path.join(root, 'css/rejchat-rebuild.css')), 'stary arkusz nadal leży w repo');
   });
@@ -268,7 +268,7 @@ console.log('\n=== F. PANEL ADMINA: SZYNA I SKRÓTY ===');
 {
   check('panel kończy się wspólną warstwą szkła', () => {
     const links = Array.from(ADMIN_HTML.matchAll(/<link rel="stylesheet" href="([^"]+)"/g)).map((m) => m[1]);
-    assert.match(links[links.length - 1], /glass-last\.css\?v=3/);
+    assert.match(links[links.length - 1], /glass-last\.css\?v=4/);
     assert.ok(links.some((l) => l.includes('admin-rebuild.css?v=2')), 'brak warstwy panelu');
   });
   check('sekcje są w pionowej szynie po lewej', () => {
@@ -354,6 +354,56 @@ console.log('\n=== G. MENU, SZKŁO I PANEL BEZ ZBĘDNYCH PRZEŁĄCZNIKÓW ===');
     assert.match(ADMIN_CSS, /min-height: 46px/, 'za małe cele dotyku');
     assert.match(ADMIN_CSS, /scroll-snap-type: x proximity/, 'brak przyciągania zakładek');
     assert.match(ADMIN_CSS, /grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/, 'kafelki przeglądu nadal ściśnięte');
+  });
+}
+
+console.log('\n=== H. PANEL NA TELEFONIE, PASEK REKLAM I PRZEWIJANIE ===');
+{
+  const GLASS_LAST = read('css/glass-last.css');
+  const MOBILE_ADS_CSS = read('css/mobile-ads.css');
+  const MOBILE_ADS_JS = read('js/mobile-ads.js');
+  const SCROLLBAR_CSS = read('css/scrollbar.css');
+  const SCROLLBAR_JS = read('js/scrollbar.js');
+
+  check('panel admina na telefonie ma poziomą szynę, nie kolumnę pigułek', () => {
+    /* Reguła grid + width:100% wolno działać tylko na szerokim ekranie. */
+    assert.match(GLASS_LAST, /@media \(min-width: 1101px\) \{\s*body\.rj-admin \.adm-tabs \{\s*display: grid;/,
+      'pionowa lista zakładek nie jest ograniczona do desktopu');
+    const mobile = GLASS_LAST.slice(GLASS_LAST.indexOf('Panel admina na telefonie'));
+    assert.match(mobile, /@media \(max-width: 1100px\)/);
+    assert.match(mobile, /body\.rj-admin \.adm-tabs \{\s*position: static !important;\s*display: flex !important;\s*flex-direction: row !important;/);
+    assert.match(mobile, /body\.rj-admin \.adm-tab \{\s*flex: 0 0 auto;\s*width: auto !important;\s*min-height: 46px;/);
+    assert.match(mobile, /scroll-snap-type: x proximity/);
+    assert.match(mobile, /body\.rj-admin \.adm-rail \{\s*position: sticky;/);
+  });
+
+  check('mini reklamy stoją pod topbarem i przewijają się same', () => {
+    assert.match(MOBILE_ADS_CSS, /position:sticky/);
+    assert.match(MOBILE_ADS_CSS, /top:var\(--rj-ads-top, 60px\)/);
+    assert.ok(!MOBILE_ADS_CSS.includes('inset:auto 0 0'), 'pasek nadal przyklejony do dołu');
+    assert.match(MOBILE_ADS_CSS, /rj-mobile-ads-hint \{ display:none; \}/, 'podpis „przesuń” ma być ukryty');
+    assert.match(MOBILE_ADS_JS, /STEP_MS = 2000/, 'brak przesuwania co 2 s');
+    assert.match(MOBILE_ADS_JS, /header\.nextSibling/, 'pasek nie trafia pod topbar');
+    assert.match(MOBILE_ADS_JS, /mini reklamy<\/span>/);
+    assert.ok(!MOBILE_ADS_JS.includes('rj-mobile-ads-hint'), 'został napis „przesuń”');
+    assert.ok(!MOBILE_ADS_JS.includes('rj-mobile-ads-spacer'), 'został pusty odstęp na dole');
+    assert.match(MOBILE_ADS_JS, /classList\.add\('rj-mobile-ads-active'\)/);
+  });
+
+  check('przewijanie ma własny, cienki suwak na każdej stronie', () => {
+    assert.match(SCROLLBAR_CSS, /::-webkit-scrollbar-thumb/);
+    assert.match(SCROLLBAR_CSS, /html\.rj-scrolling ::-webkit-scrollbar-thumb/);
+    assert.match(SCROLLBAR_JS, /rj-scrolling/);
+    fs.readdirSync(path.join(root, 'rejhub2')).filter((file) => file.endsWith('.html')).forEach((file) => {
+      const html = read('rejhub2/' + file);
+      assert.match(html, /scrollbar\.css\?v=1/, file + ': brak arkusza suwaka');
+      assert.match(html, /scrollbar\.js\?v=1/, file + ': brak skryptu suwaka');
+    });
+  });
+
+  check('RejChat odejmuje wysokość górnego paska od okna rozmowy', () => {
+    assert.match(read('css/rejchat-messenger.css'), /100dvh - 76px - var\(--rj-top-ads-height, 0px\)/);
+    assert.match(read('css/rejchat-messenger.css'), /var\(--rj-mobile-ads-height, 0px\)/);
   });
 }
 

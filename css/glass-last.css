@@ -289,20 +289,24 @@ body.rj-admin .adm-rail-link:hover {
   border-color: var(--gl-line-hi) !important;
 }
 
-/* Zakładki są pionową listą w szynie — zostają pigułkami, bez własnego tła. */
-body.rj-admin .adm-tabs {
-  display: grid;
-  gap: 4px;
-  padding: 0;
-  background: none !important;
-  border: 0 !important;
-  box-shadow: none !important;
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
+/* Zakładki są pionową listą w szynie — zostają pigułkami, bez własnego tła.
+   UWAGA: tylko na szerokim ekranie. Na telefonie szyna jest pozioma i ta
+   reguła (grid + width:100%) zamieniała ją w wysoką kolumnę pigułek, która
+   zasłaniała cały panel — dlatego wszystko poniżej jest w media query. */
+@media (min-width: 1101px) {
+  body.rj-admin .adm-tabs {
+    display: grid;
+    gap: 4px;
+    padding: 0;
+    background: none !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
 }
 
 body.rj-admin .adm-tab {
-  width: 100%;
   justify-content: flex-start;
   border: 1px solid transparent !important;
   border-radius: 999px !important;
@@ -311,6 +315,10 @@ body.rj-admin .adm-tab {
   font-weight: 700;
   text-align: left;
   transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+
+@media (min-width: 1101px) {
+  body.rj-admin .adm-tab { width: 100%; }
 }
 
 body.rj-admin .adm-tab:hover { background: rgba(255, 255, 255, 0.08) !important; color: var(--adm-ink); }
@@ -347,6 +355,143 @@ body.rj-admin :is(.adm-trow, .adm-thead, .vif-row, .rcmod-row, .pa-event) {
 
 /* Pasek „Wyloguj” i inne przyciski w nagłówku panelu. */
 body.rj-admin .rj-shared-context .btn { border-radius: 999px !important; }
+
+/* ==========================================================================
+   Panel admina na telefonie — pozioma szyna, nie kolumna pigułek
+   --------------------------------------------------------------------------
+   Poprzednia wersja tej warstwy robiła z zakładek grid na całą szerokość,
+   przez co na 360 px każda pigułka była osobnym wierszem i lista sekcji
+   zajmowała prawie cały ekran. Tutaj, jako ostatnia warstwa, wymuszamy
+   jedną przewijaną linię 46 px: szyna stoi pod topbarem, a treść panelu
+   zaczyna się tuż pod nią.
+   ========================================================================== */
+/* Czytelność na jasnej części tapety: tekst poza kartami dostaje delikatny
+   cień, a nieaktywne zakładki — własną, półprzezroczystą pigułkę. Dzięki temu
+   szkło może zostać naprawdę przezroczyste, a napisy nie znikają na tęczy. */
+body.rj-admin :is(.admin-welcome h1, .overview-heading h2, .admin-kicker, .overview-status) {
+  text-shadow: 0 1px 14px rgba(2, 8, 20, 0.72), 0 1px 2px rgba(2, 8, 20, 0.6);
+}
+body.rj-admin :is(.admin-welcome p, .overview-heading p) {
+  color: #d9e5f6;
+  text-shadow: 0 1px 10px rgba(2, 8, 20, 0.8);
+}
+html[data-theme="light"] body.rj-admin :is(.admin-welcome p, .overview-heading p) { color: #2b4363; text-shadow: 0 1px 8px rgba(255, 255, 255, 0.7); }
+html[data-theme="light"] body.rj-admin :is(.admin-welcome h1, .overview-heading h2, .admin-kicker, .overview-status) { text-shadow: 0 1px 10px rgba(255, 255, 255, 0.8); }
+
+/* Etykiety w kartach liczb leżą bezpośrednio na tapecie, więc potrzebują
+   jaśniejszego tuszu niż na desktopie — inaczej giną na kolorowym tle. */
+body.rj-admin .overview-stat span { color: #cfe0f5; }
+body.rj-admin .overview-stat small { color: #d3e0f2; }
+body.rj-admin .overview-stat strong { color: #ffffff; }
+body.rj-admin .overview-status { color: #cfdcee; }
+html[data-theme="light"] body.rj-admin .overview-stat span { color: #2f4a6d; }
+html[data-theme="light"] body.rj-admin .overview-stat small { color: #35506f; }
+html[data-theme="light"] body.rj-admin .overview-stat strong { color: #0d1a2c; }
+html[data-theme="light"] body.rj-admin .overview-status { color: #35506f; }
+
+/* Opisy w kafelkach i kartach leżą na tapecie — muszą być jaśniejsze niż
+   „faint” z arkusza panelu, inaczej na kolorowym tle wyglądają jak wyblakłe. */
+body.rj-admin :is(.overview-tile small, .adm-card-sub, .overview-stat small, .adm-kpi-sub) {
+  color: #c6d6ea;
+  text-shadow: 0 1px 8px rgba(2, 8, 20, 0.7);
+}
+body.rj-admin :is(.overview-tile strong, .adm-card-titles h2, .adm-kpi-label) {
+  color: #f2f7ff;
+}
+body.rj-admin :is(.overview-icon, .adm-card-ico) { color: #dbe8ff !important; }
+body.rj-admin .overview-tile b { color: #b9cbe4; }
+html[data-theme="light"] body.rj-admin :is(.overview-tile small, .adm-card-sub, .overview-stat small, .adm-kpi-sub) {
+  color: #33506f; text-shadow: 0 1px 8px rgba(255, 255, 255, 0.75);
+}
+html[data-theme="light"] body.rj-admin :is(.overview-tile strong, .adm-card-titles h2, .adm-kpi-label) { color: #0d1a2c; }
+html[data-theme="light"] body.rj-admin .overview-tile b { color: #3d5a7d; }
+
+body.rj-admin .adm-tab:not(.is-active):not([aria-selected="true"]) {
+  background: rgba(9, 16, 28, 0.34) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: #c9d8ee;
+}
+html[data-theme="light"] body.rj-admin .adm-tab:not(.is-active):not([aria-selected="true"]) {
+  background: rgba(255, 255, 255, 0.55) !important;
+  border-color: rgba(30, 60, 100, 0.12) !important;
+  color: #2b4363;
+}
+body.rj-admin .adm-tab:not(.is-active):hover { background: rgba(255, 255, 255, 0.16) !important; }
+
+@media (max-width: 1100px) {
+  body.rj-admin .adm-rail {
+    position: sticky;
+    /* Pod topbarem, a gdy nad treścią stoi jeszcze pasek mini reklam —
+       pod nim. Panel admina reklam nie ma, więc w praktyce zostaje 64 px. */
+    top: calc(64px + var(--rj-top-ads-height, 0px));
+    z-index: 24;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 6px;
+    padding: 6px;
+    border-radius: 18px !important;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  body.rj-admin .adm-rail::-webkit-scrollbar { display: none; }
+  body.rj-admin .adm-rail-head { display: none !important; }
+
+  body.rj-admin .adm-tabs {
+    position: static !important;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center;
+    gap: 6px;
+    width: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    background: none !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  body.rj-admin .adm-tab {
+    flex: 0 0 auto;
+    width: auto !important;
+    min-height: 46px;
+    padding: 0 15px;
+    border-radius: 999px !important;
+    white-space: nowrap;
+    scroll-snap-align: start;
+    scroll-margin-inline: 6px;
+  }
+  body.rj-admin .adm-tab-note { display: none !important; }
+
+  body.rj-admin .adm-rail-link {
+    flex: 0 0 auto;
+    min-height: 46px;
+    margin: 0 !important;
+    padding: 0 14px;
+    border: 1px solid var(--gl-line) !important;
+    border-radius: 999px !important;
+    background: rgba(255, 255, 255, 0.06) !important;
+    white-space: nowrap;
+    scroll-snap-align: end;
+  }
+  body.rj-admin .adm-rail-link:hover {
+    background: rgba(255, 255, 255, 0.12) !important;
+  }
+}
+
+@media (max-width: 380px) {
+  body.rj-admin .adm-rail { border-radius: 16px !important; }
+  body.rj-admin .adm-tab { padding: 0 13px; }
+}
 
 /* --------------------------------------------------------- bez blura --- */
 
