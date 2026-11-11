@@ -36,7 +36,7 @@
   }
 
   function registerWorker() {
-    return navigator.serviceWorker.register(SW_PATH, { scope: '/' });
+    return navigator.serviceWorker.register(SW_PATH, { scope: '/', updateViaCache: 'none' });
   }
 
   function publicKey() {
@@ -113,7 +113,7 @@
     state.supported = true;
     var client = api();
     if (!client) { state.subscribed = false; paint(); return Promise.resolve(); }
-    return navigator.serviceWorker.register(SW_PATH, { scope: '/' })
+    return navigator.serviceWorker.register(SW_PATH, { scope: '/', updateViaCache: 'none' })
       .then(function (registration) { return registration.pushManager.getSubscription(); })
       .then(function (subscription) {
         state.subscribed = Boolean(subscription) && Notification.permission === 'granted';
