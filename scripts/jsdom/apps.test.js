@@ -1,8 +1,9 @@
 /* © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
    Licencja: /LICENSE, /licencja */
 /*
- * Nowe aplikacje RejHuba: RejPlanner, RejGames, RejMusic, RejMeme,
- * RejAsystent i strona /aplikacje + instalacja jako aplikacja (PWA).
+ * Aplikacje RejHuba: RejPlanner, RejGames, RejMusic, RejMeme, strona
+ * /aplikacje (jedna lista wszystkich aplikacji) i RejAsystent w wyspie
+ * + instalacja jako aplikacja (PWA).
  *
  * Testy działają bez sieci i bez przeglądarki: ładują prawdziwy HTML strony,
  * a potem uruchamiają w nim prawdziwy skrypt aplikacji. Sprawdzają to, co
@@ -22,8 +23,7 @@ const PAGES = {
   'rejplanner.html': { script: 'js/rejplanner.js', title: 'RejPlanner' },
   'rejgames.html': { script: 'js/rejgames.js', title: 'RejGames' },
   'rejmusic.html': { script: 'js/rejmusic.js', title: 'RejMusic' },
-  'rejmeme.html': { script: 'js/rejmeme.js', title: 'RejMeme' },
-  'rejasystent.html': { script: 'js/rejassistant.js', title: 'RejAsystent' }
+  'rejmeme.html': { script: 'js/rejmeme.js', title: 'RejMeme' }
 };
 
 let passed = 0;
@@ -61,7 +61,7 @@ function boot(file) {
 async function main() {
 console.log('\n=== A. STRONY APLIKACJI ===');
 
-await check('wszystkie nowe strony istnieją i mają tytuł, opis i kanoniczny adres', async () => {
+await check('wszystkie strony aplikacji istnieją i mają tytuł, opis i kanoniczny adres', async () => {
   Object.entries(PAGES).forEach(([file, meta]) => {
     const html = read('rejhub2/' + file);
     assert.match(html, /<title>[^<]*Rej/, file + ': brak tytułu');
@@ -322,47 +322,37 @@ await check('kolejka memów jest w panelu admina i wymaga zatwierdzenia', async 
 });
 
 /* --------------------------------------------------------------- asystent */
-console.log('\n=== G. REJASYSTENT ===');
+console.log('\n=== G. REJASYSTENT W WYSPIE I JEDNA LISTA APLIKACJI ===');
 
-await check('asystent wita się i odpowiada na „pomoc”', async () => {
-  const page = await boot('rejasystent.html');
-  const w = page.window;
-  const d = w.document;
-  assert.ok(d.querySelector('#ai-log .ai-msg--bot'), 'brak powitania');
-  d.getElementById('ai-input').value = 'pomoc';
-  d.getElementById('ai-form').dispatchEvent(new w.Event('submit', { bubbles: true, cancelable: true }));
-  const last = [...d.querySelectorAll('#ai-log .ai-msg--bot')].pop();
-  assert.match(last.textContent, /otwierać strony/i, 'brak listy możliwości');
-  page.window.close();
+await check('RejAsystent mieszka w wyspie, a nie na osobnej podstronie', async () => {
+  assert.equal(fs.existsSync(path.join(root, 'rejhub2/rejasystent.html')), false, 'osobna podstrona asystenta nadal istnieje');
+  assert.equal(fs.existsSync(path.join(root, 'js/rejassistant.js')), false, 'stary skrypt podstrony nadal istnieje');
+  const vercel = JSON.parse(read('rejhub2/vercel.json'));
+  const redirect = vercel.redirects.find((entry) => entry.source === '/rejasystent');
+  assert.ok(redirect && redirect.destination === '/aplikacje', 'stary adres nie przekierowuje na listę aplikacji');
+
+  const island = read('rejhub2/hub/island.js');
+  assert.ok(/data-open="assistant"/.test(island), 'brak iskry asystenta w docku wyspy');
+  assert.ok(/id="rj-island-ai"/.test(island), 'brak listy rozmowy w panelu asystenta');
+  assert.ok(/rj-island-ai-form/.test(island), 'brak pola do pisania z asystentem');
+  assert.ok(/function aiLocalReply/.test(island), 'asystent nie ma lokalnych poleceń');
+  assert.ok(/rj_planner_v1/.test(island), 'asystent nie dodaje zadań do planera');
+  assert.ok(!/window\.location\.assign\(['"]\/rejasystent/.test(island), 'asystent nadal odsyła na usuniętą podstronę');
 });
 
-await check('asystent dodaje zadanie do RejPlannera i przełącza motyw', async () => {
-  const page = await boot('rejasystent.html');
-  const w = page.window;
-  const d = w.document;
-  d.getElementById('ai-input').value = 'dodaj zadanie kupić kawę na jutro';
-  d.getElementById('ai-form').dispatchEvent(new w.Event('submit', { bubbles: true, cancelable: true }));
-  const plan = JSON.parse(w.localStorage.getItem('rj_planner_v1'));
-  assert.equal(plan.length, 1, 'zadanie nie trafiło do planera');
-  assert.equal(plan[0].title, 'kupić kawę', 'zły tytuł zadania (zgubione polskie znaki?): ' + plan[0].title);
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const pad = (n) => String(n).padStart(2, '0');
-  assert.equal(plan[0].date, tomorrow.getFullYear() + '-' + pad(tomorrow.getMonth() + 1) + '-' + pad(tomorrow.getDate()), 'zła data zadania');
+await check('wszystkie aplikacje są na jednej liście — bez podziału na nowe i stare', async () => {
+  const names = ['RejChat', 'RejFile', 'RejSejf', 'RejTools', 'RejClass', 'RejPlanner', 'RejGames', 'RejMusic', 'RejMeme', 'RejAsystent'];
+  const apps = read('rejhub2/aplikacje.html');
+  names.forEach((name) => assert.ok(apps.includes('<strong>' + name + '</strong>'), 'brak karty ' + name + ' na liście'));
+  assert.ok(!/NOWE W REJHUBIE/.test(apps), 'strona nadal dzieli aplikacje na „nowe” i resztę');
+  assert.equal((apps.match(/class="rjapp-card rjapp-appcard"/g) || []).length, 10, 'lista nie jest jedną siatką dziesięciu aplikacji');
+  assert.ok(/data-island="assistant"/.test(apps), 'karta asystenta nie otwiera wyspy');
 
-  d.getElementById('ai-input').value = 'włącz jasny motyw';
-  d.getElementById('ai-form').dispatchEvent(new w.Event('submit', { bubbles: true, cancelable: true }));
-  assert.equal(d.documentElement.dataset.theme, 'light', 'motyw się nie przełączył');
-  assert.equal(w.localStorage.getItem('theme'), 'light', 'motyw nie został zapamiętany');
-  page.window.close();
-});
-
-await check('asystent nie wysyła niczego bez własnego klucza i ostrzega o HTTPS', async () => {
-  const script = read('js/rejassistant.js');
-  assert.ok(script.includes("if (settings.key && settings.base && settings.model)"), 'model uruchamia się bez klucza');
-  assert.match(script, /\^https:\\\/\\\//, 'brak wymogu https dla adresu API');
-  assert.ok(script.includes('rj_assistant_ai_v1'), 'klucz nie jest trzymany lokalnie');
-  assert.ok(!/fetch\('\/api\//.test(script), 'asystent wysyła dane na serwer RejHuba');
+  const home = read('rejhub2/index.html');
+  const strip = home.slice(home.indexOf('rjapps-strip'), home.indexOf('rj-club'));
+  names.forEach((name) => assert.ok(strip.includes('<strong>' + name + '</strong>'), 'strona główna pomija ' + name));
+  assert.ok(!/NOWE W REJHUBIE/.test(strip), 'sekcja na stronie głównej nadal dzieli aplikacje');
+  assert.ok(/data-island="assistant"/.test(strip), 'asystent na stronie głównej nie otwiera wyspy');
 });
 
 /* ------------------------------------------------------------- bezpieczeństwo */

@@ -111,6 +111,7 @@
 #rj-island-root .rj-island[data-state="dock"] .rj-view--dock,
 #rj-island-root .rj-island[data-state="report"] .rj-view--report,
 #rj-island-root .rj-island[data-state="chat"] .rj-view--chat,
+#rj-island-root .rj-island[data-state="assistant"] .rj-view--assistant,
 #rj-island-root .rj-island[data-state="alerts"] .rj-view--alerts,
 #rj-island-root .rj-island[data-state="now"] .rj-view--now,
 #rj-island-root .rj-island[data-state="profile"] .rj-view--profile,
@@ -1757,6 +1758,119 @@
 
 #rj-island-root .rj-chat-dot[hidden] {
   display: none;
+}
+
+/* ==========================================================================
+   RejAsystent w wyspie
+   --------------------------------------------------------------------------
+   Asystent nie ma osobnej podstrony — otwiera się iskrą w docku. Wygląda jak
+   mini czat (te same klasy panelu i listy), ale mówi innym głosem: własne
+   dymki, podpowiedzi na start i linki do stron RejHuba. Panel jest czarny,
+   jak cała wyspa — zero rozmywania i zero zieleni.
+   ========================================================================== */
+
+#rj-island-root .rj-panel--assistant {
+  gap: 8px;
+}
+
+#rj-island-root .rj-chat-badge--ai {
+  border-color: rgba(139, 189, 255, 0.42);
+  background: radial-gradient(circle at 32% 26%, rgba(139, 189, 255, 0.34), rgba(77, 141, 246, 0.16));
+  color: #eaf3ff;
+  font-size: 15px;
+}
+
+#rj-island-root .rj-ai-chips {
+  display: flex;
+  gap: 5px;
+  flex: 0 0 auto;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+#rj-island-root .rj-ai-chips::-webkit-scrollbar {
+  height: 0;
+}
+
+#rj-island-root .rj-ai-chip {
+  flex: 0 0 auto;
+  min-height: 32px;
+  padding: 6px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.055);
+  color: rgba(230, 240, 255, 0.8);
+  font: 600 10.5px/1 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease;
+}
+
+#rj-island-root .rj-ai-chip:hover,
+#rj-island-root .rj-ai-chip:focus-visible {
+  background: rgba(255, 255, 255, 0.11);
+  color: #fff;
+  outline: none;
+}
+
+#rj-island-root .rj-ai-chip:active {
+  transform: scale(0.97);
+}
+
+#rj-island-root .rj-ai-list {
+  gap: 6px;
+}
+
+#rj-island-root .rj-ai-msg {
+  max-width: 100%;
+  padding: 7px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+#rj-island-root .rj-ai-msg p {
+  margin: 0;
+  color: rgba(238, 245, 255, 0.88);
+  font: 400 12px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  overflow-wrap: anywhere;
+}
+
+#rj-island-root .rj-ai-msg p + p {
+  margin-top: 4px;
+}
+
+#rj-island-root .rj-ai-msg--user {
+  align-self: flex-end;
+  max-width: 90%;
+  border-color: rgba(139, 189, 255, 0.26);
+  background: rgba(77, 141, 246, 0.18);
+}
+
+#rj-island-root .rj-ai-link {
+  display: inline-block;
+  margin: 6px 8px 0 0;
+  color: #bcd9ff;
+  font: 600 11.5px/1.3 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(188, 217, 255, 0.38);
+}
+
+#rj-island-root .rj-ai-link:hover,
+#rj-island-root .rj-ai-link:focus-visible {
+  color: #fff;
+  border-bottom-color: rgba(255, 255, 255, 0.6);
+}
+
+@media (max-width: 560px) {
+  /* Podpowiedzi są dotykane palcem, więc na telefonie mają pełne 46 px —
+     tyle samo, co przyciski aplikacji na stronach. */
+  #rj-island-root .rj-ai-chip {
+    min-height: 46px;
+    padding: 10px 14px;
+    font-size: 11.5px;
+  }
 }
 
 @media (max-height: 620px) {

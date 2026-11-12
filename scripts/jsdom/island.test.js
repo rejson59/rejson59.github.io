@@ -70,6 +70,14 @@ function checkStructure() {
   assert.ok(/data-chat-room="dm"/.test(source), 'zakładka Prywatne jest w wyspie');
   assert.ok(/dockedBottom/.test(source), 'wyspa liczy reklamy tylko przyklejone do dołu (nie lewituje)');
   assert.ok(/ICONS\.send/.test(source), 'czat ma przycisk wysyłania');
+  assert.ok(/data-open="assistant" title="RejAsystent"/.test(source), 'RejAsystent jest w docku');
+  assert.ok(/ICONS\.assistant/.test(source), 'asystent ma własną ikonę (iskrę)');
+  assert.ok(/id="rj-island-ai"/.test(source), 'panel asystenta ma listę rozmowy');
+  assert.ok(/rj_planner_v1/.test(source), 'asystent dodaje zadania do planera');
+  assert.equal(fs.existsSync(path.join(root, 'rejhub2/rejasystent.html')), false, 'osobna podstrona asystenta została usunięta');
+  assert.equal(fs.existsSync(path.join(root, 'js/rejassistant.js')), false, 'stary skrypt podstrony asystenta został usunięty');
+  assert.ok(!/href="\/rejasystent"/.test(fs.readFileSync(path.join(root, 'rejhub2/aplikacje.html'), 'utf8')), 'karta asystenta nie prowadzi do nieistniejącej podstrony');
+  assert.ok(/data-island="assistant"/.test(fs.readFileSync(path.join(root, 'rejhub2/aplikacje.html'), 'utf8')), 'karta asystenta otwiera wyspę');
   assert.ok(/data-open="theme" title="Ustawienia"/.test(source), 'ustawienia opisane jako ustawienia');
   assert.match(source, /theme: '<svg[^']*circle cx="12" cy="12" r="3\.1"/, 'ikona motywu to koło zębate');
 
@@ -189,7 +197,7 @@ async function checkBehaviour() {
   island.click();
   await wait(20);
   assert.equal(island.dataset.state, 'dock', 'klik rozwija dock');
-  assert.equal(uiAll('.rj-dock-btn[data-open]').length, 8, 'osiem funkcji w docku');
+  assert.equal(uiAll('.rj-dock-btn[data-open]').length, 9, 'dziewięć funkcji w docku');
   assert.ok(ui('.rj-dock-btn[data-collapse]'), 'dock ma też strzałkę schowania');
 
   /* — zgłoszenie: walidacja, potem prawdziwy RPC — */
@@ -281,6 +289,53 @@ async function checkBehaviour() {
   ui('[data-chat-back]').click();
   await wait(80);
   assert.equal(ui('#rj-island-dms').hidden, false, 'powrót pokazuje listę rozmów');
+
+  /* — RejAsystent: w wyspie, bez własnej podstrony — */
+  ui('[data-close]').click();
+  await wait(10);
+  island.click();
+  await wait(10);
+  ui('.rj-dock-btn[data-open="assistant"]').click();
+  await wait(40);
+  assert.equal(island.dataset.state, 'assistant', 'asystent otwiera się w wyspie');
+  assert.ok(/Jestem RejAsystentem/.test(ui('#rj-island-ai').textContent), 'asystent wita się w wyspie');
+  assert.ok(ui('#rj-island-ai-input'), 'jest pole do pisania');
+  ui('[data-ask="Co potrafisz?"]').click();
+  await wait(30);
+  const helpReply = [...uiAll('#rj-island-ai .rj-ai-msg--bot')].pop();
+  assert.match(helpReply.textContent, /otwierać strony/i, 'asystent odpowiada na „co potrafisz”');
+  ui('#rj-island-ai-input').value = 'dodaj zadanie kupić kawę na jutro';
+  ui('#rj-island-ai-form').dispatchEvent(new w.Event('submit', { bubbles: true, cancelable: true }));
+  await wait(40);
+  const planned = JSON.parse(w.localStorage.getItem('rj_planner_v1'));
+  assert.equal(planned.length, 1, 'zadanie trafiło do planera');
+  assert.equal(planned[0].title, 'kupić kawę', 'tytuł zadania zachowuje polskie znaki');
+  assert.equal(planned[0].kind, 'task', 'asystent dodaje zadanie, nie wydarzenie');
+  ui('#rj-island-ai-input').value = 'włącz jasny motyw';
+  ui('#rj-island-ai-form').dispatchEvent(new w.Event('submit', { bubbles: true, cancelable: true }));
+  await wait(20);
+  assert.equal(d.documentElement.dataset.theme, 'light', 'asystent przełącza motyw');
+  assert.equal(w.localStorage.getItem('theme'), 'light', 'motyw zapisany jak w resztę strony');
+  ui('#rj-island-ai-input').value = 'włącz ciemny motyw';
+  ui('#rj-island-ai-form').dispatchEvent(new w.Event('submit', { bubbles: true, cancelable: true }));
+  await wait(20);
+  assert.equal(d.documentElement.dataset.theme, 'dark', 'asystent wraca do ciemnego motywu');
+  ui('[data-close]').click();
+  await wait(10);
+
+  /* — karta aplikacji na stronie otwiera asystenta w wyspie — */
+  const card = d.createElement('button');
+  card.type = 'button';
+  card.setAttribute('data-island', 'assistant');
+  card.textContent = 'RejAsystent';
+  d.body.appendChild(card);
+  card.click();
+  await wait(40);
+  assert.equal(island.dataset.state, 'assistant', 'karta aplikacji otwiera asystenta w wyspie');
+  assert.ok(/Jestem RejAsystentem/.test(ui('#rj-island-ai').textContent), 'rozmowa zostaje po ponownym otwarciu');
+  ui('[data-close]').click();
+  await wait(10);
+  card.remove();
 
   /* — ustawienia: pionowa wyspa i start schowany — */
   ui('[data-close]').click();

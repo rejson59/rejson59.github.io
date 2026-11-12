@@ -106,10 +106,13 @@ Na starszych stronach przekierowujących i awaryjnych ekranach podróży domek j
 - Wersje: `mobile-ads.css?v=10`, `mobile-ads.js?v=10`. Test `mobile-ads.test.js` pilnuje liczby
   tytułów i opisów, a `mobile-ads.browser.js` — wysokości 72 px i tego, że kafel nie wychodzi za ramkę.
 
-### Nowe aplikacje: `js/rejapps.css` + `/aplikacje`
+### Aplikacje RejHuba: `css/rejapps.css` + `/aplikacje`
 
-- **Strona `/aplikacje`** zbiera wszystko w jednym miejscu. W menu „Więcej” (na każdej podstronie)
-  jest link **Aplikacje**, a na stronie głównej sekcja „Aplikacje RejHuba” z pięcioma kartami.
+- **Strona `/aplikacje`** zbiera **wszystkie** aplikacje RejHuba w jednej siatce — czat, pliki,
+  sejf, narzędzia, lekcje, planer, gry, muzykę, memy i asystenta. Nie ma podziału na „nowe
+  aplikacje” i „stare podstrony”: to jedna rodzina, ten sam kafel i ten sam styl. W menu „Więcej”
+  (na każdej podstronie) jest link **Aplikacje**, a strona główna ma tę samą, dziesięcioelementową
+  listę w sekcji „Aplikacje RejHuba".
 - Wspólny arkusz `css/rejapps.css`: szkło, jeden błękitny akcent, promienie 22–26 px, przyciski
   min. 46 px, siatki zwijające się do jednej kolumny poniżej 980 px. Zero zieleni.
 - **RejPlanner** (`js/rejplanner.js`): miesiąc od poniedziałku, 42 dni, wydarzenia i zadania,
@@ -125,9 +128,13 @@ Na starszych stronach przekierowujących i awaryjnych ekranach podróży domek j
 - **RejMeme** (`js/rejmeme.js`): od rundy 2026-11-15 to **galeria memów społeczności + kolejka
   moderacji** (szczegóły niżej), a nie generator canvas. Stara wysyłka do RejChatu została zastąpiona
   wgrywaniem do galerii z zatwierdzaniem przez admina.
-- **RejAsystent** (`js/rejassistant.js`): lokalne polecenia (otwieranie stron, motyw, „dodaj zadanie
-  … na jutro”, wyszukiwanie) i opcjonalny model zgodny z OpenAI — klucz zostaje w `localStorage`
-  (`rj_assistant_ai_v1`), adres API musi być `https://`, a bez klucza nic nie wychodzi z przeglądarki.
+- **RejAsystent** — **w wyspie**, nie na osobnej podstronie. Iskra w docku otwiera panel
+  `#rj-island-ai` z polem `#rj-island-ai-input`; logika (otwieranie stron, motyw, „dodaj zadanie
+  … na jutro”, wyszukiwanie) siedzi w `rejhub2/hub/island.js` (`aiLocalReply`) i liczy się
+  w przeglądarce — nic nie wychodzi na serwer. Stare `/rejasystent` przekierowuje na `/aplikacje`
+  (`rejhub2/vercel.json`), a `rejhub2/rejasystent.html` i `js/rejassistant.js` zostały usunięte.
+  Karty asystenta na `/aplikacje` i stronie głównej to przyciski `data-island="assistant"`,
+  które otwierają widok wyspy (`window.RejIsland.open('assistant')` też działa).
 
 ### Instalacja jako aplikacja (PWA)
 
@@ -158,9 +165,10 @@ Na starszych stronach przekierowujących i awaryjnych ekranach podróży domek j
 #### 1. Jeden topbar na każdej podstronie
 
 - Znaczniki `<header class="site-header rj-shared-header rj-alerts-header">` są **identyczne co do
-  znaku** na wszystkich 22 stronach z paskiem (`scripts/jsdom/topbar.test.js` pilnuje tego testem).
+  znaku** na wszystkich 21 stronach z paskiem (`scripts/jsdom/topbar.test.js` pilnuje tego testem).
+  Asystent nie ma już własnej strony — mieszka w wyspie, więc liczba zmalała z 22.
 - Sam HTML nie wystarczał: strony aplikacji (`/aplikacje`, `/rejmusic`, `/rejmeme`, `/rejgames`,
-  `/rejplanner`, `/rejasystent`) nie ładowały `css/glass-update.css`, więc pasek nie miał
+  `/rejplanner`) nie ładowały `css/glass-update.css`, więc pasek nie miał
   `--rju-vessel` (czyli tła), a osiem stron nie miało `css/liquid.css`. Teraz **każda** strona
   ładuje ten sam zestaw 18 arkuszy w tej samej kolejności:
 
@@ -216,3 +224,28 @@ Na starszych stronach przekierowujących i awaryjnych ekranach podróży domek j
 - Zatwierdzenie publikuje mem w galerii, odrzucenie zapisuje powód widoczny dla autora,
   „Usuń” kasuje plik bezpowrotnie. Każda decyzja idzie przez RPC — nie da się jej wykonać z
   publicznej strony.
+
+### RejHub 2.0 — runda „asystent w wyspie i jedna lista aplikacji”
+
+#### 1. RejAsystent w wyspie
+- Osobna podstrona `/rejasystent` zniknęła: `rejhub2/rejasystent.html` i `js/rejassistant.js` są
+  usunięte, a stary adres przekierowuje (`301`) na `/aplikacje`.
+- W docku wyspy jest dziewiąty przycisk — **iskra** (`data-open="assistant"`, `ICONS.assistant`).
+  Panel `rj-view--assistant` ma powitanie, trzy podpowiedzi (`data-ask`), listę rozmowy
+  (`#rj-island-ai`, `aria-live="polite"`) i pole `#rj-island-ai-input` z przyciskiem wysyłania.
+- Cała logika jest lokalna (`aiLocalReply` w `island.js`): otwieranie stron, jasny/ciemny motyw,
+  godzina i data, nowości, powiadomienia, „dodaj zadanie … na jutro” (zapis do `rj_planner_v1`
+  albo `window.RejPlanner.add`), szukanie stron i odpowiedzi o RejHubie. Zero `fetch`, zero kluczy.
+- Rozmowa zostaje w panelu do odświeżenia strony — kolejne otwarcie nie zaczyna od zera.
+- Karty asystenta na `/aplikacje` i stronie głównej to przyciski `data-island="assistant"`;
+  kliknięcie otwiera wyspę i ustawia fokus w polu pytania.
+
+#### 2. Jedna lista aplikacji
+- `/aplikacje`: dziesięć kart w jednej siatce (`rjapp-grid--apps`) — RejChat, RejFile, RejSejf,
+  RejTools, RejClass, RejPlanner, RejGames, RejMusic, RejMeme i RejAsystent (przycisk).
+  Etykieta „NOWE W REJHUBIE” zniknęła; nagłówek mówi „Wszystkie aplikacje RejHuba”.
+- Strona główna: ta sama dziesiątka w sekcji „Aplikacje RejHuba” („Wszystko w jednym miejscu”),
+  zamiast pięciu kart obok osobnej listy starych podstron.
+- Ikony kart to spójne SVG (czat, plik, sejf, narzędzia, książka, kalendarz, pad, nuta, obraz,
+  iskra). Karta-przycisk dostaje `font: inherit; text-align: left` w `css/rejapps.css`.
+- Wersje: `island.js?v=13`, `island.css?v=13`, `rejapps.css?v=5`.

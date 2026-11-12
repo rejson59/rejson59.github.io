@@ -160,6 +160,16 @@
       "source": "/widzety.html",
       "destination": "/",
       "permanent": true
+    },
+    {
+      "source": "/rejasystent",
+      "destination": "/aplikacje",
+      "permanent": true
+    },
+    {
+      "source": "/rejasystent.html",
+      "destination": "/aplikacje",
+      "permanent": true
     }
   ]
 }
