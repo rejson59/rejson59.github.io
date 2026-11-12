@@ -585,3 +585,298 @@ body.rj-apps { --rjapp-accent: #86b6ff; --rjapp-accent-strong: #a9ccff; }
 .rjapps-more:hover { background: rgba(255, 255, 255, 0.12); }
 [data-theme="light"] .rjapps-head h2 { color: #12233c; }
 [data-theme="light"] .rjapps-more { color: #16233a; background: rgba(20, 50, 90, 0.07); border-color: rgba(20, 40, 74, 0.18); }
+
+/* ----------------------------------------------------------------------------
+   RejMusic 2 — wyszukiwarka katalogów (Deezer + Apple Music) i widoki listy
+   -------------------------------------------------------------------------- */
+
+.music-search { display: grid; gap: 12px; }
+.music-search-top { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.music-search-top h2 { margin: 0 0 4px; font: 780 20px/1.2 "Inter", system-ui, sans-serif; color: #f2f7ff; }
+.music-search-top p { max-width: 62ch; margin: 0; }
+.music-badge {
+  display: inline-flex; align-items: center; min-height: 28px; padding: 0 12px;
+  border: 1px solid rgba(169, 204, 255, 0.34); border-radius: 999px;
+  background: rgba(127, 178, 255, 0.12); color: #cfe2ff;
+  font: 650 11px/1 "JetBrains Mono", ui-monospace, monospace; letter-spacing: .06em; text-transform: uppercase;
+}
+.music-search-form { display: flex; flex-wrap: wrap; gap: 10px; }
+.music-search-field { flex: 1 1 260px; min-width: 0; }
+.music-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.music-search-form .rjapp-input { width: 100%; min-height: 48px; }
+.music-search-form .rjapp-btn { min-height: 48px; }
+.music-platforms { display: flex; flex-wrap: wrap; gap: 8px; }
+.music-chip {
+  min-height: 40px; padding: 0 16px; border: 1px solid rgba(178, 205, 245, 0.22); border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05); color: rgba(214, 228, 247, 0.82);
+  font: 650 12.5px/1 "Inter", system-ui, sans-serif; cursor: pointer;
+  transition: background .18s ease, border-color .18s ease, color .18s ease;
+}
+.music-chip:hover { background: rgba(255, 255, 255, 0.1); color: #f2f7ff; }
+.music-chip.is-on { border-color: rgba(169, 204, 255, 0.62); background: rgba(127, 178, 255, 0.2); color: #f2f7ff; }
+.music-outlinks { display: flex; flex-wrap: wrap; gap: 8px; }
+.music-outlinks a {
+  display: inline-flex; align-items: center; min-height: 38px; padding: 0 14px;
+  border: 1px solid rgba(178, 205, 245, 0.18); border-radius: 999px;
+  color: rgba(214, 228, 247, 0.82); font: 600 12px/1 "Inter", system-ui, sans-serif; text-decoration: none;
+}
+.music-outlinks a:hover { background: rgba(255, 255, 255, 0.09); color: #f2f7ff; }
+.music-results { display: grid; gap: 8px; max-height: 520px; margin: 0; padding: 0; overflow-y: auto; list-style: none; }
+.music-result {
+  display: grid; grid-template-columns: 56px minmax(0, 1fr) auto; align-items: center; gap: 10px 12px;
+  padding: 9px 12px; border: 1px solid rgba(178, 205, 245, 0.16); border-radius: 18px;
+  background: rgba(255, 255, 255, 0.045);
+}
+.music-result-cover {
+  display: grid; place-items: center; width: 56px; height: 56px; overflow: hidden;
+  border-radius: 14px; background: rgba(8, 14, 25, 0.55); color: rgba(198, 216, 240, 0.6);
+}
+.music-result-cover img { width: 100%; height: 100%; object-fit: cover; }
+.music-result-copy { display: grid; gap: 3px; min-width: 0; }
+.music-result-copy strong { overflow: hidden; color: #f2f7ff; font: 700 14px/1.3 "Inter", system-ui, sans-serif; text-overflow: ellipsis; white-space: nowrap; }
+.music-result-copy span { overflow: hidden; color: rgba(198, 216, 240, 0.72); font: 500 12px/1.35 "Inter", system-ui, sans-serif; text-overflow: ellipsis; white-space: nowrap; }
+.music-result-src {
+  justify-self: start; padding: 4px 9px; border: 1px solid rgba(178, 205, 245, 0.2); border-radius: 999px;
+  color: rgba(198, 216, 240, 0.75); font: 600 10px/1 "JetBrains Mono", ui-monospace, monospace; letter-spacing: .04em; text-transform: uppercase;
+}
+.music-result-actions { grid-column: 2 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.music-result-actions .rjapp-btn { min-height: 40px; padding: 0 14px; font-size: 12.5px; }
+.music-result-open {
+  display: inline-flex; align-items: center; min-height: 40px; padding: 0 12px;
+  border-radius: 999px; color: #bcd6ff; font: 600 12.5px/1 "Inter", system-ui, sans-serif; text-decoration: none;
+}
+.music-result-open:hover { background: rgba(255, 255, 255, 0.08); }
+.music-more { justify-self: start; }
+
+.music-tabs { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px; border: 1px solid rgba(178, 205, 245, 0.16); border-radius: 999px; background: rgba(255, 255, 255, 0.04); }
+.music-tab {
+  flex: 1 1 auto; min-height: 40px; padding: 0 14px; border: 0; border-radius: 999px;
+  background: transparent; color: rgba(214, 228, 247, 0.74);
+  font: 650 12.5px/1 "Inter", system-ui, sans-serif; cursor: pointer;
+}
+.music-tab span { color: rgba(169, 204, 255, 0.85); font: 600 11px/1 "JetBrains Mono", ui-monospace, monospace; }
+.music-tab.is-on { background: rgba(127, 178, 255, 0.22); color: #f2f7ff; }
+.music-item { display: flex; align-items: center; gap: 6px; }
+.music-item .music-row { flex: 1 1 auto; }
+.music-row--static { cursor: default; }
+.music-star {
+  flex: none; width: 40px; height: 40px; border: 1px solid rgba(178, 205, 245, 0.18); border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05); color: rgba(214, 228, 247, 0.7); font-size: 17px; line-height: 1; cursor: pointer;
+}
+.music-star:hover { background: rgba(255, 255, 255, 0.12); color: #f2f7ff; }
+.music-star.is-on { border-color: rgba(169, 204, 255, 0.6); background: rgba(127, 178, 255, 0.22); color: #ffe6a8; }
+.music-now-copy { display: grid; gap: 3px; min-width: 0; }
+.music-now-copy strong { overflow: hidden; color: #f2f7ff; font: 700 16px/1.3 "Inter", system-ui, sans-serif; text-overflow: ellipsis; white-space: nowrap; }
+.music-now-copy span { overflow: hidden; color: rgba(198, 216, 240, 0.72); font: 500 12px/1.35 "Inter", system-ui, sans-serif; text-overflow: ellipsis; white-space: nowrap; }
+
+[data-theme="light"] .music-search-top h2,
+[data-theme="light"] .music-result-copy strong,
+[data-theme="light"] .music-now-copy strong { color: #12233c; }
+[data-theme="light"] .music-result-copy span,
+[data-theme="light"] .music-now-copy span { color: rgba(24, 45, 74, 0.72); }
+[data-theme="light"] .music-result { border-color: rgba(20, 40, 74, 0.14); background: rgba(255, 255, 255, 0.62); }
+[data-theme="light"] .music-chip,
+[data-theme="light"] .music-tab,
+[data-theme="light"] .music-outlinks a { color: #22375a; border-color: rgba(20, 40, 74, 0.16); }
+[data-theme="light"] .music-chip.is-on,
+[data-theme="light"] .music-tab.is-on { background: rgba(110, 150, 220, 0.22); color: #0f2038; }
+[data-theme="light"] .music-result-src { color: #33486b; border-color: rgba(20, 40, 74, 0.16); }
+[data-theme="light"] .music-result-open { color: #1f4f8f; }
+[data-theme="light"] .music-badge { background: rgba(110, 150, 220, 0.14); color: #1f4f8f; border-color: rgba(60, 110, 180, 0.3); }
+[data-theme="light"] .music-star { color: #33486b; border-color: rgba(20, 40, 74, 0.16); }
+
+@media (max-width: 700px) {
+  .music-result { grid-template-columns: 48px minmax(0, 1fr); }
+  .music-result-cover { width: 48px; height: 48px; border-radius: 12px; }
+  .music-result-src { grid-column: 2; justify-self: start; }
+  .music-result-actions { grid-column: 1 / -1; }
+  .music-results { max-height: none; }
+  .music-tabs { border-radius: 20px; }
+}
+
+/* ----------------------------------------------------------------------------
+   RejMeme 2 — galeria, szablony, wgrywanie i kolejka moderacji
+   -------------------------------------------------------------------------- */
+
+.meme-hub { display: grid; gap: 14px; }
+.meme-tabs { display: flex; flex-wrap: wrap; gap: 6px; padding: 4px; border: 1px solid rgba(178, 205, 245, 0.16); border-radius: 999px; background: rgba(255, 255, 255, 0.04); }
+.meme-tab {
+  flex: 1 1 auto; min-height: 42px; padding: 0 15px; border: 0; border-radius: 999px;
+  background: transparent; color: rgba(214, 228, 247, 0.74);
+  font: 650 12.5px/1 "Inter", system-ui, sans-serif; cursor: pointer;
+}
+.meme-tab.is-on { background: rgba(127, 178, 255, 0.22); color: #f2f7ff; }
+.meme-tab-note { margin-left: 5px; color: rgba(169, 204, 255, 0.85); font: 600 10px/1 "JetBrains Mono", ui-monospace, monospace; letter-spacing: .05em; text-transform: uppercase; }
+.meme-view { display: grid; gap: 12px; min-width: 0; }
+.meme-toolbar { display: flex; flex-wrap: wrap; gap: 10px; }
+.meme-search-field { flex: 1 1 240px; min-width: 0; }
+.meme-search-field .rjapp-input, .meme-sort-field .rjapp-select { width: 100%; min-height: 46px; }
+.meme-sort-field { flex: 0 1 200px; min-width: 160px; }
+.meme-tagbar { display: flex; flex-wrap: wrap; gap: 8px; }
+.meme-tag {
+  min-height: 36px; padding: 0 13px; border: 1px solid rgba(178, 205, 245, 0.2); border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05); color: rgba(214, 228, 247, 0.8);
+  font: 600 12px/1 "Inter", system-ui, sans-serif; cursor: pointer;
+}
+.meme-tag:hover { background: rgba(255, 255, 255, 0.1); color: #f2f7ff; }
+.meme-tag.is-on { border-color: rgba(169, 204, 255, 0.6); background: rgba(127, 178, 255, 0.2); color: #f2f7ff; }
+.meme-gallery {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px;
+  margin: 0; padding: 0; list-style: none;
+}
+.meme-gallery-empty { grid-column: 1 / -1; }
+.meme-card {
+  display: flex; flex-direction: column; overflow: hidden;
+  border: 1px solid rgba(178, 205, 245, 0.16); border-radius: 22px;
+  background: rgba(255, 255, 255, 0.045);
+}
+.meme-card-figure {
+  display: grid; place-items: center; width: 100%; aspect-ratio: 4 / 3; padding: 0; border: 0;
+  background: rgba(8, 14, 25, 0.55); color: rgba(198, 216, 240, 0.4);
+  font-size: 28px; cursor: zoom-in;
+}
+.meme-card-figure img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.meme-card-copy { display: grid; gap: 4px; padding: 10px 12px 12px; }
+.meme-card-copy strong { overflow: hidden; color: #f2f7ff; font: 700 13.5px/1.35 "Inter", system-ui, sans-serif; text-overflow: ellipsis; white-space: nowrap; }
+.meme-card-copy > span { overflow: hidden; color: rgba(198, 216, 240, 0.66); font: 500 11.5px/1.35 "Inter", system-ui, sans-serif; text-overflow: ellipsis; white-space: nowrap; }
+.meme-card-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.meme-card-tags .meme-tag { min-height: 30px; padding: 0 10px; font-size: 11px; }
+.meme-more { justify-self: start; }
+
+.meme-templates { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
+.meme-template {
+  display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 12px; align-items: start;
+  padding: 12px; border: 1px solid rgba(178, 205, 245, 0.16); border-radius: 22px;
+  background: rgba(255, 255, 255, 0.045);
+}
+.meme-template-tile {
+  position: relative; display: grid; place-items: center; width: 64px; height: 64px;
+  border-radius: 18px; background: linear-gradient(150deg, rgba(127, 178, 255, 0.28), rgba(127, 178, 255, 0.06));
+  border: 1px solid rgba(178, 205, 245, 0.22); font-size: 28px;
+}
+.meme-template-hot {
+  position: absolute; bottom: -7px; left: 50%; transform: translateX(-50%);
+  padding: 3px 7px; border-radius: 999px; background: #14213a; border: 1px solid rgba(169, 204, 255, 0.42);
+  color: #cfe2ff; font: 700 8px/1 "JetBrains Mono", ui-monospace, monospace; letter-spacing: .08em; white-space: nowrap;
+}
+.meme-template-copy { display: grid; gap: 5px; min-width: 0; }
+.meme-template-copy strong { color: #f2f7ff; font: 700 14px/1.3 "Inter", system-ui, sans-serif; }
+.meme-template-copy > span { color: rgba(198, 216, 240, 0.72); font: 500 12px/1.45 "Inter", system-ui, sans-serif; }
+.meme-template-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 4px; }
+.meme-template-actions a { color: #bcd6ff; font: 600 12px/1 "Inter", system-ui, sans-serif; text-decoration: none; }
+.meme-template-actions a:hover { text-decoration: underline; }
+.meme-template-actions .rjapp-btn { min-height: 38px; padding: 0 12px; font-size: 12px; }
+
+.meme-upload-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; align-items: start; }
+.meme-drop {
+  display: grid; place-items: center; gap: 5px; min-height: 180px; padding: 18px;
+  border: 1px dashed rgba(178, 205, 245, 0.36); border-radius: 22px;
+  background: rgba(255, 255, 255, 0.04); color: rgba(214, 228, 247, 0.72);
+  text-align: center; cursor: pointer;
+}
+.meme-drop:hover, .meme-drop.is-over { border-color: rgba(169, 204, 255, 0.7); background: rgba(127, 178, 255, 0.12); }
+.meme-drop b { color: #f2f7ff; font: 700 15px/1.3 "Inter", system-ui, sans-serif; }
+.meme-drop span { font: 500 12px/1.4 "Inter", system-ui, sans-serif; }
+.meme-preview { position: relative; margin-top: 12px; border-radius: 20px; overflow: hidden; border: 1px solid rgba(178, 205, 245, 0.2); }
+.meme-preview img { display: block; width: 100%; max-height: 340px; object-fit: contain; background: rgba(8, 14, 25, 0.6); }
+.meme-preview-clear {
+  position: absolute; top: 8px; right: 8px; width: 38px; height: 38px;
+  border: 1px solid rgba(255, 255, 255, 0.3); border-radius: 999px;
+  background: rgba(8, 14, 25, 0.72); color: #f2f7ff; font-size: 20px; line-height: 1; cursor: pointer;
+}
+.meme-form { display: grid; gap: 10px; }
+.meme-ethics { display: flex; align-items: flex-start; gap: 10px; color: rgba(198, 216, 240, 0.8); font: 500 12.5px/1.5 "Inter", system-ui, sans-serif; }
+.meme-ethics input { width: 20px; height: 20px; margin-top: 2px; flex: none; accent-color: var(--rjapp-accent); }
+.meme-rules { padding: 14px 16px; border: 1px solid rgba(178, 205, 245, 0.14); border-radius: 20px; background: rgba(255, 255, 255, 0.035); }
+.meme-rules h3 { margin: 0 0 8px; color: #f2f7ff; font: 700 14px/1.3 "Inter", system-ui, sans-serif; }
+.meme-rules ol { margin: 0; padding-left: 18px; color: rgba(198, 216, 240, 0.76); font: 500 12.5px/1.6 "Inter", system-ui, sans-serif; }
+.meme-rules li + li { margin-top: 5px; }
+
+.meme-mine { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.meme-mine-row { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 12px; align-items: start; padding: 10px; border: 1px solid rgba(178, 205, 245, 0.16); border-radius: 20px; background: rgba(255, 255, 255, 0.04); }
+.meme-mine-thumb { display: grid; place-items: center; width: 76px; height: 76px; overflow: hidden; border-radius: 16px; background: rgba(8, 14, 25, 0.55); color: rgba(198, 216, 240, 0.5); }
+.meme-mine-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.meme-mine-copy { display: grid; gap: 4px; min-width: 0; }
+.meme-mine-copy strong { color: #f2f7ff; font: 700 14px/1.35 "Inter", system-ui, sans-serif; }
+.meme-mine-copy > span { color: rgba(198, 216, 240, 0.68); font: 500 11.5px/1.4 "Inter", system-ui, sans-serif; }
+.meme-status { justify-self: start; padding: 4px 10px; border-radius: 999px; font: 650 10.5px/1 "JetBrains Mono", ui-monospace, monospace; letter-spacing: .04em; text-transform: uppercase; border: 1px solid rgba(178, 205, 245, 0.24); color: rgba(214, 228, 247, 0.85); }
+.meme-status--pending { background: rgba(255, 214, 138, 0.12); border-color: rgba(255, 214, 138, 0.4); color: #ffe1a8; }
+.meme-status--approved { background: rgba(127, 178, 255, 0.18); border-color: rgba(169, 204, 255, 0.5); color: #d3e6ff; }
+.meme-status--rejected { background: rgba(255, 138, 160, 0.12); border-color: rgba(255, 138, 160, 0.4); color: #ffc4cf; }
+.meme-mine-reason { margin: 2px 0 0; color: rgba(255, 196, 207, 0.9); font: 500 12px/1.45 "Inter", system-ui, sans-serif; }
+.meme-withdraw { justify-self: start; min-height: 34px; padding: 0 12px; font-size: 12px; }
+
+.meme-lightbox {
+  position: fixed; inset: 0; z-index: 340; display: none; place-items: center; padding: 16px;
+  background: rgba(4, 8, 16, 0.72); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px);
+}
+.meme-lightbox.is-open { display: grid; }
+.meme-lightbox-card {
+  position: relative; width: min(760px, 100%); max-height: calc(100vh - 32px); overflow: auto;
+  padding: 12px; border: 1px solid rgba(178, 205, 245, 0.24); border-radius: 24px;
+  background: #0f1828; box-shadow: 0 30px 90px rgba(0, 0, 0, 0.55);
+}
+.meme-lightbox-card img { display: block; width: 100%; max-height: 68vh; object-fit: contain; border-radius: 16px; background: rgba(8, 14, 25, 0.6); }
+.meme-lightbox-copy { display: grid; gap: 3px; padding: 10px 6px 4px; }
+.meme-lightbox-copy strong { color: #f2f7ff; font: 700 15px/1.35 "Inter", system-ui, sans-serif; }
+.meme-lightbox-copy span { color: rgba(198, 216, 240, 0.68); font: 500 12px/1.4 "Inter", system-ui, sans-serif; }
+.meme-lightbox-close {
+  position: absolute; top: 18px; right: 18px; z-index: 2; width: 42px; height: 42px;
+  border: 1px solid rgba(255, 255, 255, 0.32); border-radius: 999px;
+  background: rgba(8, 14, 25, 0.78); color: #f2f7ff; font-size: 22px; line-height: 1; cursor: pointer;
+}
+
+[data-theme="light"] .meme-tab { color: #22375a; }
+[data-theme="light"] .meme-tab.is-on { background: rgba(110, 150, 220, 0.22); color: #0f2038; }
+[data-theme="light"] .meme-card,
+[data-theme="light"] .meme-template,
+[data-theme="light"] .meme-mine-row { border-color: rgba(20, 40, 74, 0.14); background: rgba(255, 255, 255, 0.66); }
+[data-theme="light"] .meme-card-copy strong,
+[data-theme="light"] .meme-template-copy strong,
+[data-theme="light"] .meme-rules h3,
+[data-theme="light"] .meme-mine-copy strong { color: #12233c; }
+[data-theme="light"] .meme-card-copy > span,
+[data-theme="light"] .meme-template-copy > span,
+[data-theme="light"] .meme-mine-copy > span,
+[data-theme="light"] .meme-rules ol,
+[data-theme="light"] .meme-ethics { color: rgba(24, 45, 74, 0.78); }
+[data-theme="light"] .meme-tag { color: #22375a; border-color: rgba(20, 40, 74, 0.16); }
+[data-theme="light"] .meme-tag.is-on { background: rgba(110, 150, 220, 0.2); color: #0f2038; }
+[data-theme="light"] .meme-drop { color: rgba(24, 45, 74, 0.8); border-color: rgba(20, 40, 74, 0.26); }
+[data-theme="light"] .meme-drop b { color: #12233c; }
+[data-theme="light"] .meme-rules { background: rgba(255, 255, 255, 0.6); border-color: rgba(20, 40, 74, 0.14); }
+[data-theme="light"] .meme-template-actions a { color: #1f4f8f; }
+[data-theme="light"] .meme-lightbox-card { background: #f5f9ff; }
+[data-theme="light"] .meme-lightbox-copy strong { color: #12233c; }
+[data-theme="light"] .meme-lightbox-copy span { color: rgba(24, 45, 74, 0.72); }
+[data-theme="light"] .meme-status { color: #22375a; }
+
+@media (max-width: 640px) {
+  .meme-tabs { border-radius: 20px; }
+  .meme-tab { flex: 1 1 44%; }
+  .meme-gallery { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .meme-mine-row { grid-template-columns: 60px minmax(0, 1fr); }
+  .meme-mine-thumb { width: 60px; height: 60px; border-radius: 14px; }
+}
+
+/* Telefon: każde klikalne pole nowych aplikacji ma min. 46 px wysokości. */
+@media (max-width: 640px) {
+  .music-search-form .rjapp-input,
+  .music-search-form .rjapp-btn,
+  .music-chip,
+  .music-outlinks a,
+  .music-tab,
+  .music-star,
+  .music-result-actions .rjapp-btn,
+  .music-result-open,
+  .meme-tab,
+  .meme-tag,
+  .meme-template-actions .rjapp-btn,
+  .meme-withdraw,
+  .meme-lightbox-close,
+  .meme-preview-clear { min-height: 46px; }
+  .music-star,
+  .meme-preview-clear,
+  .meme-lightbox-close { width: 46px; height: 46px; }
+  .meme-gallery { grid-template-columns: 1fr; }
+}

@@ -229,6 +229,7 @@
     community: "tab-community",
     visitors: "tab-visitors",
     errors: "tab-errors",
+    memes: "tab-memes",
     server: "tab-server"
   };
 
@@ -252,13 +253,14 @@
           if (tab === "community") fetchCommunity();
           if (tab === "visitors") fetchVisitorList();
           if (tab === "errors" && window.RJAdminErrors) window.RJAdminErrors.load();
+          if (tab === "memes" && window.RJAdminMemes) window.RJAdminMemes.load();
           if (tab === "server" && window.RJAdminServer) window.RJAdminServer.load();
         });
       })(btns[i]);
     }
     /* Zapamiętujemy ostatnią sekcję — po odświeżeniu panel wraca tam, gdzie
        skończyliśmy pracę, zamiast zawsze na Przegląd. Numer sekcji można też
-       wybrać z klawiatury: Alt+1…Alt+8 (w kolejności z szyny). */
+       wybrać z klawiatury: Alt+1…Alt+9 (w kolejności z szyny). */
     var ACTIVE_KEY = "rj_admin_tab_v1";
     function rememberTab(name) {
       try { localStorage.setItem(ACTIVE_KEY, name); } catch (e) { /* tryb prywatny */ }

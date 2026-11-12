@@ -30,7 +30,7 @@
     { title: 'RejPlanner', url: '/rejplanner', aliases: ['planer', 'kalendarz', 'planner', 'zadania'], desc: 'Kalendarz, wydarzenia i zadania.' },
     { title: 'RejGames', url: '/rejgames', aliases: ['gry', 'games', 'rejgames'], desc: 'Wszystkie gry w jednym miejscu.' },
     { title: 'RejMusic', url: '/rejmusic', aliases: ['muzyka', 'music', 'rejmusic', 'spotify'], desc: 'Odtwarzacz i playlista.' },
-    { title: 'RejMeme', url: '/rejmeme', aliases: ['memy', 'mem', 'meme', 'rejmeme'], desc: 'Generator memów z wysyłką do czatu.' },
+    { title: 'RejMeme', url: '/rejmeme', aliases: ['memy', 'mem', 'meme', 'rejmeme'], desc: 'Galeria memów z moderacją i wgrywaniem.' },
     { title: 'RejAsystent', url: '/rejasystent', aliases: ['asystent', 'assistant', 'ai'], desc: 'Ten asystent.' },
     { title: 'Profil', url: '/profil', aliases: ['profil', 'konto', 'avatar'], desc: 'Twój profil i ustawienia konta.' },
     { title: 'Panel admina', url: '/admin', aliases: ['admin', 'panel', 'statystyki'], desc: 'Statystyki i zgłoszenia (tylko administrator).' },
@@ -160,7 +160,7 @@
       return reply('Dzisiaj jest ' + new Date().toLocaleDateString('pl-PL', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }) + '.');
     }
     if (/(co nowego|nowosci|co dodano)/.test(text)) {
-      return reply('Ostatnio w RejHubie:\n• RejPlanner — kalendarz i zadania,\n• RejGames — wszystkie gry w jednym miejscu,\n• RejMusic — odtwarzacz i linki ze Spotify, YouTube i SoundCloud,\n• RejMeme — generator memów z wysyłką do RejChatu,\n• powiadomienia push mają test, więc od razu wiadomo, czy działają,\n• na telefonie można dodać RejHub do ekranu głównego.');
+      return reply('Ostatnio w RejHubie:\n• RejPlanner — kalendarz i zadania,\n• RejGames — wszystkie gry w jednym miejscu,\n• RejMusic — wyszukiwarka Deezer i Apple Music oraz odtwarzacze Spotify, YouTube i SoundCloud,\n• RejMeme — galeria memów z kolejką moderacji,\n• powiadomienia push mają test, więc od razu wiadomo, czy działają,\n• na telefonie można dodać RejHub do ekranu głównego.');
     }
     if (/(powiadomien|push|notyfikac)/.test(text)) {
       return reply('Powiadomienia włączysz w RejChacie: panel „Powiadomienia” → „Włącz powiadomienia na telefon”. Po włączeniu możesz wysłać powiadomienie testowe. Na iPhonie wymaga to dodania RejHub do ekranu głównego (iOS 16.4+).',

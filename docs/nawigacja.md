@@ -122,8 +122,9 @@ Na starszych stronach przekierowujących i awaryjnych ekranach podróży domek j
 - **RejMusic** (`js/rejmusic.js`): pliki z dysku przez `URL.createObjectURL`, playlista linków
   ze Spotify/YouTube/SoundCloud/Deezer przez oficjalne osadzenia (`iframe`). Świadomie **nie ma**
   „przesyłania utworów ze Spotify” — te serwisy nie pozwalają na pobieranie ani kopiowanie utworów.
-- **RejMeme** (`js/rejmeme.js`): canvas 1080 × 1080, cztery tła, własne zdjęcie, kolor i rozmiar
-  tekstu, PNG/schowek oraz wysyłka do RejChatu przez `rejchat_send_photo` (czat ogólny lub DM).
+- **RejMeme** (`js/rejmeme.js`): od rundy 2026-11-15 to **galeria memów społeczności + kolejka
+  moderacji** (szczegóły niżej), a nie generator canvas. Stara wysyłka do RejChatu została zastąpiona
+  wgrywaniem do galerii z zatwierdzaniem przez admina.
 - **RejAsystent** (`js/rejassistant.js`): lokalne polecenia (otwieranie stron, motyw, „dodaj zadanie
   … na jutro”, wyszukiwanie) i opcjonalny model zgodny z OpenAI — klucz zostaje w `localStorage`
   (`rj_assistant_ai_v1`), adres API musi być `https://`, a bez klucza nic nie wychodzi z przeglądarki.
@@ -151,3 +152,67 @@ Na starszych stronach przekierowujących i awaryjnych ekranach podróży domek j
   `COOP` oraz **CSP w trybie raportowania** (na start, żeby nie zablokować istniejących skryptów).
 - `api/session.js`: limit 10 nieudanych logowań na 10 minut z jednego IP (`Retry-After`), sprawdzanie
   `Origin` (ochrona przed CSRF) i czyszczenie licznika po udanym logowaniu.
+
+### RejHub 2.0 — runda „jeden pasek, muzyka i memy” (2026-11-15)
+
+#### 1. Jeden topbar na każdej podstronie
+
+- Znaczniki `<header class="site-header rj-shared-header rj-alerts-header">` są **identyczne co do
+  znaku** na wszystkich 22 stronach z paskiem (`scripts/jsdom/topbar.test.js` pilnuje tego testem).
+- Sam HTML nie wystarczał: strony aplikacji (`/aplikacje`, `/rejmusic`, `/rejmeme`, `/rejgames`,
+  `/rejplanner`, `/rejasystent`) nie ładowały `css/glass-update.css`, więc pasek nie miał
+  `--rju-vessel` (czyli tła), a osiem stron nie miało `css/liquid.css`. Teraz **każda** strona
+  ładuje ten sam zestaw 18 arkuszy w tej samej kolejności:
+
+  `style.css` → `liquid.css` → `responsive.css` → (arkusze strony) → `side-ads` → `mobile-ads` →
+  `shared-topbar` + `<noscript>` `shared-topbar-nojs` → `rejchat-notifications` → `glass-update` →
+  `glass2` → `loader` → `text-filter` → `push` → `topbar-split` → `page-reveal` → `island` →
+  `scrollbar` → `glass-last`.
+
+- Ujednolicono też wersje: `style.css?v=2026-11-12-posters-1`, `responsive.css?v=3` oraz jeden
+  adres fontów (Inter / Space Grotesk / JetBrains Mono) — wcześniej część stron renderowała
+  fallback systemowy, co samo w sobie zmieniało wygląd paska i treści.
+
+#### 2. RejMusic — wyszukiwarka utworów (`js/rejmusic.js` v2)
+
+- Jedno pole szuka w **dwóch oficjalnych katalogach**: Deezer (`api.deezer.com/search`, JSONP)
+  i Apple Music (`itunes.apple.com/search`, JSONP). Wyniki są scalane i deduplikowane.
+- Odsłuch to **oficjalna 30-sekundowa zapowiedź** (`preview` / `previewUrl`) — bez pobierania i bez
+  obchodzenia zabezpieczeń. Przy każdym wyniku jest też „Otwórz ↗” do platformy.
+- Utwory z Deezer można dodać do playlisty jako **oficjalny osadzony odtwarzacz**
+  (`widget.deezer.com`), tak samo jak linki Spotify/YouTube/SoundCloud wklejane ręcznie.
+- Nowe widoki playlisty: **Playlista / Ulubione / Historia** (`rj_music_favs_v1`,
+  `rj_music_history_v1`). Dalej działa wrzucanie plików z dysku (zostają na urządzeniu).
+- Przyciski platform (Spotify, YouTube, SoundCloud, Deezer) przenoszą to samo zapytanie na stronę
+  serwisu — bez scrapowania i bez proxy.
+
+#### 3. RejMeme — galeria i kolejka moderacji (`js/rejmeme.js` v2)
+
+- Generator canvas zniknął. Są cztery zakładki: **Galeria**, **Szablony (na czasie)**,
+  **Wgraj mem**, **Moje zgłoszenia**.
+- Galeria pokazuje wyłącznie memy ze statusem `approved`, z filtrem tagów, sortowaniem
+  (najnowsze / najczęściej oglądane) i podglądem w lightboxie.
+- Zakładka „Szablony” opisuje 12 najpopularniejszych formatów memów i linkuje do Know Your Meme —
+  nie kopiujemy cudzych obrazków.
+- Wgranie: JPG/PNG/GIF/WebP do 2 MiB + tytuł, tagi i **potwierdzenie etyki**. Plik leci przez
+  `rejmeme_submit` do kolejki `pending`; autor widzi status i powód ewentualnego odrzucenia.
+- Pliki trzymamy w `bytea` (bez publicznego Storage) i wydajemy przez RPC.
+
+#### 4. Baza: `supabase/2026-11-15_rejmeme_gallery.sql`
+
+- Tabele: `rejmeme_memes` (status `pending|approved|rejected`, autor, tagi, `bytea`, licznik
+  wyświetleń) oraz `rejmeme_usage` (limit 10 plików / 20 MiB na dobę).
+- Funkcje: `rejmeme_submit`, `rejmeme_gallery`, `rejmeme_image`, `rejmeme_mine`,
+  `rejmeme_own_image`, `rejmeme_withdraw` oraz administracyjne `rejmeme_admin_queue`,
+  `rejmeme_admin_image`, `rejmeme_moderate`.
+- Bezpieczeństwo: `security definer`, `search_path`, magic bytes, limit 2 MiB na plik, globalny
+  sufit 128 MiB, RLS bez polityk dla `anon`/`authenticated` (dostęp tylko przez RPC), a moderacja
+  wymaga `public.is_widget_admin()` (konto z tabeli `widget_admins`).
+
+#### 5. Panel admina — zakładka „Memy”
+
+- Nowa zakładka `#tab-memes` (`js/admin-memes.js`, `css/admin-memes.css`) z licznikami
+  (oczekujące / zatwierdzone / odrzucone), filtrem statusu i kartami memów.
+- Zatwierdzenie publikuje mem w galerii, odrzucenie zapisuje powód widoczny dla autora,
+  „Usuń” kasuje plik bezpowrotnie. Każda decyzja idzie przez RPC — nie da się jej wykonać z
+  publicznej strony.
