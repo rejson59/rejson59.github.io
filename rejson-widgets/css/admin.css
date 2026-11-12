@@ -20,7 +20,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #34d399;
+  background: #6ea8ff;
 }
 
 .auth-shell {
@@ -143,7 +143,7 @@
 .st-under_review { color: #c084fc; }
 .st-planned { color: #60a5fa; }
 .st-in_progress { color: #fbbf24; }
-.st-completed { color: #34d399; }
+.st-completed { color: #6ea8ff; }
 .st-closed { color: var(--faint); }
 
 .sub-title { font: 600 14.5px/1.32 "Inter", sans-serif; margin: 0 0 3px; }
@@ -333,7 +333,7 @@
 .err-kind--promise .err-kind { color: #c9a2ff; border-color: color-mix(in srgb, #a878ff 40%, transparent); }
 .err-kind--network .err-kind { color: #6ab0ff; border-color: color-mix(in srgb, #3b82f6 40%, transparent); }
 .err-kind--preview .err-kind { color: #f0b46b; border-color: color-mix(in srgb, #f59e0b 40%, transparent); }
-.err-kind--slow .err-kind { color: #7be0a8; border-color: color-mix(in srgb, #34d399 40%, transparent); }
+.err-kind--slow .err-kind { color: #7be0a8; border-color: color-mix(in srgb, #6ea8ff 40%, transparent); }
 .err-count {
   font-family: "JetBrains Mono", monospace;
   font-size: 11px;
@@ -432,7 +432,7 @@
 }
 .err-card.is-new .err-status-chip { color: #ff8a82; border-color: color-mix(in srgb, #ff5f57 35%, transparent); }
 .err-card.is-triaged .err-status-chip { color: #f0b46b; border-color: color-mix(in srgb, #f59e0b 35%, transparent); }
-.err-card.is-fixed .err-status-chip { color: #7be0a8; border-color: color-mix(in srgb, #34d399 35%, transparent); }
+.err-card.is-fixed .err-status-chip { color: #7be0a8; border-color: color-mix(in srgb, #6ea8ff 35%, transparent); }
 .errors-media-title { margin-top: 28px; }
 .errors-media {
   display: grid;

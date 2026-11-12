@@ -112,8 +112,8 @@
 }
 
 .adm-kpi--live .adm-kpi-ico {
-  border-color: color-mix(in srgb, #34d399 40%, var(--border));
-  background: color-mix(in srgb, #34d399 12%, var(--bg-elev));
+  border-color: color-mix(in srgb, #6ea8ff 40%, var(--border));
+  background: color-mix(in srgb, #6ea8ff 12%, var(--bg-elev));
 }
 
 .adm-kpi.is-hot {
@@ -181,9 +181,9 @@
   gap: 7px;
   padding: 4px 11px;
   border-radius: 999px;
-  border: 1px solid color-mix(in srgb, #34d399 45%, var(--border));
-  background: color-mix(in srgb, #34d399 10%, transparent);
-  color: #34d399;
+  border: 1px solid color-mix(in srgb, #6ea8ff 45%, var(--border));
+  background: color-mix(in srgb, #6ea8ff 10%, transparent);
+  color: #6ea8ff;
   font-size: 10.5px;
   font-weight: 700;
   letter-spacing: 0.04em;
@@ -194,14 +194,14 @@
   width: 7px;
   height: 7px;
   border-radius: 50%;
-  background: #34d399;
-  box-shadow: 0 0 0 3px color-mix(in srgb, #34d399 22%, transparent);
+  background: #6ea8ff;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #6ea8ff 22%, transparent);
   animation: admLivePulse 2.2s ease-in-out infinite;
 }
 
 @keyframes admLivePulse {
-  0%, 100% { box-shadow: 0 0 0 3px color-mix(in srgb, #34d399 22%, transparent); }
-  50% { box-shadow: 0 0 0 6px color-mix(in srgb, #34d399 10%, transparent); }
+  0%, 100% { box-shadow: 0 0 0 3px color-mix(in srgb, #6ea8ff 22%, transparent); }
+  50% { box-shadow: 0 0 0 6px color-mix(in srgb, #6ea8ff 10%, transparent); }
 }
 
 /* Dwukolumnowe siatki kart */
@@ -420,8 +420,8 @@
 }
 
 .pa-trail-step.is-latest .pa-trail-slug {
-  border-color: color-mix(in srgb, #34d399 55%, var(--border));
-  background: color-mix(in srgb, #34d399 12%, var(--card));
+  border-color: color-mix(in srgb, #6ea8ff 55%, var(--border));
+  background: color-mix(in srgb, #6ea8ff 12%, var(--card));
 }
 
 .pa-trail-time { font-size: 10px; color: var(--faint); }
@@ -499,8 +499,8 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #34d399;
-  box-shadow: 0 0 0 3px color-mix(in srgb, #34d399 22%, transparent);
+  background: #6ea8ff;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #6ea8ff 22%, transparent);
 }
 
 .adm-online-user .adm-proj-chip { margin-left: 2px; }
@@ -544,7 +544,7 @@
 .adm-tname { display: inline-flex; align-items: center; gap: 8px; min-width: 0; }
 .adm-tslug { font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .adm-num { text-align: right; font-variant-numeric: tabular-nums; }
-.adm-online.is-live { color: #34d399; font-weight: 700; }
+.adm-online.is-live { color: #6ea8ff; font-weight: 700; }
 .adm-dim { color: var(--muted); }
 .adm-today { color: var(--text); font-weight: 600; }
 .adm-rel { color: var(--faint); font-size: 11px; }
@@ -594,8 +594,8 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #34d399;
-  box-shadow: 0 0 0 3px color-mix(in srgb, #34d399 22%, transparent);
+  background: #6ea8ff;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #6ea8ff 22%, transparent);
 }
 
 .commp-posts { display: flex; flex-direction: column; gap: 10px; }
@@ -724,7 +724,7 @@
   filter: brightness(1.35) saturate(1.2);
 }
 .adm-chart-col.is-today .adm-chart-bar {
-  background: linear-gradient(180deg, #34d399, color-mix(in srgb, #34d399 45%, transparent));
+  background: linear-gradient(180deg, #6ea8ff, color-mix(in srgb, #6ea8ff 45%, transparent));
   box-shadow: 0 0 14px -2px rgba(52, 211, 153, 0.55);
 }
 .adm-chart-day {
@@ -732,7 +732,7 @@
   color: var(--faint);
   white-space: nowrap;
 }
-.adm-chart-col.is-today .adm-chart-day { color: #34d399; font-weight: 700; }
+.adm-chart-col.is-today .adm-chart-day { color: #6ea8ff; font-weight: 700; }
 .adm-chart-hint {
   display: block;
   width: 100%;
@@ -841,8 +841,8 @@
   height: 9px;
   flex: none;
   border-radius: 50%;
-  background: #34d399;
-  box-shadow: 0 0 0 4px color-mix(in srgb, #34d399 22%, transparent);
+  background: #6ea8ff;
+  box-shadow: 0 0 0 4px color-mix(in srgb, #6ea8ff 22%, transparent);
   animation: commOnlinePulse 2s ease-in-out infinite;
 }
 .adm-map-counts { margin-left: auto; display: inline-flex; gap: 8px; }
