@@ -92,6 +92,26 @@
         {
           "key": "X-Frame-Options",
           "value": "SAMEORIGIN"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=63072000; includeSubDomains; preload"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(self), geolocation=(), payment=(), usb=()"
+        },
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin-allow-popups"
+        },
+        {
+          "key": "X-Permitted-Cross-Domain-Policies",
+          "value": "none"
+        },
+        {
+          "key": "Content-Security-Policy-Report-Only",
+          "value": "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://esm.sh; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://hzbqzfimtroixnldzjeq.supabase.co https://*.supabase.co https://api.openai.com; worker-src 'self' blob:; frame-src 'self' https://open.spotify.com https://www.youtube.com https://w.soundcloud.com https://widget.deezer.com; form-action 'self'"
         }
       ]
     },

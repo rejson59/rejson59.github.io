@@ -198,7 +198,7 @@ const ok = (body, headers) => new Response(body, { status: 200, headers: Object.
     const call = worker.request(nav('https://rejhub.vercel.app/'));
     const response = await call.settle();
     const body = await response.text();
-    const cached = worker.stores.get('rj-shell-html-v3');
+    const cached = worker.stores.get('rj-shell-html-v4');
     check('online: strona idzie z sieci', () => assert.equal(body, '<html>nowa wersja</html>'));
     check('online: HTML zapisany lokalnie', () => assert.ok(cached && cached.has('/'), 'wpis: ' + (cached ? [...cached.keys()].join(',') : 'brak')));
   }
@@ -208,7 +208,7 @@ const ok = (body, headers) => new Response(body, { status: 200, headers: Object.
     const worker = makeWorker(async () => {
       throw new Error('offline');
     });
-    (worker.stores.set('rj-shell-html-v3', new Map([['/', new Response('<html>z pamięci</html>', { status: 200 })]])), worker);
+    (worker.stores.set('rj-shell-html-v4', new Map([['/', new Response('<html>z pamięci</html>', { status: 200 })]])), worker);
     const call = worker.request(nav('https://rejhub.vercel.app/'));
     const response = await call.settle();
     check('offline: strona publiczna z pamięci', async () => {}, '');
@@ -224,7 +224,7 @@ const ok = (body, headers) => new Response(body, { status: 200, headers: Object.
       const call = worker.request(nav('https://rejhub.vercel.app' + pathname));
       check('prywatna ' + pathname + ': worker nie ingeruje', () => assert.equal(call.handled, false));
     });
-    const htmlCache = worker.stores.get('rj-shell-html-v3');
+    const htmlCache = worker.stores.get('rj-shell-html-v4');
     check('prywatne strony nie trafiają do cache', () => assert.ok(!htmlCache || htmlCache.size === 0, 'wpisów: ' + (htmlCache ? htmlCache.size : 0)));
   }
 
@@ -232,7 +232,7 @@ const ok = (body, headers) => new Response(body, { status: 200, headers: Object.
   {
     const worker = makeWorker(async () => ok('<html>x</html>', { 'cache-control': 'no-store' }));
     await worker.request(nav('https://rejhub.vercel.app/')).settle();
-    const cached = worker.stores.get('rj-shell-html-v3');
+    const cached = worker.stores.get('rj-shell-html-v4');
     check('no-store nie ląduje w cache', () => assert.ok(!cached || cached.size === 0));
 
     const redirecting = makeWorker(async () => {
@@ -241,7 +241,7 @@ const ok = (body, headers) => new Response(body, { status: 200, headers: Object.
       return response;
     });
     await redirecting.request(nav('https://rejhub.vercel.app/')).settle();
-    const redirected = redirecting.stores.get('rj-shell-html-v3');
+    const redirected = redirecting.stores.get('rj-shell-html-v4');
     check('przekierowanie nie ląduje w cache', () => assert.ok(!redirected || redirected.size === 0));
   }
 
@@ -259,7 +259,7 @@ const ok = (body, headers) => new Response(body, { status: 200, headers: Object.
     await wait(10);
     const firstBody = await first.text();
     check('pierwsze żądanie zasobu idzie do sieci', () => assert.equal(firstBody, '<css>v1</css>'));
-    const cached = worker.stores.get('rj-shell-assets-v3');
+    const cached = worker.stores.get('rj-shell-assets-v4');
     check('zasób wersjonowany trafia do cache', () => assert.ok(cached && cached.has('https://rejhub.vercel.app/hub/glass2.css?v=12')));
 
     networkBody = '<css>v2</css>';
@@ -269,7 +269,7 @@ const ok = (body, headers) => new Response(body, { status: 200, headers: Object.
     check('drugie żądanie obsłużone z pamięci', () => assert.equal(secondBody, '<css>v1</css>'));
     check('odświeżanie w tle nadal pyta sieć', () => assert.equal(calls, before + 1, 'wywołań: ' + (calls - before)));
     await wait(20);
-    const after = worker.stores.get('rj-shell-assets-v3').get('https://rejhub.vercel.app/hub/glass2.css?v=12');
+    const after = worker.stores.get('rj-shell-assets-v4').get('https://rejhub.vercel.app/hub/glass2.css?v=12');
     const afterBody = await after.text();
     check('po cichu zapisana nowsza wersja', () => assert.equal(afterBody, '<css>v2</css>'));
   }
@@ -338,7 +338,7 @@ const ok = (body, headers) => new Response(body, { status: 200, headers: Object.
     const waited = [];
     install({ waitUntil: (promise) => waited.push(promise) });
     await Promise.all(waited);
-    const assets = worker.stores.get('rj-shell-assets-v3');
+    const assets = worker.stores.get('rj-shell-assets-v4');
     check('precache zapisany', () => assert.ok(assets && assets.size >= 4, 'plików: ' + (assets ? assets.size : 0)));
   }
 
@@ -371,7 +371,7 @@ const ok = (body, headers) => new Response(body, { status: 200, headers: Object.
       ]
     });
     const replies = await message.settle();
-    const saved = [...worker.stores.get('rj-shell-assets-v3').keys()];
+    const saved = [...worker.stores.get('rj-shell-assets-v4').keys()];
     check('dogrzewanie zapisuje tylko dozwolone zasoby', () => {
       assert.deepEqual(saved.sort(), ['/hub/glass2.css?v=12', '/js/app.js?v=2026-11-11-2']);
     });
@@ -383,7 +383,7 @@ const ok = (body, headers) => new Response(body, { status: 200, headers: Object.
     const worker = makeWorker(async () => new Response('x', { status: 200 }));
     await worker.request(nav('https://rejhub.vercel.app/')).settle();
     const state = await worker.message({ type: 'RJ_SHELL_CACHE_STATE' }).settle();
-    check('stan cache raportuje wpisy', () => assert.equal(state[0] && state[0].entries['rj-shell-html-v3'], 1));
+    check('stan cache raportuje wpisy', () => assert.equal(state[0] && state[0].entries['rj-shell-html-v4'], 1));
     await worker.message({ type: 'RJ_SHELL_CACHE_CLEAR' }).settle();
     const left = [...worker.stores.keys()].filter((name) => name.indexOf('rj-shell-') === 0);
     check('czyszczenie usuwa wszystkie cache powłoki', () => assert.deepEqual(left, []));
@@ -435,7 +435,7 @@ const ok = (body, headers) => new Response(body, { status: 200, headers: Object.
           postMessage(message, ports) {
             posted.push(message);
             if (ports && ports[0] && ports[0].__reply) {
-              setTimeout(() => ports[0].__reply({ type: 'RJ_SHELL_CACHE_WARM_DONE', saved: 3, version: 'v3' }), 0);
+              setTimeout(() => ports[0].__reply({ type: 'RJ_SHELL_CACHE_WARM_DONE', saved: 3, version: 'v4' }), 0);
             }
           }
         },

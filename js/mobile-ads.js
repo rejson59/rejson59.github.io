@@ -1,13 +1,16 @@
 /* © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
    Licencja: /LICENSE, /licencja */
 /*!
- * Mini reklamy mobilne (v9).
+ * Mini reklamy mobilne (v10).
  *
  * Zasady, które użytkownik ustalił dla telefonu:
  *  - pasek stoi POD topbarem (sticky), a nie na dole ekranu — nie zasłania
  *    treści i nie koliduje z wyspą;
  *  - widać DOKŁADNIE JEDNĄ promocję naraz — karta zajmuje całą szerokość
  *    paska, więc nic nie jest ściśnięte w dwóch kolumnach;
+ *  - każda promocja ma krótki tytuł i jeszcze krótszy opis (dwie linijki
+ *    mieszczą się w 72 px wysokości paska) i leży w zaokrąglonej ramce,
+ *    żeby nie wyglądała jak goły napis na taśmie;
  *  - każda promocja zostaje na ekranie dłużej: zmiana co 3,5 sekundy,
  *    płynnym przejściem, w kółko;
  *  - kropki pod paskiem pokazują, która promocja jest aktualna.
@@ -32,7 +35,31 @@
   var bar = document.createElement('aside');
   bar.id = 'rj-mobile-ads';
   bar.setAttribute('aria-label', 'Mini reklamy i promocje');
-  bar.innerHTML = '<span class="rj-mobile-ads-label">mini reklamy</span><div class="rj-mobile-ads-items" tabindex="0" aria-label="Mini reklamy i promocje (przewijane)"><a class="rj-mobile-ad rj-mobile-ad--chat" href="/rejchat"><span class="rj-mobile-ad-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H10l-5 4v-4H4z"/><path d="M8 9h8M8 12h5"/></svg></span><span>RejChat · pogadaj</span></a><a class="rj-mobile-ad rj-mobile-ad--site" href="/uslugi"><span class="rj-mobile-ad-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01M8 14h8"/></svg></span><span>Masz pomysł na swoją stronę?</span></a><a class="rj-mobile-ad rj-mobile-ad--offer" href="/partnerstwo#propozycja"><span class="rj-mobile-ad-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m4 10 11-5v14L4 14zM4 10v4m3.5 1 1.5 4h3l-1-3.3M18 9l2-2m-2 5h3m-3 3 2 2"/></svg></span><span>Masz coś, czym chcesz się podzielić?</span></a><a class="rj-mobile-ad rj-mobile-ad--house" href="/rejfile"><span class="rj-mobile-ad-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v13H6z"/><path d="M14 3v5h4M12 16V10m-2 2 2-2 2 2"/></svg></span><span>RejFile · wyślij plik</span></a></div><span class="rj-mobile-ads-dots" aria-hidden="true"><i></i><i></i><i></i><i></i></span>';
+  /* Treść promocji trzymamy w jednym miejscu: tytuł, krótki opis i ikona.
+     Dzięki temu <noscript> (statyczny HTML) i wersja z JS wyglądają tak samo. */
+  var ADS = [
+    { kind: 'chat', href: '/rejchat', title: 'RejChat · pogadaj', desc: 'Czat na żywo ze społecznością',
+      icon: '<path d="M4 5h16v11H10l-5 4v-4H4z"/><path d="M8 9h8M8 12h5"/>' },
+    { kind: 'site', href: '/uslugi', title: 'Masz pomysł na stronę?', desc: 'Zamów stronę lub projekt',
+      icon: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01M8 14h8"/>' },
+    { kind: 'offer', href: '/partnerstwo#propozycja', title: 'Podziel się czymś', desc: 'Partnerstwo i współpraca',
+      icon: '<path d="m4 10 11-5v14L4 14zM4 10v4m3.5 1 1.5 4h3l-1-3.3M18 9l2-2m-2 5h3m-3 3 2 2"/>' },
+    { kind: 'house', href: '/rejfile', title: 'RejFile · wyślij plik', desc: 'Duże pliki i szybkie linki',
+      icon: '<path d="M6 3h8l4 4v13H6z"/><path d="M14 3v5h4M12 16V10m-2 2 2-2 2 2"/>' }
+  ];
+
+  function adMarkup(ad) {
+    return '<a class="rj-mobile-ad rj-mobile-ad--' + ad.kind + '" href="' + ad.href + '">' +
+      '<span class="rj-mobile-ad-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + ad.icon + '</svg></span>' +
+      '<span class="rj-mobile-ad-copy"><span class="rj-mobile-ad-title">' + ad.title + '</span>' +
+      '<span class="rj-mobile-ad-desc">' + ad.desc + '</span></span></a>';
+  }
+
+  bar.innerHTML = '<span class="rj-mobile-ads-label">mini reklamy</span>' +
+    '<div class="rj-mobile-ads-frame"><div class="rj-mobile-ads-items" tabindex="0" aria-label="Mini reklamy i promocje (przewijane)">' +
+    ADS.map(adMarkup).join('') +
+    '</div></div>' +
+    '<span class="rj-mobile-ads-dots" aria-hidden="true"><i></i><i></i><i></i><i></i></span>';
 
   /* Pasek wchodzi zaraz pod topbar, żeby sticky `top` liczył się od jego
      dolnej krawędzi. Gdy strona nie ma topbaru, ląduje na początku body. */

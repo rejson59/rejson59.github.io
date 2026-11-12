@@ -75,8 +75,20 @@ check('każda strona z dzwonkiem ma panel push', () => {
     const html = read('rejhub2/' + file);
     if (!html.includes('rejchat-notifications.js')) return;
     assert.match(html, /\/js\/push\.js\?v=\d+/, 'brak push.js w ' + file);
-    assert.ok(html.includes('/css/push.css?v=1'), 'brak push.css w ' + file);
+    assert.match(html, /\/css\/push\.css\?v=\d+/, 'brak push.css w ' + file);
   });
+});
+
+check('po włączeniu powiadomień można wysłać test', () => {
+  const script = read('js/push.js');
+  assert.ok(script.includes('sendTest'), 'brak funkcji testu');
+  assert.ok(script.includes('RJ_NOTIFY_TEST'), 'strona nie prosi workera o test');
+  assert.ok(script.includes('rj-push-test'), 'brak przycisku testu');
+  assert.ok(script.includes('iOS 16.4'), 'brak podpowiedzi dla iPhone');
+  const sw = read('rejhub2/push-sw.js');
+  assert.ok(sw.includes("data.type === 'RJ_NOTIFY_TEST'"), 'worker nie obsługuje testu');
+  assert.ok(sw.includes('RJ_NOTIFY_TEST_DONE'), 'worker nie potwierdza testu');
+  assert.match(read('css/push.css'), /\.rj-push-test/, 'brak stylu przycisku testu');
 });
 
 check('service worker obsługuje push i kliknięcie', () => {

@@ -91,3 +91,63 @@ Na starszych stronach przekierowujących i awaryjnych ekranach podróży domek j
 - **Zero zieleni:** kropki stanu (online, sieć, statusy) w `island.css`, `admin-panel.css`,
   `community.css` i `rejson-widgets/css/admin.css` używają błękitu (`#6ea8ff` / `#4d8df6`) zamiast
   zieleni.
+
+## Reklamy z opisami i nowe aplikacje (listopad 2026)
+
+### Mini reklamy mobilne — wersja 10
+
+- Pasek ma teraz **72 px** (`--rj-top-ads-height`), bo każda promocja dostała drugą, mniejszą linię:
+  tytuł (`13 px`, mocny) i krótki opis (`10,5 px`, przygaszony). Opisy są krótkie celowo — mieszczą się
+  w jednej linii i kończą wielokropkiem, więc na 320 px nic się nie ucina w połowie słowa.
+- Cały zestaw promocji leży w **zaokrąglonej ramce** (`20 px`, cienka krawędź, delikatne wypełnienie),
+  a pojedynczy kafel ma własny promień `15 px`. Pasek czyta się jak karta szkła, nie jak taśma napisów.
+- Treść promocji jest w jednym miejscu: tablica `ADS` w `js/mobile-ads.js`. Ten sam układ jest
+  w `<noscript>` na 24 stronach — bez JavaScriptu widać identyczne tytuły i opisy.
+- Wersje: `mobile-ads.css?v=10`, `mobile-ads.js?v=10`. Test `mobile-ads.test.js` pilnuje liczby
+  tytułów i opisów, a `mobile-ads.browser.js` — wysokości 72 px i tego, że kafel nie wychodzi za ramkę.
+
+### Nowe aplikacje: `js/rejapps.css` + `/aplikacje`
+
+- **Strona `/aplikacje`** zbiera wszystko w jednym miejscu. W menu „Więcej” (na każdej podstronie)
+  jest link **Aplikacje**, a na stronie głównej sekcja „Aplikacje RejHuba” z pięcioma kartami.
+- Wspólny arkusz `css/rejapps.css`: szkło, jeden błękitny akcent, promienie 22–26 px, przyciski
+  min. 46 px, siatki zwijające się do jednej kolumny poniżej 980 px. Zero zieleni.
+- **RejPlanner** (`js/rejplanner.js`): miesiąc od poniedziałku, 42 dni, wydarzenia i zadania,
+  odhaczanie, wyszukiwanie w całym planie, przypomnienia `Notification` (tylko przy otwartej karcie),
+  eksport `.ics` i kopia JSON. Dane w `localStorage` pod `rj_planner_v1`; daty jako `YYYY-MM-DD`
+  w czasie lokalnym (bez `toISOString()`, które przesuwałoby dzień przy zmianie strefy).
+- **RejGames** (`js/rejgames.js`): stała lista gier z kategoriami i wyszukiwaniem. Pozycje, które nie
+  mają działającej wersji online (AbsurdalneGry, roblox-online), są oznaczone „W przygotowaniu”
+  i prowadzą do repozytorium — lepiej pokazać prawdę niż martwy link.
+- **RejMusic** (`js/rejmusic.js`): pliki z dysku przez `URL.createObjectURL`, playlista linków
+  ze Spotify/YouTube/SoundCloud/Deezer przez oficjalne osadzenia (`iframe`). Świadomie **nie ma**
+  „przesyłania utworów ze Spotify” — te serwisy nie pozwalają na pobieranie ani kopiowanie utworów.
+- **RejMeme** (`js/rejmeme.js`): canvas 1080 × 1080, cztery tła, własne zdjęcie, kolor i rozmiar
+  tekstu, PNG/schowek oraz wysyłka do RejChatu przez `rejchat_send_photo` (czat ogólny lub DM).
+- **RejAsystent** (`js/rejassistant.js`): lokalne polecenia (otwieranie stron, motyw, „dodaj zadanie
+  … na jutro”, wyszukiwanie) i opcjonalny model zgodny z OpenAI — klucz zostaje w `localStorage`
+  (`rj_assistant_ai_v1`), adres API musi być `https://`, a bez klucza nic nie wychodzi z przeglądarki.
+
+### Instalacja jako aplikacja (PWA)
+
+- `rejhub2/manifest.webmanifest` + ikony `assets/app/icon-192.png`, `icon-512.png`,
+  `icon-maskable-512.png` (wygenerowane lokalnie, bez zewnętrznych źródeł).
+- `js/install-prompt.js` pokazuje na telefonie zachętę „Dodaj do ekranu”: na Androidzie/Chrome używa
+  `beforeinstallprompt`, na iPhonie tłumaczy kroki Safari. „Później” chowa baner na 30 dni,
+  a w zainstalowanej aplikacji ( `display-mode: standalone` ) baner nie wraca.
+
+### Powiadomienia — wersja 3
+
+- Po włączeniu powiadomień od razu leci **powiadomienie testowe**, a przy włączonych powiadomieniach
+  jest przycisk „Wyślij powiadomienie testowe”.
+- `push-sw.js` (v4) obsługuje `RJ_NOTIFY_TEST` i odpowiada `RJ_NOTIFY_TEST_DONE`, więc panel wie,
+  czy system naprawdę pokazał powiadomienie.
+- Komunikaty mówią wprost, co zawiodło: brak zgody, zablokowana witryna, brak klucza VAPID, brak sesji.
+- iPhone: push wymaga dodania RejHub do ekranu głównego (iOS 16.4+) — panel mówi o tym od razu.
+
+### Bezpieczeństwo
+
+- `rejhub2/vercel.json`: HSTS, `nosniff`, `Referrer-Policy`, `X-Frame-Options`, `Permissions-Policy`,
+  `COOP` oraz **CSP w trybie raportowania** (na start, żeby nie zablokować istniejących skryptów).
+- `api/session.js`: limit 10 nieudanych logowań na 10 minut z jednego IP (`Retry-After`), sprawdzanie
+  `Origin` (ochrona przed CSRF) i czyszczenie licznika po udanym logowaniu.
