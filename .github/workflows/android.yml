@@ -263,7 +263,9 @@ jobs:
       - name: Zapisz metadane w repozytorium
         run: |
           set -euo pipefail
-          if git diff --quiet -- rejhub2/app/latest.json; then
+          # Uwaga: `git diff` nie widzi pliku, którego jeszcze nie ma w indeksie
+          # (pierwsze wydanie) — dlatego pytamy o stan całej ścieżki.
+          if [ -z "$(git status --porcelain -- rejhub2/app/latest.json)" ]; then
             echo "Bez zmian w metadanych."
             exit 0
           fi
@@ -272,8 +274,16 @@ jobs:
           git add rejhub2/app/latest.json
           git commit -m "chore(android): wydanie ${{ steps.version.outputs.name }} — metadane APK [skip ci]"
           # Wydanie mogło powstać w trakcie innego commita — najpierw rebase.
+          pushed=0
           for attempt in 1 2 3; do
-            git pull --rebase --autostash origin main && git push origin HEAD:main && break
+            if git pull --rebase --autostash origin main && git push origin HEAD:main; then
+              pushed=1
+              break
+            fi
             echo "Ponowna próba $attempt..."
             sleep 5
           done
+          if [ "$pushed" -ne 1 ]; then
+            echo "::error::Nie udało się zapisać metadanych w repozytorium."
+            exit 1
+          fi
