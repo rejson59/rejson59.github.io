@@ -66,7 +66,7 @@
 
   <link rel="stylesheet" href="css/admin-panel.css?v=2026-11-12-nogreen">
 
-  <link rel="stylesheet" href="css/rejchat-moderation.css?v=4">
+  <link rel="stylesheet" href="css/rejchat-moderation.css?v=5">
 
   <link rel="stylesheet" href="css/admin-partner.css?v=1">
 
@@ -483,7 +483,7 @@
         <summary><span class="rcmod-icon" aria-hidden="true">✦</span><span><strong>Centrum moderacji RejChat</strong><small>Wyciszenia, filtry, zgłoszenia i ostrzeżenia</small></span></summary>
         <div class="rcmod-content">
           <p class="rcmod-intro">Zarządzaj nowymi treściami bez usuwania kont. Filtr obejmuje czat, wpisy, komentarze i wiadomości prywatne. Panel nie pokazuje prywatnych rozmów. Wyjątkiem jest wyłącznie tekst pojedynczej wiadomości świadomie zgłoszonej przez uczestnika; zdjęcie nie jest przekazywane.</p>
-          <p class="rcmod-intro"><strong>Automatyczna ochrona:</strong> limity wysyłania, powtarzane treści, długie ciągi znaków i nadmiar linków sprawdzane są na serwerze we wszystkich rozmowach i wpisach. To reguły, nie AI: mogą się mylić i nie rozpoznają wszystkich naruszeń. Nie nakładają automatycznie wyciszeń ani nie pokazują prywatnych wiadomości w panelu.</p>
+          <p class="rcmod-intro"><strong>Automatyczna ochrona:</strong> limity wysyłania, powtarzane treści, długie ciągi znaków i nadmiar linków sprawdzane są na serwerze we wszystkich rozmowach i wpisach. Automat sprawdza też co 5 minut nowe treści i zdjęcia: usuwa wpisy łamiące filtr, ukrywa urwane pliki i duplikaty, a po trzech usunięciach w godzinie wycisza konto na godzinę. To reguły, nie AI: mogą się mylić i nie rozpoznają wszystkich naruszeń. Każdą decyzję widać na liście działań, a zdjęcie można przywrócić. Panel nie pokazuje prywatnych wiadomości.</p>
           <p class="rcmod-status" id="rcmod-status" role="status" aria-live="polite"></p>
           <div class="rcmod-grid">
             <section class="rcmod-section"><h3>Filtr fraz</h3><p>Wbudowane reguły sprawdzają słowa i rdzenie wraz z typowymi obejściami. Własne frazy blokują także fragmenty tekstu. Filtr dotyczy nowych i edytowanych treści.</p>
@@ -510,6 +510,12 @@
           <section class="rcmod-section rcmod-messages"><div class="rcmod-title"><div><h3>Ostatnie wiadomości publiczne</h3><p>Ostatnie 100 wiadomości. Możesz zaznaczyć kilka i usunąć je jednocześnie.</p></div><button type="button" id="rcmod-refresh" class="btn btn-glass btn-sm">Odśwież</button></div>
             <div class="rcmod-actions"><label><input type="checkbox" id="rcmod-select-all"> Zaznacz wszystkie</label><button type="button" id="rcmod-delete" class="btn btn-glass btn-sm" disabled>Usuń zaznaczone</button></div>
             <div id="rcmod-messages" class="rcmod-list"></div>
+          </section>
+          <section class="rcmod-section"><div class="rcmod-title"><div><h3>Zdjęcia w czacie</h3><p>Ostatnie 60 zdjęć publicznych z wymiarami i statusem. Automat blokuje urwane pliki i duplikaty. Podgląd otwiera się dopiero po kliknięciu „Pokaż”; zdjęcie zablokowane nie jest już wyświetlane w czacie.</p></div><button type="button" id="rcmod-photos-refresh" class="btn btn-glass btn-sm">Odśwież</button></div>
+            <div id="rcmod-photos" class="rcmod-list"></div>
+          </section>
+          <section class="rcmod-section"><h3>Działania automatu</h3><p>Ostatnie 60 decyzji: usunięta treść, ukryte zdjęcie i automatyczne wyciszenie. Lista służy do kontroli, czy reguły nie blokują zwykłych wiadomości.</p>
+            <div id="rcmod-actions" class="rcmod-list"></div>
           </section>
         </div>
       </details>
@@ -819,7 +825,7 @@
   <script src="js/error-reporter.js?v=1" defer></script>
   <script src="js/admin-errors.js?v=1"></script>
   <script src="js/admin-partner.js?v=1"></script>
-  <script src="js/admin-rejchat-moderation.js?v=6"></script>
+  <script src="js/admin-rejchat-moderation.js?v=7"></script>
   <script src="js/admin-panel.js?v=2026-11-15-memes"></script>
   <script defer src="/js/admin-memes.js?v=1"></script>
   <script defer src="/js/admin-server.js?v=1"></script>
