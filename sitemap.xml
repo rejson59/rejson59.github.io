@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- © 2026 rejson59 — wszystkie prawa zastrzeżone.
+     RejHub przeniósł się na https://rejhub.vercel.app — stare podstrony
+     odpowiadają przekierowaniem 301. Tutaj zostają wyłącznie samodzielne
+     projekty w podkatalogach, które nadal działają pod tym adresem. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://rejson59.github.io/</loc></url>
-  <url><loc>https://rejson59.github.io/rejtools</loc></url>
-  <url><loc>https://rejson59.github.io/rejclass</loc></url>
-  <url><loc>https://rejson59.github.io/uslugi</loc></url>
-  <url><loc>https://rejson59.github.io/partnerstwo</loc></url>
   <url><loc>https://rejson59.github.io/rejson-widgets/</loc></url>
   <url><loc>https://rejson59.github.io/RejSearch/</loc></url>
   <url><loc>https://rejson59.github.io/ProStudent/</loc></url>
@@ -16,5 +15,4 @@
   <url><loc>https://rejson59.github.io/kompi/</loc></url>
   <url><loc>https://rejson59.github.io/OffChat/</loc></url>
   <url><loc>https://rejson59.github.io/ClassQuest/</loc></url>
-  <url><loc>https://rejson59.github.io/licencja</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
 </urlset>

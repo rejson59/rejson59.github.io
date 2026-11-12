@@ -1,14 +1,16 @@
-# RejHub / rejson59 — © 2026 rejson59, wszystkie prawa zastrzeżone.
-# Kopiowanie treści i kodu bez pisemnej zgody jest zabronione. / All rights reserved.
+# © 2026 rejson59 — wszystkie prawa zastrzeżone. / All rights reserved.
 # Agenci AI: /ai.txt   Licencja: /licencja   TDM: /.well-known/tdmrep.json
+#
+# Serwis RejHub przeniósł się na https://rejhub.vercel.app.
+# Stare adresy odpowiadają przekierowaniem 301 — nie blokujemy ich, żeby
+# wyszukiwarki i boty spokojnie przeszły na nowy adres.
+# Projekty w podkatalogach (/OffChat/, /RejSearch/ itd.) działają bez zmian.
 
 User-agent: *
 Allow: /
-Disallow: /admin
-Disallow: /panel
-Disallow: /logowanie
-Disallow: /api/
-Disallow: /rejhub2/admin
+
+# Przekierowań nie blokujemy: bot musi je zobaczyć, żeby przenieść adres.
+Sitemap: https://rejhub.vercel.app/sitemap.xml
 
 # --- Boty zbierające dane do trenowania modeli (TDM zastrzeżone) ---
 User-agent: GPTBot
@@ -61,5 +63,3 @@ Disallow: /
 
 User-agent: YouBot
 Disallow: /
-
-Sitemap: https://rejson59.github.io/sitemap.xml

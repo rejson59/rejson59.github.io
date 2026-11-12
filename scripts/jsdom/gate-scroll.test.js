@@ -1,5 +1,6 @@
-/* Bramka „w budowie” i logowanie administratora: karta musi być w całości
-   osiągalna na telefonie (scroll), a przycisk do logowania — klikalny. */
+/* Logowanie administratora: karta musi być w całości osiągalna na telefonie
+   (scroll), a przycisk — klikalny. Strona „w budowie” zniknęła wraz
+   z otwarciem serwisu, więc test dotyczy już tylko /login. */
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -8,7 +9,7 @@ const { JSDOM } = require('jsdom');
 const root = path.resolve(__dirname, '../..');
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 
-for (const [file, label] of [['rejhub2/w-budowie.html', 'w budowie'], ['rejhub2/login.html', 'logowanie administratora']]) {
+for (const [file, label] of [['rejhub2/login.html', 'logowanie administratora']]) {
   console.log('\n=== ' + file + ' ===');
   const html = read(file);
   const raw = (/<style>([\s\S]*?)<\/style>/.exec(html) || [, ''])[1];
@@ -29,13 +30,7 @@ for (const [file, label] of [['rejhub2/w-budowie.html', 'w budowie'], ['rejhub2/
   assert.ok(!/position\s*:\s*fixed/.test(license.getAttribute('style') || ''), label + ': stopka nie jest przyklejona na sztywno');
   assert.match(css, /\.license-line\s*\{[^}]*position:\s*relative/s, label + ': stopka w normalnym przepływie');
 
-  if (file.includes('w-budowie')) {
-    const admin = d.querySelector('.actions .btn-ghost');
-    assert.ok(admin, 'przycisk „Mam dostęp administratora” istnieje');
-    assert.equal(admin.getAttribute('href'), '/login');
-    assert.ok(/@media\s*\(max-width:\s*560px\)[\s\S]*min-height:\s*46px/.test(css),
-      'na telefonie przyciski mają co najmniej 46 px wysokości');
-  } else {
+  {
     assert.ok(d.querySelector('#login-form input[type="email"]'), 'pole e-mail');
     assert.ok(/font-size:\s*16px/.test(css), 'pola mają 16 px, żeby Safari nie przybliżał');
     assert.ok(d.querySelector('.license-line a[href="/licencja"]'));
@@ -43,9 +38,9 @@ for (const [file, label] of [['rejhub2/w-budowie.html', 'w budowie'], ['rejhub2/
   dom.window.close();
 }
 
-/* Oba pliki muszą mieć wspólny układ, żeby powrót z logowania nie skakał. */
-const a = read('rejhub2/w-budowie.html'), b = read('rejhub2/login.html');
-for (const [name, html] of [['w-budowie', a], ['login', b]]) {
-  assert.ok(!/body\s*\{[^}]*overflow\s*:\s*hidden/s.test(html), name + ': brak blokady scrolla');
-}
-console.log('\nPASS: bramka „w budowie” i logowanie przewijają się na telefonie');
+/* Logowanie musi dać się przewinąć do samego dołu na małym ekranie. */
+const loginHtml = read('rejhub2/login.html');
+assert.ok(!/body\s*\{[^}]*overflow\s*:\s*hidden/s.test(loginHtml), 'login: brak blokady scrolla');
+assert.match(loginHtml, /@media[^{]*max-width:\s*560px[\s\S]*?button\s*\{[^}]*min-height:\s*(?:4[6-9]|[5-9]\d)px/s,
+  'login: na telefonie przycisk ma co najmniej 46 px');
+console.log('\nPASS: logowanie administratora przewija się na telefonie');

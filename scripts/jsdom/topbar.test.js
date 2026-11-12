@@ -246,16 +246,27 @@ function headerOf(html) {
     '/css/glass-last.css'
   ];
 
+  /* Panel administratora nie wyświetla reklam i nie ładuje ich arkuszy —
+     reszta stron musi mieć identyczny zestaw. */
+  const AD_CSS = ['/css/side-ads.css', '/css/mobile-ads.css'];
+
   check('każda strona ładuje komplet arkuszy paska (w tej samej kolejności)', () => {
     const sequences = PAGES.map((file) => {
       const html = read('rejhub2/' + file);
       const hrefs = [...html.matchAll(/<link[^>]*rel="stylesheet"[^>]*>/g)]
         .map((match) => /href="([^"]+)"/.exec(match[0])[1].split('?')[0]);
-      const shell = hrefs.filter((href) => SHELL_CSS.indexOf(href) >= 0);
-      const missing = SHELL_CSS.filter((href) => shell.indexOf(href) < 0);
+      /* Reklamy porównujemy osobno: panel ich nie ma, reszta stron musi. */
+      const shell = hrefs.filter((href) => SHELL_CSS.indexOf(href) >= 0 && AD_CSS.indexOf(href) < 0);
+      const missing = SHELL_CSS.filter((href) => AD_CSS.indexOf(href) < 0 && shell.indexOf(href) < 0);
       assert.deepEqual(missing, [], file + ': brak arkuszy ' + missing.join(', '));
       const duplicated = shell.filter((href, index) => shell.indexOf(href) !== index);
       assert.deepEqual(duplicated, [], file + ': zdublowane arkusze ' + duplicated.join(', '));
+      const adsPresent = AD_CSS.filter((href) => hrefs.indexOf(href) >= 0);
+      if (file === 'admin.html') {
+        assert.deepEqual(adsPresent, [], 'panel nie ładuje arkuszy reklam');
+      } else {
+        assert.deepEqual(adsPresent, AD_CSS, file + ': brak arkuszy reklam');
+      }
       return shell.join('|');
     });
     const unique = new Set(sequences);

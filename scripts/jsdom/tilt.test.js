@@ -24,7 +24,7 @@ const APP_PATH = process.env.RJ_APP || path.join(ROOT, "js", "app.js");
 const APP = fs.readFileSync(APP_PATH, "utf8");
 const CSS_PATH = process.env.RJ_CSS || path.join(ROOT, "css", "style.css");
 const CSS = fs.readFileSync(CSS_PATH, "utf8");
-const INDEX = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
+const INDEX = fs.readFileSync(path.join(ROOT, "rejhub2/index.html"), "utf8");
 
 /* Wyciągamy z app.js wyłącznie blok tiltu — reszta pliku potrzebuje sieci. */
 const tiltStart = APP.indexOf("/* ---------- Efekt 3D (tilt + połysk za kursorem) ----------");
@@ -375,7 +375,7 @@ const angles = (transform) => {
     check("app.js woła attachTilt dla kart wyróżnionych",
       /attachTilt\(card, inner, 5\)/.test(APP));
     check("karta profilu też ma efekt", /attachTilt\(profile, profile, 4\)/.test(APP));
-    check("wersje podbite w index.html",
+    check("wersje podbite w rejhub2/index.html",
       /js\/app\.js\?v=2026-\d\d-\d\d/.test(INDEX) && /css\/style\.css\?v=2026-\d\d-\d\d/.test(INDEX));
     const bezKomentarzy = TILT.replace(/\/\*[\s\S]*?\*\//g, "");
     check("jedno miejsce mierzenia layoutu w bloku tiltu",

@@ -4,7 +4,7 @@ const {JSDOM,VirtualConsole}=require('jsdom');
 const root=path.resolve(__dirname,'../..'),read=p=>fs.readFileSync(path.join(root,p),'utf8');
 const pause=()=>new Promise(r=>setTimeout(r,30));
 async function test(auth,fail){
- const dom=new JSDOM(read('admin.html'),{url:'https://rejson59.github.io/admin',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:new VirtualConsole()});
+ const dom=new JSDOM(read('rejhub2/admin.html'),{url:'https://rejson59.github.io/admin',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:new VirtualConsole()});
  const w=dom.window,d=w.document,calls=[];
  w.matchMedia=()=>({matches:false,addListener(){},removeListener(){},addEventListener(){},removeEventListener(){}});
  w.RejsonCloud={getStoredSession:()=>({access_token:'mock'}),setStoredSession(){},rpc:async(name)=>{calls.push(name);if(name==='admin_setup_status')return {is_admin:auth};if(name==='get_admin_activity'){if(fail)throw Error('offline');return {totals:{online_total:3,views_today_total:41,views_total:1250},projects:[],multi:{}};}return {};}};

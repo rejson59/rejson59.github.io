@@ -1,12 +1,18 @@
 /**
- * RejHub 2.0 — serwerowa brama administratora.
+ * RejHub — serwerowa ochrona panelu administratora.
  *
- * Każde żądanie (poza stroną „w budowie”, logowaniem i API sesji) jest
- * sprawdzane tutaj, na brzegu sieci Vercel. Przeglądarka gościa nigdy nie
- * otrzymuje prywatnego HTML, CSS ani JS — nie ma tu żadnego ukrywania w DOM.
+ * Od przeniesienia (RejHub 2.0 na rejhub.vercel.app) cały serwis jest
+ * **publiczny**: strona główna, aplikacje, RejChat, licencja i logowanie
+ * działają bez ciasteczka sesji. Chronione zostają wyłącznie miejsca,
+ * w których mieszka logika administracyjna:
  *
- * Ciasteczko `rejhub_admin` jest podpisane HMAC-SHA256 kluczem
- * REJHUB_SESSION_SECRET. Bez ważnego podpisu nie da się go podrobić.
+ *   /admin, /panel, /studio-source, /szklane-studio oraz /api/*
+ *   (poza `/api/session` i `/api/push-send`, które mają własne klucze).
+ *
+ * Bez podpisanego ciasteczka `rejhub_admin` te ścieżki przekierowują do
+ * `/login` zamiast oddawać prywatny HTML, CSS czy JS. Ciasteczko jest
+ * podpisane HMAC-SHA256 kluczem REJHUB_SESSION_SECRET — bez ważnego podpisu
+ * nie da się go podrobić, a decyzja zapada na brzegu sieci Vercel.
  */
 
 export const config = {
@@ -14,38 +20,21 @@ export const config = {
 };
 
 const COOKIE_NAME = "rejhub_admin";
-const PUBLIC_PATHS = new Set([
-  "/w-budowie",
-  "/w-budowie.html",
-  "/login",
-  "/login.html",
-  "/favicon.ico",
-  "/favicon.svg",
-  "/robots.txt",
-  /* Licencja i nota dla agentów AI muszą być publiczne — inaczej nikt
-     (także wyszukiwarki i asystenci) nie przeczyta zasad korzystania. */
-  "/licencja",
-  "/licencja.html",
-  "/LICENSE",
-  "/ai.txt",
-  "/humans.txt",
-  "/NOTICE",
-  "/AI-POLICY.md"
-]);
-/* `/api/push-send` ma własną kontrolę dostępu (nagłówek `x-push-key`
-   porównywany z sekretem w bazie), więc brama cookie musi je przepuścić —
-   inaczej harmonogram z bazy dostawał 401 od middleware, zanim żądanie
-   w ogóle dotarło do funkcji. */
-const PUBLIC_PREFIXES = ["/api/session", "/api/push-send"];
-/* Zasoby statyczne nie zawierają prywatnych treści — puszczamy je bez sesji,
-   żeby brama nigdy nie odpowiadała HTML-em na żądanie CSS/JS/obrazka
-   (inaczej strona „w budowie” i logowanie gubiłyby swoje pliki). */
-const PUBLIC_EXTENSIONS = /\.(css|js|mjs|json|map|svg|png|jpe?g|webp|avif|gif|ico|woff2?|ttf|otf|txt|xml|webmanifest)$/i;
 
-function isPublic(pathname) {
-  if (PUBLIC_PATHS.has(pathname)) return true;
-  if (PUBLIC_EXTENSIONS.test(pathname)) return true;
-  return PUBLIC_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(prefix + "/"));
+/* Ścieżki, które wymagają sesji administratora. Prefiksy, bo panel ma
+   podstrony (`/admin/...`, `/panel/...`). */
+const PRIVATE_PREFIXES = ["/admin", "/panel", "/studio-source", "/szklane-studio"];
+
+/* API z własną kontrolą dostępu — brama cookie musi je przepuścić, inaczej
+   harmonogram powiadomień dostawał 401, zanim żądanie dotarło do funkcji. */
+const PUBLIC_API_PREFIXES = ["/api/session", "/api/push-send"];
+
+function isPrivate(pathname) {
+  if (PUBLIC_API_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(prefix + "/"))) {
+    return false;
+  }
+  if (pathname === "/api" || pathname.startsWith("/api/")) return true;
+  return PRIVATE_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(prefix + "/"));
 }
 
 function readCookie(request, name) {
@@ -112,7 +101,7 @@ async function verifyToken(token, secret) {
 
 export default async function middleware(request) {
   const { pathname } = new URL(request.url);
-  if (isPublic(pathname)) return;
+  if (!isPrivate(pathname)) return;
 
   const secret = process.env.REJHUB_SESSION_SECRET;
   const token = readCookie(request, COOKIE_NAME);
@@ -126,5 +115,8 @@ export default async function middleware(request) {
     });
   }
 
-  return Response.redirect(new URL("/w-budowie", request.url), 302);
+  /* Zalogowanie się i powrót do żądanej strony — bez błądzenia po stronie. */
+  const login = new URL("/login", request.url);
+  login.searchParams.set("next", pathname);
+  return Response.redirect(login, 302);
 }

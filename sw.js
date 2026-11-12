@@ -137,7 +137,16 @@ self.addEventListener("fetch", function (event) {
             if (ct.toLowerCase().indexOf("text/html") === -1) {
               return res;
             }
+            /* Strony przeniesienia to jednorazowe przekierowania na
+               rejhub.vercel.app. Nie dokładamy do nich widżetu, trackera ani
+               ewidencji wejścia — użytkownik i tak za chwilę stąd wyjdzie. */
             return res.text().then(function (html) {
+              if (html.indexOf("data-przeniesienie") !== -1) {
+                /* Treść jest już odczytana — oddajemy ją w nowej odpowiedzi. */
+                var rawHeaders = new Headers(res.headers);
+                rawHeaders.delete("content-length");
+                return new Response(html, { status: res.status, statusText: res.statusText, headers: rawHeaders });
+              }
               var safeSlug = slug.replace(/[^A-Za-z0-9._-]/g, "");
               var inject = "";
               if (html.indexOf("view-tracker.js") === -1) {

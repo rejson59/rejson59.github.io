@@ -5,7 +5,7 @@ const path = require('path');
 const assert = require('assert');
 const vm = require('vm');
 const root = path.resolve(__dirname, '../..');
-const html = fs.readFileSync(path.join(root, 'logowanie.html'), 'utf8');
+const html = fs.readFileSync(path.join(root, 'rejhub2/logowanie.html'), 'utf8');
 const js = fs.readFileSync(path.join(root, 'js/logowanie.js'), 'utf8');
 const key = 'rejson_community_session_v1';
 const tick = () => new Promise(resolve => setTimeout(resolve, 5));
@@ -31,11 +31,7 @@ function create(initial, handler, opts = {}) {
   const token = 'a'.repeat(48);
   const t = create(null, async (fn) => fn === 'community_register' || fn === 'community_login' ? {data:{token,username:'Alice'}} : {data:{username:'Alice'}});
   assert.equal(t.d.getElementById('account-guest').hidden, false);
-  t.d.getElementById('account-menu').click();
-  assert.equal(t.d.getElementById('account-menu').getAttribute('aria-expanded'), 'true');
-  assert.ok(t.d.getElementById('account-nav').classList.contains('is-open'));
-  t.d.getElementById('account-menu').click();
-  assert.equal(t.d.getElementById('account-menu').getAttribute('aria-expanded'), 'false');
+  /* Menu konta w nagłówku zastąpił wspólny topbar (topbar.test.js). */
   const name = t.d.getElementById('account-name'), pin = t.d.getElementById('account-pin');
   name.value='Alice'; pin.value='1234';
   t.d.getElementById('account-form').dispatchEvent(new t.w.Event('submit',{bubbles:true,cancelable:true})); await tick();
@@ -124,7 +120,7 @@ function create(initial, handler, opts = {}) {
     assert.equal(touched, false, route + ' bez wstrzykiwania ani wejścia projektu');
   }
   assert.ok(!html.includes('view-tracker.js'));
-  assert.match(fs.readFileSync(path.join(root, 'index.html'),'utf8'), /href="logowanie"/);
-  assert.match(fs.readFileSync(path.join(root, 'rejchat.html'),'utf8'), /href="logowanie"/);
+  assert.match(fs.readFileSync(path.join(root, 'rejhub2/index.html'),'utf8'), /href="logowanie"/);
+  assert.match(fs.readFileSync(path.join(root, 'rejhub2/rejchat.html'),'utf8'), /href="logowanie"/);
   console.log('Ekran konta: wszystkie testy OK');
 })().catch(err => {console.error(err); process.exitCode=1;});

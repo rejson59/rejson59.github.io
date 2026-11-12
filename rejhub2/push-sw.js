@@ -44,9 +44,11 @@ var MAX_WARM_URLS = 48;
 
 /* Strony publiczne — tylko one mogą wylądować w cache jako HTML.
    Wszystko inne jest za bramą serwerową i nie może zostać zapisane lokalnie. */
-var PUBLIC_NAV = /^\/(?:index\.html)?$|^\/(?:licencja|w-budowie)(?:\.html)?$|^\/(?:ai|humans|robots)\.txt$/i;
+var PUBLIC_NAV = /^\/(?:index\.html)?$|^\/licencja(?:\.html)?$|^\/(?:ai|humans|robots)\.txt$/i;
 /* Pas bezpieczeństwa: nawet gdyby coś się zmieniło w PUBLIC_NAV, te ścieżki
    są nietykalne. */
+/* `/w-budowie` nie istnieje, ale stary adres trafia tu z zakładek — nadal
+   traktujemy go jak prywatny, żeby nie wpadł do cache jako strona publiczna. */
 var PRIVATE_NAV = /^\/(?:api|login|logowanie|panel|admin|profil|konto-demo|w-budowie|studio-source)(?:[/.]|$)/i;
 
 var ASSET_EXT = /\.(?:css|m?js|json|map|svg|png|jpe?g|webp|avif|gif|ico|woff2?|ttf|otf)$/i;

@@ -1,6 +1,6 @@
 const fs=require('fs'),path=require('path'),assert=require('assert'),{JSDOM}=require('jsdom');
 const root=path.resolve(__dirname,'../..'),file=p=>fs.readFileSync(path.join(root,p),'utf8'),pause=ms=>new Promise(r=>setTimeout(r,ms));
-const html=file('rejclass.html'),data=file('data/rejclass-biology.js'),notes=file('data/rejclass-biology-notes.js'),store=file('js/rejclass-biology-progress.js'),app=file('js/rejclass-biology.js');
+const html=file('rejhub2/rejclass.html'),data=file('data/rejclass-biology.js'),notes=file('data/rejclass-biology-notes.js'),store=file('js/rejclass-biology-progress.js'),app=file('js/rejclass-biology.js');
 function setup(provider,hash=''){const dom=new JSDOM(html,{url:'https://rejson59.github.io/rejclass'+hash,runScripts:'outside-only'}),w=dom.window;w.HTMLElement.prototype.scrollIntoView=function(){};if(provider)w.RJProfiles=provider;w.eval(data);w.eval(notes);w.eval(store);w.eval(app);return {w,d:w.document};}
 function click(d,s){const el=d.querySelector(s);assert(el,s);el.click();}
 (async()=>{

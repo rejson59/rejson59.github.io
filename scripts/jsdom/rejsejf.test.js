@@ -2,7 +2,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {JSDOM,VirtualConsole}=require('jsdom');const root=path.resolve(__dirname,'../..'),read=p=>fs.readFileSync(path.join(root,p),'utf8');
 const wait=()=>new Promise(r=>setTimeout(r,25));
 (async()=>{
- const dom=new JSDOM(read('rejsejf.html'),{url:'https://rejson59.github.io/rejsejf',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:new VirtualConsole()});
+ const dom=new JSDOM(read('rejhub2/rejsejf.html'),{url:'https://rejson59.github.io/rejsejf',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:new VirtualConsole()});
  const w=dom.window,d=w.document;w.TextEncoder=TextEncoder;let session=null,notify;w.RejsonAccount={getSession:async()=>session,subscribe:fn=>{notify=fn;},open:()=>{}};w.confirm=()=>true;
  const db=[],requests=[];let id=0;w.fetch=async(url,opts)=>{const name=String(url).split('/').pop(),body=JSON.parse(opts.body);requests.push({name,body});let res;
   if(name==='rejsejf_list')res=db.filter(x=>x.owner===body.p_token).map(x=>({id:x.id,title:x.title,kind:x.kind,size:x.content.length,updated_at:x.updated_at}));
@@ -19,6 +19,6 @@ const wait=()=>new Promise(r=>setTimeout(r,25));
  d.getElementById('mode-file').click();const file=new w.File([new Uint8Array([0,1,2,255])],'dane.bin');Object.defineProperty(d.getElementById('safe-file'),'files',{configurable:true,value:[file]});d.getElementById('file-form').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));await wait();assert.equal(db[1].content,'AAEC/w==');
  session={username:'B',token:'b-token'};notify();assert.equal(d.querySelector('.safe-item'),null,'zmiana konta natychmiast czyści zawartość');assert.equal(d.getElementById('note-content').value,'');await wait();assert.equal(d.querySelector('.safe-item'),null,'inne konto ma własną listę');
  session={username:'A',token:'a-token'};notify();await wait();assert.equal(d.querySelectorAll('.safe-item').length,2);d.querySelector('.safe-item-actions button:nth-child(2)').click();await wait();assert.equal(db.length,1);
- assert.equal(d.querySelector('main').hasAttribute('data-rj-private'),true);assert.equal(d.querySelector('a[href="/rejfile"]')!==null,true);assert.match(read('index.html'),/href="rejsejf"/);
+ assert.equal(d.querySelector('main').hasAttribute('data-rj-private'),true);assert.equal(d.querySelector('a[href="/rejfile"]')!==null,true);assert.match(read('rejhub2/index.html'),/href="rejsejf"/);
  w.close();console.log('PASS: RejSejf: sesja, notatka, edycja, plik, usuwanie, izolacja kont i brak HTML injection (mock backend)');
 })().catch(e=>{console.error(e);process.exitCode=1;});

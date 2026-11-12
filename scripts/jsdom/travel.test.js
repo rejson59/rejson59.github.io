@@ -2,16 +2,16 @@
 const assert=require('node:assert/strict'), fs=require('node:fs'), path=require('node:path');
 const {JSDOM,VirtualConsole}=require('jsdom'), root=path.resolve(__dirname,'../..');
 const read=f=>fs.readFileSync(path.join(root,f),'utf8');
-const home=new JSDOM(read('index.html')).window.document;
+const home=new JSDOM(read('rejhub2/index.html')).window.document;
 const links=[...home.querySelectorAll('.showcase-item a[data-journey]')]; assert.equal(links.length,18);
 for(const a of links) { assert.match(a.href,/^https:\/\/rejson59\.github\.io\/[^/]+\/$/); assert.equal(a.target,'_blank'); assert.match(a.rel,/noopener/); assert.match(a.rel,/noreferrer/); }
 assert.ok(home.querySelector('[data-tilt]')); assert.ok(home.querySelector('script[src^="js/rocket-open.js"]'));
 assert.doesNotMatch(read('js/app.js'),/journeyUrl|\/podroz\/\?projekt/);
 assert.match(read('js/app.js'),/card-preview.*esc\(p.liveUrl\)/);
 assert.match(read('js/app.js'),/btn-live btn-journey btn-sm.*esc\(p.liveUrl\)/);
-assert.match(read('404.html'),/location.replace\("\/podroz\/\?projekt=/);
+/* Nowa strona 404 to zwykła strona błędu — podróż przez portal została tylko w /podroz i /portal. */
 assert.match(read('js/portal-legacy.js'),/location.replace\('\/podroz\/\?projekt=/);
-assert.match(read('podroz/index.html'),/travel-legacy\.js/);
+assert.match(read('rejhub2/podroz/index.html'),/travel-legacy\.js/);
 assert.match(read('sw.js'),/\(\?:portal\|podroz\)/);
 for(const color of ['#b9d3ff','#6aa6ff','#3f6fbe']) { assert.ok(read('css/loader.css').includes(color)); assert.ok(read('assets/travel-rocket.svg').includes(color)); }
 

@@ -1,6 +1,6 @@
 const fs=require('fs'),path=require('path'),assert=require('assert'),{JSDOM}=require('jsdom');
 const root=path.resolve(__dirname,'../..');
-const dom=new JSDOM(fs.readFileSync(path.join(root,'admin.html'),'utf8'),{url:'https://rejson59.github.io/admin',runScripts:'outside-only'});
+const dom=new JSDOM(fs.readFileSync(path.join(root,'rejhub2/admin.html'),'utf8'),{url:'https://rejson59.github.io/admin',runScripts:'outside-only'});
 const {window:w}=dom,d=w.document,calls=[];let previewResolve;
 w.confirm=()=>true;
 w.RejsonCloud={rpc(name,args){calls.push({name,args});if(name==='admin_rejchat_overview')return Promise.resolve({phrases:[{id:'1',phrase:'seks',match_mode:'substring'},{id:'2',phrase:'rdzen',match_mode:'prefix'},{id:'3',phrase:'wyraz',match_mode:'word'}],blocks:[],messages:[]});if(name==='admin_rejchat_reports')return Promise.resolve([]);if(name==='admin_rejchat_filter_check')return new Promise(resolve=>{previewResolve=resolve;});return Promise.resolve(true);}};

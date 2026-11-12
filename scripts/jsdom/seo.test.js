@@ -6,9 +6,9 @@ const { JSDOM } = require('jsdom');
 const root = path.resolve(__dirname, '../..');
 const read = p => fs.readFileSync(path.join(root, p), 'utf8');
 const names = ['RejSearch', 'ProStudent', 'kompi', 'ClassQuest'];
-const html = read('index.html');
+const html = read('rejhub2/index.html');
 
-const staticDom = new JSDOM(html, { url: 'https://rejson59.github.io/' });
+const staticDom = new JSDOM(html, { url: 'https://rejhub.vercel.app/' });
 const sd = staticDom.window.document;
 const offchat = sd.querySelector('.showcase-grid [data-repo="OffChat"]');
 assert(offchat && offchat.querySelector('.card-preview iframe[data-card-preview]'), 'OffChat jest wyróżniony z podglądem');
@@ -33,10 +33,10 @@ for (const [i, name] of names.entries()) {
 assert.match(sd.querySelector('.noscript-note').textContent, /wybrane projekty/i);
 const jsonld = JSON.parse(sd.querySelector('script[type="application/ld+json"]').textContent);
 assert.equal(jsonld['@type'], 'WebSite');
-assert.equal(jsonld.url, 'https://rejson59.github.io/');
+assert.equal(jsonld.url, 'https://rejhub.vercel.app/');
 staticDom.window.close();
 
-const dom = new JSDOM(html, { url: 'https://rejson59.github.io/', runScripts: 'outside-only', pretendToBeVisual: true });
+const dom = new JSDOM(html, { url: 'https://rejhub.vercel.app/', runScripts: 'outside-only', pretendToBeVisual: true });
 const w = dom.window;
 w.matchMedia = q => ({ matches: false, media: q, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} });
 w.fetch = () => Promise.reject(new Error('offline'));

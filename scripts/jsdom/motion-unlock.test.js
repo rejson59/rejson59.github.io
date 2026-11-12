@@ -114,7 +114,9 @@ console.log('\n=== E. STRONA MOŻE SAMA ZREZYGNOWAĆ ===');
 
 console.log('\n=== F. SKRYPT JEST NA KAŻDEJ STRONIE, PRZED INNYMI ===');
 {
-  const pages = fs.readdirSync(root).filter((file) => file.endsWith('.html'));
+  /* Strony przeniesienia nie są witryną — to jednorazowe przekierowania. */
+  const pages = fs.readdirSync(root).filter((file) => file.endsWith('.html'))
+    .filter((file) => !fs.readFileSync(path.join(root, file), 'utf8').includes('data-przeniesienie'));
   const hub = fs.readdirSync(path.join(root, 'rejhub2')).filter((file) => file.endsWith('.html'))
     .map((file) => path.join('rejhub2', file));
   const all = pages.concat(hub);

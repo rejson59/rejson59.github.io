@@ -1,5 +1,165 @@
-<!doctype html>
-<html lang="pl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Otwieranie projektu</title><script defer src="/js/projects-data.js"></script><script defer src="/js/travel-legacy.js?v=1"></script><style>.rj-legacy-home{position:fixed;top:12px;right:12px;z-index:10;box-sizing:border-box;display:grid;place-items:center;width:42px;height:42px;border:1px solid #718399;border-radius:14px;background:#152232;color:#fff;text-decoration:none}.rj-legacy-home:focus-visible{outline:2px solid #80baff;outline-offset:3px}</style><link rel="stylesheet" href="/css/scrollbar.css?v=1">
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="copyright" content="© 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved">
+  <meta name="rights" content="Kopiowanie i użycie bez pisemnej zgody zabronione. / Copying and reuse prohibited without written permission.">
+  <!--
+    ============================================================
+    NOTICE / AI-NOTICE — © 2026 rejson59 — ALL RIGHTS RESERVED
+    ============================================================
+    PL: Wszystkie treści, kod, grafiki, animacje i wygląd tej strony są
+    chronione prawem autorskim. Kopiowanie, modyfikowanie, publikowanie
+    ani ponowne użycie — w całości lub w części — bez uprzedniej pisemnej
+    zgody autora jest zabronione. Nie wolno też wykorzystywać tych treści
+    do trenowania modeli AI (TDM zastrzeżone). Szczegóły: /LICENSE, /ai.txt
+
+    EN: All content, code, graphics, animations and visual design on this
+    site are copyrighted. Copying, modifying, publishing or reusing them,
+    in whole or in part, without prior written permission is prohibited.
+    Use for AI training is not permitted (TDM reserved). See /LICENSE, /ai.txt.
+  -->
+  <title>RejHub — nowy adres</title>
+  <meta name="description" content="RejHub działa teraz pod adresem rejhub.vercel.app. Stara strona przekierowuje automatycznie.">
+  <meta name="robots" content="noindex, follow">
+  <link rel="canonical" href="https://rejhub.vercel.app/podroz">
+  <meta property="og:title" content="RejHub — nowy adres">
+  <meta property="og:description" content="RejHub działa teraz pod adresem rejhub.vercel.app.">
+  <meta property="og:url" content="https://rejhub.vercel.app/podroz">
+  <meta property="og:type" content="website">
+  <!-- Przekierowanie działa także bez JavaScriptu. -->
+  <meta http-equiv="refresh" content="0; url=https://rejhub.vercel.app/podroz">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #f2f5ff;
+      --muted: #a7b1cd;
+      --stroke: rgba(180, 205, 245, 0.22);
+    }
+    * { box-sizing: border-box; }
+    html { height: 100%; }
+    body {
+      margin: 0;
+      min-height: 100%;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      padding: 24px 18px calc(24px + env(safe-area-inset-bottom));
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(120% 90% at 12% 0%, rgba(96, 140, 220, 0.28), transparent 62%),
+        radial-gradient(110% 80% at 92% 8%, rgba(150, 120, 220, 0.20), transparent 60%),
+        #070a12;
+      -webkit-font-smoothing: antialiased;
+    }
+    main {
+      width: 100%;
+      max-width: 460px;
+      margin: auto;
+      padding: 26px 22px 22px;
+      border-radius: 26px;
+      border: 1px solid var(--stroke);
+      background: linear-gradient(158deg, rgba(255, 255, 255, 0.10), rgba(255, 255, 255, 0.03));
+      box-shadow: 0 30px 60px -32px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+      -webkit-backdrop-filter: blur(22px) saturate(130%);
+      backdrop-filter: blur(22px) saturate(130%);
+    }
+    .mark {
+      width: 54px;
+      height: 54px;
+      display: grid;
+      place-items: center;
+      border-radius: 17px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      font-size: 20px;
+      border: 1px solid var(--stroke);
+      background: linear-gradient(158deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.04));
+      margin-bottom: 18px;
+    }
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(22px, 5.4vw, 26px);
+      line-height: 1.2;
+      letter-spacing: -0.01em;
+    }
+    p { margin: 0 0 14px; color: var(--muted); line-height: 1.55; font-size: 15px; }
+    .adres {
+      display: inline-block;
+      max-width: 100%;
+      margin: 2px 0 18px;
+      padding: 8px 12px;
+      border-radius: 12px;
+      border: 1px solid var(--stroke);
+      background: rgba(10, 16, 28, 0.55);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 13px;
+      color: #dce6ff;
+      overflow-wrap: anywhere;
+    }
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 50px;
+      padding: 0 22px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.26);
+      background: linear-gradient(158deg, rgba(255, 255, 255, 0.94), rgba(226, 234, 250, 0.86));
+      color: #0a0f1a;
+      font-size: 16px;
+      font-weight: 650;
+      text-decoration: none;
+      box-shadow: 0 16px 30px -18px rgba(0, 0, 0, 0.9);
+    }
+    .btn:active { transform: scale(0.985); }
+    .btn:focus-visible { outline: 2px solid #9cc4ff; outline-offset: 3px; }
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin: 16px 0 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #9cc4ff;
+      animation: puls 1.4s ease-in-out infinite;
+    }
+    @keyframes puls { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+    @media (prefers-reduced-motion: reduce) { .dot { animation: none; opacity: 0.9; } }
+    .license-line {
+      width: 100%;
+      max-width: 460px;
+      margin: 18px auto 0;
+      font-size: 11.5px;
+      line-height: 1.6;
+      text-align: center;
+      color: rgba(167, 177, 205, 0.82);
+    }
+    .license-line a { color: rgba(205, 220, 250, 0.92); }
+  </style>
 </head>
-<body style="background:#0b0e13;color:#f6f7ff;font-family:system-ui"><a class="rj-legacy-home" href="/" aria-label="Strona główna" title="Strona główna"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5M5 9.5V20h14V9.5M9.5 20v-6h5v6"/></svg></a><p id="legacy-status">Otwieramy projekt…</p><p><a href="/" style="color:#b9d3ff">Wróć do projektów</a></p><noscript><p>Wybierz projekt ze strony głównej.</p></noscript><script defer src="/js/scrollbar.js?v=1"></script>
-</body></html>
+<body data-przeniesienie="/podroz">
+  <main>
+    <div class="mark" aria-hidden="true">RJ</div>
+    <h1>RejHub działa pod nowym adresem</h1>
+    <p>Przeniesienie gotowe: cały serwis — aplikacje, RejChat, konto i ustawienia — jest teraz pod adresem <strong>rejhub.vercel.app</strong>.</p>
+    <span class="adres" id="rj-przeniesienie-adres">rejhub.vercel.app/podroz</span>
+    <a class="btn" id="rj-przeniesienie-link" href="https://rejhub.vercel.app/podroz" rel="noopener">Przejdź do RejHub <span aria-hidden="true">→</span></a>
+    <p class="status"><span class="dot" aria-hidden="true"></span> Przekierowujemy automatycznie…</p>
+  </main>
+  <p class="license-line" role="contentinfo">© 2026 rejson59 — <strong>wszystkie prawa zastrzeżone</strong>. Kopiowanie i ponowne użycie bez pisemnej zgody są zabronione. <a href="https://rejhub.vercel.app/licencja">Licencja</a></p>
+  <script src="/js/przeniesienie.js?v=1" defer></script>
+  <noscript>
+    <style>#rj-przeniesienie-link { margin-top: 4px; }</style>
+  </noscript>
+</body>
+</html>

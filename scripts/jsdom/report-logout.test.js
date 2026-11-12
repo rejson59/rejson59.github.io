@@ -272,7 +272,7 @@ async function makeIsland() {
 
   console.log('\n=== D. TA SAMA STRONA PROFILU W OBU WERSJACH ===');
   check('profil na GitHub Pages i RejHub 2.0 ma to samo wylogowanie', () => {
-    assert.match(read('profil.html'), /id="profile-logout"[^>]*>Wyloguj się</);
+    assert.match(read('rejhub2/profil.html'), /id="profile-logout"[^>]*>Wyloguj się</);
     assert.match(read('rejhub2/profil.html'), /id="profile-logout"[^>]*>Wyloguj się</);
   });
 

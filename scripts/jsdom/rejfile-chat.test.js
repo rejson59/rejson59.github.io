@@ -9,7 +9,7 @@ const url=origin+'/rejfile#f='+id+'.'+share;
 const item={id,owner:'a'.repeat(64),share,name:'test.txt',status:'ready',expires:new Date(Date.now()+86400000).toISOString()};
 const draft=()=>({link:url,at:Date.now(),expires:Date.now()+86400000});
 function make(page) {
-  const d=new JSDOM(read(page+'.html'),{url:origin+'/'+page,runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:new VirtualConsole()});
+  const d=new JSDOM(read('rejhub2/'+page+'.html'),{url:origin+'/'+page,runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:new VirtualConsole()});
   d.window.fetch=async()=>({ok:true,json:async()=>[]});
   return d;
 }

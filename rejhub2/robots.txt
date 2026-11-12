@@ -4,11 +4,12 @@
 
 User-agent: *
 Allow: /
+# Panel i API są chronione serwerowo (middleware) — dodatkowo nie indeksujemy.
 Disallow: /admin
 Disallow: /panel
-Disallow: /logowanie
 Disallow: /api/
-Disallow: /rejhub2/admin
+Disallow: /studio-source
+Disallow: /szklane-studio
 
 # --- Boty zbierające dane do trenowania modeli (TDM zastrzeżone) ---
 User-agent: GPTBot
@@ -62,4 +63,4 @@ Disallow: /
 User-agent: YouBot
 Disallow: /
 
-Sitemap: https://rejson59.github.io/sitemap.xml
+Sitemap: https://rejhub.vercel.app/sitemap.xml

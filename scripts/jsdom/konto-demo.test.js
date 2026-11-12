@@ -1,7 +1,7 @@
 /* Makieta i przejścia stanów z symulowaną weryfikacją, bez sieci i prawdziwych kont. */
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');const {JSDOM,VirtualConsole}=require('jsdom');const root=path.resolve(__dirname,'../..'),read=p=>fs.readFileSync(path.join(root,p),'utf8');const wait=()=>new Promise(r=>setTimeout(r,10));
 async function fixture(initial,opts={}){
- const dom=new JSDOM(read('konto-demo.html'),{url:'https://rejson59.github.io/konto-demo',runScripts:'outside-only',virtualConsole:new VirtualConsole()});const w=dom.window,d=w.document;let session=initial,subscriber,opened=0,fail=false,pending;
+ const dom=new JSDOM(read('rejhub2/konto-demo.html'),{url:'https://rejson59.github.io/konto-demo',runScripts:'outside-only',virtualConsole:new VirtualConsole()});const w=dom.window,d=w.document;let session=initial,subscriber,opened=0,fail=false,pending;
  if(opts.pending)w.sessionStorage.setItem('rejson_demo_login_pending_v1',String(opts.pending));if(opts.connected)w.sessionStorage.setItem('rejson_demo_connected_v1','1');
  w.RejsonAccount={getSession:()=>pending?pending:fail?Promise.reject(new Error('offline')):Promise.resolve(session),open:()=>opened++,subscribe:fn=>subscriber=fn};
  w.eval(read('js/konto-demo.js'));await wait();return{w,d,get opened(){return opened;},setSession:s=>session=s,change:()=>subscriber(),setFail:v=>fail=v,delay:p=>pending=p,close:()=>w.close()};

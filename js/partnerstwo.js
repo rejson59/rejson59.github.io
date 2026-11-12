@@ -6,20 +6,30 @@
   var sending = false;
   // Ten sam prywatny formularz przyjmuje też zapytania o stworzenie strony.
   if (new URLSearchParams(location.search).get("temat") === "strona") {
+    /* Nowa strona partnerstwa ma inny układ niż stara — każde pole ustawiamy
+       tylko wtedy, gdy istnieje. Wcześniej brak jednego elementu przerywał
+       cały skrypt i formularz przestawał działać. */
+    function set(selector, value) {
+      var el = document.querySelector(selector);
+      if (el) el.textContent = value;
+      return el;
+    }
     document.title = "Zapytanie o stronę — Rejson59";
-    document.querySelector(".partner-hero .partner-eyebrow").textContent = "✦ TWORZENIE STRON · WSPÓŁPRACA";
-    document.querySelector(".brand-suffix").textContent = ".github.io / strony";
-    document.querySelector(".partner-footer span").textContent = "Tworzenie stron · Rejson59";
-    document.querySelector(".partner-hero h1").textContent = "Masz pomysł na stronę?";
-    document.querySelector(".partner-lead").textContent = "Napisz, czego potrzebujesz. Porozmawiajmy o stronie dopasowanej do Ciebie i Twojego pomysłu.";
-    document.querySelector(".partner-hero .partner-primary").textContent = "Przejdź do formularza ↗";
-    document.querySelector(".partner-options").hidden = true;
-    document.querySelector(".partner-preview-label").textContent = "TWOJA STRONA + REJSON59";
+    set(".partner-hero .partner-eyebrow", "✦ TWORZENIE STRON · WSPÓŁPRACA");
+    set(".brand-suffix", ".github.io / strony");
+    set(".partner-footer span", "Tworzenie stron · Rejson59");
+    set(".partner-hero h1", "Masz pomysł na stronę?");
+    set(".partner-lead", "Napisz, czego potrzebujesz. Porozmawiajmy o stronie dopasowanej do Ciebie i Twojego pomysłu.");
+    set(".partner-hero .partner-primary", "Przejdź do formularza ↗");
+    set(".partner-options", "").hidden = true;
+    set(".partner-preview-label", "TWOJA STRONA + REJSON59");
     form.elements.namedItem("kind").querySelector('option[value="other"]').textContent = "Stworzenie strony internetowej";
     form.elements.namedItem("kind").value = "other";
     form.elements.namedItem("message").value = "Chcę porozmawiać o stworzeniu strony internetowej.\n";
-    document.getElementById("form-title").textContent = "Opowiedz mi o swojej stronie.";
-    document.querySelector(".partner-contact-intro > p:not(.partner-eyebrow)").textContent = "Napisz, czym się zajmujesz i jakiej strony potrzebujesz. Odpowiem na podany adres e-mail — szczegóły i koszty ustalimy wspólnie.";
+    var title = document.getElementById("form-title");
+    if (title) title.textContent = "Opowiedz mi o swojej stronie.";
+    set(".partner-contact-intro > p:not(.partner-eyebrow)",
+      "Napisz, czym się zajmujesz i jakiej strony potrzebujesz. Odpowiem na podany adres e-mail — szczegóły i koszty ustalimy wspólnie.");
   }
   function field(name) { return form.elements.namedItem(name); }
   function status(message, kind) {
@@ -65,13 +75,15 @@
       form.removeAttribute("aria-busy");
     });
   });
+  /* Wspólny topbar zastąpił lokalne menu — elementy mogą nie istnieć. */
   var menu = document.getElementById("partner-menu"), nav = document.getElementById("partner-nav");
-  menu.addEventListener("click", function () {
+  if (menu && nav) menu.addEventListener("click", function () {
     var open = nav.classList.toggle("is-open");
     menu.setAttribute("aria-expanded", String(open));
     menu.setAttribute("aria-label", open ? "Zamknij menu" : "Otwórz menu");
   });
-  document.getElementById("partner-theme").addEventListener("click", function () {
+  var theme = document.getElementById("partner-theme");
+  if (theme) theme.addEventListener("click", function () {
     var next = document.documentElement.dataset.theme === "light" ? "dark" : "light";
     document.documentElement.dataset.theme = next;
     try { localStorage.setItem("theme", next); } catch (e) { /* brak pamięci */ }
