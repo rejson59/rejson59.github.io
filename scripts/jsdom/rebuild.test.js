@@ -192,7 +192,7 @@ console.log('\n=== E. REJCHAT: OKNO, DOK I DYMKI ===');
   check('arkusz „Messenger” jest podpięty, a szkło zamyka kaskadę', () => {
     const links = Array.from(CHAT_HTML.matchAll(/<link rel="stylesheet" href="([^"]+)"/g)).map((m) => m[1]);
     assert.match(links[links.length - 1], /glass-last\.css\?v=4/);
-    assert.ok(links.some((l) => l.includes('rejchat-messenger.css?v=14')), 'brak arkusza Messengera');
+    assert.ok(links.some((l) => l.includes('rejchat-messenger.css?v=15')), 'brak arkusza Messengera');
     assert.ok(!CHAT_HTML.includes('rejchat-rebuild.css'), 'stara warstwa nadal podpięta');
     assert.ok(!fs.existsSync(path.join(root, 'css/rejchat-rebuild.css')), 'stary arkusz nadal leży w repo');
   });
@@ -216,17 +216,21 @@ console.log('\n=== E. REJCHAT: OKNO, DOK I DYMKI ===');
     assert.match(CHAT_CSS, /\.chat-channel \{[\s\S]{0,700}flex-direction: column !important;/);
     assert.match(CHAT_CSS, /\.chat-channel\.is-active::before \{/);
   });
-  check('wiadomości to dymki: nazwa nad, treść w środku, własne po prawej', () => {
+  check('wiadomości to dymki: nazwa i godzina w wierszu, treść pod nimi, własne po prawej', () => {
     assert.match(CHAT_CSS, /\.chat-bubble \{[\s\S]{0,400}border-radius: 16px 16px 16px 5px !important;/);
     assert.match(CHAT_CSS, /\.chat-msg\.is-mine \.chat-bubble \{[\s\S]{0,400}justify-self: end !important;/);
     assert.match(CHAT_CSS, /\.chat-msg\.is-mine \.chat-bubble \{[\s\S]{0,400}border-radius: 16px 16px 5px 16px !important;/);
-    assert.match(CHAT_CSS, /\.chat-meta \{\n  display: contents !important;/);
-    assert.match(CHAT_CSS, /\.chat-author,[\s\S]{0,120}top: -17px !important;/);
+    /* Dymek nie może mieć marginesu na nazwę — ta jest już w środku. */
+    assert.match(CHAT_CSS, /\.chat-bubble \{[\s\S]{0,400}margin: 0 !important;/);
+    assert.match(CHAT_CSS, /\.chat-meta \{\n  display: flex !important;/);
+    assert.match(CHAT_CSS, /\.chat-author,[\s\S]{0,200}position: static !important;/);
+    /* Niewidoczny przycisk ✉ nie może rozpychać dymka (min-width: 32px z rejchat.css). */
+    assert.match(CHAT_CSS, /\.chat-private-start \{\n  position: absolute !important;/);
   });
   check('grupowanie: kolejne wiadomości tej samej osoby bez nazwy i awatara', () => {
     assert.match(CHAT_CSS, /\.chat-msg\.is-grouped \.chat-author,[\s\S]{0,200}display: none !important;/);
     assert.match(CHAT_CSS, /\.chat-msg\.is-grouped \.comm-avatar \{[\s\S]{0,60}visibility: hidden !important;/);
-    assert.match(CHAT_CSS, /\.chat-msg\.is-grouped \.chat-bubble \{[\s\S]{0,80}margin-top: 5px !important;/);
+    assert.match(CHAT_CSS, /\.chat-msg\.is-grouped \.chat-bubble \{[\s\S]{0,80}margin-top: 0 !important;/);
   });
   check('pole pisania to pigułka z okrągłym przyciskiem wysyłania', () => {
     assert.match(CHAT_CSS, /\.comm-chat-form \{[\s\S]{0,600}border-radius: 24px !important;/);

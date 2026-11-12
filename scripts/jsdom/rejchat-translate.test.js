@@ -1,5 +1,5 @@
 /* Tłumaczenie wiadomości RejChat: wykrywanie języka, AUTOMATYCZNE tłumaczenie
-   obcej wiadomości, panel z podpisem „tłumaczenie automatyczne” i powrót do
+   obcej wiadomości, panel z podpisem „przetłumaczone automatycznie” i powrót do
    oryginału. Test nie dotyka sieci — MyMemory i filtr treści są zamockowane. */
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -10,8 +10,8 @@ const root = path.resolve(__dirname, '../..');
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 
 const html = read('rejhub2/rejchat.html');
-assert.ok(/\/js\/rejchat-translate\.js\?v=2/.test(html), 'skrypt tłumaczenia jest podpięty');
-assert.ok(/\/css\/rejchat-translate\.css\?v=2/.test(html), 'arkusz tłumaczenia jest podpięty');
+assert.ok(/\/js\/rejchat-translate\.js\?v=3/.test(html), 'skrypt tłumaczenia jest podpięty');
+assert.ok(/\/css\/rejchat-translate\.css\?v=3/.test(html), 'arkusz tłumaczenia jest podpięty');
 console.log('  ✔ skrypt i arkusz tłumaczenia w RejChat');
 
 const dom = new JSDOM(`<!doctype html><html><body>
@@ -73,7 +73,7 @@ setTimeout(() => {
     const panel = foreign.querySelector('.rj-tr-panel');
     assert.ok(panel, 'tłumaczenie pojawia się BEZ klikania');
     assert.equal(panel.querySelector('.rj-tr-text').textContent, 'Cześć, jak leci dzisiaj?');
-    assert.match(panel.querySelector('.rj-tr-note').textContent, /tłumaczenie automatyczne/i);
+    assert.match(panel.querySelector('.rj-tr-note').textContent, /przetłumaczone automatycznie/i);
     assert.ok(foreign.querySelector('.chat-text').classList.contains('rj-tr-original-hidden'), 'oryginał schowany');
     assert.equal(calls, 1, 'jedno zapytanie do tłumacza');
 

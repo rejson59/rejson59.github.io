@@ -401,7 +401,7 @@
         saveSession({ token: data.token, username: data.username });
         pinEl.value = "";
         renderAuthZone();
-        loadPosts(true); chatGeneration++; requestChat(true);
+        loadPosts(true); chatGeneration++; requestChat(true); loadOnline();
         var dialog = document.getElementById("chat-auth-dialog");
         if (dialog && dialog.open) dialog.close();
         var chatPanel = document.getElementById("panel-chat");
@@ -421,7 +421,7 @@
     attachedMedia = [];
     renderMediaPreview();
     renderAuthZone();
-    loadPosts(true); chatGeneration++; requestChat(true);
+    loadPosts(true); chatGeneration++; requestChat(true); loadOnline();
   }
 
   /* ================= STREFA AUTH / KOMPONOWANIE ================= */
@@ -1757,6 +1757,7 @@
       var panel = document.getElementById("panel-chat");
       if (!panel || panel.hidden) return;
       window.setTimeout(function () { if (chatScroll) chatScroll.bottom(); else chatScrollBottom(); }, 40);
+      loadOnline();
     });
     var chatVisible = function () {
       var panel = document.getElementById("panel-chat");
@@ -1854,6 +1855,19 @@
     /* szybki start sekcji online z cache, potem świeży strzał */
     primeOnlineFromCache();
     loadOnline();
+
+    /* Panel „Zalogowani teraz online” ma własny zegar, niezależny od feedu.
+       Wcześniej odświeżał się wyłącznie razem z zakładką „Wpisy”, więc po
+       wejściu na „Czat” zostawał na stanie z chwili otwarcia strony — często
+       pustym, bo obecność zgłaszamy dopiero po pierwszej interakcji. Teraz
+       lista dogania rzeczywistość w tle co 30 s, także podczas rozmowy. */
+    if (window.RJNet && window.RJNet.every) {
+      window.RJNet.every("rejchat-online", 30000, loadOnline);
+    } else {
+      setInterval(function () {
+        if (document.visibilityState === "visible") loadOnline();
+      }, 30000);
+    }
 
     /* Odświeżamy wpisy tylko wtedy, gdy zakładka „Wpisy” jest naprawdę
        widoczna — wcześniej licznik tykał także podczas rozmowy w czacie. */
