@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="pl" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>RejHub — brak połączenia</title>
+  <meta name="copyright" content="© 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved">
+  <meta name="robots" content="noindex">
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: radial-gradient(120% 90% at 50% 0%, #101a29 0%, #070b11 60%, #04070b 100%);
+      color: #eef5ff;
+      font: 400 15px/1.55 "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .card {
+      width: min(420px, 100%);
+      padding: 24px 22px;
+      border: 1px solid rgba(178, 205, 245, 0.18);
+      border-radius: 24px;
+      background: linear-gradient(150deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.025));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), 0 30px 60px -30px rgba(0, 0, 0, 0.9);
+      text-align: center;
+    }
+    .mark {
+      display: grid;
+      place-items: center;
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 16px;
+      border-radius: 22px;
+      border: 1px solid rgba(190, 214, 255, 0.24);
+      background: radial-gradient(circle at 30% 20%, rgba(159, 196, 255, 0.28), rgba(11, 17, 26, 0.9));
+      font: 800 34px/1 "Space Grotesk", "Inter", system-ui, sans-serif;
+      color: #dcebff;
+    }
+    h1 { margin: 0 0 8px; font: 750 20px/1.25 "Inter", system-ui, sans-serif; letter-spacing: -0.02em; }
+    p { margin: 0 0 20px; color: rgba(214, 228, 247, 0.72); font-size: 13.5px; }
+    button {
+      width: 100%;
+      min-height: 48px;
+      border: 0;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #a9ccff, #7fb2ff);
+      color: #071527;
+      font: 700 14px/1 "Inter", system-ui, sans-serif;
+      cursor: pointer;
+    }
+    button:active { transform: translateY(1px); }
+    small { display: block; margin-top: 14px; color: rgba(214, 228, 247, 0.45); font-size: 11.5px; }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="mark" aria-hidden="true">R</div>
+    <h1>Brak połączenia z RejHubem</h1>
+    <p>Aplikacja potrzebuje internetu przy pierwszym otwarciu. Sprawdź sieć i spróbuj jeszcze raz — nic nie zostało utracone.</p>
+    <button type="button" id="retry">Spróbuj ponownie</button>
+    <small>RejHub · © 2026 rejson59</small>
+  </main>
+  <script>
+    (function () {
+      'use strict';
+      var server = 'https://rejhub.vercel.app';
+      var button = document.getElementById('retry');
+      function retry() {
+        /* Pełne przeładowanie na adres serwera — bez cache, żeby po powrocie
+           sieci od razu wczytać aktualną wersję strony. */
+        location.replace(server + '/?rj-retry=' + Date.now());
+      }
+      if (button) button.addEventListener('click', retry);
+      window.addEventListener('online', retry);
+      /* Samo wejście w tryb offline też próbuje wrócić — użytkownik nie musi
+         nic dotykać, jeśli sieć wróci po chwili. */
+      window.setInterval(function () {
+        if (navigator.onLine) retry();
+      }, 8000);
+    })();
+  </script>
+</body>
+</html>

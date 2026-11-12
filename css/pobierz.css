@@ -1,0 +1,244 @@
+/* © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
+   Licencja: /LICENSE, /licencja */
+
+/* ==========================================================================
+   /pobierz — aplikacja RejHuba na Androida
+   --------------------------------------------------------------------------
+   Strona korzysta ze szklanych kart i przycisków z `css/rejapps.css`,
+   a tutaj dokłada tylko to, czego nie ma na liście aplikacji: siatkę
+   informacji o wydaniu, listę kroków instalacji i status wersji.
+   Bez zieleni, promienie 18–22 px, przyciski min. 46 px.
+   ========================================================================== */
+
+/* Nagłówek strony: ikona aplikacji obok tytułu. */
+.pobierz-app-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+
+.pobierz-app-icon {
+  width: 76px;
+  height: 76px;
+  flex: none;
+  border-radius: 22px;
+  border: 1px solid rgba(178, 205, 245, 0.2);
+  box-shadow: 0 18px 36px -20px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.pobierz-app-head h1 { margin: 0; }
+
+@media (max-width: 560px) {
+  .pobierz-app-icon { width: 60px; height: 60px; border-radius: 18px; }
+}
+
+/* Wejście z listy aplikacji: jedna szeroka karta z przyciskiem. */
+.pobierz-panel-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pobierz-panel-row h2 {
+  margin: 0 0 4px;
+  font: 750 17px/1.25 "Inter", system-ui, sans-serif;
+  color: #eef5ff;
+  letter-spacing: -0.01em;
+}
+
+.pobierz-panel-row p {
+  margin: 0;
+  max-width: 62ch;
+}
+
+.rj-pobierz .pobierz-status {
+  margin: 14px 0 0;
+  color: rgba(214, 232, 255, 0.78);
+  font: 500 12.5px/1.5 "Inter", system-ui, sans-serif;
+}
+
+.rj-pobierz .pobierz-status:empty {
+  display: none;
+}
+
+.rj-pobierz .pobierz-meta-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  margin-top: 20px;
+}
+
+.rj-pobierz .pobierz-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rj-pobierz .pobierz-card h2 {
+  margin: 0;
+  font: 750 16px/1.25 "Inter", system-ui, sans-serif;
+  letter-spacing: -0.01em;
+  color: #eef5ff;
+}
+
+.rj-pobierz .pobierz-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 12px;
+  margin: 0;
+}
+
+.rj-pobierz .pobierz-meta > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.rj-pobierz .pobierz-meta > div.is-wide {
+  grid-column: 1 / -1;
+}
+
+.rj-pobierz .pobierz-meta dt {
+  margin: 0;
+  color: rgba(206, 224, 248, 0.55);
+  font: 700 9.5px/1 "JetBrains Mono", ui-monospace, monospace;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.rj-pobierz .pobierz-meta dd {
+  margin: 0;
+  color: #eaf2ff;
+  font: 600 13px/1.4 "Inter", system-ui, sans-serif;
+  overflow-wrap: anywhere;
+}
+
+.rj-pobierz .pobierz-meta code {
+  font: 500 11px/1.5 "JetBrains Mono", ui-monospace, monospace;
+  color: rgba(222, 236, 255, 0.84);
+  word-break: break-all;
+}
+
+.rj-pobierz .pobierz-steps,
+.rj-pobierz .pobierz-list {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: rgba(212, 228, 248, 0.8);
+  font: 400 12.5px/1.55 "Inter", system-ui, sans-serif;
+}
+
+.rj-pobierz .pobierz-steps li,
+.rj-pobierz .pobierz-list li {
+  padding-left: 2px;
+}
+
+.rj-pobierz .pobierz-steps strong,
+.rj-pobierz .pobierz-list strong {
+  color: #f0f6ff;
+  font-weight: 650;
+}
+
+.rj-pobierz .pobierz-mono {
+  font: 500 11.5px/1.4 "JetBrains Mono", ui-monospace, monospace;
+  color: rgba(190, 216, 255, 0.9);
+}
+
+.rj-pobierz .pobierz-release {
+  margin: 0;
+}
+
+.rj-pobierz .rjapp-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 44px;
+  color: var(--rjapp-accent);
+  font: 650 12.5px/1 "Inter", system-ui, sans-serif;
+  text-decoration: none;
+}
+
+.rj-pobierz .rjapp-link:hover,
+.rj-pobierz .rjapp-link:focus-visible {
+  text-decoration: underline;
+}
+
+@media (max-width: 980px) {
+  .rj-pobierz .pobierz-meta-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .rj-pobierz .pobierz-meta {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+[data-theme="light"] .rj-pobierz .pobierz-card h2,
+[data-theme="light"] .rj-pobierz .pobierz-meta dd,
+[data-theme="light"] .rj-pobierz .pobierz-steps strong,
+[data-theme="light"] .rj-pobierz .pobierz-list strong {
+  color: #12233c;
+}
+
+[data-theme="light"] .rj-pobierz .pobierz-steps,
+[data-theme="light"] .rj-pobierz .pobierz-list,
+[data-theme="light"] /* Nagłówek strony: ikona aplikacji obok tytułu. */
+.pobierz-app-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+
+.pobierz-app-icon {
+  width: 76px;
+  height: 76px;
+  flex: none;
+  border-radius: 22px;
+  border: 1px solid rgba(178, 205, 245, 0.2);
+  box-shadow: 0 18px 36px -20px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.pobierz-app-head h1 { margin: 0; }
+
+@media (max-width: 560px) {
+  .pobierz-app-icon { width: 60px; height: 60px; border-radius: 18px; }
+}
+
+/* Wejście z listy aplikacji: jedna szeroka karta z przyciskiem. */
+.pobierz-panel-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pobierz-panel-row h2 {
+  margin: 0 0 4px;
+  font: 750 17px/1.25 "Inter", system-ui, sans-serif;
+  color: #eef5ff;
+  letter-spacing: -0.01em;
+}
+
+.pobierz-panel-row p {
+  margin: 0;
+  max-width: 62ch;
+}
+
+.rj-pobierz .pobierz-status {
+  color: rgba(24, 45, 74, 0.78);
+}
+
+[data-theme="light"] .rj-pobierz .pobierz-meta code,
+[data-theme="light"] .rj-pobierz .pobierz-mono {
+  color: rgba(24, 45, 74, 0.86);
+}

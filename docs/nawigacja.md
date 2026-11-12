@@ -142,7 +142,34 @@ Na starszych stronach przekierowujących i awaryjnych ekranach podróży domek j
   `icon-maskable-512.png` (wygenerowane lokalnie, bez zewnętrznych źródeł).
 - `js/install-prompt.js` pokazuje na telefonie zachętę „Dodaj do ekranu”: na Androidzie/Chrome używa
   `beforeinstallprompt`, na iPhonie tłumaczy kroki Safari. „Później” chowa baner na 30 dni,
-  a w zainstalowanej aplikacji ( `display-mode: standalone` ) baner nie wraca.
+  a w zainstalowanej aplikacji ( `display-mode: standalone` ) baner nie wraca. W aplikacji
+  z APK (`RejHubApp/` w User-Agencie) zachęta nie pokazuje się wcale — RejHub jest już zainstalowany.
+
+### Aplikacja Android (APK) — `mobile/` + `/pobierz`
+
+- **Powłoka, nie kopia strony.** `mobile/capacitor.config.json` ustawia
+  `server.url = https://rejhub.vercel.app`, więc aplikacja przy każdym otwarciu ładuje aktualny
+  serwis. Zmiany treści i funkcji nie wymagają nowego APK. `server.errorPath` wskazuje na
+  `mobile/www/offline.html` — ekran „Brak połączenia” z ponowieniem.
+- **Co robi `MainActivity`:** dopisuje `RejHubApp/<wersja> (<kod>)` do User-Agenta, obsługuje
+  Wstecz (historia → wyjście), otwiera linki `https://rejhub.vercel.app/...` (App Links) oraz
+  `rejhub://...`, a pliki (np. nowy APK) pobiera przez `DownloadManager`.
+- **Wydania:** `.github/workflows/android.yml` uruchamia się przy zmianie w `mobile/**` lub ręcznie.
+  Buduje `assembleRelease`, sprawdza podpis (`apksigner verify`), publikuje GitHub Release
+  z plikiem **`RejHub.apk`** (stały adres `/releases/latest/download/RejHub.apk`), a następnie
+  zapisuje `rejhub2/app/latest.json` (wersja, rozmiar, data, SHA-256, linki) i commituje go na `main`.
+- **Podpis:** `mobile/keystore/rejhub-release.p12` (+ `keystore.properties`) leży w repozytorium,
+  żeby każde wydanie miało tę samą sygnaturę i instalowało się na poprzednie. To klucz do sideloadu,
+  nie do Google Play; odcisk SHA-256 musi zgadzać się z `rejhub2/assetlinks.json`.
+- **Baner aktualizacji:** `js/app-update.js` czyta `latest.json`, porównuje `versionCode`
+  z wersją z User-Agenta i pokazuje dyskretny baner „Nowa wersja RejHuba” („Później” = 24 h ciszy).
+  Baner jest w shadow DOM i nie pokazuje się w zwykłej przeglądarce ani na `/pobierz`.
+- **`/pobierz`** (`rejhub2/pobierz.html`, `css/pobierz.css`): wersja, rozmiar, data, SHA-256,
+  instrukcja instalacji i wyjaśnienie, co aktualizuje się samo. Wejścia: menu „Więcej” →
+  **Aplikacja** (na każdej stronie), karta na `/aplikacje` i sekcja „Co dalej”.
+- **Testy:** `scripts/jsdom/android.test.js` pilnuje konfiguracji powłoki, manifestu, podpisu,
+  workflow, `assetlinks.json`, strony pobierania i logiki banera (także „Później” i brak banera
+  przy aktualnej wersji).
 
 ### Powiadomienia — wersja 3
 

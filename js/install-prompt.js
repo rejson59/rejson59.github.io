@@ -29,6 +29,13 @@
   function store(key, value) {
     try { window.localStorage.setItem(key, value); } catch (error) { /* tryb prywatny */ }
   }
+  /* W aplikacji Android (powłoka Capacitora) nie ma sensu namawiać do
+     dodania skrótu — RejHub jest już zainstalowany. Rozpoznajemy ją po
+     User-Agencie, który dopisuje MainActivity. */
+  function inApp() {
+    try { return /RejHubApp\//.test(String(navigator.userAgent || '')); }
+    catch (error) { return false; }
+  }
   function standalone() {
     try {
       return window.matchMedia('(display-mode: standalone)').matches ||
@@ -129,7 +136,7 @@
   }
 
   function maybeShow() {
-    if (shown || dismissed() || standalone()) return;
+    if (shown || dismissed() || standalone() || inApp()) return;
     /* Zachęta jest dla telefonów i tabletów — na desktopie instalacja i tak
        kończy się ikoną w pasku przeglądarki, więc nie zawracamy głowy. */
     if (!isIos() && !phoneWidth()) return;

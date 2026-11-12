@@ -1,0 +1,9 @@
+# © 2026 rejson59 — wszystkie prawa zastrzeżone.
+# Zależności i artefakty budowania Androida nie trafiają do repozytorium —
+# instalowane są przez `npm ci`, a APK publikuje GitHub Actions w wydaniach.
+node_modules/
+.gradle/
+build/
+*.apk
+*.aab
+*.keystore.bak

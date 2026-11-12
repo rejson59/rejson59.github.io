@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved. -->
+<resources>
+    <!-- Paleta RejHuba 2.0: czerń wyspy i błękit akcentu. Zero zieleni. -->
+    <color name="colorPrimary">#8BBDFF</color>
+    <color name="colorPrimaryDark">#0B111A</color>
+    <color name="colorAccent">#9FC4FF</color>
+    <color name="rjBackground">#0B111A</color>
+    <color name="rjSplashMark">#0B111A</color>
+</resources>

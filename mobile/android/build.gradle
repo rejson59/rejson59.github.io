@@ -1,0 +1,29 @@
+// © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
+// Licencja: /LICENSE, /licencja
+//
+// Górny plik budowania Androida. AGP 8.7 + Gradle 8.9 (wrapper) obsługują
+// compileSdk 35, którego wymaga sklep Play od sierpnia 2025.
+
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.7.2'
+        classpath 'com.google.gms:google-services:4.4.2'
+    }
+}
+
+apply from: "variables.gradle"
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.layout.buildDirectory
+}
