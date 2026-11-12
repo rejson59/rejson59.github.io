@@ -107,6 +107,9 @@
   window.addEventListener('rj:session-change',function(){sync();if(session())refreshInbox();hash();});
   window.addEventListener('storage',function(e){if(e.key==='rejson_community_session_v1'||e.key===null){sync();if(session())refreshInbox();}});
   document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&!view.hidden){refreshInbox();loadThread();}});
-  setInterval(function(){if(document.visibilityState==='visible'&&!view.hidden){refreshInbox();loadThread();}},3000);
+  /* 6 s zamiast 3 s, jedno zadanie na raz i pauza po błędzie (patrz rj-net).
+     Wcześniej kilka otwartych kart wysyłało po dwa żądania co 3 s każda. */
+  if(window.RJNet&&window.RJNet.every){window.RJNet.every('rejchat-dm',6000,function(){refreshInbox();return loadThread();},{when:function(){return !!session()&&!view.hidden;}});}
+  else setInterval(function(){if(document.visibilityState==='visible'&&!view.hidden&&session()){refreshInbox();loadThread();}},6000);
   sync();hash();
 })(window,document);

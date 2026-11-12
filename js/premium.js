@@ -69,21 +69,22 @@
 
   /* ---------- RPC ---------- */
 
+  var RPC_HEADERS = {
+    "apikey": SUPABASE_ANON_KEY,
+    "Authorization": "Bearer " + SUPABASE_ANON_KEY,
+    "Content-Type": "application/json"
+  };
   function rpc(fn, args) {
     if (!window.fetch) return Promise.reject(new Error("brak fetch"));
-    return fetch(SUPABASE_URL + "/rest/v1/rpc/" + fn, {
-      method: "POST",
-      headers: {
-        "apikey": SUPABASE_ANON_KEY,
-        "Authorization": "Bearer " + SUPABASE_ANON_KEY,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(args || {}),
-      cache: "no-store"
-    }).then(function (res) {
-      if (!res.ok) throw new Error(fn + " → " + res.status);
-      return res.json();
-    });
+    var url = SUPABASE_URL + "/rest/v1/rpc/" + fn;
+    if (window.RJNet && window.RJNet.rpc) {
+      return window.RJNet.rpc(url, args || {}, { label: fn, headers: RPC_HEADERS, retries: window.RJNet.readOnly(fn) ? 2 : 0 });
+    }
+    return fetch(url, { method: "POST", headers: RPC_HEADERS, body: JSON.stringify(args || {}), cache: "no-store" })
+      .then(function (res) {
+        if (!res.ok) throw new Error(fn + " → " + res.status);
+        return res.json();
+      });
   }
 
   /* ---------- scalanie tożsamości ----------

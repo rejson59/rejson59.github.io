@@ -1568,20 +1568,32 @@
         sendPresenceHeartbeat(currentActiveSlug, "leave");
       });
 
-      /* Heartbeat obecności co 6 sekund — liczniki LIVE odświeżają się niemal natychmiast */
-      setInterval(function () {
-        if (document.visibilityState === "visible") {
-          sendPresenceHeartbeat(currentActiveSlug, "ping");
-        }
-      }, 6000);
+      /* Heartbeat obecności co 25 s. Wcześniej 6 s — przy kilku kartach i
+         kilkunastu osobach dawało to setki tysięcy zapytań na dobę, a i tak
+         nic nie wnosiło: próg „online” to 90 s. Po powrocie do karty i tak
+         wysyłamy ping od razu (visibilitychange wyżej). */
+      if (window.RJNet && window.RJNet.every) {
+        window.RJNet.every("presence", 25000, function () { sendPresenceHeartbeat(currentActiveSlug, "ping"); });
+      } else {
+        setInterval(function () {
+          if (document.visibilityState === "visible") sendPresenceHeartbeat(currentActiveSlug, "ping");
+        }, 25000);
+      }
 
-      /* Stan liczników wejść co 12 sekund (zmiany przychodzą też od razu przez Realtime) */
-      setInterval(function () {
-        if (document.visibilityState === "visible") {
+      /* Liczniki wejść co 45 s — zmiany i tak przychodzą przez Realtime. */
+      if (window.RJNet && window.RJNet.every) {
+        window.RJNet.every("view-counters", 45000, function () {
           fetchAllCounts();
           fetchDailySiteVisitors();
-        }
-      }, 12000);
+        });
+      } else {
+        setInterval(function () {
+          if (document.visibilityState === "visible") {
+            fetchAllCounts();
+            fetchDailySiteVisitors();
+          }
+        }, 45000);
+      }
     }
   }
 

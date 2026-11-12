@@ -38,8 +38,14 @@
   var frames=['none','ice','violet','rose','amber','prism'];
   var banners=['aurora','ocean','dusk','ember','mono','prism'];
   var cache=Object.create(null), pending=Object.create(null), syncSeq=0;
+  /* Wspólna warstwa sieciowa: limit czasu, ponowienia i sklejanie identycznych
+     żądań. Bez niej pojedynczy pakiet gubiony w drodze zostawiał pusty profil. */
   function rpc(name, data) {
-    return fetch(base+name,{method:'POST',cache:'no-store',headers:{apikey:key,Authorization:'Bearer '+key,'Content-Type':'application/json'},body:JSON.stringify(data)}).then(function (r) {
+    var url=base+name;
+    if (window.RJNet && window.RJNet.rpc) {
+      return window.RJNet.rpc(url,data||{},{label:name,headers:{apikey:key,Authorization:'Bearer '+key,'Content-Type':'application/json'},retries:window.RJNet.readOnly(name)?2:0});
+    }
+    return fetch(url,{method:'POST',cache:'no-store',headers:{apikey:key,Authorization:'Bearer '+key,'Content-Type':'application/json'},body:JSON.stringify(data)}).then(function (r) {
       return r.json().catch(function(){return null;}).then(function (body) {if(!r.ok) throw new Error(body && body.message || 'Nie udało się połączyć.');return body;});
     });
   }

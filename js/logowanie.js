@@ -49,16 +49,18 @@
     } catch (e) { return null; }
   }
   function rpc(fn, body) {
-    return fetch(URL + "/rest/v1/rpc/" + fn, {
-      method: "POST", cache: "no-store",
-      headers: { apikey: KEY, Authorization: "Bearer " + KEY, "Content-Type": "application/json" },
-      body: JSON.stringify(body)
-    }).then(function (res) {
-      return res.json().catch(function () { return null; }).then(function (data) {
-        if (!res.ok) throw new Error(data && data.message || "Nie udało się połączyć z kontem.");
-        return data;
+    var url = URL + "/rest/v1/rpc/" + fn;
+    var headers = { apikey: KEY, Authorization: "Bearer " + KEY, "Content-Type": "application/json" };
+    /* Odczyt stanu konta ponawiamy — pojedyncze zerwanie łącza nie może
+       udawać, że konto zniknęło. */
+    if (window.RJNet && window.RJNet.rpc) return window.RJNet.rpc(url, body || {}, { label: fn, headers: headers, retries: window.RJNet.readOnly(fn) ? 2 : 0 });
+    return fetch(url, { method: "POST", cache: "no-store", headers: headers, body: JSON.stringify(body) })
+      .then(function (res) {
+        return res.json().catch(function () { return null; }).then(function (data) {
+          if (!res.ok) throw new Error((data && data.message) || "Nie udało się połączyć z kontem.");
+          return data;
+        });
       });
-    });
   }
   function report(message) { error.textContent = message || ""; error.hidden = !message; }
   function loadPasswordStatus() {

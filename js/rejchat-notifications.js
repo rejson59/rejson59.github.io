@@ -157,7 +157,9 @@
   window.addEventListener('rj:dm-read',refresh);
   window.addEventListener('storage',function(e){if(e.key==='rejson_community_session_v1'||e.key===null)sessionChanged();});
   document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')refreshAll();});
-  window.setInterval(function(){if(document.visibilityState==='visible' && current()) refresh();},8000);
-  window.setInterval(function(){if(document.visibilityState==='visible' && current() && window.RJPremium) window.RJPremium.refresh();},30000);
+  if(window.RJNet&&window.RJNet.every){window.RJNet.every('rejchat-bell',12000,refresh,{when:function(){return !!current();}});}
+  else window.setInterval(function(){if(document.visibilityState==='visible' && current()) refresh();},12000);
+  if(window.RJNet&&window.RJNet.every){window.RJNet.every('rejchat-premium',45000,function(){if(window.RJPremium)window.RJPremium.refresh();},{when:function(){return !!current();}});}
+  else window.setInterval(function(){if(document.visibilityState==='visible' && current() && window.RJPremium) window.RJPremium.refresh();},45000);
   paint(); refresh();
 })(window, document);

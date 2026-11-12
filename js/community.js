@@ -11,7 +11,7 @@
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6YnF6ZmltdHJvaXhubGR6amVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1OTYzOTEsImV4cCI6MjEwODE3MjM5MX0.oeZWOaNd6p3wZBZQQu3QWjRHlrkxV_BFQRNSN-6YntE";
 
   var SESSION_KEY = "rejson_community_session_v1";
-  var FEED_REFRESH_MS = 12000;
+  var FEED_REFRESH_MS = 25000;
   var POST_MAX = 2000;
   var COMMENT_MAX = 1000;
 
@@ -71,27 +71,34 @@
     window.dispatchEvent(new Event("rj:session-change"));
   }
 
+  var RPC_URL = SUPABASE_URL + "/rest/v1/rpc/";
+  var RPC_HEADERS = {
+    "apikey": SUPABASE_ANON_KEY,
+    "Authorization": "Bearer " + SUPABASE_ANON_KEY,
+    "Content-Type": "application/json"
+  };
+  /* Jedna wspólna warstwa: limit czasu, ponowienia z odstępem i sklejanie
+     identycznych żądań. Wcześniej każdy błąd sieci kończył się pustym czatem
+     do ręcznego odświeżenia. */
   function rpc(fnName, body) {
-    return fetch(SUPABASE_URL + "/rest/v1/rpc/" + fnName, {
-      method: "POST",
-      headers: {
-        "apikey": SUPABASE_ANON_KEY,
-        "Authorization": "Bearer " + SUPABASE_ANON_KEY,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(body || {}),
-      cache: "no-store"
-    }).then(function (res) {
-      return res.json().catch(function () { return null; }).then(function (data) {
-        if (!res.ok) {
-          var msg = (data && (data.message || data.hint)) || ("Błąd serwera (" + res.status + ")");
-          var err = new Error(msg);
-          err.status = res.status;
-          throw err;
-        }
-        return data;
+    var url = RPC_URL + fnName;
+    if (window.RJNet && window.RJNet.rpc) {
+      /* Ponawiamy wyłącznie odczyty; powtórzone „wyślij”/„polub” zdublowałoby akcję. */
+      return window.RJNet.rpc(url, body || {}, { label: fnName, headers: RPC_HEADERS, retries: window.RJNet.readOnly(fnName) ? 2 : 0 });
+    }
+    return fetch(url, { method: "POST", headers: RPC_HEADERS, body: JSON.stringify(body || {}), cache: "no-store" })
+      .then(function (res) {
+        return res.text().then(function (raw) {
+          var data = null;
+          try { data = raw ? JSON.parse(raw) : null; } catch (e) { data = null; }
+          if (!res.ok) {
+            var err = new Error((data && (data.message || data.hint)) || ("Błąd serwera (" + res.status + ")"));
+            err.status = res.status;
+            throw err;
+          }
+          return data;
+        });
       });
-    });
   }
 
   function relTime(iso) {
@@ -434,21 +441,35 @@
 
   /* ================= WPISY ================= */
   var lastPostsTotal = 0;
+  var feedSignature = "";
+
+  /* Auto-odświeżenie nie może przebudowywać całego feedu, jeśli nic się nie
+     zmieniło: każda podmiana HTML to ponowne dekodowanie zdjęć i hydratacja
+     profili, czyli dokładnie te zacięcia, które czuć przy przewijaniu. */
+  function postsSignature(posts) {
+    return posts.map(function (p) {
+      return [p.id, p.comments_count, p.likes_count, p.has_liked ? 1 : 0, p.updated_at || p.edited_at || "", p.tags ? p.tags.join("+") : ""].join("~");
+    }).join("|");
+  }
 
   function renderPosts(posts) {
     var feed = document.getElementById("posts-feed");
     if (!feed) return;
+    var signature = postsSignature(posts);
+    if (signature === feedSignature && feed.querySelector(".post-card")) return;
 
     if (!posts.length) {
+      feedSignature = "";
       feed.innerHTML =
         '<p class="comm-feed-empty">Jeszcze nikt nic nie napisał — bądź pierwszą osobą w społeczności! 🎉</p>';
       return;
     }
 
     /* Zanim przebudujemy DOM, zapamiętaj rozpisane komentarze i fokus —
-       inaczej auto-odświeżenie (co 12 s) kasowało wpisywany tekst. */
+       inaczej auto-odświeżenie kasowało wpisywany tekst. */
     feedDrafts = mergeDrafts(feedDrafts, snapshotCommentDrafts());
 
+    feedSignature = signature;
     feed.innerHTML = posts.map(function (p) {
       var mine = session && session.username === p.author_name;
       var commentsCount = Number(p.comments_count) || 0;
@@ -636,7 +657,10 @@
         if (!silent) {
           var feed = document.getElementById("posts-feed");
           if (feed) {
-            feed.innerHTML = '<p class="comm-feed-empty">Nie udało się pobrać wpisów — sprawdź połączenie z internetem.</p>';
+            feedSignature = "";
+            feed.innerHTML = '<p class="comm-feed-empty">Nie udało się pobrać wpisów — sprawdź połączenie z internetem. <button type="button" class="btn btn-ghost btn-sm" data-feed-retry>Spróbuj ponownie</button></p>';
+            var retry = feed.querySelector("[data-feed-retry]");
+            if (retry) retry.addEventListener("click", function () { retry.disabled = true; loadPosts(false).then(function () { retry.disabled = false; }); });
           }
         }
         return [];
@@ -1343,8 +1367,11 @@
   }
 
   /* ================= CZAT SPOŁECZNOŚCI NA ŻYWO ================= */
-  var CHAT_REFRESH_MS = 2000;
-  var CHAT_MAX_SHOWN = 80;
+  /* 4,5 s zamiast 2 s: przy kilku otwartych kartach dwa razy mniej żądań,
+     a różnica w odbiorze jest niezauważalna (nowe wiadomości i tak dociągamy
+     od razu po wysłaniu i po powrocie do karty). */
+  var CHAT_REFRESH_MS = 4500;
+  var CHAT_MAX_SHOWN = 60;
   var chatRoom = "general", chatDrafts = { general: "", links: "" }, chatErrors = { general: "", links: "" };
   function clearChatDrafts() {
     chatDrafts = { general: "", links: "" }; chatErrors = { general: "", links: "" };
@@ -1425,6 +1452,9 @@
       return;
     }
     box.innerHTML = rows.map(chatMsgHTML).join("");
+    /* Lista rośnie tylko do limitu — inaczej po godzinie rozmowy DOM ciągnie
+       setki węzłów, a przewijanie zaczyna klatkować. */
+    while (box.children.length > CHAT_MAX_SHOWN) box.removeChild(box.firstChild);
     if(window.RJChatMessageUI)window.RJChatMessageUI.group(box);
     hydrateProfiles(box);
   }
@@ -1468,9 +1498,27 @@
   function chatConnection(ok) {
     var status = document.getElementById("chat-connection");
     if (!status) return;
-    status.textContent = ok ? "Odświeżanie co 2 s" : "Brak połączenia — ponawiamy";
+    status.textContent = ok ? "Na żywo" : "Brak połączenia — ponawiamy";
     status.classList.toggle("is-offline", !ok);
   }
+
+  /* Wspólny komunikat sieci: zamiast pustki użytkownik widzi, że trwa
+     ponawianie, a po powrocie łącza czat dociąga się sam. */
+  window.addEventListener("rj:net-state", function (event) {
+    var detail = event.detail || {};
+    if (detail.status === "retry") {
+      var label = document.getElementById("chat-connection");
+      if (label) { label.textContent = "Ponawiam połączenie…"; label.classList.add("is-offline"); }
+    } else if (detail.status === "offline") {
+      var off = document.getElementById("chat-connection");
+      if (off) { off.textContent = "Brak internetu — czekam"; off.classList.add("is-offline"); }
+    }
+  });
+  window.addEventListener("rj:net-online", function () {
+    chatGeneration++;
+    requestChat(true);
+    loadPosts(true);
+  });
 
   function chatSessionFailure(err, generation, token) {
     if (generation !== chatGeneration || !session || session.token !== token) return true;
@@ -1507,18 +1555,33 @@
       .then(function (rows) {
         if (!Array.isArray(rows) || generation !== chatGeneration || !session || session.token !== token) return;
         chatConnection(true);
+        var firstRender = !chatLastId;
         var position = chatScroll ? chatScroll.capture() : {following:chatNearBottom(),top:box ? box.scrollTop : 0};
         var added = updateChatHighWater(rows);
         if (chatRenderedSession !== (session ? session.token : "") || chatSignature !== JSON.stringify(rows) || (!rows.length && box && (!box.querySelector(".comm-chat-empty") || box.querySelector(".comm-chat-empty").textContent.indexOf("Pusto tu") !== 0))) renderChatAll(rows);
         chatLastId = rows.length ? rows[rows.length - 1].id : null;
-        if (chatScroll) chatScroll.restore(position); else if (position.following) chatScrollBottom(); else if (box) box.scrollTop = position.top;
+        /* Pierwsze wejście zawsze ląduje na najnowszych wiadomościach — nawet
+           jeśli lista nie miała jeszcze wysokości w chwili renderowania. */
+        if (firstRender || position.following) chatScrollBottom();
+        else if (chatScroll) chatScroll.restore(position);
+        else if (box) box.scrollTop = position.top;
         if (!position.following && added) showChatJump();
       })
       .catch(function (err) {
         if (chatSessionFailure(err, generation, token)) return;
         chatConnection(false);
         var b2 = chatList();
-        if (b2 && !chatLastId) b2.innerHTML = '<p class="comm-chat-empty">Nie udało się pobrać czatu — sprawdź połączenie.</p>';
+        if (b2 && !chatLastId) {
+          b2.innerHTML = '<p class="comm-chat-empty">Nie udało się pobrać czatu — sprawdź połączenie. <button type="button" class="btn btn-ghost btn-sm" data-chat-retry>Spróbuj ponownie</button></p>';
+          var retryBtn = b2.querySelector('[data-chat-retry]');
+          if (retryBtn) retryBtn.addEventListener('click', function () {
+            retryBtn.disabled = true;
+            retryBtn.textContent = 'Łączę…';
+            requestChat(true).then(function () {
+              if (retryBtn.isConnected) { retryBtn.disabled = false; retryBtn.textContent = 'Spróbuj ponownie'; }
+            });
+          });
+        }
       });
   }
 
@@ -1673,10 +1736,27 @@
         .catch(function (err) { var status = document.getElementById("chat-send-status"); if (status) status.textContent = err.message || "Nie udało się usunąć wiadomości."; });
     });
 
-    setInterval(function () {
-      if (document.visibilityState !== "visible") return;
-      chatPoll();
-    }, CHAT_REFRESH_MS);
+    var chatPollTask = null;
+    /* Powrót z zakładki „Wpisy” nie może zostawić czatu na najstarszym wpisie. */
+    window.addEventListener("rj:tab-change", function () {
+      var panel = document.getElementById("panel-chat");
+      if (!panel || panel.hidden) return;
+      window.setTimeout(function () { if (chatScroll) chatScroll.bottom(); else chatScrollBottom(); }, 40);
+    });
+    var chatVisible = function () {
+      var panel = document.getElementById("panel-chat");
+      var view = document.getElementById("chat-public-view");
+      return !!session && !!panel && !panel.hidden && !!view && !view.hidden;
+    };
+    if (window.RJNet && window.RJNet.every) {
+      chatPollTask = window.RJNet.every("rejchat-rooms", CHAT_REFRESH_MS, chatPoll, { when: chatVisible });
+    } else {
+      setInterval(function () {
+        if (document.visibilityState !== "visible" || !chatVisible()) return;
+        chatPoll();
+      }, CHAT_REFRESH_MS);
+    }
+    document.addEventListener("rj:room-change", function () { if (chatPollTask) chatPollTask.poke(400); });
   }
 
   /* ================= MOTYW ================= */
@@ -1760,13 +1840,25 @@
     primeOnlineFromCache();
     loadOnline();
 
-    feedTimer = setInterval(function () {
-      if (document.visibilityState !== "visible") return;
-      /* użytkownik pisze komentarz — odłóż odświeżenie, nie wyrywaj mu pola spod palców */
-      if (feedHasActiveInput()) return;
-      loadPosts(true);
+    /* Odświeżamy wpisy tylko wtedy, gdy zakładka „Wpisy” jest naprawdę
+       widoczna — wcześniej licznik tykał także podczas rozmowy w czacie. */
+    var postsVisible = function () {
+      var panel = document.getElementById("panel-posts");
+      return !!panel && !panel.hidden;
+    };
+    var refreshFeed = function () {
+      if (feedHasActiveInput()) return Promise.resolve();
       loadOnline();
-    }, FEED_REFRESH_MS);
+      return loadPosts(true);
+    };
+    if (window.RJNet && window.RJNet.every) {
+      feedTimer = window.RJNet.every("rejchat-posts", FEED_REFRESH_MS, refreshFeed, { when: postsVisible });
+    } else {
+      feedTimer = setInterval(function () {
+        if (document.visibilityState !== "visible" || !postsVisible()) return;
+        refreshFeed();
+      }, FEED_REFRESH_MS);
+    }
 
     document.addEventListener("visibilitychange", function () {
       if (document.visibilityState !== "visible") return;
