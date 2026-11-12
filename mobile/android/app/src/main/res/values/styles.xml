@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved. -->
+<resources>
+
+    <!-- Bazowy motyw: ciemny, bez akcji, żeby przy starcie nie mignął biały
+         prostokąt i żeby pasek stanu był tego samego koloru co wyspa. -->
+    <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:windowBackground">@color/rjBackground</item>
+        <item name="android:statusBarColor">@color/rjBackground</item>
+        <item name="android:navigationBarColor">@color/rjBackground</item>
+    </style>
+
+    <style name="AppTheme.NoActionBar" parent="AppTheme">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+        <item name="android:background">@null</item>
+    </style>
+
+    <!-- Ekran startowy: ciemne tło z logo RejHuba, bez animacji systemowej
+         (Core Splash Screen z AndroidX nie jest tu potrzebny). -->
+    <style name="AppTheme.NoActionBarLaunch" parent="AppTheme.NoActionBar">
+        <item name="android:background">@drawable/rj_splash</item>
+    </style>
+</resources>

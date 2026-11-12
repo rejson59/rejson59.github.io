@@ -2,8 +2,8 @@
    Licencja: /LICENSE, /licencja */
 /*
  * Aplikacje RejHuba: RejPlanner, RejGames, RejMusic, RejMeme, strona
- * /aplikacje (jedna lista wszystkich aplikacji) i RejAsystent w wyspie
- * + instalacja jako aplikacja (PWA).
+ * /aplikacje (jedna lista wszystkich aplikacji), RejAsystent w wyspie,
+ * strona /pobierz z aplikacją Android + instalacja jako aplikacja (PWA).
  *
  * Testy działają bez sieci i bez przeglądarki: ładują prawdziwy HTML strony,
  * a potem uruchamiają w nim prawdziwy skrypt aplikacji. Sprawdzają to, co
@@ -23,7 +23,8 @@ const PAGES = {
   'rejplanner.html': { script: 'js/rejplanner.js', title: 'RejPlanner' },
   'rejgames.html': { script: 'js/rejgames.js', title: 'RejGames' },
   'rejmusic.html': { script: 'js/rejmusic.js', title: 'RejMusic' },
-  'rejmeme.html': { script: 'js/rejmeme.js', title: 'RejMeme' }
+  'rejmeme.html': { script: 'js/rejmeme.js', title: 'RejMeme' },
+  'pobierz.html': { script: null, title: 'RejHub na Androida' }
 };
 
 let passed = 0;
@@ -78,7 +79,7 @@ await check('każda strona ma jedną topbarę, wyspę, licencję i stopkę', asy
     assert.equal((html.match(/class="site-header rj-shared-header/g) || []).length, 1, file + ': liczba topbarów');
     assert.ok(html.includes('/hub/island.js?v='), file + ': brak wyspy');
     assert.ok(html.includes('class="license-line"'), file + ': brak informacji o licencji');
-    assert.ok(html.includes('/js/install-prompt.js?v=1'), file + ': brak zachęty do instalacji');
+    assert.ok(html.includes('/js/install-prompt.js?v=2'), file + ': brak zachęty do instalacji');
     assert.ok(html.includes('aria-label="Aplikacje'), file + ': brak linku do aplikacji w menu');
   });
 });

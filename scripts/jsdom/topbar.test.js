@@ -18,7 +18,7 @@ const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 
 const PAGES = [
   '404.html', 'admin.html', 'aplikacje.html', 'index.html', 'konto-demo.html',
-  'licencja.html', 'logowanie.html', 'panel.html', 'partnerstwo.html', 'profil.html',
+  'licencja.html', 'logowanie.html', 'panel.html', 'partnerstwo.html', 'pobierz.html', 'profil.html',
   'rejchat.html', 'rejclass.html', 'rejfile.html', 'rejgames.html',
   'rejmeme.html', 'rejmusic.html', 'rejplanner.html', 'rejsejf.html', 'rejtools.html',
   'uslugi.html', 'rejchat/regulamin.html'
@@ -270,6 +270,6 @@ function headerOf(html) {
     process.exit(1);
   }
   console.log('WYNIK: ' + passed + '/' + passed + ' ✔');
-  console.log('PASS: jeden identyczny topbar na 21 podstronach, jedno wspólne zachowanie');
+  console.log('PASS: jeden identyczny topbar na 22 podstronach, jedno wspólne zachowanie');
   process.exit(0);
 })();

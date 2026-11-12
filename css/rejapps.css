@@ -1,8 +1,9 @@
 /* © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
    Licencja: /LICENSE, /licencja
    ----------------------------------------------------------------------------
-   RejApps — wspólna warstwa wyglądu dla nowych aplikacji RejHuba:
-   RejPlanner, RejGames, RejMusic, RejMeme i RejAsystent.
+   RejApps — wspólna warstwa wyglądu wszystkich aplikacji RejHuba:
+   czatu, plików, sejfu, narzędzi, lekcji, planera, gier, muzyki, memów
+   i asystenta. Ta sama siatka, ten sam kafel, ten sam akcent.
 
    Zasady (spójne z resztą serwisu):
    - szkło zamiast nieprzezroczystych kart (tokeny z glass-last.css),
@@ -139,6 +140,20 @@ button.rjapp-appcard {
 .rjapp-appcard strong { font: 700 15.5px/1.3 "Inter", system-ui, sans-serif; color: #f2f7ff; }
 .rjapp-appcard span { font: 400 12.5px/1.5 "Inter", system-ui, sans-serif; color: rgba(205, 222, 244, 0.72); }
 .rjapp-appcard .rjapp-open { margin-top: auto; color: var(--rjapp-accent); font: 650 12.5px/1 "Inter", system-ui, sans-serif; }
+
+/* Prosty link w karcie — np. „Pobierz aplikację” albo „Wszystkie wydania”. */
+.rjapp-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 44px;
+  color: var(--rjapp-accent);
+  font: 650 12.5px/1 "Inter", system-ui, sans-serif;
+  text-decoration: none;
+}
+.rjapp-link:hover,
+.rjapp-link:focus-visible { text-decoration: underline; }
+[data-theme="light"] .rjapp-link { color: #1c5fb8; }
 
 /* Przyciski, pola, pigułki */
 .rjapp-btn {

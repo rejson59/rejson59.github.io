@@ -1,0 +1,239 @@
+# © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
+# Licencja: /LICENSE, /licencja
+#
+# RejHub na Androida — automatyczne wydania APK.
+#
+# Co się dzieje przy każdym uruchomieniu:
+#   1. instaluje zależności i synchronizuje projekt Capacitora (`cap sync`),
+#   2. buduje podpisany APK (ten sam klucz w każdym wydaniu = aktualizacja
+#      instaluje się na poprzednią wersję, bez odinstalowywania),
+#   3. publikuje GitHub Release z plikiem RejHub.apk (stały adres
+#      /releases/latest/download/RejHub.apk),
+#   4. zapisuje wersję, rozmiar i SHA-256 do rejhub2/app/latest.json, z którego
+#      korzysta strona /pobierz i baner aktualizacji w samej aplikacji.
+#
+# Uruchomienie: zmiana w `mobile/**`, ręcznie („Run workflow”) albo tag
+# `android-v*`. Zmiany samej witryny nie wymagają nowego APK — aplikacja
+# zawsze ładuje aktualny rejhub.vercel.app.
+
+name: Aplikacja Android (APK)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'mobile/**'
+      - '.github/workflows/android.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# Dwa wydania nigdy nie mogą biec równolegle — inaczej walczyłyby o ten sam
+# plik latest.json i ten sam numer wersji.
+concurrency:
+  group: android-release
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    steps:
+      - name: Pobierz repozytorium
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Platforma i narzędzia Androida
+        run: |
+          # Środowisko runnera ma zwykle API 34/35; instalujemy tylko braki.
+          yes | sdkmanager --licenses > /dev/null 2>&1 || true
+          sdkmanager "platforms;android-35" "build-tools;35.0.0" "platform-tools" > /dev/null
+
+      - name: Cache Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+
+      - name: Zależności powłoki
+        working-directory: mobile
+        run: npm ci --no-audit --no-fund
+
+      - name: Wersja wydania
+        id: version
+        env:
+          RUN_NUMBER: ${{ github.run_number }}
+        run: |
+          # versionCode musi rosnąć z każdym wydaniem (Android tego wymaga).
+          # Numer uruchomienia jest monotoniczny, a wersja czytelna: 1.0.<n>.
+          echo "code=${RUN_NUMBER}" >> "$GITHUB_OUTPUT"
+          echo "name=1.0.${RUN_NUMBER}" >> "$GITHUB_OUTPUT"
+          echo "Wersja: 1.0.${RUN_NUMBER} (versionCode ${RUN_NUMBER})"
+
+      - name: Wersja w User-Agencie aplikacji
+        working-directory: mobile
+        env:
+          VERSION_NAME: ${{ steps.version.outputs.name }}
+          VERSION_CODE: ${{ steps.version.outputs.code }}
+        run: |
+          # Strona rozpoznaje aplikację po „RejHubApp/<wersja> (<kod>)”.
+          # Capacitor wstrzykuje ten fragment przed pierwszym wczytaniem strony,
+          # więc działa także dla banera aktualizacji w aplikacji.
+          node -e '
+            const fs = require("fs");
+            const file = "capacitor.config.json";
+            const config = JSON.parse(fs.readFileSync(file, "utf8"));
+            config.appendUserAgent = `RejHubApp/${process.env.VERSION_NAME} (${process.env.VERSION_CODE})`;
+            fs.writeFileSync(file, JSON.stringify(config, null, 2) + "\n");
+            console.log("User-Agent:", config.appendUserAgent);
+          '
+
+      - name: Synchronizacja Capacitora
+        working-directory: mobile
+        run: npx cap sync android
+
+      - name: Zbuduj podpisany APK
+        working-directory: mobile/android
+        env:
+          RJ_VERSION_CODE: ${{ steps.version.outputs.code }}
+          RJ_VERSION_NAME: ${{ steps.version.outputs.name }}
+          # Klucz leży w repozytorium (mobile/keystore) — dzięki temu wydanie
+          # ma zawsze tę samą sygnaturę i działa bez sekretów GitHub.
+          RJ_KEYSTORE: ${{ github.workspace }}/mobile/keystore/rejhub-release.p12
+          RJ_KEYSTORE_PASSWORD: rejhub-android
+          RJ_KEY_ALIAS: rejhub
+          RJ_KEY_PASSWORD: rejhub-android
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon --stacktrace assembleRelease
+
+      - name: Sprawdź podpis i przygotuj plik
+        id: apk
+        env:
+          VERSION_NAME: ${{ steps.version.outputs.name }}
+        run: |
+          set -euo pipefail
+          APK=$(find mobile/android/app/build/outputs/apk/release -name "*.apk" | head -n 1)
+          test -n "$APK" || { echo "Nie znaleziono APK"; exit 1; }
+          cp "$APK" RejHub.apk
+
+          BUILD_TOOLS=$(ls -d "${ANDROID_SDK_ROOT:-$ANDROID_HOME}"/build-tools/* | sort -V | tail -n 1)
+          "$BUILD_TOOLS/apksigner" verify --print-certs RejHub.apk | tee /tmp/certs.txt
+
+          SHA=$(sha256sum RejHub.apk | cut -d' ' -f1)
+          SIZE=$(stat -c%s RejHub.apk)
+          echo "sha=$SHA" >> "$GITHUB_OUTPUT"
+          echo "size=$SIZE" >> "$GITHUB_OUTPUT"
+          echo "file=RejHub.apk" >> "$GITHUB_OUTPUT"
+          echo "APK: $SIZE B, SHA-256 $SHA"
+
+      - name: Opis wydania (zmiany od poprzedniego APK)
+        id: notes
+        run: |
+          set -euo pipefail
+          PREV=$(git tag --list 'android-v*' --sort=-v:refname | head -n 1)
+          {
+            echo "### RejHub ${{ steps.version.outputs.name }}"
+            echo
+            echo "Aplikacja zawsze ładuje aktualny rejhub.vercel.app, więc treść"
+            echo "i funkcje serwisu aktualizują się same. Ten plik zmienia tylko"
+            echo "samą powłokę (uprawnienia, linki, pobieranie)."
+            echo
+            if [ -n "$PREV" ]; then
+              echo "Zmiany w powłoce od \`$PREV\`:"
+              echo
+              git log --no-merges --pretty='- %s' "$PREV"..HEAD -- mobile/ | head -n 40 || true
+            else
+              echo "Pierwsze wydanie aplikacji na Androida."
+            fi
+            echo
+            echo "**SHA-256:** \`${{ steps.apk.outputs.sha }}\` · **rozmiar:** ${{ steps.apk.outputs.size }} B"
+            echo
+            echo "Instalacja: pobierz APK, otwórz i zezwól na instalację z tego źródła."
+          } > /tmp/notes.md
+          cat /tmp/notes.md
+
+      - name: Opublikuj wydanie
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION_NAME: ${{ steps.version.outputs.name }}
+        run: |
+          # `RejHub.apk` w każdym wydaniu daje stały adres pobierania:
+          # https://github.com/OWNER/REPO/releases/latest/download/RejHub.apk
+          #
+          # Ponowne uruchomienie tego samego wydania (Run → Re-run) ma ten sam
+          # numer, więc zamiast tworzyć drugi raz to samo wydanie — podmieniamy
+          # plik i opis. Bez tego re-run kończyłby się błędem „release exists”.
+          TAG="android-v${VERSION_NAME}"
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            gh release upload "$TAG" RejHub.apk --clobber
+            gh release edit "$TAG" --notes-file /tmp/notes.md --latest
+          else
+            gh release create "$TAG" RejHub.apk \
+              --title "RejHub na Androida ${VERSION_NAME}" \
+              --notes-file /tmp/notes.md \
+              --latest
+          fi
+
+      - name: Zaktualizuj metadane dla strony
+        env:
+          VERSION_NAME: ${{ steps.version.outputs.name }}
+          VERSION_CODE: ${{ steps.version.outputs.code }}
+          SHA: ${{ steps.apk.outputs.sha }}
+          SIZE: ${{ steps.apk.outputs.size }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          node -e '
+            const fs = require("fs");
+            const now = new Date().toISOString();
+            const repo = process.env.REPOSITORY;
+            const tag = `android-v${process.env.VERSION_NAME}`;
+            const data = {
+              versionCode: Number(process.env.VERSION_CODE),
+              versionName: process.env.VERSION_NAME,
+              published: now,
+              size: Number(process.env.SIZE),
+              sha256: process.env.SHA,
+              apk: `https://github.com/${repo}/releases/latest/download/RejHub.apk`,
+              page: `https://github.com/${repo}/releases/tag/${tag}`,
+              minAndroid: "7.0"
+            };
+            fs.mkdirSync("rejhub2/app", { recursive: true });
+            fs.writeFileSync("rejhub2/app/latest.json", JSON.stringify(data, null, 2) + "\n");
+          '
+          cat rejhub2/app/latest.json
+
+      - name: Zapisz metadane w repozytorium
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- rejhub2/app/latest.json; then
+            echo "Bez zmian w metadanych."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add rejhub2/app/latest.json
+          git commit -m "chore(android): wydanie ${{ steps.version.outputs.name }} — metadane APK [skip ci]"
+          # Wydanie mogło powstać w trakcie innego commita — najpierw rebase.
+          for attempt in 1 2 3; do
+            git pull --rebase --autostash origin main && git push origin HEAD:main && break
+            echo "Ponowna próba $attempt..."
+            sleep 5
+          done

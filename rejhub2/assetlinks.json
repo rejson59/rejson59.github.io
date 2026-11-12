@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "pl.rejson59.rejhub",
+      "sha256_cert_fingerprints": [
+        "08:60:76:36:E5:BA:D2:37:B3:76:41:95:E4:B2:81:BB:A4:6B:4E:6B:A2:57:A3:53:F3:A4:2E:FD:F4:16:7F:38"
+      ]
+    }
+  }
+]

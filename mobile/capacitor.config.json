@@ -1,0 +1,29 @@
+{
+  "appId": "pl.rejson59.rejhub",
+  "appName": "RejHub",
+  "webDir": "www",
+  "appendUserAgent": "RejHubApp/1.0.0 (1)",
+  "server": {
+    "url": "https://rejhub.vercel.app",
+    "androidScheme": "https",
+    "errorPath": "offline.html",
+    "allowNavigation": [
+      "rejhub.vercel.app",
+      "*.rejhub.vercel.app"
+    ]
+  },
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false,
+    "zoomEnabled": false,
+    "backgroundColor": "#0b0e13"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 0,
+      "backgroundColor": "#0b0e13",
+      "showSpinner": false
+    }
+  }
+}

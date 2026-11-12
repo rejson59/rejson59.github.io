@@ -1,0 +1,104 @@
+// © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
+// Licencja: /LICENSE, /licencja
+//
+// Moduł aplikacji. Numer wersji i klucz podpisujący pochodzą ze zmiennych
+// środowiskowych ustawianych przez GitHub Actions (RJ_VERSION_CODE,
+// RJ_VERSION_NAME). Lokalnie działają wartości domyślne, więc `assembleRelease`
+// też da się uruchomić bez żadnej konfiguracji.
+
+apply plugin: 'com.android.application'
+
+/* Klucz podpisujący: najpierw zmienne środowiskowe (CI), potem plik
+   `mobile/keystore/keystore.properties`. Ten sam klucz w każdym wydaniu
+   oznacza, że nowa wersja instaluje się na poprzednią jak zwykła aktualizacja. */
+def keystoreProps = new Properties()
+def keystorePropsFile = file("${rootDir}/../keystore/keystore.properties")
+if (keystorePropsFile.exists()) {
+    keystorePropsFile.withInputStream { stream -> keystoreProps.load(stream) }
+}
+
+def rjSetting = { String envName, String propName, String fallback ->
+    def fromEnv = System.getenv(envName)
+    if (fromEnv) return fromEnv
+    def fromFile = keystoreProps.getProperty(propName)
+    return fromFile ? fromFile : fallback
+}
+
+def rjVersionCode = (System.getenv('RJ_VERSION_CODE') ?: '1').toInteger()
+def rjVersionName = System.getenv('RJ_VERSION_NAME') ?: '1.0.0'
+def rjStoreFile = rjSetting('RJ_KEYSTORE', 'storeFile', '')
+def rjStorePassword = rjSetting('RJ_KEYSTORE_PASSWORD', 'storePassword', '')
+def rjKeyAlias = rjSetting('RJ_KEY_ALIAS', 'keyAlias', 'rejhub')
+def rjKeyPassword = rjSetting('RJ_KEY_PASSWORD', 'keyPassword', rjStorePassword)
+
+/* Ścieżka w properties jest względna wobec katalogu `mobile/`; `file()`
+   w module liczyłoby ją od `mobile/android/app`, więc dopisujemy root. */
+def resolveKeystore = { String path ->
+    if (!path) return null
+    def candidate = path.startsWith('/') ? new File(path) : new File("${rootDir}/../${path}")
+    return candidate
+}
+
+android {
+    namespace "pl.rejson59.rejhub"
+    compileSdk rootProject.ext.compileSdkVersion
+    defaultConfig {
+        applicationId "pl.rejson59.rejhub"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode rjVersionCode
+        versionName rjVersionName
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        release {
+            if (rjStoreFile) {
+                storeFile resolveKeystore(rjStoreFile)
+                storeType "PKCS12"
+                storePassword rjStorePassword
+                keyAlias rjKeyAlias
+                keyPassword rjKeyPassword
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            if (rjStoreFile) {
+                signingConfig signingConfigs.release
+            }
+        }
+    }
+}
+
+repositories {
+    flatDir{
+        dirs '../capacitor-cordova-android-plugins/src/main/libs', 'libs'
+    }
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation "androidx.appcompat:appcompat:$androidxAppCompatVersion"
+    implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
+    implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
+    implementation project(':capacitor-android')
+    testImplementation "junit:junit:$junitVersion"
+    androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
+    implementation project(':capacitor-cordova-android-plugins')
+}
+
+apply from: 'capacitor.build.gradle'
+
+try {
+    def servicesJSON = file('google-services.json')
+    if (servicesJSON.text) {
+        apply plugin: 'com.google.gms.google-services'
+    }
+} catch(Exception e) {
+    logger.info("google-services.json not found, google-services plugin not applied. Push Notifications won't work")
+}
