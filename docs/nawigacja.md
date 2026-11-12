@@ -35,8 +35,8 @@ Na starszych stronach przekierowujących i awaryjnych ekranach podróży domek j
 ## Mini reklamy na telefonie i pasek przewijania (listopad 2026)
 
 - Pasek mini reklam **nie leży już na dole ekranu** — stoi tuż pod topbarem (`position: sticky`, `top` mierzone skryptem z dolnej krawędzi nagłówka i aktualizowane przy przewijaniu). Dzięki temu nie koliduje z wyspą, formularzami ani stopką, a pod nim zostaje cała wysokość na treść. Pusty „spacer” na dole strony zniknął.
-- Kafelki przewijają się **same: jedno przesunięcie co 2 sekundy** (w kółko). Gdy ktoś dotknie paska, kafelka albo użyje kółka, jazda zatrzymuje się na 6 sekund; w tle karty i przy `prefers-reduced-motion` nie startuje. Podpis „przesuń →” został usunięty.
-- Na wąskim telefonie (≤560 px) etykieta „mini reklamy” chowa się, żeby dwie promocje mieściły się obok siebie; kafelek ma 50 px wysokości, a pasek 60 px.
+- **Widać dokładnie jedną promocję naraz** — kafel zajmuje całą szerokość paska (bez drugiej kolumny), a zmiana następuje **co 3,5 sekundy** i wraca do pierwszej po ostatniej. Gdy ktoś dotknie paska, kafelka albo użyje kółka, jazda zatrzymuje się na 6 sekund; w tle karty i przy `prefers-reduced-motion` nie startuje. Podpis „przesuń →” został usunięty.
+- Kropki po prawej pokazują, która promocja jest na ekranie (chowają się poniżej 420 px). Na wąskim telefonie (≤560 px) etykieta „mini reklamy” również chowa się, oddając miejsce treści; pasek ma 60 px wysokości.
 - **Pasek przewijania** (`css/scrollbar.css` + `js/scrollbar.js`) jest wspólny dla całego serwisu: zaokrąglona „kropla” na desktopie, na telefonie 4 px i prawie przezroczysta, dopóki strona stoi. Klasa `rj-scrolling` (dodawana na 700 ms po ruchu) rozjaśnia suwak tylko wtedy, gdy naprawdę się przewija.
 - Panel admina na telefonie: pozioma, przyklejona szyna zakładek (46 px, `scroll-snap`), a nie kolumna pigułek. Wcześniejsza reguła `grid` + `width: 100%` w `css/glass-last.css` działa teraz wyłącznie od 1101 px — na telefonie to ona rozdmuchiwała listę sekcji na cały ekran.
 
@@ -62,3 +62,32 @@ Na starszych stronach przekierowujących i awaryjnych ekranach podróży domek j
 - **Baza:** migracja `supabase/2026-11-12_rejchat_profile_studio.sql` dodaje kolumny `frame` i
   `banner`, poszerza listę awatarów i przekazuje je w `rejchat_get_profiles` (razem z `updated_at`).
   Stare wywołanie z czterema argumentami dalej działa, bo nowe parametry mają wartości domyślne.
+
+## Wyspa, mini RejChat i panel admina na telefonie (listopad 2026)
+
+- **Wyspa zawsze przy dolnej krawędzi.** `syncAdsOffset()` w `rejhub2/hub/island.js` liczył samą
+  wysokość paska mini reklam, nie patrząc, gdzie pasek stoi. Odkąd reklamy przeniosły się pod topbar,
+  wyspa dostawała `--rj-ads: 60px` i „lewitowała” nad dołem ekranu. Teraz odstęp liczy się tylko wtedy,
+  gdy pasek naprawdę jest przyklejony do dołu (`rect.top > innerHeight / 2`).
+- **Pionowa wyspa.** Nowa opcja w ustawieniach (`data-switch="vertical"`, klucz
+  `rj_island_orientation_v1`) zamienia pigułkę w wąską kolumnę przy krawędzi: zwinięta wyspa to
+  58 × 96 px z logo i strzałką, a dock układa dziewięć przycisków jeden pod drugim. Pionowa wyspa
+  automatycznie wybiera prawą krawędź (na środku zasłaniałaby treść), a przy niskim ekranie kolumna
+  staje się przewijana, więc żaden przycisk nie znika.
+- **Więcej ustawień:** pionowa wyspa, „Zaczynaj schowana”, wibracje (zapamiętywane w
+  `rj_island_haptics_v1`), dotychczasowa pozycja lewo/środek/prawo, jasny motyw, animacje, cisza oraz
+  „Przywróć domyślne”. Panel ustawień ma własne przewijanie i rośnie razem z treścią (`fit()`).
+- **Mini RejChat pokazuje każdy czat:** zakładki *Ogólny*, *Linki* i *Prywatne*. Prywatne to skrzynka
+  `rejchat_dm_inbox` z licznikiem nieprzeczytanych; kliknięcie rozmowy otwiera `rejchat_dm_list_v2`
+  (każda rozmowa, nie tylko główna), a wysyłka idzie do `rejchat_dm_send_v2`. Strzałka w nagłówku
+  wraca do listy rozmów, a „Otwórz ↗” prowadzi wtedy do `/rejchat#rozmowy`. Kropka na przycisku czatu
+  w docku uwzględnia teraz również nieprzeczytane wiadomości prywatne.
+- **Panel admina na telefonie:** tabela projektów nie ma już `min-width: 720px`. Poniżej 760 px każdy
+  wiersz jest kafelkiem — nazwa projektu u góry, a pod nią wszystkie liczby z podpisami
+  (`data-label`), więc online, kliknięcia, wejścia i unikalne osoby są widoczne bez przewijania w bok.
+  Numery identyfikatorów (`#4821`) w liście identyfikatorów i liście odwiedzających dostały własne,
+  nieprzezroczyste plakietki z mocnym kontrastem w obu motywach — wcześniej numery „pochodne”
+  (IP + przeglądarka, sesja) miały kolor `--muted` i ginęły na jasnej tapecie.
+- **Zero zieleni:** kropki stanu (online, sieć, statusy) w `island.css`, `admin-panel.css`,
+  `community.css` i `rejson-widgets/css/admin.css` używają błękitu (`#6ea8ff` / `#4d8df6`) zamiast
+  zieleni.

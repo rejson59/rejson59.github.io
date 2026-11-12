@@ -8,9 +8,9 @@
    o każdy piksel. U góry pasek jest częścią nagłówka: przewija się razem
    z nim, a pod nim zostaje cała wysokość na treść.
 
-   Kafelki przewijają się same (jedno przesunięcie co 2 s — patrz
-   js/mobile-ads.js). Podpis „przesuń →” zniknął, bo nie ma już czego
-   tłumaczyć; gest przewijania działa dalej.
+   Widać jedną promocję na raz (kafel na całą szerokość), a zmiana następuje
+   co 3,5 s — patrz js/mobile-ads.js. Podpis „przesuń →” zniknął, bo nie ma
+   już czego tłumaczyć; gest przewijania działa dalej.
    -------------------------------------------------------------------------- */
 
 #rj-mobile-ads-check { position:fixed !important; z-index:2147482999 !important; visibility:hidden !important; width:0 !important; height:0 !important; pointer-events:none !important; }
@@ -60,9 +60,10 @@
 
   /* Na wąskim telefonie etykieta zjada miejsce, którego brakuje kafelkom:
      chowamy ją i oddajemy całą szerokość dwóm promocjom. */
+  /* Na wąskim telefonie etykieta zjada miejsce, którego brakuje kafelkowi:
+     chowamy ją i oddajemy całą szerokość jednej promocji. */
   @media (max-width: 560px) {
     #rj-mobile-ads .rj-mobile-ads-label { display:none; }
-    #rj-mobile-ads .rj-mobile-ads-items { grid-auto-columns:calc((100% - 6px) / 2); }
   }
 
   /* Wersja bez JavaScriptu: pasek z <noscript> stoi na końcu dokumentu,
@@ -81,48 +82,46 @@
   /* Podpis „przesuń →” nie jest już potrzebny — kafelki jadą same. */
   #rj-mobile-ads .rj-mobile-ads-hint { display:none; }
 
+  /* Jedna promocja = jeden „slajd” na całą szerokość paska. */
   #rj-mobile-ads .rj-mobile-ads-items {
     flex:1 1 auto;
     min-width:0;
     display:grid;
     grid-auto-flow:column;
-    grid-auto-columns:minmax(156px, 1fr);
-    gap:6px;
+    grid-auto-columns:100%;
+    gap:0;
     overflow-x:auto;
     overscroll-behavior-x:contain;
-    scroll-snap-type:x proximity;
+    scroll-snap-type:x mandatory;
     scroll-behavior:smooth;
-    padding-bottom:1px;
-    scrollbar-width:thin;
-    scrollbar-color:rgba(168, 199, 244, 0.28) transparent;
+    padding-bottom:0;
+    scrollbar-width:none;
+    scrollbar-color:transparent transparent;
   }
   @media (prefers-reduced-motion:reduce) {
     #rj-mobile-ads .rj-mobile-ads-items { scroll-behavior:auto; }
   }
-  /* Przewijanie poziome: cienki, spokojny suwak zamiast domyślnego. */
-  #rj-mobile-ads .rj-mobile-ads-items::-webkit-scrollbar { height:3px; }
-  #rj-mobile-ads .rj-mobile-ads-items::-webkit-scrollbar-track { background:transparent; }
-  #rj-mobile-ads .rj-mobile-ads-items::-webkit-scrollbar-thumb {
-    border:0;
-    border-radius:999px;
-    background:rgba(168, 199, 244, 0.26);
-  }
+  /* Skoro widać dokładnie jedną promocję, suwak tylko przeszkadzał. */
+  #rj-mobile-ads .rj-mobile-ads-items::-webkit-scrollbar { height:0; }
   #rj-mobile-ads .rj-mobile-ads-items:focus-visible { outline:2px solid rgba(168, 199, 244, 0.75); outline-offset:-2px; }
 
   #rj-mobile-ads .rj-mobile-ad {
     box-sizing:border-box;
     display:flex;
     align-items:center;
-    gap:8px;
+    justify-content:flex-start;
+    gap:10px;
+    width:100%;
     min-width:0;
     min-height:48px;
-    scroll-snap-align:start;
-    padding:4px 9px 4px 4px;
+    scroll-snap-align:center;
+    scroll-snap-stop:always;
+    padding:4px 12px 4px 5px;
     border:1px solid rgba(168, 199, 244, 0.16);
-    border-radius:999px;
+    border-radius:14px;
     background:rgba(255, 255, 255, 0.055);
     color:#eef5ff;
-    font:650 11px/1.2 "Inter", system-ui, sans-serif;
+    font:650 12.5px/1.25 "Inter", system-ui, sans-serif;
     text-decoration:none;
     transition:background-color 0.2s ease, border-color 0.2s ease;
   }
@@ -148,9 +147,38 @@
   }
   html[data-theme="light"] #rj-mobile-ads .rj-mobile-ad-icon { color:#2a4a7a; background:rgba(120, 160, 230, 0.16); }
   #rj-mobile-ads .rj-mobile-ad-icon svg { display:block; width:17px; height:17px; }
+
+  /* Kropki pod paskiem: pokazują, która promocja jest na ekranie. Są tylko
+     wskaźnikiem — nie łapią dotknięć, więc nic nie zasłaniają. */
+  #rj-mobile-ads .rj-mobile-ads-dots {
+    display:flex;
+    flex:none;
+    align-items:center;
+    gap:4px;
+    padding:0 2px 0 6px;
+    pointer-events:none;
+  }
+  #rj-mobile-ads .rj-mobile-ads-dots i {
+    width:5px;
+    height:5px;
+    border-radius:999px;
+    background:rgba(198, 216, 240, 0.32);
+    transition:background-color 0.2s ease, width 0.2s ease;
+  }
+  #rj-mobile-ads .rj-mobile-ads-dots i.is-on {
+    width:12px;
+    background:rgba(206, 226, 255, 0.9);
+  }
+  html[data-theme="light"] #rj-mobile-ads .rj-mobile-ads-dots i { background:rgba(35, 60, 95, 0.25); }
+  html[data-theme="light"] #rj-mobile-ads .rj-mobile-ads-dots i.is-on { background:rgba(30, 60, 110, 0.75); }
+  /* Na wąskim telefonie kropki zajmują miejsce, które lepiej oddać treści. */
+  @media (max-width: 420px) {
+    #rj-mobile-ads .rj-mobile-ads-dots { display:none; }
+  }
 }
 
-/* Bez animacji: pasek stoi, kafelki przewijają się skokowo co 2 s. */
+/* Bez animacji: pasek stoi, kafelki można przewinąć ręcznie. */
 @media (prefers-reduced-motion:reduce) {
   #rj-mobile-ads .rj-mobile-ad { transition:none; }
+  #rj-mobile-ads .rj-mobile-ads-dots i { transition:none; }
 }

@@ -317,8 +317,8 @@
   height: 7px;
   flex: none;
   border-radius: 50%;
-  background: #32d74b;
-  box-shadow: 0 0 0 2px rgba(50, 215, 75, 0.16);
+  background: #6ea8ff;
+  box-shadow: 0 0 0 2px rgba(110, 168, 255, 0.18);
   transition: background 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -1124,9 +1124,9 @@
 }
 
 #rj-island-root .rj-status.is-on {
-  background: rgba(50, 215, 75, 0.16);
-  border-color: rgba(50, 215, 75, 0.5);
-  color: #7ef08c;
+  background: rgba(110, 168, 255, 0.16);
+  border-color: rgba(110, 168, 255, 0.5);
+  color: #a9c8ff;
 }
 
 #rj-island-root .rj-status.is-on[data-status="busy"] {
@@ -1791,4 +1791,281 @@
   #rj-island-root {
     display: none;
   }
+}
+
+/* ==========================================================================
+   Ustawienia wyspy (więcej opcji) i pionowa wyspa
+   --------------------------------------------------------------------------
+   Panel ustawień ma własne przewijanie: na telefonie lista opcji bywa wyższa
+   niż ekran, a żadna z nich nie może zniknąć poza wyspą. Pionowa wyspa to
+   wąska kolumna przy krawędzi — dock układa przyciski jeden pod drugim,
+   a zwinięta pigułka staje się pionowym słupkiem z logo i strzałką.
+   ========================================================================== */
+
+#rj-island-root .rj-panel--settings {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  padding-right: 2px;
+}
+
+#rj-island-root .rj-panel--settings::-webkit-scrollbar { width: 4px; }
+#rj-island-root .rj-panel--settings::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+#rj-island-root .rj-settings-title {
+  display: block;
+  margin: 4px 0 -2px;
+  color: rgba(206, 224, 248, 0.52);
+  font: 700 9.5px/1 "JetBrains Mono", ui-monospace, monospace;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+#rj-island-root .rj-switch-row .rj-label small {
+  display: block;
+  margin-top: 1px;
+  color: rgba(232, 240, 252, 0.45);
+  font: 500 10px/1.35 system-ui, sans-serif;
+}
+
+#rj-island-root .rj-reset-island {
+  margin-top: 4px;
+  align-self: flex-start;
+  min-height: 34px;
+}
+
+/* ---------- pionowa wyspa ---------- */
+
+#rj-island-root .rj-island.is-vertical .rj-view--idle {
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 0;
+}
+
+#rj-island-root .rj-island.is-vertical .rj-view--idle .rj-title {
+  display: none;
+}
+
+#rj-island-root .rj-island.is-vertical .rj-view--idle .rj-orb {
+  width: 30px;
+  height: 30px;
+}
+
+#rj-island-root .rj-island.is-vertical .rj-view--idle .rj-collapse {
+  margin-left: 0;
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+}
+
+#rj-island-root .rj-island.is-vertical[data-state="dock"] .rj-view--dock {
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 2px;
+  padding: 6px 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+
+#rj-island-root .rj-island.is-vertical[data-state="dock"] .rj-view--dock::-webkit-scrollbar {
+  width: 0;
+}
+
+#rj-island-root .rj-island.is-vertical .rj-dock-btn {
+  flex: 0 0 40px;
+  width: 44px;
+  max-width: 44px;
+  height: 40px;
+}
+
+#rj-island-root .rj-island.is-vertical .rj-dock-sep {
+  width: 26px;
+  height: 1px;
+  margin: 2px 0;
+}
+
+#rj-island-root .rj-island.is-vertical .rj-dock-btn--collapse {
+  width: 44px;
+  max-width: 44px;
+}
+
+/* Pionowa wyspa nie ma jak pokazać szerokiej etykiety — tytuł paneli
+   dostaje całą szerokość, a „Otwórz ↗” chowa się na najwęższych ekranach. */
+@media (max-width: 380px) {
+  #rj-island-root .rj-island.is-vertical .rj-link-btn { display: none; }
+}
+
+/* ---------- mini RejChat: zakładki i prywatne rozmowy ---------- */
+
+#rj-island-root .rj-chat-rooms {
+  display: flex;
+  gap: 3px;
+  flex: 0 0 auto;
+  padding: 2px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+#rj-island-root .rj-chat-room {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 30px;
+  padding: 5px 8px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(235, 243, 255, 0.62);
+  font: 650 11px/1 system-ui, sans-serif;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#rj-island-root .rj-chat-room:hover,
+#rj-island-root .rj-chat-room:focus-visible {
+  color: #fff;
+  outline: none;
+}
+
+#rj-island-root .rj-chat-room.is-on {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+
+#rj-island-root .rj-chat-dms {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0 -4px;
+  padding: 2px 4px;
+  scrollbar-width: thin;
+}
+
+#rj-island-root .rj-chat-dms::-webkit-scrollbar { width: 4px; }
+#rj-island-root .rj-chat-dms::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+#rj-island-root .rj-chat-dm {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 46px;
+  padding: 6px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #eef5ff;
+  font: 650 12px/1.2 system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.16s ease, border-color 0.16s ease;
+}
+
+#rj-island-root .rj-chat-dm:hover,
+#rj-island-root .rj-chat-dm:focus-visible {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(139, 189, 255, 0.4);
+  outline: none;
+}
+
+#rj-island-root .rj-chat-dm-avatar {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: 50%;
+  background: rgba(110, 168, 255, 0.2);
+  color: #dcebff;
+  font: 700 10.5px/1 system-ui, sans-serif;
+  letter-spacing: 0.02em;
+}
+
+#rj-island-root .rj-chat-dm-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#rj-island-root .rj-chat-dm-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  flex: none;
+  border-radius: 999px;
+  background: #ff453a;
+  color: #fff;
+  font: 700 10px/1 system-ui, sans-serif;
+}
+
+#rj-island-root .rj-chat-dm-go {
+  flex: none;
+  color: rgba(232, 240, 252, 0.4);
+  font-size: 15px;
+}
+
+#rj-island-root .rj-chat-list {
+  height: auto;
+  min-height: 118px;
+}
+
+/* Strzałka powrotu w nagłówku czatu jest mniejsza niż przycisk zamknięcia. */
+#rj-island-root .rj-panel--chat .rj-back {
+  flex: 0 0 26px;
+  width: 26px;
+  height: 26px;
+}
+
+#rj-island-root .rj-panel--chat .rj-back svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* ---------- kropka sieci bez zieleni ---------- */
+
+#rj-island-root .rj-handle-net {
+  background: #6ea8ff;
+  box-shadow: 0 0 0 2px rgba(110, 168, 255, 0.18);
+}
+
+#rj-island-root .rj-handle-net.has-queue {
+  background: #ffd60a;
+  box-shadow: 0 0 0 2px rgba(255, 214, 10, 0.2);
+}
+
+
+/* Pusty stan czatu (brak logowania / brak rozmów) siedzi na środku panelu —
+   wcześniej tekst wisiał u góry nad pustą czernią. */
+#rj-island-root .rj-chat-list > .rj-empty:only-child,
+#rj-island-root .rj-chat-dms > .rj-empty:only-child {
+  margin: auto;
+  text-align: center;
+  max-width: 260px;
+  line-height: 1.6;
+}
+
+#rj-island-root .rj-chat-list > .rj-empty:only-child a,
+#rj-island-root .rj-chat-dms > .rj-empty:only-child a {
+  display: inline-block;
+  margin-top: 6px;
+  color: #bcd6ff;
 }

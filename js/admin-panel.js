@@ -747,11 +747,13 @@
           (online > 0 ? '<span class="adm-dot" aria-hidden="true"></span>' : "") +
           '<span class="adm-tslug">' + esc(p.project_slug) + "</span>" +
         "</span>" +
-        '<span class="adm-num adm-online' + (online > 0 ? " is-live" : " adm-dim") + '" role="cell">' + fmt(online) + "</span>" +
-        '<span class="adm-num adm-today" role="cell">' + fmt(today) + "</span>" +
-        '<span class="adm-num adm-dim" role="cell">' + fmt(p.views_total) + "</span>" +
-        '<span class="adm-num adm-dim" role="cell">' + fmt(p.unique_visitors) + "</span>" +
-        '<span class="adm-num adm-rel" role="cell">' + relTime(p.last_viewed_at) + "</span>" +
+        /* Etykiety w data-label są potrzebne na telefonie: tabela układa się
+           wtedy w kafelki, a każda liczba ma przy sobie swoją nazwę. */
+        '<span class="adm-num adm-online' + (online > 0 ? " is-live" : " adm-dim") + '" role="cell" data-label="Online">' + fmt(online) + "</span>" +
+        '<span class="adm-num adm-today" role="cell" data-label="Kliknięcia dziś">' + fmt(today) + "</span>" +
+        '<span class="adm-num adm-dim" role="cell" data-label="Wejścia łącznie">' + fmt(p.views_total) + "</span>" +
+        '<span class="adm-num adm-dim" role="cell" data-label="Unikalne osoby">' + fmt(p.unique_visitors) + "</span>" +
+        '<span class="adm-num adm-rel" role="cell" data-label="Ostatnia aktywność">' + relTime(p.last_viewed_at) + "</span>" +
       "</div>"
     );
   }

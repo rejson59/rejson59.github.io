@@ -1,14 +1,16 @@
 /* © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
    Licencja: /LICENSE, /licencja */
 /*!
- * Mini reklamy mobilne (v8).
+ * Mini reklamy mobilne (v9).
  *
- * Zmiany względem poprzedniej wersji:
+ * Zasady, które użytkownik ustalił dla telefonu:
  *  - pasek stoi POD topbarem (sticky), a nie na dole ekranu — nie zasłania
  *    treści i nie koliduje z wyspą;
- *  - kafelki przewijają się same: jedno przesunięcie co 2 sekundy, w kółko;
- *  - podpis „przesuń →” zniknął, bo pasek sam pokazuje kolejne promocje;
- *  - rezygnujemy z pustego „spacera” na dole strony.
+ *  - widać DOKŁADNIE JEDNĄ promocję naraz — karta zajmuje całą szerokość
+ *    paska, więc nic nie jest ściśnięte w dwóch kolumnach;
+ *  - każda promocja zostaje na ekranie dłużej: zmiana co 3,5 sekundy,
+ *    płynnym przejściem, w kółko;
+ *  - kropki pod paskiem pokazują, która promocja jest aktualna.
  *
  * Autoprzesuwanie zatrzymuje się, gdy ktoś dotknie paska albo kafelka,
  * gdy karta jest w tle i gdy system prosi o mniej ruchu. Nadal zero
@@ -30,7 +32,7 @@
   var bar = document.createElement('aside');
   bar.id = 'rj-mobile-ads';
   bar.setAttribute('aria-label', 'Mini reklamy i promocje');
-  bar.innerHTML = '<span class="rj-mobile-ads-label">mini reklamy</span><div class="rj-mobile-ads-items" tabindex="0" aria-label="Mini reklamy i promocje (przewijane)"><a class="rj-mobile-ad rj-mobile-ad--chat" href="/rejchat"><span class="rj-mobile-ad-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H10l-5 4v-4H4z"/><path d="M8 9h8M8 12h5"/></svg></span><span>RejChat · pogadaj</span></a><a class="rj-mobile-ad rj-mobile-ad--site" href="/uslugi"><span class="rj-mobile-ad-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01M8 14h8"/></svg></span><span>Masz pomysł na swoją stronę?</span></a><a class="rj-mobile-ad rj-mobile-ad--offer" href="/partnerstwo#propozycja"><span class="rj-mobile-ad-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m4 10 11-5v14L4 14zM4 10v4m3.5 1 1.5 4h3l-1-3.3M18 9l2-2m-2 5h3m-3 3 2 2"/></svg></span><span>Masz coś, czym chcesz się podzielić?</span></a><a class="rj-mobile-ad rj-mobile-ad--house" href="/rejfile"><span class="rj-mobile-ad-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v13H6z"/><path d="M14 3v5h4M12 16V10m-2 2 2-2 2 2"/></svg></span><span>RejFile · wyślij plik</span></a></div>';
+  bar.innerHTML = '<span class="rj-mobile-ads-label">mini reklamy</span><div class="rj-mobile-ads-items" tabindex="0" aria-label="Mini reklamy i promocje (przewijane)"><a class="rj-mobile-ad rj-mobile-ad--chat" href="/rejchat"><span class="rj-mobile-ad-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H10l-5 4v-4H4z"/><path d="M8 9h8M8 12h5"/></svg></span><span>RejChat · pogadaj</span></a><a class="rj-mobile-ad rj-mobile-ad--site" href="/uslugi"><span class="rj-mobile-ad-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01M8 14h8"/></svg></span><span>Masz pomysł na swoją stronę?</span></a><a class="rj-mobile-ad rj-mobile-ad--offer" href="/partnerstwo#propozycja"><span class="rj-mobile-ad-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m4 10 11-5v14L4 14zM4 10v4m3.5 1 1.5 4h3l-1-3.3M18 9l2-2m-2 5h3m-3 3 2 2"/></svg></span><span>Masz coś, czym chcesz się podzielić?</span></a><a class="rj-mobile-ad rj-mobile-ad--house" href="/rejfile"><span class="rj-mobile-ad-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v13H6z"/><path d="M14 3v5h4M12 16V10m-2 2 2-2 2 2"/></svg></span><span>RejFile · wyślij plik</span></a></div><span class="rj-mobile-ads-dots" aria-hidden="true"><i></i><i></i><i></i><i></i></span>';
 
   /* Pasek wchodzi zaraz pod topbar, żeby sticky `top` liczył się od jego
      dolnej krawędzi. Gdy strona nie ma topbaru, ląduje na początku body. */
@@ -69,7 +71,7 @@
   /* --------------------------------------------------- autoprzesuwanie --- */
 
   var frame = bar.querySelector('.rj-mobile-ads-items');
-  var STEP_MS = 2000;
+  var STEP_MS = 3500;
   var timer = 0;
   var paused = false;
   var resumeTimer = 0;
@@ -79,18 +81,18 @@
     catch (e) { return window.innerWidth <= 1199; }
   }
 
+  /* Jedna promocja na raz: krok to dokładnie szerokość widocznego paska
+     (kafelki mają 100% szerokości i zero odstępu między sobą). */
   function step() {
     if (!frame || paused || document.hidden || !phone()) return;
     var card = frame.querySelector('.rj-mobile-ad');
     if (!card) return;
-    var styles = getComputedStyle(frame);
-    var gap = parseFloat(styles.columnGap || styles.gap) || 6;
-    var distance = card.getBoundingClientRect().width + gap;
+    var distance = frame.clientWidth || card.getBoundingClientRect().width;
     if (!distance || frame.scrollWidth <= frame.clientWidth + 2) return;
     var max = frame.scrollWidth - frame.clientWidth;
     var next = frame.scrollLeft + distance;
     if (next >= max - 4) {
-      /* Koniec listy — wracamy na początek, ale bez cofania całej drogi. */
+      /* Koniec listy — wracamy na początek. */
       next = 0;
     }
     try {
@@ -98,6 +100,24 @@
     } catch (e) {
       frame.scrollLeft = next;
     }
+    syncDots();
+  }
+
+  /* Kropki: tylko wskaźnik, bez przechwytywania dotknięć. */
+  var dots = bar.querySelectorAll('.rj-mobile-ads-dots i');
+  function syncDots() {
+    if (!dots.length || !frame) return;
+    var width = frame.clientWidth || 1;
+    var index = Math.round(frame.scrollLeft / width);
+    if (index < 0) index = 0;
+    if (index > dots.length - 1) index = dots.length - 1;
+    for (var i = 0; i < dots.length; i += 1) {
+      dots[i].classList.toggle('is-on', i === index);
+    }
+  }
+  if (frame) {
+    frame.addEventListener('scroll', syncDots, { passive: true });
+    syncDots();
   }
 
   function play() {
@@ -127,5 +147,10 @@
   window.addEventListener('resize', remeasure, { passive: true });
   window.addEventListener('load', measure);
 
-  play();
+  /* Systemowa prośba o mniej ruchu: reklamy stoją, ale nadal można je
+     przewinąć palcem. */
+  var reduceMotion = false;
+  try { reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+  if (!reduceMotion) play();
+  syncDots();
 })();

@@ -24,6 +24,9 @@
   var VOTER_KEY = "rejson_widgets_voter_id_v1";
   var COLLAPSE_KEY = "rj_island_collapsed_v1";
   var CORNER_KEY = "rj_island_corner_v1";
+  /* Układ wyspy i drobne zachowania — wszystkie zapamiętywane w przeglądarce. */
+  var ORIENT_KEY = "rj_island_orientation_v1";
+  var HAPTIC_KEY = "rj_island_haptics_v1";
   var QUIET_KEY = "rj_island_quiet_until_v1";
   var QUEUE_KEY = "rj_island_offline_queue_v1";
   var TASKS_KEY = "rj_island_tasks_v1";
@@ -196,12 +199,12 @@
     idle: { w: 216, h: 46, r: 23 },
     dock: { w: 436, h: 52, r: 26 },
     report: { w: 384, h: 236, r: 24 },
-    chat: { w: 396, h: 404, r: 24 },
+    chat: { w: 396, h: 440, r: 24 },
     alerts: { w: 384, h: 296, r: 24 },
     now: { w: 384, h: 112, r: 24 },
     profile: { w: 384, h: 158, r: 24 },
     quick: { w: 384, h: 250, r: 24 },
-    theme: { w: 384, h: 226, r: 24 },
+    theme: { w: 384, h: 470, r: 24 },
     tasks: { w: 384, h: 208, r: 24 },
     panic: { w: 320, h: 160, r: 24 }
   };
@@ -431,18 +434,52 @@
   function sizeFor(name) {
     /* Uchwyt rośnie, gdy pokazuje odtwarzacz. */
     if (name === "min" && handlePlaying()) name = "minPlay";
-    var size = SIZES[name] || SIZES.idle;
     var vp = viewport();
-    var w = Math.min(size.w, Math.max(200, vp.w - EDGE * 2));
+    var size = SIZES[name] || SIZES.idle;
+    /* Pionowa wyspa: zamiast szerokiej pigułki wąska kolumna przy krawędzi.
+       Panel (zgłoszenie, czat, powiadomienia) zostaje szeroki — inaczej
+       treść nie miałaby gdzie się zmieścić. */
+    if (vertical() && name === "idle") size = { w: 58, h: 96, r: 29 };
+    if (vertical() && name === "dock") {
+      /* Dziewięć przycisków po 40 px + odstępy + marginesy. Gdy ekran jest
+         niższy (np. telefon w poziomie), wyspa kurczy się do widocznego
+         obszaru, a kolumna staje się przewijana. */
+      var needed = 9 * 40 + 8 * 2 + 14;
+      size = { w: 58, h: Math.max(210, Math.min(needed, vp.h - vp.kb - 70)), r: 29 };
+    }
+    var minW = vertical() && (name === "idle" || name === "dock") ? 0 : 200;
+    var w = Math.min(size.w, Math.max(minW, vp.w - EDGE * 2));
     var h = Math.min(size.h, Math.max(120, vp.h - vp.kb - BOTTOM_RESERVE));
     return { w: Math.round(w), h: Math.round(h), r: Math.min(size.r, Math.round(h / 2)) };
+  }
+
+  /* ------------------------------------------------------- układ wyspy */
+
+  function vertical() {
+    return store(ORIENT_KEY) === "column";
+  }
+
+  function haptics() {
+    return store(HAPTIC_KEY) !== "0";
+  }
+
+  /* Krótkie muśnięcie tylko wtedy, gdy użytkownik go chce — nie każdy lubi
+     wibracje przy każdym schowaniu wyspy. */
+  function buzz(ms) {
+    if (!haptics()) return;
+    try {
+      if (navigator.vibrate) navigator.vibrate(ms || 8);
+    } catch (e) { /* trudno */ }
   }
 
   /* Każde wpisanie rozmiaru przechodzi przez ten pilnik: NaN albo wartość
      z kosmosu nie może już rozciągnąć czarnej wyspy na cały ekran. */
   function corner() {
     var value = store(CORNER_KEY);
-    return value === "left" || value === "right" ? value : "center";
+    if (value === "left" || value === "right") return value;
+    /* Pionowa wyspa nie staje na środku — zasłaniałaby treść i nie miała
+       do czego przylegać. Domyślnie ląduje przy prawej krawędzi. */
+    return vertical() ? "right" : "center";
   }
 
   function applyCorner() {
@@ -450,21 +487,59 @@
     var where = corner();
     island.classList.toggle("is-left", where === "left");
     island.classList.toggle("is-right", where === "right");
+    /* Pionowa wyspa trzyma się krawędzi — na środku wyglądałaby jak słupek
+       postawiony na drodze do treści. */
+    island.classList.toggle("is-vertical", vertical());
+    island.setAttribute("data-island-orientation", vertical() ? "column" : "row");
     /* Uwaga na nazwę: `data-corner` należy do przycisków wyboru pozycji.
        Gdyby wyspa miała ten sam atrybut, `closest("[data-corner]")` łapałby
        ją przy każdym kliknięciu i przełączał pozycję zamiast motywu. */
     island.setAttribute("data-island-corner", where);
   }
 
-  function setCorner(where) {
+  function setCorner(where, silent) {
     if (where !== "left" && where !== "right" && where !== "center") return;
+    if (vertical() && where === "center") where = "right";
     store(CORNER_KEY, where);
     applyCorner();
     resetBox();
     try { writeBox(); } catch (e) { /* trudno */ }
     springTo(state);
     syncCornerButtons();
-    toast(where === "left" ? "Wyspa po lewej" : where === "right" ? "Wyspa po prawej" : "Wyspa na środku");
+    if (!silent) {
+      toast(where === "left" ? "Wyspa po lewej" : where === "right" ? "Wyspa po prawej" : "Wyspa na środku");
+    }
+  }
+
+  function setOrientation(value, silent) {
+    var next = value === "column" ? "column" : "row";
+    store(ORIENT_KEY, next);
+    if (next === "column" && corner() === "center") setCorner("right", true);
+    applyCorner();
+    resetBox();
+    try { writeBox(); } catch (e) { /* trudno */ }
+    springTo(state);
+    syncCornerButtons();
+    syncSwitches();
+    if (!silent) {
+      toast(next === "column" ? "Pionowa wyspa przy krawędzi" : "Wyspa pozioma");
+    }
+  }
+
+  /* Powrót do ustawień fabrycznych — bez ruszania motywu strony, ciszy
+     i zapisanych zadań. */
+  function resetIslandPrefs() {
+    store(ORIENT_KEY, "row");
+    store(CORNER_KEY, "center");
+    store(HAPTIC_KEY, "1");
+    store(COLLAPSE_KEY, "0");
+    applyCorner();
+    resetBox();
+    try { writeBox(); } catch (e) { /* trudno */ }
+    apply("idle");
+    syncCornerButtons();
+    syncSwitches();
+    toast("Ustawienia wyspy przywrócone");
   }
 
   function writeBox() {
@@ -668,12 +743,19 @@
         '<div class="rj-view rj-view--chat">' +
           '<div class="rj-panel rj-panel--chat">' +
             '<div class="rj-panel-head">' +
+              '<button class="rj-back" type="button" data-chat-back aria-label="Wróć do listy rozmów" title="Wróć do listy rozmów" hidden>' + ICONS.back + "</button>" +
               '<span class="rj-chat-badge" aria-hidden="true">#</span>' +
-              '<span class="rj-panel-title">RejChat <small>czat ogólny</small></span>' +
-              '<a class="rj-link-btn" href="/rejchat">Otwórz <span aria-hidden="true">↗</span></a>' +
+              '<span class="rj-panel-title" data-chat-heading>RejChat <small id="rj-island-chat-sub">czat ogólny</small></span>' +
+              '<a class="rj-link-btn" id="rj-island-chat-open" href="/rejchat">Otwórz <span aria-hidden="true">↗</span></a>' +
               '<button class="rj-x" type="button" data-close aria-label="Zamknij">' + ICONS.close + "</button>" +
             "</div>" +
+            '<div class="rj-chat-rooms" role="tablist" aria-label="Rozmowy RejChat">' +
+              '<button class="rj-chat-room" type="button" role="tab" data-chat-room="general" aria-selected="true">Ogólny</button>' +
+              '<button class="rj-chat-room" type="button" role="tab" data-chat-room="links" aria-selected="false">Linki</button>' +
+              '<button class="rj-chat-room" type="button" role="tab" data-chat-room="dm" aria-selected="false">Prywatne</button>' +
+            "</div>" +
             '<div class="rj-chat-list" id="rj-island-chat" role="log" aria-live="polite" aria-label="Ostatnie wiadomości"></div>' +
+            '<div class="rj-chat-dms" id="rj-island-dms" aria-label="Prywatne rozmowy" hidden></div>' +
             '<form class="rj-chat-form" id="rj-island-chat-form" hidden>' +
               '<input class="rj-field" id="rj-island-chat-input" type="text" maxlength="2000" placeholder="Napisz wiadomość…" aria-label="Wiadomość na czat" autocomplete="off">' +
               '<button class="rj-chat-send" type="submit" data-chat-send aria-label="Wyślij wiadomość">' + ICONS.send + "</button>" +
@@ -725,23 +807,41 @@
         "</div>" +
 
         '<div class="rj-view rj-view--theme">' +
-          '<div class="rj-panel">' +
+          '<div class="rj-panel rj-panel--settings">' +
             '<div class="rj-panel-head">' +
-              '<span class="rj-panel-title">Wygląd</span>' +
+              '<span class="rj-panel-title">Ustawienia <small>wyspa i wygląd</small></span>' +
               '<button class="rj-x" type="button" data-close aria-label="Zamknij">' + ICONS.close + "</button>" +
             "</div>" +
+
+            '<span class="rj-settings-title">Wygląd</span>' +
             '<div class="rj-switches">' +
               '<button class="rj-switch-row" type="button" data-switch="theme" aria-pressed="false"><span class="rj-label">Jasny motyw</span><span class="rj-switch" aria-hidden="true"></span></button>' +
               '<button class="rj-switch-row" type="button" data-switch="motion" aria-pressed="true"><span class="rj-label">Animacje zawsze</span><span class="rj-switch" aria-hidden="true"></span></button>' +
+            "</div>" +
+            '<p class="rj-hintline">Animacje omijają systemowe blokady ruchu — tak, jak w Szklanym studiu.</p>' +
+
+            '<span class="rj-settings-title">Układ</span>' +
+            '<div class="rj-switches">' +
+              '<button class="rj-switch-row" type="button" data-switch="vertical" aria-pressed="false">' +
+                '<span class="rj-label">Pionowa wyspa<small>wąska kolumna przy krawędzi</small></span>' +
+                '<span class="rj-switch" aria-hidden="true"></span>' +
+              "</button>" +
             "</div>" +
             '<div class="rj-corner" role="group" aria-label="Pozycja wyspy">' +
               '<button type="button" data-corner="left" aria-pressed="false">Lewo</button>' +
               '<button type="button" data-corner="center" aria-pressed="true">Środek</button>' +
               '<button type="button" data-corner="right" aria-pressed="false">Prawo</button>' +
             "</div>" +
-            '<button class="rj-switch-row" type="button" data-quiet><span class="rj-label">Cisza na 30 minut</span><span class="rj-quiet-hint">ukryj</span></button>' +
+            '<p class="rj-hintline" data-orient-hint>Pionowa wyspa trzyma się krawędzi — na środku zasłaniałaby treść.</p>' +
+
+            '<span class="rj-settings-title">Zachowanie</span>' +
+            '<div class="rj-switches">' +
+              '<button class="rj-switch-row" type="button" data-switch="start" aria-pressed="false"><span class="rj-label">Zaczynaj schowana</span><span class="rj-switch" aria-hidden="true"></span></button>' +
+              '<button class="rj-switch-row" type="button" data-switch="haptics" aria-pressed="true"><span class="rj-label">Wibracje<small>krótkie muśnięcie przy schowaniu</small></span><span class="rj-switch" aria-hidden="true"></span></button>' +
+              '<button class="rj-switch-row" type="button" data-quiet><span class="rj-label">Cisza na 30 minut</span><span class="rj-quiet-hint">ukryj</span></button>' +
+            "</div>" +
             '<p class="rj-hintline">Ciszę cofniesz od razu: przycisk „Wróć teraz” u dołu ekranu albo skrót Alt+Shift+R.</p>' +
-            '<p class="rj-hintline">Animacje omijają systemowe blokady ruchu — tak, jak w Szklanym studiu.</p>' +
+            '<button class="rj-ghost rj-reset-island" type="button" data-reset-island>Przywróć domyślne</button>' +
           "</div>" +
         "</div>" +
 
@@ -789,7 +889,13 @@
     var bar = document.getElementById("rj-mobile-ads");
     if (bar) {
       var rect = bar.getBoundingClientRect();
-      if (rect.height > 0) height = Math.round(rect.height);
+      /* Mini reklamy stoją POD GÓRNYM paskiem, więc nie zabierają miejsca
+         przy dolnej krawędzi. Wcześniej liczyliśmy samą wysokość paska bez
+         patrzenia, gdzie on jest — wyspa unosiła się o 60 px i „lewitowała”
+         nad dołem ekranu. Teraz odstęp liczy się tylko wtedy, gdy pasek
+         naprawdę jest przyklejony do dołu. */
+      var dockedBottom = rect.top > (window.innerHeight || 0) / 2;
+      if (dockedBottom && rect.height > 0) height = Math.round(rect.height);
     }
     root.style.setProperty("--rj-ads", height ? height + "px" : "0px");
   }
@@ -1029,9 +1135,7 @@
     apply("min");
     announce("Wyspa schowana. Strzałka w górę albo przesunięcie palcem w górę przywraca ją.");
     /* Krótkie muśnięcie na Androidzie — informacja bez patrzenia. */
-    try {
-      if (navigator.vibrate) navigator.vibrate(8);
-    } catch (e) { /* trudno */ }
+    buzz(8);
   }
 
   function expand() {
@@ -1040,9 +1144,7 @@
     store(COLLAPSE_KEY, "0");
     apply("idle");
     announce("Wyspa rozwinięta.");
-    try {
-      if (navigator.vibrate) navigator.vibrate(8);
-    } catch (e) { /* trudno */ }
+    buzz(8);
   }
 
   function apply(name) {
@@ -1082,6 +1184,12 @@
   function paint(name) {
     if (name === "chat") {
       stopChatPoll();
+      /* Każde otwarcie zaczyna od wybranej zakładki, ale bez starej rozmowy —
+         inaczej po powrocie widać cudzą nitkę bez kontekstu. */
+      chatThread = null;
+      chatThreadName = "";
+      chatSignature = "";
+      syncChatHeader();
       loadIslandChat(true);
       startChatPoll();
     }
@@ -1542,16 +1650,25 @@
 
   /* ------------------------------------------------------------- mini czat */
 
-  /* Mini RejChat w wyspie: ostatnie wiadomości pokoju ogólnego i wysyłanie
-     bez opuszczania strony. Wcześniej w tym miejscu było wyszukiwanie stron —
-     działało, ale nikt go nie używał, bo każdy zna adresy podstron. Rozmowa
-     jest tu bardziej przydatna.
+  /* Mini RejChat w wyspie: KAŻDY czat jest osiągalny bez opuszczania strony.
+     Trzy zakładki:
+       - Ogólny  (publiczny pokój „general”),
+       - Linki   (publiczny pokój „links”),
+       - Prywatne (skrzynka rozmów konta + dowolnie wybrana rozmowa).
+     Odczyt i wysyłanie korzystają z tych samych RPC co /rejchat, więc nic
+     nie jest duplikowane po stronie serwera.
 
-     Czat korzysta z tych samych RPC co /rejchat (rejchat_room_list_v3,
-     rejchat_room_send_v2), więc nic nie jest duplikowane po stronie serwera. */
+     Wcześniej wyspa pokazywała wyłącznie pokój ogólny — nie dało się zajrzeć
+     ani do linków, ani do prywatnych rozmów bez przechodzenia na /rejchat. */
 
-  var CHAT_ROOM = "general";
+  var CHAT_ROOMS = {
+    general: { title: "czat ogólny", empty: "Cisza w pokoju. Napisz pierwszą wiadomość." },
+    links: { title: "linki i zdjęcia", empty: "Nikt nic jeszcze nie podrzucił. Wrzuć pierwszy link." }
+  };
   var CHAT_SEEN_KEY = "rj_island_chat_seen_v1";
+  var chatTab = "general";
+  var chatThread = null;
+  var chatThreadName = "";
   var chatPoll = 0;
   var chatIdlePoll = 0;
   var chatBusy = false;
@@ -1592,7 +1709,7 @@
   }
 
   function chatLine(row, me) {
-    var mine = me && me.username === row.author_name;
+    var mine = row.mine != null ? Boolean(row.mine) : Boolean(me && me.username === row.author_name);
     var text = String(row.content || "").replace(/\s+/g, " ").trim();
     if (text.length > 240) text = text.slice(0, 239) + "…";
     return '<div class="rj-chat-row' + (mine ? " is-mine" : "") + '">' +
@@ -1603,31 +1720,96 @@
       "</div>";
   }
 
-  function loadIslandChat(initial) {
-    var host = byId("rj-island-chat");
+  /* Wspólny nagłówek i zakładki: podpis, strzałka powrotu, aktywna zakładka
+     i to, czy widać listę rozmów, skrzynkę czy pole pisania. */
+  function syncChatHeader() {
+    var sub = byId("rj-island-chat-sub");
+    var back = within("[data-chat-back]");
+    var list = byId("rj-island-chat");
+    var dms = byId("rj-island-dms");
     var form = byId("rj-island-chat-form");
+    var inbox = chatTab === "dm" && !chatThread;
+    if (sub) {
+      sub.textContent = chatTab === "dm"
+        ? (chatThread ? "rozmowa z " + chatThreadName : "wybierz rozmowę")
+        : CHAT_ROOMS[chatTab].title;
+    }
+    if (back) back.hidden = !(chatTab === "dm" && !!chatThread);
+    if (list) list.hidden = inbox;
+    if (dms) dms.hidden = !inbox;
+    if (form) form.hidden = inbox || !session();
+    var open = byId("rj-island-chat-open");
+    if (open) open.href = chatTab === "dm" ? "/rejchat#rozmowy" : "/rejchat";
+    Array.prototype.forEach.call(island.querySelectorAll("[data-chat-room]"), function (button) {
+      var on = button.getAttribute("data-chat-room") === chatTab;
+      button.setAttribute("aria-selected", String(on));
+      button.classList.toggle("is-on", on);
+    });
+  }
+
+  function setChatTab(tab) {
+    if (tab !== "general" && tab !== "links" && tab !== "dm") return;
+    chatTab = tab;
+    chatThread = null;
+    chatThreadName = "";
+    chatSignature = "";
     var note = byId("rj-island-chat-note");
-    if (!host) return;
+    if (note) note.textContent = "";
+    syncChatHeader();
+    loadIslandChat(true);
+    startChatPoll();
+  }
+
+  function openChatThread(id) {
+    if (!/^[0-9a-f-]{36}$/i.test(String(id || ""))) return;
+    chatThread = id;
+    chatSignature = "";
+    syncChatHeader();
+    loadIslandChat(true);
+  }
+
+  function closeChatThread() {
+    chatThread = null;
+    chatThreadName = "";
+    chatSignature = "";
+    syncChatHeader();
+    loadIslandChat(true);
+  }
+
+  function loadIslandChat(initial) {
+    if (chatTab === "dm") {
+      return chatThread ? loadDmThread(initial) : loadDmInbox(initial);
+    }
+    return loadRoomChat(initial);
+  }
+
+  function loadRoomChat(initial) {
+    var host = byId("rj-island-chat");
+    var note = byId("rj-island-chat-note");
     var me = session();
+    if (!host) return;
+    syncChatHeader();
 
     if (!me) {
       chatSignature = "";
-      host.innerHTML = '<p class="rj-empty">Zaloguj się, żeby zobaczyć rozmowę. <a href="/logowanie">Konto</a></p>';
-      if (form) form.hidden = true;
+      host.innerHTML = '<p class="rj-empty">Zaloguj się, żeby czytać i pisać w czacie.<br><a href="/logowanie">Przejdź do logowania →</a></p>';
       if (note) note.textContent = "";
       return;
     }
-    if (form) form.hidden = false;
     if (initial && !host.querySelector(".rj-chat-row")) {
       host.innerHTML = '<p class="rj-empty">Wczytuję rozmowę…</p>';
     }
 
+    var room = chatTab;
     chatApi()("rejchat_room_list_v3", {
-      p_token: me.token, p_room: CHAT_ROOM, p_after_id: null, p_limit: 18
+      p_token: me.token, p_room: room, p_after_id: null, p_limit: 18
     }).then(function (rows) {
-      if (state !== "chat") return;
+      if (state !== "chat" || chatTab !== room || chatThread) return;
       rows = Array.isArray(rows) ? rows : [];
-      var signature = rows.map(function (row) {
+      rows.sort(function (a, b) {
+        return (Date.parse(a.created_at) || 0) - (Date.parse(b.created_at) || 0);
+      });
+      var signature = room + "|" + rows.map(function (row) {
         return row.id + ":" + (row.content || "").length + ":" + (row.edited_at || "");
       }).join("|");
       if (signature === chatSignature && host.querySelector(".rj-chat-row")) {
@@ -1637,7 +1819,7 @@
       chatSignature = signature;
       host.innerHTML = rows.length
         ? rows.map(function (row) { return chatLine(row, me); }).join("")
-        : '<p class="rj-empty">Cisza w pokoju. Napisz pierwszą wiadomość.</p>';
+        : '<p class="rj-empty">' + esc(CHAT_ROOMS[room].empty) + "</p>";
       if (note) note.textContent = "";
       host.scrollTop = host.scrollHeight;
       markChatSeen(rows);
@@ -1649,6 +1831,81 @@
     });
   }
 
+  function dmRowHtml(row) {
+    var unread = Math.max(0, Number(row.unread) || 0);
+    var name = String(row.username || "");
+    var initials = name.replace(/[^\p{L}\p{N}]/gu, "").slice(0, 2).toUpperCase() || "?";
+    return '<button class="rj-chat-dm" type="button" data-chat-thread="' + esc(row.id) + '" data-thread-name="' + esc(name) + '">' +
+      '<span class="rj-chat-dm-avatar" aria-hidden="true">' + esc(initials) + "</span>" +
+      '<span class="rj-chat-dm-name">' + esc(name || "Rozmowa") + "</span>" +
+      (unread
+        ? '<span class="rj-chat-dm-badge" title="Nieprzeczytane">' + (unread > 99 ? "99+" : unread) + "</span>"
+        : '<span class="rj-chat-dm-go" aria-hidden="true">›</span>') +
+      "</button>";
+  }
+
+  function loadDmInbox(initial) {
+    var host = byId("rj-island-dms");
+    var note = byId("rj-island-chat-note");
+    var me = session();
+    if (!host) return;
+    syncChatHeader();
+    if (!me) {
+      host.innerHTML = '<p class="rj-empty">Zaloguj się, żeby zobaczyć prywatne rozmowy.<br><a href="/logowanie">Przejdź do logowania →</a></p>';
+      if (note) note.textContent = "";
+      return;
+    }
+    if (initial) host.innerHTML = '<p class="rj-empty">Wczytuję rozmowy…</p>';
+    chatApi()("rejchat_dm_inbox", { p_token: me.token }).then(function (rows) {
+      if (state !== "chat" || chatTab !== "dm" || chatThread) return;
+      rows = Array.isArray(rows) ? rows : [];
+      host.innerHTML = rows.length
+        ? rows.map(dmRowHtml).join("")
+        : '<p class="rj-empty">Brak prywatnych rozmów. <a href="/rejchat#rozmowy">Zacznij na /rejchat</a></p>';
+      if (note) note.textContent = "";
+    }).catch(function () {
+      if (state !== "chat" || chatTab !== "dm" || chatThread) return;
+      host.innerHTML = '<p class="rj-empty">Nie udało się wczytać rozmów.</p>';
+      if (note) note.textContent = "Sprawdź połączenie i spróbuj jeszcze raz.";
+    });
+  }
+
+  function loadDmThread(initial) {
+    var host = byId("rj-island-chat");
+    var note = byId("rj-island-chat-note");
+    var me = session();
+    if (!host || !me || !chatThread) return;
+    syncChatHeader();
+    if (initial) host.innerHTML = '<p class="rj-empty">Wczytuję rozmowę…</p>';
+    var thread = chatThread;
+    chatApi()("rejchat_dm_list_v2", { p_token: me.token, p_thread_id: thread }).then(function (data) {
+      if (state !== "chat" || chatTab !== "dm" || chatThread !== thread) return;
+      var rows = data && Array.isArray(data.messages) ? data.messages.slice() : [];
+      rows.sort(function (a, b) {
+        return (Date.parse(a.created_at) || 0) - (Date.parse(b.created_at) || 0);
+      });
+      if (data && data.username) chatThreadName = String(data.username);
+      var sub = byId("rj-island-chat-sub");
+      if (sub) sub.textContent = "rozmowa z " + chatThreadName;
+      var signature = thread + "|" + rows.map(function (row) {
+        return row.id + ":" + (row.content || "").length + ":" + (row.edited_at || "");
+      }).join("|");
+      if (signature === chatSignature && host.querySelector(".rj-chat-row")) return;
+      chatSignature = signature;
+      host.innerHTML = rows.length
+        ? rows.map(function (row) { return chatLine(row, me); }).join("")
+        : '<p class="rj-empty">Napisz pierwszą wiadomość w tej rozmowie.</p>';
+      if (note) note.textContent = "";
+      host.scrollTop = host.scrollHeight;
+    }).catch(function () {
+      if (state !== "chat" || chatTab !== "dm" || chatThread !== thread) return;
+      if (note) note.textContent = "Nie udało się wczytać rozmowy. Spróbuj za chwilę.";
+      if (!host.querySelector(".rj-chat-row")) {
+        host.innerHTML = '<p class="rj-empty">Nie udało się wczytać rozmowy.</p>';
+      }
+    });
+  }
+
   function sendIslandChat(form) {
     var input = byId("rj-island-chat-input");
     var note = byId("rj-island-chat-note");
@@ -1656,13 +1913,15 @@
     if (!input || !me || chatBusy) return;
     var text = String(input.value || "").trim();
     if (!text) return;
+    if (chatTab === "dm" && !chatThread) return;
 
     chatBusy = true;
     var button = form && form.querySelector("[data-chat-send]");
     if (button) button.disabled = true;
-    chatApi()("rejchat_room_send_v2", {
-      p_token: me.token, p_room: CHAT_ROOM, p_content: text, p_reply_to: null
-    }).then(function () {
+    var request = chatTab === "dm"
+      ? chatApi()("rejchat_dm_send_v2", { p_token: me.token, p_thread_id: chatThread, p_content: text, p_reply_to: null })
+      : chatApi()("rejchat_room_send_v2", { p_token: me.token, p_room: chatTab, p_content: text, p_reply_to: null });
+    request.then(function () {
       input.value = "";
       chatSignature = "";
       if (note) note.textContent = "";
@@ -1675,22 +1934,28 @@
     });
   }
 
-  /* Licznik nowych wiadomości na przycisku czatu. Odpytywanie jest rzadkie
-     (30 s) i tylko wtedy, gdy karta jest widoczna — nie obciąża serwera. */
+  /* Licznik nowych wiadomości na przycisku czatu: pokoje publiczne i skrzynka
+     prywatna. Odpytywanie jest rzadkie (30 s) i tylko przy widocznej karcie. */
   function pollChatBadge() {
     if (document.hidden) return;
     var me = session();
     var dot = within("[data-chat-dot]");
     if (!me) { if (dot) dot.hidden = true; return; }
     if (state === "chat") { if (dot) dot.hidden = true; return; }
-    chatApi()("rejchat_room_list_v3", {
-      p_token: me.token, p_room: CHAT_ROOM, p_after_id: null, p_limit: 3
-    }).then(function (rows) {
-      if (!Array.isArray(rows) || !rows.length) return;
+    var api = chatApi();
+    Promise.all([
+      api("rejchat_room_list_v3", { p_token: me.token, p_room: "general", p_after_id: null, p_limit: 3 }).catch(function () { return null; }),
+      api("rejchat_dm_inbox", { p_token: me.token }).catch(function () { return null; })
+    ]).then(function (result) {
+      var rows = Array.isArray(result[0]) ? result[0] : [];
+      var inbox = Array.isArray(result[1]) ? result[1] : [];
       var newest = rows.reduce(function (max, row) {
         return Math.max(max, Date.parse(row.created_at) || 0);
       }, 0);
-      if (dot) dot.hidden = !(newest > chatSeen());
+      var unread = inbox.reduce(function (sum, row) {
+        return sum + Math.max(0, Number(row.unread) || 0);
+      }, 0);
+      if (dot) dot.hidden = !(newest > chatSeen() || unread > 0);
     }).catch(function () { /* bez połączenia zostawiamy stan */ });
   }
 
@@ -2000,10 +2265,17 @@
   }
 
   function syncSwitches() {
+    if (!island) return;
     var themeSwitch = island.querySelector('[data-switch="theme"]');
     var motionSwitch = island.querySelector('[data-switch="motion"]');
+    var verticalSwitch = island.querySelector('[data-switch="vertical"]');
+    var startSwitch = island.querySelector('[data-switch="start"]');
+    var hapticSwitch = island.querySelector('[data-switch="haptics"]');
     if (themeSwitch) themeSwitch.setAttribute("aria-pressed", String(isLight()));
     if (motionSwitch) motionSwitch.setAttribute("aria-pressed", String(motionOn()));
+    if (verticalSwitch) verticalSwitch.setAttribute("aria-pressed", String(vertical()));
+    if (startSwitch) startSwitch.setAttribute("aria-pressed", String(isCollapsed()));
+    if (hapticSwitch) hapticSwitch.setAttribute("aria-pressed", String(haptics()));
   }
 
   function toggleTheme() {
@@ -2151,7 +2423,7 @@
     "height:16px;padding:0 4px;border-radius:999px;background:#ff453a;color:#fff;" +
     "font:700 9.5px/1 system-ui,sans-serif}" +
     "#rj-island-root .rj-handle-net{width:7px;height:7px;flex:none;border-radius:50%;" +
-    "background:#32d74b}" +
+    "background:#6ea8ff}" +
     "#rj-island-root .rj-handle-net.is-offline{background:#8e8e93}" +
     "#rj-island-root .rj-handle-play{display:grid;place-items:center;width:24px;height:24px;" +
     "flex:none;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,.14);color:#fff}" +
@@ -2191,6 +2463,19 @@
     "padding:8px 14px;border-radius:999px;background:#000;color:#f4f7fc;" +
     "border:1px solid rgba(255,255,255,.12);opacity:0;pointer-events:none}" +
     "#rj-island-root .rj-toast.is-on{opacity:1}" +
+    /* Ustawienia, zakładki czatu i prywatne rozmowy — minimalny wygląd na
+       wypadek, gdyby arkusz wyspy nie zdążył się wczytać. */
+    "#rj-island-root .rj-chat-rooms{display:flex;gap:3px;padding:2px;border-radius:999px;background:rgba(255,255,255,.07)}" +
+    "#rj-island-root .rj-chat-room{flex:1 1 0;min-height:30px;padding:5px 8px;border:0;border-radius:999px;background:transparent;color:rgba(235,243,255,.62);font:650 11px/1 system-ui,sans-serif}" +
+    "#rj-island-root .rj-chat-room.is-on{background:rgba(255,255,255,.18);color:#fff}" +
+    "#rj-island-root .rj-chat-dms{flex:1 1 auto;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:4px}" +
+    "#rj-island-root .rj-chat-dm{display:flex;align-items:center;gap:9px;width:100%;min-height:46px;padding:6px 9px;border:1px solid rgba(255,255,255,.09);border-radius:13px;background:rgba(255,255,255,.04);color:#eef5ff;font:650 12px/1.2 system-ui,sans-serif;text-align:left}" +
+    "#rj-island-root .rj-chat-dm-name{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}" +
+    "#rj-island-root .rj-chat-dm-badge{min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:#ff453a;color:#fff;font:700 10px/1 system-ui,sans-serif}" +
+    "#rj-island-root .rj-chat-dm-avatar{display:grid;place-items:center;width:30px;height:30px;flex:none;border-radius:50%;background:rgba(110,168,255,.2);color:#dcebff;font:700 10.5px/1 system-ui,sans-serif}" +
+    "#rj-island-root .rj-settings-title{display:block;margin:4px 0 -2px;color:rgba(206,224,248,.52);font:700 9.5px/1 ui-monospace,monospace;letter-spacing:.12em;text-transform:uppercase}" +
+    "#rj-island-root .rj-island.is-vertical[data-state='dock'] .rj-view--dock{flex-direction:column;gap:2px;padding:6px 0}" +
+    "#rj-island-root .rj-island.is-vertical .rj-dock-btn{flex:0 0 40px;width:44px;max-width:44px}" +
     STATES.map(function (name) {
       return '#rj-island-root .rj-island[data-state="' + name + '"] .rj-view--' + name +
         '{opacity:1;transform:none;pointer-events:auto}';
@@ -2264,6 +2549,14 @@
       if (event.target.closest("[data-collapse]")) { collapse(); return; }
       if (event.target.closest("[data-expand]")) { expand(); return; }
       if (event.target.closest("[data-close]")) { close(); return; }
+
+      var roomBtn = event.target.closest("[data-chat-room]");
+      if (roomBtn) { setChatTab(roomBtn.getAttribute("data-chat-room")); return; }
+
+      var threadBtn = event.target.closest("[data-chat-thread]");
+      if (threadBtn) { openChatThread(threadBtn.getAttribute("data-chat-thread")); return; }
+
+      if (event.target.closest("[data-chat-back]")) { closeChatThread(); return; }
       if (event.target.closest("[data-panic]")) { runPanic(); return; }
 
       var send = event.target.closest("[data-send]");
@@ -2341,10 +2634,23 @@
 
       var sw = event.target.closest("[data-switch]");
       if (sw) {
-        if (sw.getAttribute("data-switch") === "theme") toggleTheme();
-        else toggleMotion();
+        var which = sw.getAttribute("data-switch");
+        if (which === "theme") toggleTheme();
+        else if (which === "motion") toggleMotion();
+        else if (which === "vertical") setOrientation(vertical() ? "row" : "column");
+        else if (which === "start") {
+          if (isCollapsed()) expand(); else collapse();
+          syncSwitches();
+        } else if (which === "haptics") {
+          var on = !haptics();
+          store(HAPTIC_KEY, on ? "1" : "0");
+          syncSwitches();
+          toast(on ? "Wibracje włączone" : "Wibracje wyłączone");
+        }
         return;
       }
+
+      if (event.target.closest("[data-reset-island]")) { resetIslandPrefs(); return; }
 
       var notification = event.target.closest("[data-notification]");
       if (notification) {
@@ -2595,6 +2901,8 @@
 
     /* stan początkowy: czekamy na koniec loadera, żeby wyspa nie wyskakiwała
        przed resztą strony — chowamy ją tylko na czas `rj-booting`. */
+    /* Układ (poziomo/pionowo) musi być znany przed pierwszym pomiarem. */
+    try { applyCorner(); } catch (e) { /* trudno */ }
     /* Jeśli użytkownik schował wyspę, zostaje schowana także tutaj. */
     apply(isCollapsed() ? "min" : "idle");
     try { syncSwitches(); } catch (e) { /* trudno */ }

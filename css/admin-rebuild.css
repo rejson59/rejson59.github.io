@@ -979,3 +979,178 @@ body.rj-admin :is(button, a, input, select, textarea, summary):focus-visible {
   body.rj-admin .overview-stats { grid-template-columns: minmax(0, 1fr); }
   body.rj-admin .overview-stat:last-child { grid-column: auto; }
 }
+
+/* ==========================================================================
+   Numery identyfikatorów — zawsze widoczne, także na telefonie
+   --------------------------------------------------------------------------
+   Lista identyfikatorów („#4821”) i lista odwiedzających na żywo pokazują
+   numer w plakietce. Na telefonie szyba karty jest bardziej przezroczysta,
+   a numery „pochodne” (IP + przeglądarka albo sama sesja) dostawały kolor
+   --muted, który na jasnym tle tapety praktycznie znikał. Teraz każdy numer
+   ma własne, nieprzezroczyste tło i mocny kontrast w obu motywach.
+   ========================================================================== */
+
+html body.rj-admin #vif-list .vif-row-id,
+html body.rj-admin #pa-visitors .pa-fp,
+html body.rj-admin .pa-visitors .pa-fp {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  min-width: 58px;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid rgba(139, 189, 255, 0.42) !important;
+  border-radius: 10px !important;
+  background: #0d1626 !important;
+  background-image: none !important;
+  color: #dbeafe !important;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  box-shadow: none !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  white-space: nowrap;
+}
+
+/* Numery przybliżone (IP + przeglądarka, sesja) też muszą być czytelne —
+   tylko odrobinę spokojniejsze od pełnego odcisku. */
+html body.rj-admin #vif-list .vif-row-id.is-derived,
+html body.rj-admin #pa-visitors .pa-fp.is-derived,
+html body.rj-admin .pa-visitors .pa-fp.is-derived {
+  color: #c3d6f2 !important;
+  border-color: rgba(160, 190, 228, 0.42) !important;
+}
+
+html[data-theme="light"] body.rj-admin #vif-list .vif-row-id,
+html[data-theme="light"] body.rj-admin #pa-visitors .pa-fp,
+html[data-theme="light"] body.rj-admin .pa-visitors .pa-fp {
+  border-color: rgba(30, 86, 214, 0.34) !important;
+  background: #e9f1ff !important;
+  color: #12305c !important;
+}
+
+html[data-theme="light"] body.rj-admin #vif-list .vif-row-id.is-derived,
+html[data-theme="light"] body.rj-admin #pa-visitors .pa-fp.is-derived,
+html[data-theme="light"] body.rj-admin .pa-visitors .pa-fp.is-derived {
+  color: #33527f !important;
+  border-color: rgba(60, 105, 170, 0.3) !important;
+}
+
+@media (max-width: 760px) {
+  /* Na telefonie numer jest pierwszą rzeczą, którą widać w wierszu:
+     większa plakietka, wyraźny kontrast, własny wiersz. */
+  html body.rj-admin #vif-list .vif-row-id,
+  html body.rj-admin #pa-visitors .pa-fp,
+  html body.rj-admin .pa-visitors .pa-fp {
+    min-width: 66px;
+    min-height: 32px;
+    padding: 0 11px;
+    font-size: 16px;
+  }
+  html body.rj-admin #vif-list .vif-row {
+    align-items: flex-start;
+    row-gap: 7px;
+  }
+  html body.rj-admin #vif-list .vif-row-id {
+    margin-top: 1px;
+  }
+}
+
+/* ==========================================================================
+   Tabela projektów na telefonie — liczby zawsze widać
+   --------------------------------------------------------------------------
+   Sześć kolumn w jednym rzędzie nie mieści się na 360–390 px: tabela miała
+   min-width 720 px, więc liczby (online, kliknięcia, wejścia, osoby) leżały
+   poza ekranem i wyglądały, jakby ich nie było. Na telefonie każdy wiersz
+   staje się kafelkiem: nazwa projektu u góry, a pod nią wszystkie liczby
+   z podpisami — bez przewijania w bok.
+   ========================================================================== */
+
+@media (max-width: 760px) {
+  body.rj-admin .adm-table-wrap {
+    max-height: none;
+    overflow: visible;
+  }
+
+  body.rj-admin .adm-table {
+    display: block;
+    min-width: 0;
+  }
+
+  /* Nagłówek kolumn jest zbędny — każda liczba ma własny podpis. */
+  body.rj-admin .adm-trow.adm-thead {
+    display: none !important;
+  }
+
+  body.rj-admin .adm-trow {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px 12px;
+    padding: 12px 13px;
+    border: 1px solid var(--adm-line);
+    border-radius: 14px;
+    margin-bottom: 8px;
+    background: var(--adm-raised);
+    font-size: 12px;
+  }
+
+  body.rj-admin .adm-trow:nth-child(even) {
+    background: var(--adm-raised);
+  }
+
+  body.rj-admin .adm-trow .adm-tname {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--adm-line);
+    font-size: 13.5px;
+    font-weight: 650;
+  }
+
+  body.rj-admin .adm-trow .adm-num {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+    min-width: 0;
+    text-align: left;
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--adm-ink) !important;
+  }
+
+  /* Podpis liczby: czyta się jak „Online · 3”, a nie jak zagadka. */
+  body.rj-admin .adm-trow .adm-num::before {
+    content: attr(data-label);
+    color: var(--adm-sub);
+    font-family: "Inter", system-ui, sans-serif;
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    text-align: left;
+  }
+
+  body.rj-admin .adm-trow .adm-num.adm-dim {
+    color: var(--adm-sub) !important;
+  }
+
+  body.rj-admin .adm-trow .adm-online.is-live {
+    color: #9ecbff !important;
+  }
+
+  /* Ostatnia aktywność bywa długa („2 min temu”) — dostaje całą szerokość
+     kafelka, żeby nigdy nie łamała się w środku wyrazu. */
+  body.rj-admin .adm-trow .adm-rel {
+    grid-column: 1 / -1;
+    justify-content: space-between;
+    padding-top: 3px;
+    border-top: 1px dashed var(--adm-line);
+  }
+}

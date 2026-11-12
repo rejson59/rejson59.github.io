@@ -430,14 +430,14 @@ body.community-page .post-card:hover { border-color: rgba(110, 140, 200, 0.6); }
   height: 8px;
   flex: none;
   border-radius: 50%;
-  background: #34d399;
-  box-shadow: 0 0 0 3px color-mix(in srgb, #34d399 25%, transparent);
+  background: #6ea8ff;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #6ea8ff 25%, transparent);
   animation: commOnlinePulse 2.2s ease-in-out infinite;
 }
 .comm-online-user .comm-online-dot { width: 7px; height: 7px; box-shadow: none; animation: none; }
 @keyframes commOnlinePulse {
-  0%, 100% { box-shadow: 0 0 0 3px color-mix(in srgb, #34d399 25%, transparent); }
-  50% { box-shadow: 0 0 0 6px color-mix(in srgb, #34d399 12%, transparent); }
+  0%, 100% { box-shadow: 0 0 0 3px color-mix(in srgb, #6ea8ff 25%, transparent); }
+  50% { box-shadow: 0 0 0 6px color-mix(in srgb, #6ea8ff 12%, transparent); }
 }
 .comm-avatar-sm { width: 22px; height: 22px; font-size: 10px; }
 .comm-online-count {
@@ -834,7 +834,7 @@ video.post-media-item {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #34d399;
+  background: #6ea8ff;
   box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.18);
   animation: commOnlinePulse 2s ease-in-out infinite;
 }

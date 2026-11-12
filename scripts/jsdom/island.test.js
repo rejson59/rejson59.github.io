@@ -63,9 +63,22 @@ function checkStructure() {
   assert.ok(!/data-open="search"/.test(source), 'wyszukiwanie zostało usunięte');
   assert.ok(/rejchat_room_list_v3/.test(source), 'mini czat czyta prawdziwe wiadomości');
   assert.ok(/rejchat_room_send_v2/.test(source), 'mini czat wysyła prawdziwe wiadomości');
+  assert.ok(/rejchat_dm_inbox/.test(source), 'mini czat pokazuje listę prywatnych rozmów');
+  assert.ok(/rejchat_dm_list_v2/.test(source), 'mini czat otwiera dowolną prywatną rozmowę');
+  assert.ok(/rejchat_dm_send_v2/.test(source), 'mini czat wysyła wiadomość w prywatnej rozmowie');
+  assert.ok(/data-chat-room="links"/.test(source), 'zakładka Linki jest w wyspie');
+  assert.ok(/data-chat-room="dm"/.test(source), 'zakładka Prywatne jest w wyspie');
+  assert.ok(/dockedBottom/.test(source), 'wyspa liczy reklamy tylko przyklejone do dołu (nie lewituje)');
   assert.ok(/ICONS\.send/.test(source), 'czat ma przycisk wysyłania');
   assert.ok(/data-open="theme" title="Ustawienia"/.test(source), 'ustawienia opisane jako ustawienia');
   assert.match(source, /theme: '<svg[^']*circle cx="12" cy="12" r="3\.1"/, 'ikona motywu to koło zębate');
+
+  /* 5b. Ustawienia wyspy: pionowa wyspa, start schowany, wibracje, reset. */
+  assert.ok(/data-switch="vertical"/.test(source), 'ustawienia mają przełącznik pionowej wyspy');
+  assert.ok(/data-switch="start"/.test(source), 'ustawienia mają start schowany');
+  assert.ok(/data-switch="haptics"/.test(source), 'ustawienia mają przełącznik wibracji');
+  assert.ok(/data-reset-island/.test(source), 'ustawienia mają powrót do domyślnych');
+  assert.ok(/is-vertical/.test(source) && /is-vertical/.test(css), 'pionowa wyspa ma własny układ CSS');
 
   /* 6. „Teraz gra” widzi też inne karty tej samej witryny. */
   assert.ok(/rj_now_playing_v1/.test(source), 'wspólny klucz stanu odtwarzania');
@@ -114,6 +127,17 @@ async function checkBehaviour() {
       { id: 'm2', author_name: 'rejson59', content: 'Działa?', created_at: new Date().toISOString() }
     ];
     else if (/rejchat_room_send_v2/.test(url)) payload = { id: 'm3', author_name: 'rejson59', content: body.p_content, created_at: new Date().toISOString() };
+    else if (/rejchat_dm_inbox/.test(url)) payload = [
+      { id: '11111111-2222-3333-4444-555555555555', username: 'Lusi', last_at: new Date().toISOString(), unread: 2 }
+    ];
+    else if (/rejchat_dm_list_v2/.test(url)) payload = {
+      username: 'Lusi',
+      messages: [
+        { id: 'd2', author_name: 'Lusi', content: 'Widzisz mnie?', created_at: new Date().toISOString(), mine: false },
+        { id: 'd1', author_name: 'rejson59', content: 'Widzę', created_at: new Date().toISOString(), mine: true }
+      ]
+    };
+    else if (/rejchat_dm_send_v2/.test(url)) payload = { id: 'd3', created_at: new Date().toISOString() };
     else if (/rejchat_notifications_list/.test(url)) payload = {
       unread: 2,
       items: [
@@ -221,6 +245,71 @@ async function checkBehaviour() {
   assert.equal(sent.body.p_content, 'Wiadomość z wyspy');
   assert.equal(sent.body.p_room, 'general');
   assert.equal(ui('#rj-island-chat-input').value, '', 'pole czyści się po wysłaniu');
+
+  /* — każdy czat jest osiągalny z wyspy — */
+  ui('[data-chat-room="links"]').click();
+  await wait(60);
+  assert.equal(ui('[data-chat-room="links"]').getAttribute('aria-selected'), 'true', 'zakładka Linki jest aktywna');
+  const linksCall = calls.filter((call) => /rejchat_room_list_v3/.test(call.url)).pop();
+  assert.equal(linksCall.body.p_room, 'links', 'czytamy pokój linków');
+  ui('#rj-island-chat-input').value = 'Link z wyspy';
+  ui('#rj-island-chat-form').dispatchEvent(new w.Event('submit', { bubbles: true, cancelable: true }));
+  await wait(80);
+  const linkSent = calls.filter((call) => /rejchat_room_send_v2/.test(call.url)).pop();
+  assert.equal(linkSent.body.p_room, 'links', 'wysyłka idzie do pokoju linków');
+
+  ui('[data-chat-room="dm"]').click();
+  await wait(80);
+  assert.equal(ui('[data-chat-room="dm"]').getAttribute('aria-selected'), 'true', 'zakładka Prywatne jest aktywna');
+  assert.ok(/Lusi/.test(ui('#rj-island-dms').textContent), 'lista prywatnych rozmów jest widoczna');
+  assert.equal(ui('#rj-island-dms').hidden, false, 'skrzynka rozmów widoczna');
+  assert.equal(ui('#rj-island-chat').hidden, true, 'lista wiadomości schowana w skrzynce');
+  const thread = ui('[data-chat-thread]');
+  assert.ok(thread, 'jest przycisk dowolnej rozmowy');
+  thread.click();
+  await wait(80);
+  assert.ok(/Widzisz mnie/.test(ui('#rj-island-chat').textContent), 'otwiera się wybrana rozmowa');
+  assert.equal(ui('#rj-island-chat').hidden, false, 'wiadomości wybranej rozmowy widoczne');
+  assert.equal(ui('[data-chat-back]').hidden, false, 'jest powrót do listy rozmów');
+  ui('#rj-island-chat-input').value = 'Odpowiedź z wyspy';
+  ui('#rj-island-chat-form').dispatchEvent(new w.Event('submit', { bubbles: true, cancelable: true }));
+  await wait(80);
+  const dmSent = calls.find((call) => /rejchat_dm_send_v2/.test(call.url));
+  assert.ok(dmSent, 'wiadomość poszła do rejchat_dm_send_v2');
+  assert.equal(dmSent.body.p_content, 'Odpowiedź z wyspy');
+  assert.equal(dmSent.body.p_thread_id, '11111111-2222-3333-4444-555555555555', 'wiadomość trafia do wybranej rozmowy');
+  ui('[data-chat-back]').click();
+  await wait(80);
+  assert.equal(ui('#rj-island-dms').hidden, false, 'powrót pokazuje listę rozmów');
+
+  /* — ustawienia: pionowa wyspa i start schowany — */
+  ui('[data-close]').click();
+  await wait(10);
+  island.click();
+  await wait(10);
+  ui('.rj-dock-btn[data-open="theme"]').click();
+  await wait(40);
+  ui('[data-switch="vertical"]').click();
+  await wait(40);
+  assert.ok(island.classList.contains('is-vertical'), 'wyspa staje się pionowa');
+  assert.equal(w.localStorage.getItem('rj_island_orientation_v1'), 'column', 'układ jest zapamiętany');
+  assert.equal(ui('[data-switch="vertical"]').getAttribute('aria-pressed'), 'true', 'przełącznik pokazuje pion');
+  assert.ok(island.classList.contains('is-right'), 'pionowa wyspa trzyma się krawędzi');
+  ui('[data-switch="vertical"]').click();
+  await wait(40);
+  assert.ok(!island.classList.contains('is-vertical'), 'powrót do poziomej wyspy');
+  ui('[data-switch="start"]').click();
+  await wait(20);
+  assert.equal(ui('[data-switch="start"]').getAttribute('aria-pressed'), 'true', 'start schowany zaznaczony');
+  assert.equal(w.localStorage.getItem('rj_island_collapsed_v1'), '1', 'schowanie jest zapamiętane');
+  island.click();
+  await wait(10);
+  ui('.rj-dock-btn[data-open="theme"]').click();
+  await wait(20);
+  ui('[data-reset-island]').click();
+  await wait(30);
+  assert.equal(w.localStorage.getItem('rj_island_orientation_v1'), 'row', 'reset przywraca poziomą wyspę');
+  assert.equal(w.localStorage.getItem('rj_island_collapsed_v1'), '0', 'reset rozwija wyspę');
 
   /* — powiadomienia: prawdziwe RPC RejChat — */
   ui('[data-close]').click();

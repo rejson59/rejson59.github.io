@@ -269,7 +269,7 @@ console.log('\n=== F. PANEL ADMINA: SZYNA I SKRÓTY ===');
   check('panel kończy się wspólną warstwą szkła', () => {
     const links = Array.from(ADMIN_HTML.matchAll(/<link rel="stylesheet" href="([^"]+)"/g)).map((m) => m[1]);
     assert.match(links[links.length - 1], /glass-last\.css\?v=4/);
-    assert.ok(links.some((l) => l.includes('admin-rebuild.css?v=2')), 'brak warstwy panelu');
+    assert.ok(links.some((l) => l.includes('admin-rebuild.css?v=3')), 'brak warstwy panelu');
   });
   check('sekcje są w pionowej szynie po lewej', () => {
     assert.match(ADMIN_HTML, /<aside class="adm-rail"/);
@@ -382,12 +382,28 @@ console.log('\n=== H. PANEL NA TELEFONIE, PASEK REKLAM I PRZEWIJANIE ===');
     assert.match(MOBILE_ADS_CSS, /top:var\(--rj-ads-top, 60px\)/);
     assert.ok(!MOBILE_ADS_CSS.includes('inset:auto 0 0'), 'pasek nadal przyklejony do dołu');
     assert.match(MOBILE_ADS_CSS, /rj-mobile-ads-hint \{ display:none; \}/, 'podpis „przesuń” ma być ukryty');
-    assert.match(MOBILE_ADS_JS, /STEP_MS = 2000/, 'brak przesuwania co 2 s');
+    assert.match(MOBILE_ADS_JS, /STEP_MS = 3500/, 'jedna promocja zostaje 3,5 s');
+    assert.match(MOBILE_ADS_CSS, /grid-auto-columns:100%/, 'jedna promocja na raz');
+    assert.ok(!MOBILE_ADS_CSS.includes('grid-auto-columns:calc((100% - 6px) / 2)'), 'dwie kolumny reklam zostały');
     assert.match(MOBILE_ADS_JS, /header\.nextSibling/, 'pasek nie trafia pod topbar');
     assert.match(MOBILE_ADS_JS, /mini reklamy<\/span>/);
     assert.ok(!MOBILE_ADS_JS.includes('rj-mobile-ads-hint'), 'został napis „przesuń”');
     assert.ok(!MOBILE_ADS_JS.includes('rj-mobile-ads-spacer'), 'został pusty odstęp na dole');
     assert.match(MOBILE_ADS_JS, /classList\.add\('rj-mobile-ads-active'\)/);
+  });
+
+  check('numery identyfikatorów i tabela są czytelne na telefonie', () => {
+    /* Lista identyfikatorów: numer ma własną, nieprzezroczystą plakietkę. */
+    assert.match(ADMIN_CSS, /#vif-list \.vif-row-id/);
+    assert.match(ADMIN_CSS, /color: #dbeafe !important/, 'numer bez mocnego kontrastu');
+    assert.match(ADMIN_CSS, /is-derived/);
+    /* Tabela projektów: kafelki z podpisami zamiast przewijania w bok. */
+    assert.match(ADMIN_JS, /data-label="Online"/, 'brak podpisu liczby dla telefonu');
+    assert.match(ADMIN_CSS, /\.adm-trow \.adm-num::before/, 'liczby bez podpisów w kafelku');
+    assert.match(ADMIN_CSS, /content: attr\(data-label\)/);
+    /* Zero zieleni w panelu i społeczności. */
+    assert.ok(!/#34d399|#22c55e|#10b981|#32d74b/i.test(ADMIN_CSS), 'zielone kropki w panelu');
+    assert.ok(!/#34d399|#22c55e|#10b981|#32d74b/i.test(read('css/community.css')), 'zieleń w społeczności');
   });
 
   check('przewijanie ma własny, cienki suwak na każdej stronie', () => {
