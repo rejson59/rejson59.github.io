@@ -1,10 +1,10 @@
 {
-  "versionCode": 4,
-  "versionName": "1.0.4",
-  "published": "2026-11-12T09:43:53.957Z",
+  "versionCode": 5,
+  "versionName": "1.0.5",
+  "published": "2026-11-12T09:46:18.397Z",
   "size": 2913013,
-  "sha256": "16bb4b4be289ead5252791aa89ec6764c5f2873398563c31296afbe9cda700ac",
+  "sha256": "bc5fef72c5ac7e46df4603de6d378896b844781261048637d3b09b16807a938d",
   "apk": "https://github.com/rejson59/rejson59.github.io/releases/latest/download/RejHub.apk",
-  "page": "https://github.com/rejson59/rejson59.github.io/releases/tag/android-v1.0.4",
+  "page": "https://github.com/rejson59/rejson59.github.io/releases/tag/android-v1.0.5",
   "minAndroid": "7.0"
 }
