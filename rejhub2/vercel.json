@@ -56,6 +56,15 @@
       ]
     },
     {
+      "source": "/app/latest.json",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        }
+      ]
+    },
+    {
       "source": "/hub/:path*",
       "headers": [
         {
