@@ -257,20 +257,24 @@ async function makeIsland() {
       assert.match(html, /id="profile-logout"[^>]*>Wyloguj się</);
     });
     check('przycisk jest ukryty, dopóki nie ma potwierdzonej sesji', () => {
-      assert.match(js, /\$\('profile-logout'\)\.hidden=!confirmed/);
-      assert.match(js, /\$\('profile-logout'\)\.hidden=true/);
+      assert.match(js, /\$\('profile-logout'\)\.hidden\s*=\s*!confirmed/);
+      assert.match(js, /\$\('profile-logout'\)\.hidden\s*=\s*true/);
     });
     check('wylogowanie w profilu czyści tę samą sesję co wyspa', () => {
-      const block = js.slice(js.indexOf("$('profile-logout').addEventListener"), js.indexOf("$('profile-logout').addEventListener") + 900);
+      const start = js.indexOf("var logout = $('profile-logout')");
+      assert.ok(start > -1, 'brak obsługi przycisku wylogowania');
+      const block = js.slice(start, start + 1400);
       assert.match(block, /rejson_community_session_v1/);
       assert.match(block, /rj:session-change/);
       assert.match(block, /load\(\)/);
     });
   }
 
-  console.log('\n=== D. STARA STRONA BEZ ZMIAN ===');
-  check('stara witryna nie dostaje nowego przycisku wylogowania', () =>
-    assert.ok(!read('profil.html').includes('profile-logout')));
+  console.log('\n=== D. TA SAMA STRONA PROFILU W OBU WERSJACH ===');
+  check('profil na GitHub Pages i RejHub 2.0 ma to samo wylogowanie', () => {
+    assert.match(read('profil.html'), /id="profile-logout"[^>]*>Wyloguj się</);
+    assert.match(read('rejhub2/profil.html'), /id="profile-logout"[^>]*>Wyloguj się</);
+  });
 
   console.log('\n========================================================');
   if (failures.length) {

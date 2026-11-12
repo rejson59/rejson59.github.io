@@ -5,8 +5,38 @@
   // Klucz anon jest publiczny i wspólny z kontem.
   var key='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imh6YnF6ZmltdHJvaXhubGR6amVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI1OTYzOTEsImV4cCI6MjEwODE3MjM5MX0.oeZWOaNd6p3wZBZQQu3QWjRHlrkxV_BFQRNSN-6YntE';
   var sessionKey='rejson_community_session_v1';
-  var avatars=['comet','planet','cat','fox','leaf','cloud','heart','spark'];
+  /* Katalog awatarów — jedno źródło prawdy dla profilu i podglądów.
+     Klucze `group` odpowiadają kategoriom w edytorze profilu. */
+  var avatarCatalog=[
+    {id:'comet',name:'Kometa',group:'kosmos'},
+    {id:'planet',name:'Planeta',group:'kosmos'},
+    {id:'moon',name:'Księżyc',group:'kosmos'},
+    {id:'star',name:'Gwiazda',group:'kosmos'},
+    {id:'rocket',name:'Rakieta',group:'kosmos'},
+    {id:'cat',name:'Kot',group:'zwierzeta'},
+    {id:'fox',name:'Lis',group:'zwierzeta'},
+    {id:'bee',name:'Pszczoła',group:'zwierzeta'},
+    {id:'panda',name:'Panda',group:'zwierzeta'},
+    {id:'owl',name:'Sowa',group:'zwierzeta'},
+    {id:'whale',name:'Wieloryb',group:'zwierzeta'},
+    {id:'leaf',name:'Liść',group:'natura'},
+    {id:'flower',name:'Kwiat',group:'natura'},
+    {id:'mushroom',name:'Grzyb',group:'natura'},
+    {id:'cactus',name:'Kaktus',group:'natura'},
+    {id:'wave',name:'Fala',group:'natura'},
+    {id:'snow',name:'Śnieżynka',group:'natura'},
+    {id:'cloud',name:'Chmurka',group:'klimat'},
+    {id:'flame',name:'Płomień',group:'klimat'},
+    {id:'heart',name:'Serce',group:'klimat'},
+    {id:'spark',name:'Iskra',group:'klimat'},
+    {id:'gem',name:'Klejnot',group:'klimat'},
+    {id:'music',name:'Muzyka',group:'klimat'},
+    {id:'coffee',name:'Kawa',group:'klimat'}
+  ];
+  var avatars=avatarCatalog.map(function(a){return a.id;});
   var colors=['mint','blue','violet','rose','amber','slate'];
+  var frames=['none','ice','violet','rose','amber','prism'];
+  var banners=['aurora','ocean','dusk','ember','mono','prism'];
   var cache=Object.create(null), pending=Object.create(null), syncSeq=0;
   function rpc(name, data) {
     return fetch(base+name,{method:'POST',cache:'no-store',headers:{apikey:key,Authorization:'Bearer '+key,'Content-Type':'application/json'},body:JSON.stringify(data)}).then(function (r) {
@@ -19,7 +49,7 @@
   function safeName(name){return typeof name==='string' && /^[A-Za-z0-9][A-Za-z0-9_.-]{2,23}$/.test(name);}
   function normalized(p) {
     if(!p || !safeName(p.username)) return null;
-    return {username:p.username,avatar:avatars.indexOf(p.avatar)>=0?p.avatar:'comet',color:colors.indexOf(p.color)>=0?p.color:'mint',bio:typeof p.bio==='string'?p.bio.slice(0,240):'',nickname:typeof p.nickname==='string'?p.nickname.slice(0,64):'',is_bot:p.is_bot===true,is_owner:p.is_owner===true};
+    return {username:p.username,avatar:avatars.indexOf(p.avatar)>=0?p.avatar:'comet',color:colors.indexOf(p.color)>=0?p.color:'mint',frame:frames.indexOf(p.frame)>=0?p.frame:'none',banner:banners.indexOf(p.banner)>=0?p.banner:'aurora',bio:typeof p.bio==='string'?p.bio.slice(0,240):'',nickname:typeof p.nickname==='string'?p.nickname.slice(0,64):'',updated_at:typeof p.updated_at==='string'?p.updated_at:'',is_bot:p.is_bot===true,is_owner:p.is_owner===true};
   }
   function getMany(names, fresh) {
     var valid=Array.from(new Set(names.filter(safeName).map(function(n){return n.toLowerCase();}))).slice(0,100), waits=[];
@@ -76,7 +106,7 @@
     }).catch(function(){if(seq===syncSeq)clear();});
   }
   function invalidate(name){if(safeName(name))delete cache[name.toLowerCase()];}
-  window.RJProfiles={rpc:rpc,session:session,getMany:getMany,hydrate:apply,invalidate:invalidate,refreshHeader:refreshHeader,avatars:avatars.slice(),colors:colors.slice(),safeName:safeName};
+  window.RJProfiles={rpc:rpc,session:session,getMany:getMany,hydrate:apply,invalidate:invalidate,refreshHeader:refreshHeader,avatars:avatars.slice(),avatarCatalog:avatarCatalog.map(function(a){return {id:a.id,name:a.name,group:a.group};}),colors:colors.slice(),frames:frames.slice(),banners:banners.slice(),safeName:safeName};
   window.addEventListener('storage',function(e){if(e.key===sessionKey||e.key===null)refreshHeader();});
   window.addEventListener('rj:session-change',refreshHeader);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',refreshHeader);else refreshHeader();

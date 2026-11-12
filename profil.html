@@ -31,7 +31,7 @@
   <link rel="stylesheet" href="/css/style.css?v=2026-11-10-2"><link rel="stylesheet" href="/css/community.css?v=2026-10-25">
   <link rel="stylesheet" href="/css/liquid.css?v=2026-10-19-1"><link rel="stylesheet" href="/css/rejchat.css?v=2">
   <script src="/js/motion-unlock.js?v=1"></script>
-  <script defer src="/js/rejchat-profiles.js?v=2"></script><script defer src="/js/rejchat-notifications.js?v=6"></script><script defer src="/js/premium.js?v=11"></script><script defer src="/js/rejchat-safety.js?v=1"></script><script defer src="/js/profil.js?v=4"></script>
+  <script defer src="/js/rejchat-profiles.js?v=3"></script><script defer src="/js/rejchat-notifications.js?v=6"></script><script defer src="/js/premium.js?v=11"></script><script defer src="/js/rejchat-safety.js?v=1"></script><script defer src="/js/profil.js?v=6"></script>
   <link rel="stylesheet" href="/css/responsive.css?v=1">
   <link rel="stylesheet" href="/css/mobile-ads.css?v=8">
   <script defer src="/js/mobile-ads.js?v=8"></script>
@@ -44,6 +44,7 @@
   <link rel="stylesheet" href="/css/rejchat-safety.css?v=1">
   <link rel="stylesheet" href="/css/glass-update.css?v=5">
 <link rel="stylesheet" href="/css/scrollbar.css?v=1">
+  <link rel="stylesheet" href="/css/profile-studio.css?v=1">
 </head>
 <body class="rj-account rj-profile-page community-page">
   <a class="profile-skip" href="#main">Przejdź do profilu</a><div class="backdrop" aria-hidden="true"></div>
@@ -54,7 +55,8 @@
           <a href="/rejfile" class="nav-icon-link" title="RejFile" aria-label="RejFile"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#file"></use></svg><span class="nav-label">RejFile</span></a>
           <a href="/rejsejf" class="nav-icon-link" title="RejSejf" aria-label="RejSejf"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></svg><span class="nav-label">RejSejf</span></a>
           <a href="/rejchat" class="nav-icon-link" title="RejChat" aria-label="RejChat"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#chat"></use></svg><span class="nav-label">RejChat</span></a>
-          <a href="/rejtools" class="nav-icon-link" title="RejTools" aria-label="RejTools"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#widget"></use></svg><span class="nav-label">RejTools</span></a>
+          <a href="/rejtools" class="nav-icon-link" title="RejTools" aria-label="RejTools"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#tools"></use></svg><span class="nav-label">RejTools</span></a>
+          <a href="/rejclass" class="nav-icon-link" title="RejClass" aria-label="RejClass — lekcje i materiały"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#book"></use></svg><span class="nav-label">RejClass</span></a>
 
           <details class="nav-more" id="nav-more">
             <summary>Więcej <span class="rj-more-icon" aria-hidden="true"><span class="hamburger-bar"></span><span class="hamburger-bar"></span><span class="hamburger-bar"></span></span></summary>
@@ -62,7 +64,6 @@
               <span class="nav-more-label">ODKRYJ WIĘCEJ</span>
               <a href="/uslugi" class="nav-icon-link" title="Tworzenie stron" aria-label="Tworzenie stron"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#partner"></use></svg><span class="nav-label">Tworzenie stron</span></a>
               <a href="/partnerstwo" class="nav-icon-link" title="Partnerstwo" aria-label="Partnerstwo"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#partner"></use></svg><span class="nav-label">Partnerstwo</span></a>
-              <a href="/rejclass" class="nav-icon-link" title="RejClass" aria-label="RejClass — lekcje i materiały"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#class"></use></svg><span class="nav-label">RejClass</span></a>
               <a href="/licencja" class="nav-icon-link" title="Licencja" aria-label="Licencja i prawa autorskie"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#file"></use></svg><span class="nav-label">Licencja</span></a>
               <a href="https://github.com/rejson59" target="_blank" rel="noopener noreferrer" class="nav-icon-link" title="Profil na GitHubie" aria-label="Profil na GitHubie"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#github"></use></svg><span class="nav-label">GitHub</span></a>
             </div>
@@ -71,34 +72,147 @@
         </nav><button class="hamburger-btn" id="shared-menu" type="button" aria-label="Otwórz menu" aria-controls="shared-nav" aria-expanded="false" data-shared-menu><span class="hamburger-bar" aria-hidden="true"></span><span class="hamburger-bar" aria-hidden="true"></span><span class="hamburger-bar" aria-hidden="true"></span></button></div>
     </div></header>
   <main id="main" class="profile-shell">
-    <a class="profile-back" href="/">← Wróć na stronę główną</a>
-    <p class="profile-eyebrow">✦ TWÓJ PROFIL KONTA</p>
-    <div id="profile-status" class="profile-status" role="status">Ładowanie profilu…</div><noscript><p>Do wyświetlania profili potrzebna jest obsługa JavaScript.</p></noscript>
-    <section class="profile-card-view" id="profile-view" hidden aria-label="Profil publiczny">
-      <div class="profile-cover"><span>REJSON59 / PROFIL</span><img src="/favicon.svg" width="28" height="28" alt="" aria-hidden="true"></div>
-      <div class="profile-card-content">
-        <img id="profile-avatar" class="profile-hero-avatar" src="/assets/avatars/comet.svg" alt="">
-        <div><p class="profile-kicker">PROFIL PUBLICZNY</p><h1 id="profile-name"></h1><p class="profile-bio" id="profile-bio"></p></div>
+    <div class="profile-air" aria-hidden="true"><i></i><i></i><i></i></div>
+
+    <header class="profile-intro">
+      <a class="profile-back" href="/">← Wróć na stronę główną</a>
+      <p class="profile-eyebrow">✦ SZKLANE PROFILE</p>
+      <h1 class="profile-title">Twój profil</h1>
+      <p class="profile-lead">Awatar, ramka, tło i kilka słów o Tobie. Wszystko w jednym miejscu — i dokładnie tak, jak widzą to inni.</p>
+    </header>
+
+    <div id="profile-status" class="profile-status" role="status">Ładowanie profilu…</div>
+    <noscript><p class="profile-status">Do wyświetlania profili potrzebna jest obsługa JavaScript.</p></noscript>
+
+    <section class="profile-card-view" data-glass-lens id="profile-view" hidden aria-label="Profil publiczny">
+      <div class="profile-cover" id="profile-cover" data-banner="aurora">
+        <span class="profile-cover-label">REJHUB <span aria-hidden="true">/</span> PROFIL</span>
+        <span class="profile-cover-orbs" aria-hidden="true"><i></i><i></i><i></i></span>
+        <img class="profile-cover-mark" src="/hub/brand-mark.svg?v=1" width="34" height="34" alt="" aria-hidden="true">
       </div>
-      <div class="profile-actions"><button id="profile-report" type="button" hidden>Zgłoś profil</button><button id="profile-block" type="button" hidden>Blokuj wiadomości</button><a href="/rejchat">Otwórz RejChat ↗</a><a href="/logowanie" id="profile-login-link" hidden>Zaloguj się</a></div>
+      <div class="profile-card-content">
+        <span class="profile-avatar-ring" id="profile-avatar-ring" data-frame="none">
+          <img id="profile-avatar" class="profile-hero-avatar" src="/assets/avatars/comet.svg" alt="Awatar profilu" width="132" height="132">
+        </span>
+        <div class="profile-identity">
+          <div class="profile-badges" id="profile-badges"></div>
+          <h1 id="profile-name"></h1>
+          <p class="profile-handle" id="profile-handle"></p>
+          <p class="profile-bio" id="profile-bio"></p>
+          <p class="profile-updated" id="profile-updated" hidden></p>
+        </div>
+      </div>
+      <div class="profile-tabs" id="profile-tabs" role="tablist" aria-label="Widok profilu" hidden>
+        <button type="button" class="profile-tab" id="tab-view" role="tab" aria-selected="true" aria-controls="profile-view">Profil</button>
+        <button type="button" class="profile-tab" id="tab-edit" role="tab" aria-selected="false" aria-controls="profile-editor">Edytuj</button>
+      </div>
+      <div class="profile-actions">
+        <button id="profile-copy" class="profile-chip" type="button" hidden>Kopiuj link do profilu</button>
+        <a class="profile-chip profile-chip--accent" href="/rejchat">Otwórz RejChat <span aria-hidden="true">↗</span></a>
+        <button id="profile-edit" class="profile-chip profile-chip--accent" type="button" hidden>Edytuj profil</button>
+        <button id="profile-report" class="profile-chip" type="button" hidden>Zgłoś profil</button>
+        <button id="profile-block" class="profile-chip" type="button" hidden>Blokuj wiadomości</button>
+        <button id="profile-logout" class="profile-chip profile-chip--quiet" type="button" hidden>Wyloguj się</button>
+        <a href="/logowanie" id="profile-login-link" class="profile-chip profile-chip--accent" hidden>Zaloguj się</a>
+      </div>
     </section>
+
     <section class="profile-editor" id="profile-editor" hidden aria-labelledby="editor-title">
-      <div class="profile-editor-head"><div><p class="profile-kicker">TWÓJ STYL</p><h2 id="editor-title">Ustaw swój profil</h2><p>Awatar, kolor i bio są publiczne — będą widoczne dla innych.</p></div><span aria-hidden="true">✧</span></div>
-      <form id="profile-form">
-        <fieldset><legend>Wybierz awatar</legend><div class="avatar-options" id="avatar-options"></div></fieldset>
-        <fieldset><legend>Kolor nicka</legend><div class="color-options" id="color-options"></div></fieldset>
-        <label class="profile-label" for="profile-bio-input">Kilka słów o sobie <span>maks. 240 znaków</span></label>
-        <textarea id="profile-bio-input" maxlength="240" rows="3" placeholder="Co lubisz? Nad czym pracujesz?"></textarea>
-        <p class="profile-note">Bio jest publiczne. Nie wpisuj w nim haseł, PIN-u ani innych prywatnych danych.</p>
-        <button type="submit" id="profile-save">Zapisz profil</button><p id="profile-result" role="status" aria-live="polite"></p>
-      </form>
-      <form id="nickname-form">
-        <label class="profile-label" for="nickname-input">Publiczny nick <span>2–32 znaki</span></label>
-        <input id="nickname-input" maxlength="32" autocomplete="off" placeholder="Opcjonalny nick">
-        <p class="profile-note">Nick widzą wszyscy obok niezmienionej nazwy konta. Puste pole usuwa nick. Możesz go zmieniać co 5 minut; administrator także może go ustawić.</p>
-        <button type="submit" id="nickname-save">Zapisz nick</button><p id="nickname-result" role="status" aria-live="polite"></p>
+      <div class="profile-editor-head">
+        <div>
+          <p class="profile-kicker">TWÓJ STYL</p>
+          <h2 id="editor-title">Zbuduj swój profil</h2>
+          <p>Każda zmiana od razu widać w podglądzie. Zapisujesz wszystko jednym przyciskiem.</p>
+        </div>
+        <button id="editor-close" class="profile-icon-btn" type="button" aria-label="Wróć do widoku profilu" title="Wróć do widoku profilu">×</button>
+      </div>
+
+      <div class="profile-editor-grid">
+        <form id="profile-form" class="profile-form">
+          <fieldset class="profile-field">
+            <legend>Awatar <span id="avatar-count" class="profile-legend-note"></span></legend>
+            <div class="avatar-tools">
+              <label class="avatar-search" for="avatar-search">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6"/><path d="m15 15 5 5"/></svg>
+                <input id="avatar-search" type="search" placeholder="Szukaj: kot, rakieta, kawa…" autocomplete="off">
+              </label>
+              <button type="button" id="avatar-surprise" class="avatar-surprise">✦ Zaskocz mnie</button>
+            </div>
+            <div class="avatar-tools avatar-tools--filters">
+              <div class="avatar-filters" id="avatar-filters" role="group" aria-label="Kategorie awatarów"></div>
+            </div>
+            <div class="avatar-options" id="avatar-options"></div>
+            <p class="profile-empty" id="avatar-empty" hidden>Nic nie znaleziono — spróbuj innej nazwy albo kategorii.</p>
+          </fieldset>
+
+          <fieldset class="profile-field">
+            <legend>Kolor nicka</legend>
+            <div class="color-options" id="color-options"></div>
+          </fieldset>
+
+          <fieldset class="profile-field">
+            <legend>Ramka awatara</legend>
+            <div class="frame-options" id="frame-options"></div>
+          </fieldset>
+
+          <fieldset class="profile-field">
+            <legend>Tło nagłówka profilu</legend>
+            <div class="banner-options" id="banner-options"></div>
+          </fieldset>
+
+          <div class="profile-field">
+            <label class="profile-label" for="profile-bio-input">Kilka słów o sobie <span><b id="bio-count">0</b>/240</span></label>
+            <textarea id="profile-bio-input" maxlength="240" rows="4" placeholder="Co lubisz? Nad czym pracujesz? Czego się uczysz?"></textarea>
+            <div class="bio-prompts" id="bio-prompts" role="group" aria-label="Szybkie początki bio"></div>
+            <p class="profile-note">Bio jest publiczne. Nie wpisuj w nim haseł, PIN-u ani innych prywatnych danych.</p>
+          </div>
+
+          <div class="profile-savebar">
+            <span class="profile-dirty" id="profile-dirty" role="status" aria-live="polite" data-state="saved">Wszystko zapisane</span>
+            <div class="profile-savebar-actions">
+              <button type="button" id="profile-reset" class="profile-chip profile-chip--quiet">Przywróć</button>
+              <button type="submit" id="profile-save" class="profile-save">Zapisz profil</button>
+            </div>
+          </div>
+          <p id="profile-result" class="profile-result" role="status" aria-live="polite"></p>
+        </form>
+
+        <aside class="profile-preview" aria-label="Podgląd profilu na żywo">
+          <p class="profile-preview-label">PODGLĄD NA ŻYWO</p>
+          <div class="profile-preview-card" id="profile-preview-card">
+            <div class="profile-preview-cover" id="preview-cover" data-banner="aurora"><span aria-hidden="true"></span></div>
+            <div class="profile-preview-body">
+              <span class="profile-avatar-ring profile-avatar-ring--mini" id="preview-ring" data-frame="none">
+                <img id="preview-avatar" src="/assets/avatars/comet.svg" alt="" width="84" height="84">
+              </span>
+              <div class="profile-preview-identity">
+                <strong id="preview-name" data-profile-color="mint">Twoja nazwa</strong>
+                <small id="preview-handle">@konto</small>
+                <p id="preview-bio">Tu pojawi się kilka słów o Tobie.</p>
+              </div>
+            </div>
+          </div>
+          <div class="profile-complete">
+            <span>Kompletność profilu</span><b id="profile-complete-value">40%</b>
+          </div>
+          <div class="profile-complete-bar" role="presentation"><i id="profile-complete-bar" style="width:40%"></i></div>
+          <p class="profile-preview-note">Nick zmieniasz w osobnej sekcji poniżej — serwer pilnuje limitu 5 minut między zmianami.</p>
+        </aside>
+      </div>
+
+      <form id="nickname-form" class="profile-nickname">
+        <div class="profile-nickname-copy">
+          <label class="profile-label" for="nickname-input">Publiczny nick <span>2–32 znaki</span></label>
+          <input id="nickname-input" maxlength="32" autocomplete="off" placeholder="Opcjonalny nick">
+          <p class="profile-note">Nick widzą wszyscy obok niezmienionej nazwy konta. Puste pole usuwa nick. Możesz go zmieniać co 5 minut; administrator także może go ustawić.</p>
+        </div>
+        <div class="profile-nickname-actions">
+          <button type="submit" id="nickname-save" class="profile-save profile-save--ghost">Zapisz nick</button>
+          <p id="nickname-result" class="profile-result" role="status" aria-live="polite"></p>
+        </div>
       </form>
     </section>
+
     <p class="profile-footer">To Twoje ogólne konto na stronie i w obsługiwanych projektach. <a href="/logowanie?zarzadzaj=1">Hasło i wylogowanie →</a> · <a href="/konto-demo">Wypróbuj logowanie w projekcie →</a></p>
   </main>
   <script defer src="/js/media-capture.js?v=2"></script>
