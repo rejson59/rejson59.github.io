@@ -47,19 +47,59 @@ jobs:
           fetch-depth: 0
 
       - name: Java 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '17'
 
       - name: Android SDK
-        uses: android-actions/setup-android@v3
+        run: |
+          # Runner GitHub-hosted ma SDK Androida już zainstalowane. Korzystamy
+          # z niego zamiast pobierać osobne cmdline-tools — właśnie to pobieranie
+          # wywalało poprzednie wydanie. Szukamy katalogu po kolei we wszystkich
+          # znanych miejscach, żeby zmiana obrazu runnera nas nie zatrzymała.
+          SDK=""
+          for candidate in "${ANDROID_SDK_ROOT:-}" "${ANDROID_HOME:-}" /usr/local/lib/android/sdk /opt/android-sdk "$HOME/Android/Sdk"; do
+            if [ -n "$candidate" ] && [ -d "$candidate/platforms" ]; then SDK="$candidate"; break; fi
+          done
+          if [ -z "$SDK" ]; then
+            echo "::error::Nie znaleziono SDK Androida na runnerze."
+            exit 1
+          fi
+          echo "ANDROID_SDK_ROOT=$SDK" >> "$GITHUB_ENV"
+          echo "ANDROID_HOME=$SDK" >> "$GITHUB_ENV"
+          export ANDROID_SDK_ROOT="$SDK" ANDROID_HOME="$SDK"
+          echo "SDK: $SDK"
+          echo "Platformy: $(ls "$SDK/platforms" | tr '\n' ' ')"
+          echo "Build-tools: $(ls "$SDK/build-tools" | tr '\n' ' ')"
+          # sdkmanager (jeśli jest) dokładamy do PATH — przyda się w kolejnym kroku.
+          for bin in "$SDK/cmdline-tools/latest/bin" "$SDK/cmdline-tools/bin" "$SDK/tools/bin"; do
+            if [ -x "$bin/sdkmanager" ]; then echo "$bin" >> "$GITHUB_PATH"; break; fi
+          done
 
       - name: Platforma i narzędzia Androida
         run: |
-          # Środowisko runnera ma zwykle API 34/35; instalujemy tylko braki.
-          yes | sdkmanager --licenses > /dev/null 2>&1 || true
-          sdkmanager "platforms;android-35" "build-tools;35.0.0" "platform-tools" > /dev/null
+          # Instalujemy tylko to, czego na runnerze brakuje; brak sdkmanagera
+          # nie jest błędem, dopóki potrzebne wersje są już na dysku.
+          set -euo pipefail
+          SDK="$ANDROID_SDK_ROOT"
+          SM="$(command -v sdkmanager || true)"
+          if [ -n "$SM" ]; then yes | "$SM" --licenses > /dev/null 2>&1 || true; fi
+          MISSING=""
+          [ -d "$SDK/platforms/android-35" ] || MISSING="$MISSING platforms;android-35"
+          [ -d "$SDK/build-tools/35.0.0" ] || MISSING="$MISSING build-tools;35.0.0"
+          [ -d "$SDK/platform-tools" ] || MISSING="$MISSING platform-tools"
+          if [ -z "$MISSING" ]; then
+            echo "Wszystkie potrzebne pakiety są już zainstalowane."
+            exit 0
+          fi
+          if [ -z "$SM" ]; then
+            echo "::error::Brak pakietów:$MISSING, a sdkmanager nie jest dostępny."
+            exit 1
+          fi
+          echo "Doinstalowuję:$MISSING"
+          # shellcheck disable=SC2086
+          "$SM" $MISSING > /dev/null
 
       - name: Cache Gradle
         uses: gradle/actions/setup-gradle@v4
