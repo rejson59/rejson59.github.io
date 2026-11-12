@@ -38,7 +38,7 @@ body .rj-shared-header :is(.site-nav a,.nav-more>summary,.theme-toggle,.hamburge
 
 /* Kontury, odbicia i głębia, ale bez zmiany rozmiarów ani zawartości kart. */
 body.rj-home :is(.profile-card,.project-card .card-inner,.board-cta-inner,.comm-cta-inner,.universe-links a),
-body.rj-account :is(.comm-auth-inner,.account-benefits,.profile-card-view,.profile-editor),
+body.rj-account :is(.comm-auth-inner,.account-benefits),
 body.rj-partner :is(.partner-option,.partner-form-card,.partner-note),
 body.rj-services .services-grid article,
 body.rj-board :is(.board-toolbar,.kpi-card),

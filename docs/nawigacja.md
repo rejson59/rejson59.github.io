@@ -39,3 +39,26 @@ Na starszych stronach przekierowujących i awaryjnych ekranach podróży domek j
 - Na wąskim telefonie (≤560 px) etykieta „mini reklamy” chowa się, żeby dwie promocje mieściły się obok siebie; kafelek ma 50 px wysokości, a pasek 60 px.
 - **Pasek przewijania** (`css/scrollbar.css` + `js/scrollbar.js`) jest wspólny dla całego serwisu: zaokrąglona „kropla” na desktopie, na telefonie 4 px i prawie przezroczysta, dopóki strona stoi. Klasa `rj-scrolling` (dodawana na 700 ms po ruchu) rozjaśnia suwak tylko wtedy, gdy naprawdę się przewija.
 - Panel admina na telefonie: pozioma, przyklejona szyna zakładek (46 px, `scroll-snap`), a nie kolumna pigułek. Wcześniejsza reguła `grid` + `width: 100%` w `css/glass-last.css` działa teraz wyłącznie od 1101 px — na telefonie to ona rozdmuchiwała listę sekcji na cały ekran.
+
+## Profil 2.0, ikony RejTools i RejClass (listopad 2026)
+
+- **Nawigacja:** RejTools dostał ikonę narzędzi (`#tools` w `assets/ui-icons.svg`), a RejClass — książkę
+  (`#book`). RejClass wyszedł z panelu „Odkryj więcej” i stoi teraz w głównym pasku, zaraz po RejTools,
+  czyli z resztą podstron zaczynających się na „Rej”. Kolejność na każdej stronie:
+  Konto · RejFile · RejSejf · RejChat · RejTools · RejClass · Więcej.
+- **Adresy:** pozycja RejClass w pasku ma być zawsze `/rejclass` (bezwzględny) — pilnuje tego
+  `scripts/jsdom/profile-studio.test.js`.
+- **Profil (`/profil`)** to teraz dwie zakładki: *Profil* (to, co widzą inni) i *Edytuj* (ten sam
+  ekran, w którym podgląd na żywo zmienia się razem z wyborami). Nowy arkusz `css/profile-studio.css`
+  ma własny, ciemniejszy tint szkła (`--pf-glass`), bo wspólne warstwy `glass-update.css` i
+  `glass-last.css` rozjaśniały kartę na tyle, że na tęczowej tapecie ginął tekst. Karta profilu jest
+  teraz wyjęta z obu tych list — nie dokładaj jej tam ponownie.
+- **Galeria awatarów:** 24 wzory w czterech kategoriach (Kosmos, Zwierzęta, Natura, Klimat) plus
+  wyszukiwarka i przycisk „Zaskocz mnie”. Katalog jest jedno źródło: `js/rejchat-profiles.js`
+  (`avatarCatalog`), pliki leżą w `assets/avatars/`.
+- **Nowe rzeczy w profilu:** ramka awatara (6 wariantów), tło nagłówka (6 wariantów), kompletność
+  profilu, licznik znaków bio z podpowiedziami, oznaczanie niezapisanych zmian i przycisk
+  „Przywróć”. Wszystko zapisuje się jednym RPC `rejchat_update_profile`.
+- **Baza:** migracja `supabase/2026-11-12_rejchat_profile_studio.sql` dodaje kolumny `frame` i
+  `banner`, poszerza listę awatarów i przekazuje je w `rejchat_get_profiles` (razem z `updated_at`).
+  Stare wywołanie z czterema argumentami dalej działa, bo nowe parametry mają wartości domyślne.

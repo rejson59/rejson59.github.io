@@ -76,7 +76,7 @@ html[data-theme="light"] {
 body:not(.rj-community) :is(
   .tool, .tools-hero, .tools-hero-art, .tools-notice, .hero, .tools-search, .tools-filters button, .tools-pills span, .tools-local,
   .card, .glass-card, .empty-state, .stat, .metric-badge,
-  .profile-card, .profile-card-view, .card-inner, .card-metric, .card-preview, .card-preview-fallback,
+  .profile-card, .card-inner, .card-metric, .card-preview, .card-preview-fallback,
   .board-cta-inner, .comm-cta-inner, .comm-hero, .comm-sidebar, .comm-chat, .comm-chat-head, .comm-chat-form,
   .comm-card, .comm-input, .comm-layout, .comm-online-card,
   .partner-form-card, .partner-admin-card, .partner-home-inner, .partner-option, .partner-note,
@@ -103,7 +103,7 @@ body:not(.rj-community) :is(
 html[data-theme="light"] body:not(.rj-community) :is(
   .tool, .tools-hero, .tools-hero-art, .tools-notice, .hero, .tools-search, .tools-filters button, .tools-pills span, .tools-local,
   .card, .glass-card, .empty-state, .stat, .metric-badge,
-  .profile-card, .profile-card-view, .card-inner, .card-metric, .card-preview, .card-preview-fallback,
+  .profile-card, .card-inner, .card-metric, .card-preview, .card-preview-fallback,
   .board-cta-inner, .comm-cta-inner, .comm-hero, .comm-sidebar, .comm-chat, .comm-chat-head, .comm-chat-form,
   .comm-card, .comm-input, .comm-layout, .comm-online-card,
   .partner-form-card, .partner-admin-card, .partner-home-inner, .partner-option, .partner-note,
