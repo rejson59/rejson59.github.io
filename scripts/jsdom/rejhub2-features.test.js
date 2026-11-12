@@ -128,7 +128,7 @@ check('baza pilnuje jednej kwoty na wszystkich magazynach', () => {
 check('konto pokazuje zajęte miejsce', () => {
   const html = read('rejhub2/logowanie.html');
   assert.ok(html.includes('id="quota-bar"'));
-  assert.ok(html.includes('/js/account-quota.js?v=1'));
+  assert.ok(html.includes('/js/account-quota.js?v=2'));
   assert.ok(read('js/account-quota.js').includes('profile_usage_breakdown'));
 });
 

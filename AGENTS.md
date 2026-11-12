@@ -221,6 +221,34 @@ tani, inaczej strona „glitchuje": karta znika i wraca, a reszta strony się pr
   `hardwareConcurrency <= 4`, ale obrót zostaje.
 - Diagnostyka w konsoli: `RJTilt.enabled`, `RJTilt.sheen`, `RJTilt.reason`.
 
+## 3d. Sieć i odpytywanie — zasady wydajności
+
+RejChat i strony społeczności rozmawiają z Supabase przez `js/rj-net.js`
+(`window.RJNet`). Nie dodawaj nowych `setInterval` z własnym `fetch`.
+
+- **Każde żądanie ma limit czasu** (15 s) i ponowienie z odstępem. Ponawiamy
+  tylko to, co ma sens: brak sieci, `408`, `425`, `429`, `5xx`. Błąd reguły
+  (`4xx`) wraca od razu — powtarzanie „złego parametru” nic nie da.
+- **Identyczne żądania w tej samej chwili to jedno wyjście** (`dedupe`).
+  Kilka sekcji proszących o te same profile nie mnoży ruchu.
+- **Maksymalnie 6 równoczesnych żądań**; reszta czeka w kolejce. To chroni
+  Supabase przed burzą po wejściu na stronę (wcześniej kończyło się to
+  `HTTP 500` w `error_reports`).
+- **Cykliczne zadania** ustawiaj przez `RJNet.every(nazwa, ms, fn, {when})`:
+  brak nakładania, pauza przy ukrytej karcie, odstęp rosnący po błędzie
+  (do 60 s) i powrót do bazy po sukcesie.
+- **Odpytywanie ma być leniwe**: czat 4,5 s, wpisy 25 s, prywatne 6 s,
+  powiadomienia 12 s, obecność 25 s, liczniki 45 s. Krótsze odstępy nic nie
+  dają, bo i tak dociągamy stan po akcji użytkownika i po powrocie do karty.
+- **Błąd sieci nie może zostawić pustki**: pokaż „Ponawiam połączenie…”
+  (`rj:net-state`) albo przycisk „Spróbuj ponownie”, nigdy martwy ekran.
+- **Lista rozmowy ma skończoną wysokość** — na telefonie mierzy ją
+  `js/chat-viewport.js` (`--rj-chat-fit`). `height: auto` na tafli czatu
+  oznacza listę rosnącą bez końca i brak przewijania; nie wracać do tego.
+- **Soczewka SVG** (`data-glass-lens`) nie działa na telefonie i małych
+  ekranach — `feDisplacementMap` na `backdrop-filter` to najdroższa operacja
+  GPU na stronie. Zostaje samo rozmycie z CSS.
+
 ## 4. Testy loadera
 
 Dwa zestawy, oba trzeba przepuścić po każdej zmianie w `js/loader.js`, `css/loader.css`

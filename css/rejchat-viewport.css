@@ -1,0 +1,73 @@
+/* © 2026 rejson59 — wszystkie prawa zastrzeżone. Licencja: /LICENSE
+   ==========================================================================
+   Wymiary okna RejChatu — warstwa ostatnia, po glass2/island/glass-last.
+
+   Na telefonie tafla musi mieć skończoną wysokość. Bez tego lista wiadomości
+   (flex-basis: 0) rosła razem z treścią, strona wydłużała się bez końca,
+   a lista nie miała własnego przewijania — przewijała się cała strona.
+   `--rj-chat-fit` ustawia skrypt chat-viewport.js na podstawie realnej
+   przestrzeni między górą tafli a dolną krawędzią ekranu.
+   ========================================================================== */
+
+body.rj-community .comm-chat-list,
+body.rj-community #dm-messages {
+  min-height: 0;
+  scroll-padding-block: 10px;
+  overscroll-behavior: contain;
+  scroll-behavior: auto; /* własne dojeżdżanie do końca; CSS smooth walczyło z nim */
+}
+
+@media (max-width: 860px) {
+  body.rj-community .comm-layout {
+    /* rejchat-flow.css ustawia tu `grid-template-rows:auto` — przy stałej
+       wysokości tafli wiersz czatu dostawał wysokość treści i lista znów
+       rosła w nieskończoność (bez własnego paska przewijania). */
+    grid-template-rows: auto minmax(0, 1fr) !important;
+    height: var(--rj-chat-fit, calc(100dvh - 152px)) !important;
+    max-height: var(--rj-chat-fit, calc(100dvh - 152px)) !important;
+    min-height: 220px !important;
+    overflow: hidden !important;
+  }
+
+  body.rj-community .comm-primary,
+  body.rj-community #panel-chat,
+  body.rj-community #chat-public-view,
+  body.rj-community #chat-private-view,
+  body.rj-community .comm-chat,
+  body.rj-community .dm-view {
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  body.rj-community #chat-public-view,
+  body.rj-community #chat-private-view,
+  body.rj-community .comm-chat,
+  body.rj-community .dm-view {
+    flex: 1 1 auto !important;
+    height: 100% !important;
+  }
+
+  body.rj-community #chat-public-view > #chat-list,
+  body.rj-community #dm-thread > #dm-messages {
+    flex: 1 1 0 !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Wyspa i mini reklamy są przyklejone do dołu — tafla nie może wchodzić pod nie. */
+  body.rj-community:has(#rj-mobile-ads:not([hidden])) .comm-layout,
+  html.has-rj-island body.rj-community .comm-layout {
+    scroll-margin-bottom: 16px;
+  }
+}
+
+@media (min-width: 861px) {
+  /* Rezerwa na pasek przewijania: bez niej lista „skacze” o 9 px w bok,
+     gdy pojawia się lub znika pionowy suwak. */
+  body.rj-community .comm-chat-list,
+  body.rj-community #dm-messages {
+    scrollbar-gutter: stable;
+  }
+}

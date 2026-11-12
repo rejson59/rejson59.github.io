@@ -46,15 +46,19 @@
     if (!box) return;
     if (!account) { box.hidden = true; return; }
     box.hidden = false;
-    fetch(BASE, {
-      method: 'POST',
-      cache: 'no-store',
-      headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ p_token: account.token })
-    }).then(function (response) {
-      if (!response.ok) throw new Error('offline');
-      return response.json();
-    }).then(paint).catch(function () {
+    var headers = { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' };
+    var request = window.RJNet && window.RJNet.rpc
+      ? window.RJNet.rpc(BASE, { p_token: account.token }, { label: 'account_quota', headers: headers, retries: 2 })
+      : fetch(BASE, {
+          method: 'POST',
+          cache: 'no-store',
+          headers: headers,
+          body: JSON.stringify({ p_token: account.token })
+        }).then(function (response) {
+          if (!response.ok) throw new Error('offline');
+          return response.json();
+        });
+    request.then(paint).catch(function () {
       var text = document.getElementById('quota-text');
       if (text) text.textContent = 'Nie udało się odczytać zajętego miejsca.';
     });

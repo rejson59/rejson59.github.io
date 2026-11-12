@@ -22,8 +22,12 @@
   function getSession() {
     var session = stored();
     if (!session) return Promise.resolve(null);
-    return fetch(URL, { method:"POST", cache:"no-store", headers:{ apikey:KEY, Authorization:"Bearer " + KEY, "Content-Type":"application/json" }, body:JSON.stringify({p_token:session.token}) })
-      .then(function (r) { if (!r.ok) throw new Error("Nie można potwierdzić konta."); return r.json(); })
+    var headers = { apikey:KEY, Authorization:"Bearer " + KEY, "Content-Type":"application/json" };
+    var request = window.RJNet && window.RJNet.rpc
+      ? window.RJNet.rpc(URL, { p_token: session.token }, { label:"community_whoami", headers: headers, retries: 2 })
+      : fetch(URL, { method:"POST", cache:"no-store", headers: headers, body:JSON.stringify({p_token:session.token}) })
+          .then(function (r) { if (!r.ok) throw new Error("Nie można potwierdzić konta."); return r.json(); });
+    return request
       .then(function (r) {
         var current = stored();
         if (!current || current.token !== session.token) return null;

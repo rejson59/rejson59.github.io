@@ -8,8 +8,13 @@
   var account=null, epoch=0, editing=null, busy=false;
   function status(message){$('safe-status').textContent=message||'';}
   function rpc(name,data,session){
-    return fetch(BASE+name,{method:'POST',cache:'no-store',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json'},body:JSON.stringify(Object.assign({p_token:session.token},data||{}))})
-      .then(function(res){return res.json().catch(function(){return null;}).then(function(body){if(!res.ok)throw new Error(body&&body.message||'Nie udało się połączyć z RejSejfem.');return body;});});
+    var url=BASE+name, headers={apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json'}, body=Object.assign({p_token:session.token},data||{});
+    /* Odczyt listy i notatki ponawiamy; zapis i kasowanie nie — powtórzone
+       po zerwanym połączeniu mogłyby zrobić wszystko dwa razy. */
+    var readOnly=window.RJNet&&window.RJNet.readOnly?window.RJNet.readOnly(name):/(?:^|_)(?:list|get|status|usage)(?:$|_)/.test(name);
+    if(window.RJNet&&window.RJNet.rpc)return window.RJNet.rpc(url,body,{label:name,headers:headers,retries:readOnly?2:0});
+    return fetch(url,{method:'POST',cache:'no-store',headers:headers,body:JSON.stringify(body)})
+      .then(function(res){return res.json().catch(function(){return null;}).then(function(json){if(!res.ok)throw new Error(json&&json.message||'Nie udało się połączyć z RejSejfem.');return json;});});
   }
   function current(session,version){return account && session && account.token===session.token && version===epoch;}
   function bytes(n){return n>=1048576?(n/1048576).toFixed(2)+' MiB':n>=1024?(n/1024).toFixed(1)+' KiB':n+' B';}

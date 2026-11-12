@@ -51,5 +51,8 @@
   }
   document.addEventListener('visibilitychange',function(){if(document.visibilityState!=='visible')since.clear();});
   window.addEventListener('blur',function(){since.clear();});
-  setInterval(scan,1000);
+  /* Odczytów nie trzeba liczyć co sekundę: próg to 800 ms widoczności,
+     a skanowanie pozycji wszystkich wiadomości wymusza układ strony. */
+  if(window.RJNet&&window.RJNet.every){window.RJNet.every('rejchat-reads',2500,function(){scan();});}
+  else setInterval(scan,2500);
 })(window,document);

@@ -1,0 +1,62 @@
+/* © 2026 rejson59 — wszystkie prawa zastrzeżone. Licencja: /LICENSE
+   ==========================================================================
+   Ostatnia warstwa wydajnościowa. Ładowana po arkuszach szkła, więc może
+   nadpisać tokeny bez walki ze specyficznością.
+
+   1. Telefon: rozmycie 30 px na całych taflach kosztuje najwięcej klatek.
+      14 px nadal wygląda jak szkło, ale GPU ma o połowę mniej pracy.
+   2. Długie listy (wpisy, projekty, wiadomości) malują się dopiero, gdy
+      wchodzą w ekran — poza ekranem przeglądarka ich nie renderuje.
+   3. Ograniczenie ruchu wyłącza ozdobne animacje, zostawiając układ.
+   ========================================================================== */
+
+@media (max-width: 900px), (pointer: coarse) {
+  /* Wyższa specyficzność niż `:root` z glass-last.css — inaczej 30 px
+     rozmycia wygrywa kolejnością arkuszy. */
+  html[data-theme] {
+    --gl-blur: blur(14px) saturate(1.4);
+    --rm-blur: blur(12px) saturate(1.35);
+  }
+}
+
+/* `content-visibility` na kartach poza ekranem: zysk przy długim feedzie,
+   bez wpływu na pozycję (rozmiar zapasowy jest zbliżony do realnego). */
+.post-card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 320px;
+}
+
+.project-card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 360px;
+}
+
+/* Animacje, które nie niosą informacji, nie muszą się odtwarzać na telefonie. */
+@media (max-width: 900px) and (prefers-reduced-motion: no-preference) {
+  .rj-mobile-ads-items {
+    scroll-behavior: smooth;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Tryb oszczędny włączany przez stronę (Save-Data / brak pamięci). */
+html.rj-fx-lite .glass-card,
+html.rj-fx-lite .comm-layout,
+html.rj-fx-lite .rj-shared-header {
+  -webkit-backdrop-filter: blur(10px) !important;
+  backdrop-filter: blur(10px) !important;
+}
+
+html.rj-fx-lite [data-glass-lens] {
+  --glass-lens: none;
+}

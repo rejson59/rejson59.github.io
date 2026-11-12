@@ -20,6 +20,7 @@
   window.addEventListener('rj:session-change',sessionChanged);
   window.addEventListener('storage',function(e){if(e.key==='rejson_community_session_v1'||e.key===null)sessionChanged();});
   document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')refresh();});
-  window.setInterval(function(){if(document.visibilityState==='visible'&&api.session())refresh();},15000);
+  if(window.RJNet&&window.RJNet.every){window.RJNet.every('rejchat-mute',30000,refresh,{when:function(){return !!api.session();}});}
+  else window.setInterval(function(){if(document.visibilityState==='visible'&&api.session())refresh();},30000);
   refresh();
 })(window,document);

@@ -68,15 +68,27 @@
   }
   var input=document.getElementById('chat-search'),list=document.getElementById('chat-list'),status=document.getElementById('chat-search-status');
   function filter(){
-    var q=input.value.trim().toLocaleLowerCase('pl'), count=0,all=0;
-    list.querySelectorAll('.chat-msg').forEach(function(row){all++;var fullLinks=Array.from(row.querySelectorAll('.chat-text a[title]')).map(function(a){return a.title;}).join(' ');var show=!q||(row.textContent+' '+fullLinks).toLocaleLowerCase('pl').indexOf(q)>=0;row.hidden=!show;if(show)count++;});
+    var q=input.value.trim().toLocaleLowerCase('pl'), count=0,all=0,changed=false;
+    list.querySelectorAll('.chat-msg').forEach(function(row){
+      all++;
+      var fullLinks=Array.from(row.querySelectorAll('.chat-text a[title]')).map(function(a){return a.title;}).join(' ');
+      var show=!q||(row.textContent+' '+fullLinks).toLocaleLowerCase('pl').indexOf(q)>=0;
+      var wantHidden=!show;
+      if(row.hidden!==wantHidden){row.hidden=wantHidden;changed=true;}
+      if(show)count++;
+    });
+    /* Bez wpisanej frazy i bez ukrytych wierszy nie ma czego przeliczać —
+       wcześniej każda nowa wiadomość uruchamiała pełny przebieg po DOM. */
+    if(!q&&!changed)return;
     if(window.RJChatMessageUI)window.RJChatMessageUI.group(list);
     status.textContent=q?'Pasuje '+count+' z '+all+' wczytanych wiadomości.':'Widoczne są ostatnie wczytane wiadomości.';
   }
+  var filterFrame=0;
+  function scheduleFilter(){if(filterFrame)return;filterFrame=requestAnimationFrame(function(){filterFrame=0;filter();});}
   var searchToggle=document.getElementById('chat-search-toggle'),searchPanel=document.getElementById('chat-search-panel');
   function closeSearch(){searchPanel.hidden=true;searchToggle.setAttribute('aria-expanded','false');if(input.value){input.value='';filter();}searchToggle.focus();}
   searchToggle.addEventListener('click',function(){if(searchPanel.hidden){searchPanel.hidden=false;searchToggle.setAttribute('aria-expanded','true');input.focus();}else closeSearch();});
   document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!searchPanel.hidden&&searchPanel.contains(document.activeElement)){e.preventDefault();closeSearch();}});
   input.addEventListener('input',filter);
-  new MutationObserver(filter).observe(list,{childList:true});filter();
+  new MutationObserver(scheduleFilter).observe(list,{childList:true});filter();
 })();

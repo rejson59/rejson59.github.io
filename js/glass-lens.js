@@ -47,6 +47,15 @@
     try {
       if (window.matchMedia && window.matchMedia("(prefers-reduced-transparency: reduce)").matches) return true;
     } catch (e2) { /* brak zapytania */ }
+    /* Telefon i mały ekran: feDisplacementMap na backdrop-filter to dla GPU
+       telefonu najdroższa operacja na stronie — to ona odpowiadała za spadki
+       klatek przy przewijaniu. Zostaje samo rozmycie z CSS (szkło bez zmiany
+       wyglądu, tylko bez załamania krawędzi). */
+    try {
+      if (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) return true;
+      if (window.innerWidth <= 900) return true;
+      if (navigator.deviceMemory && navigator.deviceMemory <= 4) return true;
+    } catch (e3) { /* brak API */ }
     return false;
   }
 
