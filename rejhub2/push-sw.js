@@ -1,10 +1,11 @@
 /* © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
    Kopiowanie i ponowne użycie bez pisemnej zgody zabronione. Licencja: /LICENSE, /licencja */
 /*!
- * RejHub 2.0 — service worker (rejhub.vercel.app), wersja 3.
+ * RejHub 2.0 — service worker (rejhub.vercel.app), wersja 4.
  *
  * Dwie rzeczy naraz:
- *   1. POWIADOMIENIA PUSH — bez zmian względem wersji 2 (push, notificationclick),
+ *   1. POWIADOMIENIA PUSH — push, notificationclick i powiadomienie testowe
+ *      na żądanie strony (RJ_NOTIFY_TEST),
  *   2. LOKALNA PAMIĘĆ POWŁOKI — CSS, JS, fonty i tapety zostają w przeglądarce,
  *      więc kolejne wejście i przejścia między podstronami nie czekają na sieć,
  *      a nowa wersja strony pobiera się po cichu w tle.
@@ -24,7 +25,7 @@
  */
 'use strict';
 
-var VERSION = 'v3';
+var VERSION = 'v4';
 var PREFIX = 'rj-shell-';
 var HTML_CACHE = PREFIX + 'html-' + VERSION;
 var ASSET_CACHE = PREFIX + 'assets-' + VERSION;
@@ -411,6 +412,28 @@ function warmUrls(urls) {
 self.addEventListener('message', function (event) {
   var data = event.data;
   if (!data || typeof data !== 'object' || !data.type) return;
+
+  /* Test z panelu powiadomień: pokazujemy powiadomienie dokładnie tak, jak
+     zrobi to push z serwera. Odpowiedź wraca do strony, więc użytkownik
+     dostaje potwierdzenie także wtedy, gdy system ukryje baner. */
+  if (data.type === 'RJ_NOTIFY_TEST') {
+    event.waitUntil(
+      self.registration.showNotification('RejHub — powiadomienia działają', {
+        body: 'To powiadomienie testowe. Jeśli je widzisz, zgoda i subskrypcja są w porządku.',
+        icon: '/hub/brand-mark.svg',
+        badge: '/hub/brand-mark.svg',
+        tag: 'rejhub:test',
+        renotify: true,
+        data: { url: '/rejchat' },
+        vibrate: [40, 30, 40]
+      }).then(function () {
+        reply(event, { type: 'RJ_NOTIFY_TEST_DONE', ok: true });
+      }).catch(function (error) {
+        reply(event, { type: 'RJ_NOTIFY_TEST_DONE', ok: false, error: String((error && error.message) || error).slice(0, 200) });
+      })
+    );
+    return;
+  }
 
   if (data.type === 'RJ_SHELL_CACHE_WARM' && Array.isArray(data.urls)) {
     event.waitUntil(

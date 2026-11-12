@@ -12,6 +12,57 @@
 import crypto from "node:crypto";
 
 const COOKIE_NAME = "rejhub_admin";
+/* Ochrona przed zgadywaniem hasła: 10 nieudanych prób z jednego adresu IP
+   w ciągu 10 minut blokuje kolejne próby na 10 minut. Licznik jest w pamięci
+   instancji funkcji — w praktyce wystarcza, żeby odciąć proste boty, a nie
+   udaje pełnego rate-limitu po stronie bazy. */
+const LIMIT = 10;
+const WINDOW_MS = 10 * 60 * 1000;
+const attempts = new Map();
+
+function clientIp(request) {
+  const forwarded = request.headers && (request.headers["x-forwarded-for"] || request.headers["X-Forwarded-For"]);
+  const first = String(forwarded || "").split(",")[0].trim();
+  return first || (request.socket && request.socket.remoteAddress) || "unknown";
+}
+
+function remaining(request) {
+  const key = clientIp(request);
+  const now = Date.now();
+  const entry = attempts.get(key);
+  if (!entry || entry.reset <= now) return { key, count: 0, retry: 0 };
+  return { key, count: entry.count, retry: Math.ceil((entry.reset - now) / 1000) };
+}
+
+function noteFailure(request) {
+  const key = clientIp(request);
+  const now = Date.now();
+  const entry = attempts.get(key);
+  if (!entry || entry.reset <= now) attempts.set(key, { count: 1, reset: now + WINDOW_MS });
+  else entry.count += 1;
+  if (attempts.size > 5000) {
+    for (const [ip, value] of attempts) {
+      if (value.reset <= now) attempts.delete(ip);
+    }
+  }
+}
+
+function clearFailures(request) {
+  attempts.delete(clientIp(request));
+}
+
+/* Żądanie z przeglądarki ma nagłówek Origin. Jeśli podano go jawnie i nie
+   zgadza się z hostem, to nie jest to formularz z naszej strony — odrzucamy
+   bez dotykania Supabase (ochrona przed CSRF). */
+function sameOrigin(request) {
+  const origin = request.headers && request.headers.origin;
+  if (!origin) return true;
+  try {
+    return new URL(origin).host === request.headers.host;
+  } catch (error) {
+    return false;
+  }
+}
 /* Czytelna dla skryptów „podpowiedź”, że w tej przeglądarce jest sesja
    administratora. Nie chroni niczego — od tego jest podpisane, HttpOnly
    ciasteczko wyżej i brama w `middleware.js`. Służy tylko do tego, żeby
@@ -68,6 +119,16 @@ export default async function handler(request, response) {
     return response.status(405).json({ error: "method_not_allowed" });
   }
 
+  if (!sameOrigin(request)) {
+    return response.status(403).json({ error: "forbidden_origin" });
+  }
+
+  const state = remaining(request);
+  if (state.count >= LIMIT) {
+    response.setHeader("Retry-After", String(Math.max(1, state.retry)));
+    return response.status(429).json({ error: "too_many_attempts", retry_after: Math.max(1, state.retry) });
+  }
+
   const supabaseUrl = process.env.SUPABASE_URL;
   const anonKey = process.env.SUPABASE_ANON_KEY;
   const secret = process.env.REJHUB_SESSION_SECRET;
@@ -90,6 +151,10 @@ export default async function handler(request, response) {
   if (!email || !password) {
     return response.status(400).json({ error: "missing_credentials" });
   }
+  if (email.length > 254 || password.length > 200) {
+    noteFailure(request);
+    return response.status(400).json({ error: "invalid_credentials" });
+  }
 
   try {
     const tokenResponse = await fetch(supabaseUrl + "/auth/v1/token?grant_type=password", {
@@ -99,6 +164,7 @@ export default async function handler(request, response) {
     });
 
     if (!tokenResponse.ok) {
+      noteFailure(request);
       return response.status(401).json({ error: "invalid_credentials" });
     }
 
@@ -125,8 +191,10 @@ export default async function handler(request, response) {
 
     const isAdmin = await adminResponse.json();
     if (isAdmin !== true) {
+      noteFailure(request);
       return response.status(403).json({ error: "forbidden" });
     }
+    clearFailures(request);
 
     response.setHeader("Set-Cookie", [
       sessionCookie(signSession(uid, secret), MAX_AGE_SECONDS),

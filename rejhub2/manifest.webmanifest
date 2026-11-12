@@ -1,0 +1,78 @@
+{
+  "name": "RejHub — Twoje miejsce w sieci",
+  "short_name": "RejHub",
+  "description": "Czat, pliki, sejf, narzędzia, lekcje i aplikacje RejHuba: planer, gry, muzyka, memy i asystent.",
+  "lang": "pl",
+  "dir": "ltr",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "any",
+  "background_color": "#0b0e13",
+  "theme_color": "#0b0e13",
+  "categories": [
+    "productivity",
+    "social",
+    "entertainment"
+  ],
+  "icons": [
+    {
+      "src": "/assets/app/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/app/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/app/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "RejChat",
+      "short_name": "Czat",
+      "url": "/rejchat",
+      "icons": [
+        {
+          "src": "/assets/app/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "RejPlanner",
+      "short_name": "Planer",
+      "url": "/rejplanner",
+      "icons": [
+        {
+          "src": "/assets/app/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "RejGames",
+      "short_name": "Gry",
+      "url": "/rejgames",
+      "icons": [
+        {
+          "src": "/assets/app/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}

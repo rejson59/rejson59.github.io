@@ -380,6 +380,11 @@ console.log('\n=== H. PANEL NA TELEFONIE, PASEK REKLAM I PRZEWIJANIE ===');
   check('mini reklamy stoją pod topbarem i przewijają się same', () => {
     assert.match(MOBILE_ADS_CSS, /position:sticky/);
     assert.match(MOBILE_ADS_CSS, /top:var\(--rj-ads-top, 60px\)/);
+    assert.match(MOBILE_ADS_CSS, /height:72px/);
+    assert.match(MOBILE_ADS_CSS, /rj-mobile-ads-frame/);
+    assert.match(MOBILE_ADS_CSS, /rj-mobile-ad-desc/);
+    assert.match(MOBILE_ADS_JS, /rj-mobile-ad-title/);
+    assert.match(MOBILE_ADS_JS, /Czat na żywo ze społecznością/);
     assert.ok(!MOBILE_ADS_CSS.includes('inset:auto 0 0'), 'pasek nadal przyklejony do dołu');
     assert.match(MOBILE_ADS_CSS, /rj-mobile-ads-hint \{ display:none; \}/, 'podpis „przesuń” ma być ukryty');
     assert.match(MOBILE_ADS_JS, /STEP_MS = 3500/, 'jedna promocja zostaje 3,5 s');

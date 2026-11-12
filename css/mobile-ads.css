@@ -9,8 +9,10 @@
    z nim, a pod nim zostaje cała wysokość na treść.
 
    Widać jedną promocję na raz (kafel na całą szerokość), a zmiana następuje
-   co 3,5 s — patrz js/mobile-ads.js. Podpis „przesuń →” zniknął, bo nie ma
-   już czego tłumaczyć; gest przewijania działa dalej.
+   co 3,5 s — patrz js/mobile-ads.js. Każda promocja ma tytuł i krótki opis,
+   a cały zestaw leży w zaokrąglonej ramce („taca”), żeby pasek czytał się jak
+   karta szkła, a nie jak taśma z napisami. Podpis „przesuń →” zniknął, bo nie
+   ma już czego tłumaczyć; gest przewijania działa dalej.
    -------------------------------------------------------------------------- */
 
 #rj-mobile-ads-check { position:fixed !important; z-index:2147482999 !important; visibility:hidden !important; width:0 !important; height:0 !important; pointer-events:none !important; }
@@ -19,8 +21,9 @@
 
 @media (max-width:1199px) {
   /* Pasek nie leży już na dole, więc nie rezerwujemy miejsca pod wyspą. */
-  html.rj-mobile-ads-active { --rj-mobile-ads-height:0px; --rj-top-ads-height:60px; }
-  html.rj-mobile-ads-active { scroll-padding-top:calc(var(--rj-ads-top, 60px) + 60px); }
+  /* 72 px: 60 px ramki + 6 px oddechu z góry i z dołu. */
+  html.rj-mobile-ads-active { --rj-mobile-ads-height:0px; --rj-top-ads-height:72px; }
+  html.rj-mobile-ads-active { scroll-padding-top:calc(var(--rj-ads-top, 60px) + 72px); }
 
   .rj-mobile-ads-spacer { display:none !important; }
 
@@ -35,9 +38,9 @@
     align-items:center;
     gap:8px;
     width:100%;
-    height:60px;
+    height:72px;
     margin:0;
-    padding:5px max(8px, env(safe-area-inset-right, 0px)) 5px max(8px, env(safe-area-inset-left, 0px));
+    padding:6px max(8px, env(safe-area-inset-right, 0px)) 6px max(8px, env(safe-area-inset-left, 0px));
     border-top:1px solid rgba(255, 255, 255, 0.06);
     border-bottom:1px solid rgba(168, 199, 244, 0.16);
     background:
@@ -58,8 +61,6 @@
     color:#132138;
   }
 
-  /* Na wąskim telefonie etykieta zjada miejsce, którego brakuje kafelkom:
-     chowamy ją i oddajemy całą szerokość dwóm promocjom. */
   /* Na wąskim telefonie etykieta zjada miejsce, którego brakuje kafelkowi:
      chowamy ją i oddajemy całą szerokość jednej promocji. */
   @media (max-width: 560px) {
@@ -82,13 +83,34 @@
   /* Podpis „przesuń →” nie jest już potrzebny — kafelki jadą same. */
   #rj-mobile-ads .rj-mobile-ads-hint { display:none; }
 
-  /* Jedna promocja = jeden „slajd” na całą szerokość paska. */
-  #rj-mobile-ads .rj-mobile-ads-items {
+  /* Zaokrąglona ramka wokół promocji. To ona nadaje paskowi kształt karty:
+     cienka krawędź, delikatne wypełnienie i promień 20 px (tyle co reszta
+     szkła w RejHubie). Kafel w środku ma własny, mniejszy promień. */
+  #rj-mobile-ads .rj-mobile-ads-frame {
     flex:1 1 auto;
     min-width:0;
+    box-sizing:border-box;
+    height:60px;
+    padding:5px;
+    border:1px solid rgba(178, 205, 245, 0.16);
+    border-radius:20px;
+    background:linear-gradient(150deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.02));
+    box-shadow:inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    overflow:hidden;
+  }
+  html[data-theme="light"] #rj-mobile-ads .rj-mobile-ads-frame {
+    border-color:rgba(20, 40, 74, 0.12);
+    background:linear-gradient(150deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.3));
+  }
+
+  /* Jedna promocja = jeden „slajd” na całą szerokość paska. */
+  #rj-mobile-ads .rj-mobile-ads-items {
+    min-width:0;
+    height:100%;
     display:grid;
     grid-auto-flow:column;
     grid-auto-columns:100%;
+    grid-auto-rows:100%;
     gap:0;
     overflow-x:auto;
     overscroll-behavior-x:contain;
@@ -113,12 +135,13 @@
     gap:10px;
     width:100%;
     min-width:0;
-    min-height:48px;
+    height:100%;
+    min-height:0;
     scroll-snap-align:center;
     scroll-snap-stop:always;
-    padding:4px 12px 4px 5px;
-    border:1px solid rgba(168, 199, 244, 0.16);
-    border-radius:14px;
+    padding:5px 12px 5px 6px;
+    border:1px solid rgba(168, 199, 244, 0.12);
+    border-radius:15px;
     background:rgba(255, 255, 255, 0.055);
     color:#eef5ff;
     font:650 12.5px/1.25 "Inter", system-ui, sans-serif;
@@ -134,12 +157,36 @@
   html[data-theme="light"] #rj-mobile-ads .rj-mobile-ad--offer { background:rgba(150, 145, 230, 0.2); }
   #rj-mobile-ads .rj-mobile-ad:focus-visible { outline:2px solid rgba(168, 199, 244, 0.8); outline-offset:-3px; }
   #rj-mobile-ads .rj-mobile-ad span { overflow-wrap:anywhere; }
+  #rj-mobile-ads .rj-mobile-ad-copy {
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:2px;
+    min-width:0;
+  }
+  #rj-mobile-ads .rj-mobile-ad-title {
+    overflow:hidden;
+    color:#f2f7ff;
+    font:650 12.5px/1.15 "Inter", system-ui, sans-serif;
+    letter-spacing:-0.005em;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  #rj-mobile-ads .rj-mobile-ad-desc {
+    overflow:hidden;
+    color:rgba(198, 216, 240, 0.72);
+    font:500 10.5px/1.2 "Inter", system-ui, sans-serif;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  html[data-theme="light"] #rj-mobile-ads .rj-mobile-ad-title { color:#12233c; }
+  html[data-theme="light"] #rj-mobile-ads .rj-mobile-ad-desc { color:rgba(34, 58, 92, 0.72); }
   #rj-mobile-ads .rj-mobile-ad-icon {
     display:grid;
     place-items:center;
     flex:none;
-    width:32px;
-    height:32px;
+    width:34px;
+    height:34px;
     border:1px solid rgba(190, 214, 255, 0.22);
     border-radius:999px;
     background:rgba(160, 190, 255, 0.14);
