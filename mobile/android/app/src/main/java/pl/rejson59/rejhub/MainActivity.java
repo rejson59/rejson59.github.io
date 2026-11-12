@@ -68,8 +68,9 @@ public class MainActivity extends BridgeActivity {
         openPendingUrl();
     }
 
+    /* `public`, bo tyle ma BridgeActivity — Java nie pozwala zawęzić widoczności. */
     @Override
-    protected void onResume() {
+    public void onResume() {
         super.onResume();
         /* Gdy link przyszedł, zanim mostek był gotowy, próbujemy jeszcze raz. */
         openPendingUrl();
