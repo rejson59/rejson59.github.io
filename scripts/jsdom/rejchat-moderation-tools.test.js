@@ -3,7 +3,7 @@ const root=path.resolve(__dirname,'../..');
 const dom=new JSDOM(fs.readFileSync(path.join(root,'rejhub2/admin.html'),'utf8'),{url:'https://rejson59.github.io/admin',runScripts:'outside-only'});
 const {window:w}=dom,d=w.document,calls=[];let previewResolve;
 w.confirm=()=>true;
-w.RejsonCloud={rpc(name,args){calls.push({name,args});if(name==='admin_rejchat_overview')return Promise.resolve({phrases:[{id:'1',phrase:'seks',match_mode:'substring'},{id:'2',phrase:'rdzen',match_mode:'prefix'},{id:'3',phrase:'wyraz',match_mode:'word'}],blocks:[],messages:[]});if(name==='admin_rejchat_reports')return Promise.resolve([]);if(name==='admin_rejchat_filter_check')return new Promise(resolve=>{previewResolve=resolve;});return Promise.resolve(true);}};
+w.RejsonCloud={rpc(name,args){calls.push({name,args});if(name==='admin_rejchat_overview')return Promise.resolve({phrases:[{id:'1',phrase:'seks',match_mode:'substring'},{id:'2',phrase:'rdzen',match_mode:'prefix'},{id:'3',phrase:'wyraz',match_mode:'word'}],blocks:[],messages:[],photos:[{id:'p1',username:'Ktos',mime:'image/jpeg',bytes_size:51200,width:800,height:600,status:'ok',created_at:new Date().toISOString()},{id:'p2',username:'Inny',mime:'image/jpeg',bytes_size:4096,width:300,height:300,status:'blocked',blocked_reason:'uszkodzony plik',created_at:new Date().toISOString()}],actions:[{id:'a1',kind:'tekst',author_name:'Ktos',reason:'treść niezgodna z filtrem',excerpt:'przykład',created_at:new Date().toISOString()}]});if(name==='admin_rejchat_reports')return Promise.resolve([]);if(name==='admin_rejchat_filter_check')return new Promise(resolve=>{previewResolve=resolve;});return Promise.resolve(true);}};
 w.eval(fs.readFileSync(path.join(root,'js/admin-rejchat-moderation.js'),'utf8'));
 const el=id=>d.getElementById('rcmod-'+id),tick=()=>new Promise(r=>setTimeout(r,0)),submit=form=>form.dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
 (async()=>{
@@ -15,5 +15,16 @@ const el=id=>d.getElementById('rcmod-'+id),tick=()=>new Promise(r=>setTimeout(r,
  el('filter-test').value='inny';el('filter-test').dispatchEvent(new w.Event('input'));assert.equal(el('filter-test-result').textContent,'');
  submit(el('filter-test-form'));const stale=previewResolve;w.RJAdminRejChat.clear();stale({blocked:true,candidate_blocked:true});await tick();assert.equal(el('filter-test-result').textContent,'');assert.equal(el('filter-test').value,'');
  el('phrase').value='nowywyraz';el('phrase-mode').value='prefix';submit(el('phrase-form'));await tick();const add=calls.find(x=>x.name==='admin_rejchat_phrase_v2');assert.deepStrictEqual(JSON.parse(JSON.stringify(add.args)),{p_phrase:'nowywyraz',p_mode:'prefix'});
- console.log('PASS: typy reguł, ostrzeżenia, podgląd, brak zapisu podglądu, czyszczenie i dodawanie');dom.window.close();
+ // Zdjęcia: wymiary, status, podgląd na żądanie i ukrywanie.
+ w.RejsonCloud.rpc=function(name,args){calls.push({name,args});if(name==='admin_rejchat_overview')return Promise.resolve({phrases:[],blocks:[],messages:[],photos:[{id:'p1',username:'Ktos',bytes_size:51200,width:800,height:600,status:'ok',created_at:new Date().toISOString()},{id:'p2',username:'Inny',bytes_size:4096,width:300,height:300,status:'blocked',blocked_reason:'uszkodzony plik',created_at:new Date().toISOString()}],actions:[{id:'a1',kind:'tekst',author_name:'Ktos',reason:'treść niezgodna z filtrem',excerpt:'przykład',created_at:new Date().toISOString()},{id:'a2',kind:'zdjęcie',reason:'uszkodzony plik',created_at:new Date().toISOString()}]});if(name==='rejchat_get_photo')return Promise.resolve({mime:'image/png',data:'AAAA'});return Promise.resolve(true);};
+ calls.length=0;el('photos-refresh').click();await tick();await tick();
+ const photos=el('photos').textContent;assert(photos.includes('800×600'),'wymiary zdjęcia w panelu');assert(photos.includes('50 kB'),'rozmiar zdjęcia w panelu');assert(photos.includes('ukryte: uszkodzony plik'),'powód ukrycia zdjęcia');
+ assert(el('actions').textContent.includes('Usunięta treść'),'lista działań automatu');assert(el('actions').textContent.includes('Ukryte zdjęcie'),'ukryte zdjęcie w działaniach');
+ const show=Array.from(el('photos').querySelectorAll('button')).find(b=>b.textContent==='Pokaż');show.click();await tick();
+ const photoCall=calls.find(x=>x.name==='rejchat_get_photo');assert.deepStrictEqual(JSON.parse(JSON.stringify(photoCall.args)),{p_id:'p1'});
+ const img=el('photos').querySelector('img');assert(img&&img.src.startsWith('data:image/png;base64,'),'podgląd zdjęcia po kliknięciu');
+ const hide=Array.from(el('photos').querySelectorAll('button')).find(b=>b.textContent==='Ukryj');hide.click();await tick();
+ const action=calls.find(x=>x.name==='admin_rejchat_photo_action');assert.deepStrictEqual(JSON.parse(JSON.stringify(action.args)),{p_id:'p1',p_action:'block'});
+ const restore=Array.from(el('photos').querySelectorAll('button')).find(b=>b.textContent==='Przywróć');assert(restore,'przywracanie ukrytego zdjęcia');
+ console.log('PASS: typy reguł, ostrzeżenia, podgląd, brak zapisu podglądu, czyszczenie i dodawanie, zdjęcia i działania automatu');dom.window.close();
 })().catch(e=>{console.error(e);dom.window.close();process.exitCode=1;});

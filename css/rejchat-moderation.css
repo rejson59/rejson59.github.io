@@ -36,3 +36,7 @@
 .rcmod-test textarea { min-width:0; padding:10px; border:1px solid var(--border); border-radius:10px; background:var(--bg-elev); color:var(--text); font:inherit; resize:vertical; }
 .rcmod-test button { justify-self:start; }
 .rcmod-test #rcmod-filter-test-result { margin:0; color:var(--text); }
+/* Zdjęcia i działania automatu: miniatura tylko na żądanie, przyciski w rzędzie. */
+.rcmod-row-actions { flex:none; display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+.rcmod-photo { display:block; max-width:min(100%,240px); max-height:240px; margin-top:10px; border-radius:12px; border:1px solid var(--border); background:rgba(0,0,0,.35); }
+@media(max-width:480px){ .rcmod-row-actions { margin-left:auto; } .rcmod-photo { max-width:100%; } }
