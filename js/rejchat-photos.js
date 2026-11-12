@@ -42,6 +42,10 @@
       }).catch(function(err){if(button.isConnected){button.disabled=false;button.textContent=(err&&err.message)||'Nie udało się wczytać zdjęcia.';}});
     });
   }
-  function button(photo){if(!photo||!/^[0-9a-f-]{36}$/i.test(String(photo.id||'')))return '';var expired=Date.parse(photo.expires_at)<=Date.now();return expired?'<span class="rejchat-photo-expired">Zdjęcie wygasło po 14 dniach.</span>':'<button type="button" class="rejchat-photo-load" data-photo-id="'+photo.id+'">📷 Pokaż zdjęcie</button>';}
+  function button(photo){if(!photo||!/^[0-9a-f-]{36}$/i.test(String(photo.id||'')))return '';
+    /* Zdjęcie zatrzymane przez moderację nie znika po cichu — inaczej w czacie
+       zostaje puste „📷 Zdjęcie” i wygląda to na zepsuty czat. */
+    if(photo.status&&photo.status!=='ok')return '<span class="rejchat-photo-blocked">Zdjęcie zostało usunięte przez moderację.</span>';
+    var expired=Date.parse(photo.expires_at)<=Date.now();return expired?'<span class="rejchat-photo-expired">Zdjęcie wygasło po 14 dniach.</span>':'<button type="button" class="rejchat-photo-load" data-photo-id="'+photo.id+'">📷 Pokaż zdjęcie</button>';}
   window.RJChatPhotos={picker:picker,read:read,attach:attach,button:button};
 })(window,document);

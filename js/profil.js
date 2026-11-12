@@ -441,6 +441,7 @@
       var loginLink = $('profile-login-link');
       if (loginLink) loginLink.hidden = !!confirmed;
       if ($('profile-logout')) $('profile-logout').hidden = !confirmed;
+      if ($('profile-logout-all')) $('profile-logout-all').hidden = !confirmed;
       if ($('profile-copy')) $('profile-copy').hidden = false;
       if ($('profile-tabs')) $('profile-tabs').hidden = !own;
       if ($('profile-edit')) $('profile-edit').hidden = !own;
@@ -449,7 +450,31 @@
       if (confirmed && !own) {
         var report = $('profile-report');
         if (report) { report.hidden = false; report.dataset.reportScope = 'profile'; report.dataset.reportUser = rows[0].username; }
-        var block = $('profile-block');
+        var logoutAll = $('profile-logout-all');
+    if (logoutAll) {
+      logoutAll.addEventListener('click', async function () {
+        var session = api.session();
+        if (!session) return;
+        if (!window.confirm('Wylogować wszystkie urządzenia? Na każdym z nich, także tutaj, trzeba będzie zalogować się ponownie.')) return;
+        var button = logoutAll;
+        button.disabled = true;
+        try {
+          await api.rpc('rejchat_logout_all', { p_token: session.token });
+        } catch (error) {
+          status(error.message || 'Nie udało się wylogować urządzeń. Spróbuj ponownie.');
+          button.disabled = false;
+          return;
+        }
+        try { localStorage.removeItem('rejson_community_session_v1'); } catch (error) { /* tryb prywatny */ }
+        target = null; confirmed = null; own = false;
+        try { history.replaceState(null, '', '/profil'); } catch (error) { /* bez historii */ }
+        try { window.dispatchEvent(new Event('rj:session-change')); } catch (error) { /* starsza przeglądarka */ }
+        if (button) button.disabled = false;
+        load();
+      });
+    }
+
+    var block = $('profile-block');
         if (block) {
           block.hidden = false;
           block.disabled = true;

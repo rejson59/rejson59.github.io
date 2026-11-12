@@ -100,6 +100,18 @@
       else continueAfterAuth();
     }).catch(function () { if (seq === generation) show("account-unavailable"); });
   }
+  /* Losowy identyfikator przeglądarki — nie śledzi użytkownika w sieci, służy
+     tylko do limitu nowych kont z jednego urządzenia (2 na 10 minut). */
+  function deviceId() {
+    try {
+      var key = "rejson_device_id_v1", value = localStorage.getItem(key);
+      if (value && value.length >= 8 && value.length <= 64) return value;
+      value = (window.crypto && window.crypto.randomUUID) ? window.crypto.randomUUID()
+        : "fp-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 12);
+      localStorage.setItem(key, value);
+      return value;
+    } catch (e) { return null; }
+  }
   function setMode(next) {
     mode = next;
     $("mode-login").classList.toggle("is-active", next === "login");
@@ -124,7 +136,9 @@
     }
     var seq = ++generation;
     report(""); submit.disabled = true;
-    rpc(mode === "login" ? "community_login" : "community_register", { p_username: username, p_pin: value })
+    var args = { p_username: username, p_pin: value };
+    if (mode !== "login") args.p_fp = deviceId();
+    rpc(mode === "login" ? "community_login" : "community_register", args)
       .then(function (data) {
         if (seq !== generation) return;
         if (!data || typeof data.token !== "string" || data.token.length < 16 || typeof data.username !== "string" || !data.username) throw new Error("Nieprawidłowa odpowiedź serwera.");
