@@ -15,7 +15,7 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 
 const SIZES = {
-  idle: 46, dock: 52, report: 236, chat: 404, alerts: 296,
+  idle: 46, dock: 52, report: 236, chat: 404, assistant: 470, alerts: 296,
   now: 112, profile: 158, quick: 152, theme: 156, tasks: 208, panic: 160
 };
 
@@ -52,7 +52,7 @@ function checkSources() {
   assert.match(viewRule, /overflow:\s*hidden/, 'widok nie może malować poza wyspą');
   assert.match(css, /\.rj-view--dock\s*\{[^}]*white-space:\s*nowrap/, 'dock może zostać w jednej linii');
 
-  /* --- dock: osiem przycisków w każdej szerokości --- */
+  /* --- dock: dziewięć przycisków w każdej szerokości --- */
   const dockBtn = css.slice(css.indexOf('#rj-island-root .rj-dock-btn {'), css.indexOf('#rj-island-root .rj-dock-btn svg'));
   assert.match(dockBtn, /flex:\s*1 1 0/, 'przyciski docku dzielą szerokość po równo');
   assert.match(dockBtn, /min-width:\s*0/, 'przyciski mogą się zwęzić na małym ekranie');
@@ -273,7 +273,7 @@ async function checkRecovery() {
   w.RejIsland.check();
   const rebuilt = ui('.rj-island');
   assert.ok(rebuilt, 'wyspa odbudowana po skasowaniu drzewa');
-  assert.equal(host.shadowRoot.querySelectorAll('.rj-dock-btn[data-open]').length, 8, 'dock wrócił w komplecie');
+  assert.equal(host.shadowRoot.querySelectorAll('.rj-dock-btn[data-open]').length, 9, 'dock wrócił w komplecie');
   assert.equal(w.RejIsland.health(), 'ok');
 
   /* 5. Pusty panel (treść usunięta) nie może udawać czarnej wyspy. */

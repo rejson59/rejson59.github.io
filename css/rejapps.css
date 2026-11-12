@@ -114,6 +114,16 @@ body.rj-apps { --rjapp-accent: #86b6ff; --rjapp-accent-strong: #a9ccff; }
 .rjapp-appcard { display: flex; flex-direction: column; gap: 10px; text-decoration: none; color: inherit; transition: transform 0.18s ease, border-color 0.18s ease, background-color 0.18s ease; }
 .rjapp-appcard:hover { transform: translateY(-2px); border-color: rgba(178, 205, 245, 0.34); }
 .rjapp-appcard:focus-visible { outline: 2px solid var(--rjapp-accent); outline-offset: 3px; }
+/* Asystent nie ma własnej podstrony — jego karta jest przyciskiem, który
+   otwiera widok w wyspie. Wygląda identycznie jak karty-linki. */
+button.rjapp-appcard {
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
 .rjapp-appicon {
   display: grid;
   place-items: center;

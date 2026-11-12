@@ -62,6 +62,8 @@
     photo: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M21 12.5 12.6 21a5 5 0 0 1-7-7l8.6-8.6a3.4 3.4 0 0 1 4.8 4.8l-8.5 8.5a1.8 1.8 0 0 1-2.6-2.6l7.8-7.8"/></svg>',
     note: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4.5h14v15H5z"/><path d="M8.5 9h7M8.5 12.5h7M8.5 16h4"/></svg>',
     chat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H10l-5 4v-4H4z"/><path d="M8 9h8M8 12h5"/></svg>',
+    /* RejAsystent — iskra, ta sama, co na kartach aplikacji. */
+    assistant: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 3.5c.7 4.2 2 5.5 6.2 6.2-4.2.7-5.5 2-6.2 6.2-.7-4.2-2-5.5-6.2-6.2 4.2-.7 5.5-2 6.2-6.2Z"/><path d="M17.8 15.2c.35 2 .95 2.6 2.95 2.95-2 .35-2.6.95-2.95 2.95-.35-2-.95-2.6-2.95-2.95 2-.35 2.6-.95 2.95-2.95Z"/></svg>',
     file: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7.5 8.5 12 4l4.5 4.5"/><path d="M4.5 15v4.5h15V15"/></svg>',
     link: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M9.5 14.5 14.5 9.5"/><path d="M11 6.5 13 4.5a4.2 4.2 0 0 1 6 6l-2 2"/><path d="M13 17.5 11 19.5a4.2 4.2 0 0 1-6-6l2-2"/></svg>'
   };
@@ -197,9 +199,10 @@
        tytuł, pasek postępu i pauzę. */
     minPlay: { w: 244, h: 34, r: 17 },
     idle: { w: 216, h: 46, r: 23 },
-    dock: { w: 436, h: 52, r: 26 },
+    dock: { w: 448, h: 52, r: 26 },
     report: { w: 384, h: 236, r: 24 },
     chat: { w: 396, h: 440, r: 24 },
+    assistant: { w: 396, h: 470, r: 24 },
     alerts: { w: 384, h: 296, r: 24 },
     now: { w: 384, h: 112, r: 24 },
     profile: { w: 384, h: 158, r: 24 },
@@ -700,6 +703,7 @@
         '<div class="rj-view rj-view--dock">' +
           '<button class="rj-dock-btn is-primary" type="button" data-open="report" title="Zgłoś błąd lub pomysł" aria-label="Zgłoś błąd lub pomysł">' + ICONS.report + "</button>" +
           '<button class="rj-dock-btn rj-dock-btn--chat" type="button" data-open="chat" title="RejChat" aria-label="RejChat">' + ICONS.chat + '<span class="rj-chat-dot" data-chat-dot hidden aria-hidden="true"></span>' + "</button>" +
+          '<button class="rj-dock-btn" type="button" data-open="assistant" title="RejAsystent" aria-label="RejAsystent">' + ICONS.assistant + "</button>" +
           '<button class="rj-dock-btn" type="button" data-open="alerts" title="Powiadomienia" aria-label="Powiadomienia">' + ICONS.alerts + "</button>" +
           '<button class="rj-dock-btn" type="button" data-open="now" title="Teraz gra" aria-label="Teraz gra">' + ICONS.now + "</button>" +
           '<span class="rj-dock-sep" aria-hidden="true"></span>' +
@@ -761,6 +765,32 @@
               '<button class="rj-chat-send" type="submit" data-chat-send aria-label="Wyślij wiadomość">' + ICONS.send + "</button>" +
             "</form>" +
             '<p class="rj-chat-note" id="rj-island-chat-note" role="status"></p>' +
+          "</div>" +
+        "</div>" +
+
+        /* RejAsystent mieszka w wyspie — nie ma już osobnej podstrony.
+           Panel jest bliźniakiem mini czatu (te same klasy), a odpowiedzi
+           powstają lokalnie: otwieranie stron, motyw, zadania do planera
+           i podpowiedzi, gdzie co jest. Nic nie wychodzi z przeglądarki. */
+        '<div class="rj-view rj-view--assistant">' +
+          '<div class="rj-panel rj-panel--chat rj-panel--assistant">' +
+            '<div class="rj-panel-head">' +
+              '<span class="rj-chat-badge rj-chat-badge--ai" aria-hidden="true">✦</span>' +
+              '<span class="rj-panel-title">RejAsystent <small>asystent RejHuba</small></span>' +
+              '<a class="rj-link-btn" href="/aplikacje">Aplikacje <span aria-hidden="true">↗</span></a>' +
+              '<button class="rj-x" type="button" data-close aria-label="Zamknij">' + ICONS.close + "</button>" +
+            "</div>" +
+            '<div class="rj-ai-chips" role="group" aria-label="Podpowiedzi dla asystenta">' +
+              '<button type="button" class="rj-ai-chip" data-ask="Co potrafisz?">Co potrafisz?</button>' +
+              '<button type="button" class="rj-ai-chip" data-ask="Co nowego w RejHubie?">Co nowego?</button>' +
+              '<button type="button" class="rj-ai-chip" data-ask="Otwórz planer">Otwórz planer</button>' +
+            "</div>" +
+            '<div class="rj-chat-list rj-ai-list" id="rj-island-ai" role="log" aria-live="polite" aria-label="Rozmowa z RejAsystentem"></div>' +
+            '<form class="rj-chat-form" id="rj-island-ai-form">' +
+              '<input class="rj-field" id="rj-island-ai-input" type="text" maxlength="500" placeholder="Napisz do asystenta…" aria-label="Pytanie do RejAsystenta" autocomplete="off">' +
+              '<button class="rj-chat-send" type="submit" data-ai-send aria-label="Wyślij pytanie">' + ICONS.send + "</button>" +
+            "</form>" +
+            '<p class="rj-chat-note" id="rj-island-ai-note" role="status"></p>' +
           "</div>" +
         "</div>" +
 
@@ -1119,8 +1149,8 @@
   }
 
   var VIEWS = {
-    min: 1, idle: 1, dock: 1, report: 1, chat: 1, alerts: 1, now: 1,
-    profile: 1, quick: 1, theme: 1, tasks: 1, panic: 1
+    min: 1, idle: 1, dock: 1, report: 1, chat: 1, assistant: 1, alerts: 1,
+    now: 1, profile: 1, quick: 1, theme: 1, tasks: 1, panic: 1
   };
 
   /* Czy wyspa jest schowana do uchwytu przy dolnej krawędzi. Pamiętane
@@ -1201,6 +1231,7 @@
         label.hidden = !report.project;
       }
     }
+    if (name === "assistant") renderAssistant();
     if (name === "alerts") loadAlerts();
     if (name === "now") renderNow();
     if (name === "profile") renderProfile();
@@ -1934,6 +1965,307 @@
     });
   }
 
+
+  /* ------------------------------------------------------- RejAsystent */
+
+  /* Strony, o których asystent wie. Kolejność = kolejność w odpowiedziach.
+     RejAsystent nie ma już własnego adresu — mieszka w tej wyspie, więc
+     zamiast linku dostaje krótką odpowiedź „jestem tutaj”. */
+  var AI_PAGES = [
+    { title: "RejChat", url: "/rejchat", aliases: ["czat", "chat", "rozmowy", "rejchat"], desc: "Czat publiczny i prywatne rozmowy." },
+    { title: "RejFile", url: "/rejfile", aliases: ["pliki", "rejfile", "file"], desc: "Wysyłanie i udostępnianie plików." },
+    { title: "RejSejf", url: "/rejsejf", aliases: ["sejf", "hasla", "rejsejf"], desc: "Prywatne notatki i sejf." },
+    { title: "RejTools", url: "/rejtools", aliases: ["narzedzia", "tools", "rejtools"], desc: "PDF, konwersje, QR i obliczenia." },
+    { title: "RejClass", url: "/rejclass", aliases: ["lekcje", "nauka", "rejclass"], desc: "Lekcje i materiały do nauki." },
+    { title: "Aplikacje", url: "/aplikacje", aliases: ["aplikacje", "apps", "wszystkie aplikacje"], desc: "Wszystkie aplikacje RejHuba w jednym miejscu." },
+    { title: "RejPlanner", url: "/rejplanner", aliases: ["planer", "kalendarz", "planner", "zadania"], desc: "Kalendarz, wydarzenia i zadania." },
+    { title: "RejGames", url: "/rejgames", aliases: ["gry", "games", "rejgames"], desc: "Wszystkie gry w jednym miejscu." },
+    { title: "RejMusic", url: "/rejmusic", aliases: ["muzyka", "music", "rejmusic", "spotify"], desc: "Wyszukiwarka utworów i odtwarzacze." },
+    { title: "RejMeme", url: "/rejmeme", aliases: ["memy", "mem", "meme", "rejmeme"], desc: "Galeria memów z moderacją i wgrywaniem." },
+    { title: "Profil", url: "/profil", aliases: ["profil", "konto", "avatar"], desc: "Twój profil i ustawienia konta." },
+    { title: "Panel admina", url: "/admin", aliases: ["admin", "panel", "statystyki"], desc: "Statystyki i zgłoszenia (tylko administrator)." },
+    { title: "Partnerstwo", url: "/partnerstwo", aliases: ["partnerstwo", "wspolpraca", "propozycja"], desc: "Współpraca i zgłoszenia." },
+    { title: "Tworzenie stron", url: "/uslugi", aliases: ["uslugi", "strona", "strony"], desc: "Zamówienie własnej strony." },
+    { title: "Licencja", url: "/licencja", aliases: ["licencja", "prawa", "copyright"], desc: "Zasady korzystania z treści." }
+  ];
+
+  var AI_PLANNER_KEY = "rj_planner_v1";
+  var aiGreeted = false;
+
+  function aiPad(n) {
+    return (n < 10 ? "0" : "") + n;
+  }
+
+  function aiDayKey(offset) {
+    var d = new Date();
+    d.setDate(d.getDate() + (offset || 0));
+    return d.getFullYear() + "-" + aiPad(d.getMonth() + 1) + "-" + aiPad(d.getDate());
+  }
+
+  function aiLongDate(key) {
+    var months = ["stycznia", "lutego", "marca", "kwietnia", "maja", "czerwca",
+      "lipca", "sierpnia", "września", "października", "listopada", "grudnia"];
+    var parts = String(key || "").split("-");
+    if (parts.length !== 3) return key;
+    return Number(parts[2]) + " " + (months[Number(parts[1]) - 1] || "") + " " + parts[0];
+  }
+
+  /* Jedna wiadomość w panelu: akapit (albo kilka) plus linki do stron.
+     Wszystko przez textContent — treść od użytkownika nigdy nie trafia do
+     HTML-a, więc nie da się wstrzyknąć znaczników. */
+  function aiPush(who, text, links) {
+    var list = byId("rj-island-ai");
+    if (!list) return null;
+    var row = document.createElement("div");
+    row.className = "rj-ai-msg rj-ai-msg--" + (who === "user" ? "user" : "bot");
+    String(text == null ? "" : text).split("\n").forEach(function (line) {
+      var p = document.createElement("p");
+      p.textContent = line;
+      row.appendChild(p);
+    });
+    (links || []).forEach(function (item) {
+      if (!item || !item.title) return;
+      var a = document.createElement("a");
+      a.className = "rj-ai-link";
+      a.href = item.url;
+      a.textContent = item.title;
+      row.appendChild(a);
+    });
+    list.appendChild(row);
+    list.scrollTop = list.scrollHeight;
+    return row;
+  }
+
+  function aiReply(text, links) {
+    return aiPush("bot", text, links);
+  }
+
+  function aiNote(text) {
+    var note = byId("rj-island-ai-note");
+    if (note) note.textContent = text || "";
+  }
+
+  function aiPagesFor(query) {
+    var q = String(query || "").trim().toLowerCase();
+    q = norm(q).replace(/\s+/g, " ");
+    if (!q) return [];
+    return AI_PAGES.filter(function (page) {
+      var haystack = norm(page.title + " " + page.aliases.join(" ") + " " + page.desc);
+      return haystack.indexOf(q) >= 0 || q.indexOf(norm(page.title)) >= 0;
+    }).slice(0, 4);
+  }
+
+  function aiHelp() {
+    return "Umiem:\n" +
+      "• otwierać strony — np. „otwórz RejChat”, „pokaż gry”,\n" +
+      "• przełączać motyw — „włącz jasny motyw”,\n" +
+      "• dodawać zadania — „dodaj zadanie kupić kawę na jutro”,\n" +
+      "• szukać w serwisie — „szukaj sejf”,\n" +
+      "• odpowiadać na pytania o RejHub i podpowiadać, gdzie co jest.\n" +
+      "Wszystko liczy się w tej przeglądarce — nic nie wychodzi na serwer.";
+  }
+
+  function aiSetTheme(theme) {
+    document.documentElement.dataset.theme = theme;
+    store("theme", theme);
+    syncSwitches();
+    return theme === "light" ? "Jasny motyw włączony." : "Ciemny motyw włączony.";
+  }
+
+  /* Zadanie trafia tam, gdzie reszta planera. Na stronie planera używamy
+     jego własnego API (od razu odświeży widok), a poza nią zapisujemy ten
+     sam format w localStorage. */
+  function aiAddTask(title, date) {
+    var item = {
+      id: Math.random().toString(36).slice(2),
+      title: String(title || "").slice(0, 140),
+      date: date,
+      time: "",
+      kind: "task",
+      note: "Dodane przez RejAsystenta",
+      done: false
+    };
+    if (window.RejPlanner && typeof window.RejPlanner.add === "function") {
+      try {
+        window.RejPlanner.add(item.title, item.date, "", "task");
+        return true;
+      } catch (error) { /* niżej zapis bezpośredni */ }
+    }
+    try {
+      var raw = localStorage.getItem(AI_PLANNER_KEY);
+      var items = raw ? JSON.parse(raw) : [];
+      if (!Array.isArray(items)) items = [];
+      items.push(item);
+      localStorage.setItem(AI_PLANNER_KEY, JSON.stringify(items));
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  /* Warstwa lokalna: rozumie polskie polecenia bez żadnego klucza i bez
+     internetu. Zwraca true, gdy odpowiedź została dodana. */
+  function aiLocalReply(raw) {
+    var text = norm(String(raw || "")).replace(/\s+/g, " ").trim();
+    var page;
+
+    if (!text) return true;
+    if (/^(czesc|hej|siema|dzien dobry|hello|hi)\b/.test(text)) {
+      aiReply("Cześć! Jestem RejAsystentem. Powiedz, co chcesz zrobić — mogę otworzyć stronę, dodać zadanie albo podpowiedzieć, gdzie co jest.");
+      return true;
+    }
+    if (/(pomoc|co potrafisz|co umiesz|jak dzialasz|help)/.test(text)) {
+      aiReply(aiHelp());
+      return true;
+    }
+    if (/(co to|czym jest|kto to|what is)/.test(text) && /(asystent|assistant)/.test(text)) {
+      aiReply("RejAsystent to asystent RejHuba: otwiera strony, przełącza motyw, dodaje zadania do planera i podpowiada, gdzie co jest. Mieszka w wyspie — iskra w docku, bez osobnej podstrony.");
+      return true;
+    }
+    if (/(asystent|assistant)\b/.test(text) && text.length < 40) {
+      aiReply("Jestem tutaj — w wyspie, na każdej stronie RejHuba. Nie ma osobnej podstrony: dotknij iskry w docku, a potem napisz, czego szukasz.");
+      return true;
+    }
+    if (/(ciemny|dark)/.test(text) && /(motyw|theme|tryb)/.test(text)) {
+      aiReply(aiSetTheme("dark"));
+      return true;
+    }
+    if (/(jasny|light)/.test(text) && /(motyw|theme|tryb)/.test(text)) {
+      aiReply(aiSetTheme("light"));
+      return true;
+    }
+    if (/(ktora godzina|jaka godzina|czas)/.test(text)) {
+      aiReply("Teraz jest " + new Date().toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" }) + ".");
+      return true;
+    }
+    if (/(jaka data|dzisiaj jest|jaki dzien)/.test(text)) {
+      aiReply("Dzisiaj jest " + new Date().toLocaleDateString("pl-PL", { weekday: "long", day: "numeric", month: "long", year: "numeric" }) + ".");
+      return true;
+    }
+    if (/(co nowego|nowosci|co dodano)/.test(text)) {
+      aiReply("Ostatnio w RejHubie:\n• wszystkie podstrony to jedna rodzina aplikacji — od czatu po planer,\n• RejAsystent mieszka w wyspie, obok mini RejChatu,\n• RejMusic szuka utworów w Deezer i Apple Music,\n• RejMeme to galeria memów z kolejką moderacji,\n• powiadomienia push mają test, więc od razu wiadomo, czy działają.");
+      return true;
+    }
+    if (/(powiadomien|push|notyfikac)/.test(text)) {
+      aiReply("Powiadomienia włączysz w RejChacie: panel „Powiadomienia” → „Włącz powiadomienia na telefon”. Po włączeniu możesz wysłać powiadomienie testowe. Na iPhonie wymaga to dodania RejHub do ekranu głównego (iOS 16.4+).",
+        [{ title: "Przejdź do RejChatu", url: "/rejchat" }]);
+      return true;
+    }
+    if (/(co to rejhub|czym jest rejhub|o rejhubie)/.test(text)) {
+      aiReply("RejHub to moja strona i miejsce na aplikacje: czat, pliki, sejf, narzędzia, lekcje, planer, gry, muzykę, memy i asystenta. Wszystko w jednym miejscu i w jednym stylu.");
+      return true;
+    }
+    if (/(kim jest rejson|kto to rejson|o autorze)/.test(text)) {
+      aiReply("RejHub tworzy rejson59 — jedna osoba od kodu, wyglądu i tekstów. Wszystkie prawa zastrzeżone; szczegóły są na stronie licencji.",
+        [{ title: "Licencja", url: "/licencja" }]);
+      return true;
+    }
+
+    /* Zadanie: tytuł bierzemy z oryginału (nie z norm()), żeby polskie
+       znaki zostały — inaczej „kupić kawę” zapisałoby się „kupic kawe”. */
+    var task = /^\s*(?:dodaj|zaplanuj|przypomnij)(?:\s+mi)?(?:\s+(?:zadanie|wydarzenie))?[:\s]+(.+)$/i.exec(String(raw || ""));
+    if (task) {
+      var title = task[1];
+      var date = aiDayKey(0);
+      var when = "";
+      if (/\sna\s+(dziś|dzisiaj)\b/i.test(" " + title)) when = "dziś";
+      if (/\sna\s+jutro\b/i.test(" " + title)) { date = aiDayKey(1); when = "jutro"; }
+      var iso = /\sna\s+(\d{4}-\d{2}-\d{2})/.exec(" " + title);
+      if (iso) { date = iso[1]; when = aiLongDate(date); }
+      title = title.replace(/\s+na\s+(dziś|dzisiaj|jutro|\d{4}-\d{2}-\d{2}).*$/i, "").trim();
+      if (title.length < 2) {
+        aiReply("Podaj, co mam dodać — np. „dodaj zadanie kupić kawę na jutro”.");
+        return true;
+      }
+      if (!aiAddTask(title, date)) {
+        aiReply("Nie udało się zapisać zadania — przeglądarka blokuje pamięć lokalną.",
+          [{ title: "Otwórz planer", url: "/rejplanner" }]);
+        return true;
+      }
+      aiReply("Dodane do RejPlannera: „" + title + "”" + (when ? " na " + when : " na dziś") + ".",
+        [{ title: "Otwórz planer", url: "/rejplanner" }]);
+      return true;
+    }
+
+    var search = /(szukaj|znajdz|gdzie jest|gdzie sa)[:\s]+(.+)/.exec(text);
+    if (search) {
+      var found = aiPagesFor(search[2]);
+      if (!found.length) {
+        aiReply("Nie znalazłem tego w RejHubie. Spróbuj „gry”, „muzyka”, „sejf” albo „planer”.");
+        return true;
+      }
+      aiReply("Znalazłem " + (found.length === 1 ? "jedno miejsce" : found.length + " miejsca") + ":",
+        found.map(function (item) { return { title: item.title + " — " + item.desc, url: item.url }; }));
+      return true;
+    }
+
+    var open = /(otworz|open|przejdz do|pokaz|wejdź|wejdz)[:\s]*(.*)/.exec(text);
+    if (open) {
+      var target = open[2] || "";
+      var matches = aiPagesFor(target);
+      if (!matches.length) matches = aiPagesFor(target.replace(/^(do|na|strona|strone)\s+/, ""));
+      if (matches.length) {
+        page = matches[0];
+        aiReply("Otwieram: " + page.title + ".", [{ title: page.title, url: page.url }]);
+        window.setTimeout(function () { window.location.assign(page.url); }, 650);
+        return true;
+      }
+      aiReply("Nie wiem, którą stronę otworzyć. Wszystkie aplikacje są na jednej liście — od czatu po planer, gry i muzykę.",
+        [{ title: "Wszystkie aplikacje", url: "/aplikacje" }]);
+      return true;
+    }
+
+    var direct = aiPagesFor(text);
+    if (direct.length === 1) {
+      page = direct[0];
+      aiReply(page.title + " — " + page.desc, [{ title: "Otwórz " + page.title, url: page.url }]);
+      return true;
+    }
+
+    return false;
+  }
+
+  function aiSendText(value) {
+    var text = String(value || "").trim();
+    if (!text) return;
+    aiNote("");
+    aiPush("user", text);
+    if (!aiLocalReply(text)) {
+      aiReply("Tego jeszcze nie umiem. Spróbuj „pomoc” — pokażę, co potrafię, albo napisz „otwórz aplikacje”, żeby zobaczyć wszystkie aplikacje RejHuba.",
+        [{ title: "Wszystkie aplikacje", url: "/aplikacje" }]);
+    }
+  }
+
+  function aiSendForm(form) {
+    var input = byId("rj-island-ai-input");
+    if (!input) return;
+    var text = String(input.value || "").trim();
+    if (!text) return;
+    input.value = "";
+    if (form) {
+      var button = form.querySelector("[data-ai-send]");
+      if (button) {
+        button.disabled = true;
+        window.setTimeout(function () { button.disabled = false; }, 160);
+      }
+    }
+    aiSendText(text);
+  }
+
+  /* Pierwsze otwarcie: powitanie i podpowiedzi. Kolejne otwarcia zostawiają
+     rozmowę — wracasz do niej bez zaczynania od zera. */
+  function renderAssistant() {
+    var list = byId("rj-island-ai");
+    if (!list) return;
+    /* Po odbudowie wyspy (`rebuild`) drzewo jest nowe i puste — wtedy
+       witamy się jeszcze raz, zamiast pokazywać pusty panel. */
+    if (!aiGreeted || !list.querySelector(".rj-ai-msg")) {
+      aiGreeted = true;
+      aiReply("Cześć! Jestem RejAsystentem — mieszkam w wyspie. Otworzę stronę, przełączę motyw, dodam zadanie do planera i podpowiem, gdzie co jest. Od czego zaczynamy?");
+    }
+    list.scrollTop = list.scrollHeight;
+  }
+
   /* Licznik nowych wiadomości na przycisku czatu: pokoje publiczne i skrzynka
      prywatna. Odpytywanie jest rzadkie (30 s) i tylko przy widocznej karcie. */
   function pollChatBadge() {
@@ -2333,8 +2665,8 @@
   /* Minimalne style, które muszą działać przed wczytaniem arkusza — i które
      ratują sytuację, gdy arkusz się nie wczyta (słabe łącze, blokada, stara
      wersja z cache). Bez nich wyspa była czarnym prostokątem bez treści. */
-  var STATES = ["min", "idle", "dock", "report", "chat", "alerts", "now",
-                "profile", "quick", "theme", "tasks", "panic"];
+  var STATES = ["min", "idle", "dock", "report", "chat", "assistant", "alerts",
+                "now", "profile", "quick", "theme", "tasks", "panic"];
 
   var CRITICAL_CSS =
     "#rj-island-root{position:fixed;inset:0;pointer-events:none;contain:layout style;" +
@@ -2538,6 +2870,25 @@
       openReport(trigger.getAttribute("data-feedback-project"), trigger.getAttribute("data-feedback-type"));
     });
 
+    /* Karty aplikacji (np. RejAsystent na /aplikacje i stronie głównej)
+       otwierają widok wyspy. Asystent nie ma już własnego adresu, więc
+       kafelek musi prowadzić do wyspy, a nie do nieistniejącej podstrony. */
+    document.addEventListener("click", function (event) {
+      var trigger = event.target.closest("[data-island]");
+      if (!trigger) return;
+      event.preventDefault();
+      var wanted = trigger.getAttribute("data-island");
+      apply(VIEWS[wanted] ? wanted : "assistant");
+      if (wanted === "assistant") {
+        window.setTimeout(function () {
+          var input = byId("rj-island-ai-input");
+          if (input && state === "assistant") {
+            try { input.focus(); } catch (error) { /* bez fokusu też działa */ }
+          }
+        }, 260);
+      }
+    });
+
     function handleClick(event) {
       var open = event.target.closest("[data-open]");
       if (open) {
@@ -2549,6 +2900,9 @@
       if (event.target.closest("[data-collapse]")) { collapse(); return; }
       if (event.target.closest("[data-expand]")) { expand(); return; }
       if (event.target.closest("[data-close]")) { close(); return; }
+
+      var ask = event.target.closest("[data-ask]");
+      if (ask) { aiSendText(ask.getAttribute("data-ask")); return; }
 
       var roomBtn = event.target.closest("[data-chat-room]");
       if (roomBtn) { setChatTab(roomBtn.getAttribute("data-chat-room")); return; }
@@ -2707,13 +3061,19 @@
     }
 
     /* Czy kliknięcie trafiło w przycisk „Zgłoś błąd / pomysł” przy projekcie. */
-    function feedbackTrigger(event) {
-      if (event.target && event.target.closest && event.target.closest("[data-feedback-project]")) {
-        return event.target.closest("[data-feedback-project]");
+    /* Klik w „Zgłoś błąd / pomysł” albo w kartę aplikacji ma otworzyć
+       wyspę, a nie ją zamknąć — te przyciski leżą poza wyspą, więc są
+       wyjątkiem od zamykania po kliknięciu obok. */
+    function islandTrigger(event) {
+      var selector = "[data-feedback-project], [data-island]";
+      if (event.target && event.target.closest && event.target.closest(selector)) {
+        return event.target.closest(selector);
       }
       var path = typeof event.composedPath === "function" ? event.composedPath() : [];
       for (var i = 0; i < path.length; i += 1) {
-        if (path[i] && path[i].getAttribute && path[i].getAttribute("data-feedback-project")) return path[i];
+        if (path[i] && path[i].getAttribute && (path[i].getAttribute("data-feedback-project") || path[i].getAttribute("data-island"))) {
+          return path[i];
+        }
       }
       return null;
     }
@@ -2721,7 +3081,7 @@
     document.addEventListener("click", function (event) {
       /* Klik w „Zgłoś błąd / pomysł” przy projekcie ma otworzyć wyspę, a nie
          ją zamknąć — ten przycisk leży poza wyspą, więc musi być wyjątkiem. */
-      if (feedbackTrigger(event)) return;
+      if (islandTrigger(event)) return;
       if (!clickInsideIsland(event) && state !== "idle") close();
     });
 
@@ -2734,13 +3094,27 @@
     /* ---------- mini czat: wysyłanie i odświeżanie w tle ---------- */
 
     root.addEventListener("submit", function (event) {
-      if (!event.target || event.target.id !== "rj-island-chat-form") return;
+      if (!event.target) return;
+      if (event.target.id === "rj-island-ai-form") {
+        event.preventDefault();
+        aiSendForm(event.target);
+        return;
+      }
+      if (event.target.id !== "rj-island-chat-form") return;
       event.preventDefault();
       sendIslandChat(event.target);
     });
 
     root.addEventListener("keydown", function (event) {
-      if (!event.target || event.target.id !== "rj-island-chat-input") return;
+      if (!event.target) return;
+      if (event.target.id === "rj-island-ai-input") {
+        if (event.key === "Enter" && !event.shiftKey) {
+          event.preventDefault();
+          aiSendForm(event.target.closest("form"));
+        }
+        return;
+      }
+      if (event.target.id !== "rj-island-chat-input") return;
       if (event.key === "Enter" && !event.shiftKey) {
         event.preventDefault();
         var form = event.target.closest("form");
