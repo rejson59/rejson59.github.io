@@ -17,10 +17,11 @@ const root = path.join(__dirname, '../..');
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 
 const PAGES = [
-  '404.html', 'admin.html', 'index.html', 'konto-demo.html', 'licencja.html',
-  'logowanie.html', 'panel.html', 'partnerstwo.html', 'profil.html', 'rejchat.html',
-  'rejclass.html', 'rejfile.html', 'rejsejf.html', 'rejtools.html', 'uslugi.html',
-  'rejchat/regulamin.html'
+  '404.html', 'admin.html', 'aplikacje.html', 'index.html', 'konto-demo.html',
+  'licencja.html', 'logowanie.html', 'panel.html', 'partnerstwo.html', 'profil.html',
+  'rejasystent.html', 'rejchat.html', 'rejclass.html', 'rejfile.html', 'rejgames.html',
+  'rejmeme.html', 'rejmusic.html', 'rejplanner.html', 'rejsejf.html', 'rejtools.html',
+  'uslugi.html', 'rejchat/regulamin.html'
 ];
 
 const HEADER_CSS = [
@@ -220,6 +221,47 @@ function headerOf(html) {
     });
   });
 
+  /* Sam HTML to za mało: pasek wygląda tak samo tylko wtedy, gdy każda strona
+     ładuje ten sam zestaw arkuszy w tej samej kolejności. Wcześniej sześć stron
+     aplikacji nie miało glass-update.css (brak --rju-vessel = pasek bez tła)
+     i liquid.css (brak wspólnej warstwy szkła). */
+  const SHELL_CSS = [
+    '/css/style.css',
+    '/css/liquid.css',
+    '/css/responsive.css',
+    '/css/side-ads.css',
+    '/css/mobile-ads.css',
+    '/css/shared-topbar.css',
+    '/css/shared-topbar-nojs.css',
+    '/css/rejchat-notifications.css',
+    '/css/glass-update.css',
+    '/hub/glass2.css',
+    '/hub/loader.css',
+    '/css/text-filter.css',
+    '/css/push.css',
+    '/css/topbar-split.css',
+    '/css/page-reveal.css',
+    '/hub/island.css',
+    '/css/scrollbar.css',
+    '/css/glass-last.css'
+  ];
+
+  check('każda strona ładuje komplet arkuszy paska (w tej samej kolejności)', () => {
+    const sequences = PAGES.map((file) => {
+      const html = read('rejhub2/' + file);
+      const hrefs = [...html.matchAll(/<link[^>]*rel="stylesheet"[^>]*>/g)]
+        .map((match) => /href="([^"]+)"/.exec(match[0])[1].split('?')[0]);
+      const shell = hrefs.filter((href) => SHELL_CSS.indexOf(href) >= 0);
+      const missing = SHELL_CSS.filter((href) => shell.indexOf(href) < 0);
+      assert.deepEqual(missing, [], file + ': brak arkuszy ' + missing.join(', '));
+      const duplicated = shell.filter((href, index) => shell.indexOf(href) !== index);
+      assert.deepEqual(duplicated, [], file + ': zdublowane arkusze ' + duplicated.join(', '));
+      return shell.join('|');
+    });
+    const unique = new Set(sequences);
+    assert.equal(unique.size, 1, 'różne zestawy arkuszy paska na podstronach');
+  });
+
   await wait(0);
   console.log('\n========================================================');
   if (failures.length) {
@@ -228,6 +270,6 @@ function headerOf(html) {
     process.exit(1);
   }
   console.log('WYNIK: ' + passed + '/' + passed + ' ✔');
-  console.log('PASS: jeden identyczny topbar na 16 podstronach, jedno wspólne zachowanie');
+  console.log('PASS: jeden identyczny topbar na 22 podstronach, jedno wspólne zachowanie');
   process.exit(0);
 })();

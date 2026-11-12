@@ -249,6 +249,26 @@ await check('RejMusic rozpoznaje linki Spotify, YouTube, SoundCloud i Deezer', a
   page.window.close();
 });
 
+await check('RejMusic szuka utworów w katalogach Deezer i Apple Music', async () => {
+  const html = read('rejhub2/rejmusic.html');
+  ['music-search-form', 'music-query', 'music-results', 'music-platforms', 'music-more',
+   'music-tabs', 'music-count', 'music-fav-count']
+    .forEach((id) => assert.ok(html.includes('id="' + id + '"'), 'brak #' + id));
+  ['deezer', 'itunes'].forEach((platform) => {
+    assert.ok(html.includes('data-platform="' + platform + '"'), 'brak filtra ' + platform);
+  });
+  assert.ok(html.includes('open.spotify.com/search'), 'brak przejścia do Spotify');
+  assert.ok(html.includes('soundcloud.com/search'), 'brak przejścia do SoundCloud');
+
+  const script = read('js/rejmusic.js');
+  assert.ok(script.includes('api.deezer.com/search'), 'brak wyszukiwania w Deezerze');
+  assert.ok(script.includes('itunes.apple.com/search'), 'brak wyszukiwania w Apple Music');
+  assert.ok(script.includes('previewUrl'), 'brak oficjalnych zapowiedzi');
+  assert.ok(script.includes('rj_music_favs_v1'), 'brak ulubionych');
+  assert.ok(script.includes('rj_music_history_v1'), 'brak historii');
+  assert.ok(!/spotify.*download|pobierz.*spotify/i.test(script), 'obietnica pobierania z platform');
+});
+
 await check('odtwarzacz ma pliki lokalne, osadzenia i uczciwą informację', async () => {
   const html = read('rejhub2/rejmusic.html');
   assert.ok(html.includes('type="file" accept="audio/*"'), 'brak wyboru plików');
@@ -263,15 +283,42 @@ await check('odtwarzacz ma pliki lokalne, osadzenia i uczciwą informację', asy
 /* -------------------------------------------------------------------- memy */
 console.log('\n=== F. REJMEME ===');
 
-await check('generator memów ma podpisy, tło, pobieranie i wysyłkę do czatu', async () => {
+await check('RejMeme to galeria, szablony, wgrywanie i kolejka moderacji', async () => {
   const html = read('rejhub2/rejmeme.html');
-  ['meme-top', 'meme-bottom', 'meme-template', 'meme-size', 'meme-bg', 'meme-download', 'meme-copy', 'meme-share', 'meme-canvas']
+  ['meme-gallery', 'meme-search', 'meme-sort', 'meme-templates', 'meme-form', 'meme-file',
+   'meme-title', 'meme-tags', 'meme-ethics', 'meme-submit', 'meme-mine', 'meme-lightbox']
     .forEach((id) => assert.ok(html.includes('id="' + id + '"'), 'brak #' + id));
+  ['gallery', 'templates', 'upload', 'mine']
+    .forEach((view) => assert.ok(html.includes('data-meme-view="' + view + '"'), 'brak zakładki ' + view));
+  assert.ok(/accept="image\/jpeg,image\/png,image\/gif,image\/webp"/.test(html), 'zły zestaw formatów plików');
   const script = read('js/rejmeme.js');
-  assert.ok(script.includes('rejchat_send_photo'), 'mem nie korzysta z wysyłki zdjęć RejChatu');
-  assert.ok(script.includes('p_thread_id'), 'brak wysyłki w prywatnej rozmowie');
-  assert.ok(script.includes('rejchat_dm_inbox'), 'brak listy rozmów do wyboru');
+  assert.ok(script.includes("meme-status--'"), 'brak oznaczenia statusu moderacji');
+  assert.ok(script.includes('rejmeme_submit'), 'wgranie mema nie idzie przez kolejkę moderacji');
+  assert.ok(script.includes('rejmeme_gallery'), 'galeria nie czyta zatwierdzonych memów');
+  assert.ok(script.includes('rejmeme_mine'), 'brak listy własnych zgłoszeń');
+  assert.ok(script.includes('rejmeme_withdraw'), 'brak wycofania zgłoszenia');
+  assert.ok(script.includes('knowyourmeme.com'), 'brak źródeł popularnych formatów');
+  assert.ok(!/rejmeme_moderate/.test(script), 'strona publiczna nie może moderować memów');
   assert.ok(!script.includes('document.write'), 'niebezpieczne wstawianie HTML');
+  assert.ok(!script.includes('innerHTML'), 'renderowanie przez innerHTML zamiast textContent');
+});
+
+await check('kolejka memów jest w panelu admina i wymaga zatwierdzenia', async () => {
+  const html = read('rejhub2/admin.html');
+  assert.ok(html.includes('id="tab-memes"'), 'brak zakładki memów w panelu');
+  assert.ok(html.includes('data-tab="memes"'), 'zakładka memów nie jest podpięta');
+  assert.ok(html.includes('/js/admin-memes.js'), 'panel nie ładuje obsługi memów');
+  assert.ok(html.includes('/css/admin-memes.css'), 'brak arkusza zakładki memów');
+
+  const admin = read('js/admin-memes.js');
+  assert.ok(admin.includes('rejmeme_admin_queue'), 'brak wczytywania kolejki');
+  assert.ok(admin.includes('rejmeme_moderate'), 'brak decyzji moderacji');
+  assert.ok(admin.includes("'approve'") && admin.includes("'reject'"), 'brak zatwierdzania i odrzucania');
+  assert.ok(admin.includes('rejmeme_admin_image'), 'admin nie widzi pliku mema przed decyzją');
+
+  const panel = read('js/admin-panel.js');
+  assert.ok(panel.includes('memes: "tab-memes"'), 'panel nie zna zakładki memów');
+  assert.ok(panel.includes('RJAdminMemes'), 'panel nie uruchamia widoku memów');
 });
 
 /* --------------------------------------------------------------- asystent */

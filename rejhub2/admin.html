@@ -27,15 +27,18 @@
     prawem autorskim i nie ma zgody na kopiowanie."
   -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <link rel="manifest" href="/manifest.webmanifest">
   <meta name="theme-color" content="#0b0e13">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="RejHub">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
   <link rel="apple-touch-icon" href="/assets/app/icon-192.png">
 
   <title>Główny Panel Admina — RejHub</title>
   <meta name="robots" content="noindex, nofollow">
+
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 
   <script>
@@ -50,33 +53,48 @@
   </script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
+
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="rejson-widgets/css/studio.css?v=3">
-  <link rel="stylesheet" href="rejson-widgets/css/admin.css?v=2026-11-12-nogreen">
-  <link rel="stylesheet" href="css/admin-panel.css?v=2026-11-12-nogreen">
-  <link rel="stylesheet" href="css/rejchat-moderation.css?v=4">
-  <link rel="stylesheet" href="css/admin-partner.css?v=1">
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+  <link rel="stylesheet" href="/css/style.css?v=2026-11-12-posters-1">
   <link rel="stylesheet" href="/css/liquid.css?v=2026-10-19-1">
+  <link rel="stylesheet" href="/css/responsive.css?v=3">
+  <link rel="stylesheet" href="rejson-widgets/css/studio.css?v=3">
+
+  <link rel="stylesheet" href="rejson-widgets/css/admin.css?v=2026-11-12-nogreen">
+
+  <link rel="stylesheet" href="css/admin-panel.css?v=2026-11-12-nogreen">
+
+  <link rel="stylesheet" href="css/rejchat-moderation.css?v=4">
+
+  <link rel="stylesheet" href="css/admin-partner.css?v=1">
+
   <link rel="stylesheet" href="/css/rejchat.css?v=1">
   <script src="/js/motion-unlock.js?v=1"></script>
   <script src="/js/shell-cache.js?v=1" defer></script>
   <script defer src="/js/rejchat-profiles.js?v=2"></script><script defer src="/js/rejchat-notifications.js?v=6"></script><script defer src="/js/premium.js?v=12"></script>
-  <link rel="stylesheet" href="/css/responsive.css?v=1">
-  <link rel="stylesheet" href="/css/shared-topbar.css?v=5">
+
   <script defer src="/js/shared-topbar.js?v=10"></script>
+
+  <link rel="stylesheet" href="/css/admin-server.css?v=1" />
+
+  <link rel="stylesheet" href="/css/admin-rebuild.css?v=3">
+  <link rel="stylesheet" href="/css/admin-memes.css?v=1">
+
+  <link rel="stylesheet" href="/css/side-ads.css?v=5">
+  <link rel="stylesheet" href="/css/mobile-ads.css?v=10">
+  <link rel="stylesheet" href="/css/shared-topbar.css?v=5">
   <noscript><link rel="stylesheet" href="/css/shared-topbar-nojs.css?v=2"></noscript>
   <link rel="stylesheet" href="/css/rejchat-notifications.css?v=3">
   <link rel="stylesheet" href="/css/glass-update.css?v=5">
-  <link rel="stylesheet" href="/hub/glass2.css?v=16" />
+  <link rel="stylesheet" href="/hub/glass2.css?v=16">
   <link rel="stylesheet" href="/hub/loader.css?v=4">
-  <link rel="stylesheet" href="/css/text-filter.css?v=1" />
-  <link rel="stylesheet" href="/css/push.css?v=2" />
-  <link rel="stylesheet" href="/css/admin-server.css?v=1" />
-  <link rel="stylesheet" href="/css/topbar-split.css?v=6" />
-  <link rel="stylesheet" href="/css/page-reveal.css?v=2" />
+  <link rel="stylesheet" href="/css/text-filter.css?v=1">
+  <link rel="stylesheet" href="/css/push.css?v=2">
+  <link rel="stylesheet" href="/css/topbar-split.css?v=6">
+  <link rel="stylesheet" href="/css/page-reveal.css?v=2">
   <link rel="stylesheet" href="/hub/island.css?v=12">
-  <link rel="stylesheet" href="/css/admin-rebuild.css?v=3">
   <link rel="stylesheet" href="/css/scrollbar.css?v=1">
   <link rel="stylesheet" href="/css/glass-last.css?v=4">
 </head>
@@ -195,6 +213,7 @@
       <button type="button" class="adm-tab" id="tab-btn-visitors" data-tab="visitors" role="tab" aria-selected="false">Identyfikatory <span class="adm-tab-note">profile</span></button>
       <button type="button" class="adm-tab" id="tab-btn-server" data-tab="server" role="tab" aria-selected="false">Serwer <span class="adm-tab-note" aria-hidden="true">▤</span></button>
       <button type="button" class="adm-tab" id="tab-btn-errors" data-tab="errors" role="tab" aria-selected="false">Błędy <span class="adm-tab-note" id="errors-tab-note">auto</span></button>
+      <button type="button" class="adm-tab" id="tab-btn-memes" data-tab="memes" role="tab" aria-selected="false">Memy <span class="adm-tab-note" id="memes-tab-note">kolejka</span></button>
     </nav>
         <a class="adm-rail-link" href="/szklane-studio">Szklane studio <span aria-hidden="true">↗</span></a>
       </aside>
@@ -725,6 +744,25 @@
     </section>
 
 
+
+    <section id="tab-memes" role="tabpanel" aria-label="Kolejka memów RejMeme" hidden>
+      <div class="adm-section-head">
+        <div>
+          <h2 class="adm-section-title">🖼 Memy — kolejka moderacji</h2>
+          <p class="adm-section-sub">Każdy mem wgrany przez użytkownika czeka tutaj na decyzję. Mem pojawia się publicznie dopiero po zatwierdzeniu — odrzucone zostają w bazie z powodem, ale nie są nigdzie publikowane.</p>
+        </div>
+        <button class="btn btn-glass btn-sm" type="button" id="memes-refresh">Odśwież</button>
+      </div>
+      <div class="adm-memes-kpis" id="memes-kpis"></div>
+      <div class="adm-memes-filters" id="memes-filters" role="group" aria-label="Filtr statusu memów">
+        <button class="btn btn-glass btn-sm is-on" type="button" data-memes-status="pending" aria-pressed="true">Do zatwierdzenia</button>
+        <button class="btn btn-glass btn-sm" type="button" data-memes-status="approved" aria-pressed="false">Zatwierdzone</button>
+        <button class="btn btn-glass btn-sm" type="button" data-memes-status="rejected" aria-pressed="false">Odrzucone</button>
+      </div>
+      <p class="adm-memes-status" id="memes-status" role="status" aria-live="polite"></p>
+      <ul class="adm-memes-list" id="memes-list"><li class="adm-empty">Otwórz zakładkę, aby wczytać kolejkę.</li></ul>
+    </section>
+
     <section id="tab-server" role="tabpanel" aria-label="Serwer i pojemność danych" hidden>
       <div class="adm-section-head">
         <div>
@@ -784,7 +822,8 @@
   <script src="js/admin-errors.js?v=1"></script>
   <script src="js/admin-partner.js?v=1"></script>
   <script src="js/admin-rejchat-moderation.js?v=6"></script>
-  <script src="js/admin-panel.js?v=2026-11-12-mobile-ids"></script>
+  <script src="js/admin-panel.js?v=2026-11-15-memes"></script>
+  <script defer src="/js/admin-memes.js?v=1"></script>
   <script defer src="/js/admin-server.js?v=1"></script>
   <script defer src="/js/media-capture.js?v=2"></script>
   <script defer src="/hub/island.js?v=12" data-project="rejhub" data-project-name="RejHub"></script>

@@ -1,0 +1,187 @@
+/* © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
+   Licencja: /LICENSE, /licencja
+   ----------------------------------------------------------------------------
+   Panel admina → zakładka „Memy”. Ta sama warstwa szkła co reszta panelu,
+   zero zieleni, promienie 18–22 px, przyciski min. 44 px na telefonie.
+   -------------------------------------------------------------------------- */
+
+.adm-memes-kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin: 14px 0 12px;
+}
+.adm-memes-kpi {
+  display: grid;
+  gap: 4px;
+  padding: 13px 15px;
+  border: 1px solid var(--adm-border, rgba(178, 205, 245, 0.18));
+  border-radius: 18px;
+  background: var(--adm-surface, rgba(16, 26, 44, 0.55));
+}
+.adm-memes-kpi strong {
+  color: #f2f7ff;
+  font: 700 24px/1.1 "Inter", system-ui, sans-serif;
+  letter-spacing: -0.02em;
+}
+.adm-memes-kpi span {
+  color: rgba(198, 216, 240, 0.7);
+  font: 600 11px/1.3 "JetBrains Mono", ui-monospace, monospace;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.adm-memes-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.adm-memes-filters .btn.is-on {
+  border-color: rgba(169, 204, 255, 0.6) !important;
+  background: rgba(127, 178, 255, 0.22) !important;
+  color: #f2f7ff !important;
+}
+
+.adm-memes-status {
+  min-height: 18px;
+  margin: 0 0 10px;
+  color: rgba(198, 216, 240, 0.72);
+  font: 500 12px/1.45 "Inter", system-ui, sans-serif;
+}
+.adm-memes-status[data-tone="error"] { color: #ffc4cf; }
+.adm-memes-status[data-tone="ok"] { color: #cfe2ff; }
+
+.adm-memes-list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.adm-memes-card {
+  display: grid;
+  grid-template-columns: 132px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+  padding: 12px;
+  border: 1px solid var(--adm-border, rgba(178, 205, 245, 0.18));
+  border-radius: 20px;
+  background: var(--adm-surface, rgba(16, 26, 44, 0.55));
+}
+.adm-memes-thumb {
+  display: grid;
+  place-items: center;
+  width: 132px;
+  height: 132px;
+  overflow: hidden;
+  border-radius: 16px;
+  background: rgba(8, 14, 25, 0.55);
+  color: rgba(198, 216, 240, 0.45);
+  font-size: 26px;
+  border: 1px solid rgba(178, 205, 245, 0.14);
+}
+.adm-memes-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.adm-memes-copy {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+.adm-memes-title {
+  color: #f2f7ff;
+  font: 700 15px/1.35 "Inter", system-ui, sans-serif;
+  overflow-wrap: anywhere;
+}
+.adm-memes-meta {
+  color: rgba(198, 216, 240, 0.68);
+  font: 500 11.5px/1.4 "Inter", system-ui, sans-serif;
+  overflow-wrap: anywhere;
+}
+.adm-memes-badge {
+  justify-self: start;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(178, 205, 245, 0.24);
+  color: rgba(214, 228, 247, 0.85);
+  font: 650 10px/1 "JetBrains Mono", ui-monospace, monospace;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+.adm-memes-badge--pending { background: rgba(255, 214, 138, 0.12); border-color: rgba(255, 214, 138, 0.4); color: #ffe1a8; }
+.adm-memes-badge--approved { background: rgba(127, 178, 255, 0.18); border-color: rgba(169, 204, 255, 0.5); color: #d3e6ff; }
+.adm-memes-badge--rejected { background: rgba(255, 138, 160, 0.12); border-color: rgba(255, 138, 160, 0.4); color: #ffc4cf; }
+
+.adm-memes-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.adm-memes-tags span {
+  padding: 3px 9px;
+  border: 1px solid rgba(178, 205, 245, 0.2);
+  border-radius: 999px;
+  color: rgba(198, 216, 240, 0.76);
+  font: 600 10.5px/1.2 "Inter", system-ui, sans-serif;
+}
+
+.adm-memes-reason {
+  margin: 2px 0 0;
+  color: #ffc4cf;
+  font: 500 12px/1.45 "Inter", system-ui, sans-serif;
+}
+
+.adm-memes-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
+.adm-memes-actions .btn { min-height: 44px; }
+.adm-memes-delete {
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid rgba(255, 138, 160, 0.34);
+  border-radius: 999px;
+  background: transparent;
+  color: #ffc4cf;
+  font: 600 12.5px/1 "Inter", system-ui, sans-serif;
+  cursor: pointer;
+}
+.adm-memes-delete:hover { background: rgba(255, 138, 160, 0.12); }
+
+.adm-memes-reason-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+.adm-memes-reason-form .ctrl-input { flex: 1 1 220px; min-height: 44px; }
+.adm-memes-reason-form .btn { min-height: 44px; }
+
+[data-theme="light"] .adm-memes-kpi,
+[data-theme="light"] .adm-memes-card {
+  border-color: rgba(20, 40, 74, 0.14);
+  background: rgba(255, 255, 255, 0.72);
+}
+[data-theme="light"] .adm-memes-kpi strong,
+[data-theme="light"] .adm-memes-title { color: #12233c; }
+[data-theme="light"] .adm-memes-kpi span,
+[data-theme="light"] .adm-memes-meta,
+[data-theme="light"] .adm-memes-status { color: rgba(24, 45, 74, 0.74); }
+
+@media (max-width: 640px) {
+  .adm-memes-actions .btn,
+  .adm-memes-delete,
+  .adm-memes-reason-form .btn,
+  .adm-memes-reason-form .ctrl-input { min-height: 46px; }
+  .adm-memes-card { grid-template-columns: 92px minmax(0, 1fr); gap: 10px; padding: 10px; }
+  .adm-memes-thumb { width: 92px; height: 92px; border-radius: 14px; }
+  .adm-memes-actions .btn,
+  .adm-memes-delete { flex: 1 1 auto; }
+  .adm-memes-kpis { grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); }
+}

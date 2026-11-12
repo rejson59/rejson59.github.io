@@ -14,35 +14,48 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Aplikacje RejHuba — planer, gry, muzyka, memy i asystent</title>
   <meta name="description" content="Planer, gry, muzyka, memy i asystent RejHuba w jednym miejscu. Bez instalacji, w jednym stylu, z myślą o telefonie.">
+
   <link rel="canonical" href="/aplikacje">
+
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
+
   <link rel="manifest" href="/manifest.webmanifest">
   <meta name="theme-color" content="#0b0e13">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="RejHub">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
   <link rel="apple-touch-icon" href="/assets/app/icon-192.png">
   <script>try{var t=localStorage.getItem('theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch(e){}</script>
-  <link rel="stylesheet" href="css/style.css?v=2026-11-10-2">
-  <link rel="stylesheet" href="/css/rejapps.css?v=1">
-  <link rel="stylesheet" href="/css/shared-topbar.css?v=5">
-  <link rel="stylesheet" href="/css/rejchat-notifications.css?v=3">
-  <link rel="stylesheet" href="/css/push.css?v=2">
-  <link rel="stylesheet" href="/hub/glass2.css?v=16">
-  <link rel="stylesheet" href="/hub/loader.css?v=4">
-  <link rel="stylesheet" href="/css/text-filter.css?v=1">
-  <link rel="stylesheet" href="/css/topbar-split.css?v=6">
-  <link rel="stylesheet" href="/css/page-reveal.css?v=2">
-  <link rel="stylesheet" href="/hub/island.css?v=12">
-  <link rel="stylesheet" href="/css/scrollbar.css?v=1">
-  <link rel="stylesheet" href="/css/glass-last.css?v=4">
-  <noscript><link rel="stylesheet" href="/css/shared-topbar-nojs.css?v=2"></noscript>
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+  <link rel="stylesheet" href="/css/style.css?v=2026-11-12-posters-1">
+  <link rel="stylesheet" href="/css/liquid.css?v=2026-10-19-1">
+  <link rel="stylesheet" href="/css/responsive.css?v=3">
+  <link rel="stylesheet" href="/css/rejapps.css?v=4">
+
   <script src="/js/motion-unlock.js?v=1"></script>
   <script src="/js/shell-cache.js?v=1" defer></script>
   <script defer src="/js/shared-topbar.js?v=10"></script>
   <script defer src="/js/rejchat-profiles.js?v=2"></script>
   <script defer src="/js/rejchat-notifications.js?v=6"></script>
   <script defer src="/js/premium.js?v=12"></script>
+
+  <link rel="stylesheet" href="/css/side-ads.css?v=5">
+  <link rel="stylesheet" href="/css/mobile-ads.css?v=10">
+  <link rel="stylesheet" href="/css/shared-topbar.css?v=5">
+  <noscript><link rel="stylesheet" href="/css/shared-topbar-nojs.css?v=2"></noscript>
+  <link rel="stylesheet" href="/css/rejchat-notifications.css?v=3">
+  <link rel="stylesheet" href="/css/glass-update.css?v=5">
+  <link rel="stylesheet" href="/hub/glass2.css?v=16">
+  <link rel="stylesheet" href="/hub/loader.css?v=4">
+  <link rel="stylesheet" href="/css/text-filter.css?v=1">
+  <link rel="stylesheet" href="/css/push.css?v=2">
+  <link rel="stylesheet" href="/css/topbar-split.css?v=6">
+  <link rel="stylesheet" href="/css/page-reveal.css?v=2">
+  <link rel="stylesheet" href="/hub/island.css?v=12">
+  <link rel="stylesheet" href="/css/scrollbar.css?v=1">
+  <link rel="stylesheet" href="/css/glass-last.css?v=4">
 </head>
 <body class="rj-apps">
   <div id="rj-page-loader" aria-hidden="true">
@@ -122,14 +135,14 @@
       <a class="rjapp-card rjapp-appcard" href="/rejmusic">
         <span class="rjapp-appicon" aria-hidden="true">♪</span>
         <strong>RejMusic</strong>
-        <span>Następca Jakuplayera: odtwarzacz plików z dysku i osadzone utwory ze Spotify, YouTube, SoundCloud i Deezer.</span>
+        <span>Wyszukiwarka utworów w Deezer i Apple Music, oficjalne zapowiedzi i playlista z odtwarzaczy Spotify, YouTube, SoundCloud i Deezer.</span>
         <span class="rjapp-open">Posłuchaj →</span>
       </a>
       <a class="rjapp-card rjapp-appcard" href="/rejmeme">
         <span class="rjapp-appicon" aria-hidden="true">◧</span>
         <strong>RejMeme</strong>
-        <span>Generator memów: własne tło, podpisy, pobranie PNG i wysyłka prosto do RejChatu.</span>
-        <span class="rjapp-open">Zrób mem →</span>
+        <span>Galeria memów społeczności: popularne formaty, własne obrazki (JPG, PNG, GIF, WebP) i kolejka moderacji — publikacja po zatwierdzeniu.</span>
+        <span class="rjapp-open">Zobacz memy →</span>
       </a>
       <a class="rjapp-card rjapp-appcard" href="/rejasystent">
         <span class="rjapp-appicon" aria-hidden="true">✦</span>
@@ -151,7 +164,7 @@
         <article class="rjapp-card">
           <span class="rjapp-badge rjapp-badge--soon">W przygotowaniu</span>
           <h2 style="margin-top:10px">Muzyka w chmurze</h2>
-          <p>RejMusic gra dziś z Twojego dysku i z oficjalnych odtwarzaczy. Własna biblioteka w chmurze wymaga zgody serwisów muzycznych — na razie jej nie ma.</p>
+          <p>RejMusic szuka utworów w katalogach Deezer i Apple Music, gra oficjalne 30-sekundowe zapowiedzi i osadza odtwarzacze Spotify, YouTube, SoundCloud i Deezer. Pełne utwory zostają na platformach — nie kopiujemy ich na RejHub.</p>
         </article>
       </div>
     </section>
