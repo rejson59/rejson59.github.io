@@ -1,0 +1,112 @@
+/* © 2026 rejson59 — wszystkie prawa zastrzeżone. Licencja: /LICENSE
+   ----------------------------------------------------------------------------
+   Stopka: profile rejson59 w mediach społecznościowych (Instagram, TikTok).
+   Jeden wygląd na każdej podstronie — te same pigułki szkła, ten sam promień
+   i ten sam odstęp, co w resztę interfejsu. Arkusz jest ładowany przed
+   glass-last.css, żeby końcowa warstwa szkła mogła go nadpisać.
+   -------------------------------------------------------------------------- */
+
+.social-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: center;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 18px 20px 2px;
+}
+
+.social-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px 7px 8px;
+  border: 1px solid var(--gl-edge, rgba(178, 205, 245, 0.18));
+  border-radius: 999px;
+  background: var(--gl-fill, rgba(255, 255, 255, 0.06));
+  color: var(--text, #eaf0ff);
+  font: 500 12.5px/1.2 "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.18s ease, border-color 0.18s ease, background-color 0.18s ease;
+}
+
+.social-link:hover,
+.social-link:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(178, 205, 245, 0.4);
+  background: var(--gl-fill-hi, rgba(255, 255, 255, 0.1));
+}
+
+.social-link:focus-visible {
+  outline: 2px solid var(--accent-strong, #4c8dff);
+  outline-offset: 3px;
+}
+
+.social-icon {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.09);
+  color: var(--text, #eaf0ff);
+}
+
+.social-icon svg {
+  display: block;
+  width: 15px;
+  height: 15px;
+}
+
+.social-name {
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.social-handle {
+  color: var(--muted, #9fb0cb);
+  font: 500 11px/1 "JetBrains Mono", ui-monospace, monospace;
+}
+
+@media (max-width: 420px) {
+  .social-links {
+    gap: 6px;
+    padding: 14px 12px 2px;
+  }
+  .social-link {
+    padding: 6px 11px 6px 7px;
+    font-size: 12px;
+  }
+  .social-handle {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .social-link {
+    transition: none;
+  }
+  .social-link:hover,
+  .social-link:focus-visible {
+    transform: none;
+  }
+}
+
+/* Tryb jasny: pigułki nie mogą zniknąć na jasnym tle. */
+html[data-theme="light"] .social-link {
+  border-color: rgba(28, 44, 74, 0.16);
+  background: rgba(255, 255, 255, 0.72);
+  color: #16233a;
+}
+
+html[data-theme="light"] .social-icon {
+  background: rgba(28, 44, 74, 0.08);
+  color: #16233a;
+}
+
+html[data-theme="light"] .social-handle {
+  color: #5a6b88;
+}
