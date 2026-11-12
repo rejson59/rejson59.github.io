@@ -4,7 +4,7 @@ const path = require('path');
 const assert = require('assert');
 const { JSDOM } = require('jsdom');
 const root = path.resolve(__dirname, '../..');
-const page = fs.readFileSync(path.join(root, 'admin.html'), 'utf8');
+const page = fs.readFileSync(path.join(root, 'rejhub2/admin.html'), 'utf8');
 const script = fs.readFileSync(path.join(root, 'rejson-widgets/js/admin.js'), 'utf8');
 const wait = () => new Promise(resolve => setTimeout(resolve, 15));
 const make = (id, project, type, status, title, extra = {}) => ({

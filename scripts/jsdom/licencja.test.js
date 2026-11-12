@@ -6,9 +6,9 @@ const path = require('node:path');
 const { JSDOM } = require('jsdom');
 
 const root = path.resolve(__dirname, '../..');
-const pages = ['licencja.html', 'rejhub2/licencja.html'];
+const pages = ['rejhub2/licencja.html'];
 const css = fs.readFileSync(path.join(root, 'css/licencja.css'), 'utf8');
-const LOGOS = { 'licencja.html': '/favicon.svg', 'rejhub2/licencja.html': '/hub/brand-mark.svg?v=1' };
+const LOGOS = { 'rejhub2/licencja.html': '/hub/brand-mark.svg?v=1' };
 
 let pass = 0, fail = 0;
 function check(name, fn) {
@@ -31,7 +31,7 @@ for (const file of pages) {
     () => assert.equal(d.querySelector('.rj-shared-header .brand img').getAttribute('src'), LOGO));
   check('nazwa marki bez zmian',
     () => assert.equal(d.querySelector('.rj-shared-header .brand-text').textContent.trim().split('.')[0],
-      file === 'licencja.html' ? 'rejson59' : 'RejHub'));
+      'RejHub'));
   check('dokładnie jeden link „Przejdź do treści”',
     () => assert.equal(d.querySelectorAll('a.services-skip').length, 1));
   check('link prowadzi do treści',

@@ -236,7 +236,7 @@
       </form>
 
       <div class="error" id="error" role="alert" aria-live="polite"></div>
-      <a class="back" href="/w-budowie">← Wróć do strony w budowie</a>
+      <a class="back" href="/">← Wróć na stronę główną</a>
     </main>
 
     <script>
@@ -267,7 +267,13 @@
               })
             });
             if (response.ok) {
-              window.location.replace("/");
+              /* Brama dopisuje `?next=...`, gdy przekierowuje tu z panelu —
+                 po zalogowaniu wracamy dokładnie tam, gdzie chciał wejść
+                 administrator. Tylko ścieżka lokalna: `//host` to adres
+                 zewnętrzny i nie może przejąć przekierowania. */
+              var next = new URLSearchParams(location.search).get("next") || "/";
+              if (next.charAt(0) !== "/" || next.charAt(1) === "/") next = "/";
+              window.location.replace(next);
               return;
             }
             if (response.status === 403) {

@@ -335,7 +335,7 @@ console.log('\n=== G. MENU, SZKŁO I PANEL BEZ ZBĘDNYCH PRZEŁĄCZNIKÓW ===');
   });
 
   check('panel nie pokazuje polubień zgłoszeń ani przełączników tablicy', () => {
-    [read('rejhub2/admin.html'), read('admin.html')].forEach((html) => {
+    [read('rejhub2/admin.html'), read('rejhub2/admin.html')].forEach((html) => {
       ['kpi-votes', 'Najwięcej polubień', 'chk-is-public', 'chk-is-pinned', 'publicznej tablicy']
         .forEach((needle) => assert.ok(!html.includes(needle), 'zostało: ' + needle));
     });

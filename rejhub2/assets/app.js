@@ -32,7 +32,7 @@
       logout.disabled = true;
       logout.textContent = "Wylogowuję…";
       fetch("/api/session", { method: "DELETE", credentials: "same-origin" }).finally(function () {
-        window.location.replace("/w-budowie");
+        window.location.replace("/login");
       });
     });
   }

@@ -8,7 +8,7 @@ const root = path.resolve(__dirname, '../..');
 const read = p => fs.readFileSync(path.join(root,p),'utf8');
 const tick = () => new Promise(r => setTimeout(r,5));
 (async () => {
-  const dom = new JSDOM(read('partnerstwo.html'), {url:'https://rejson59.github.io/partnerstwo',runScripts:'outside-only'});
+  const dom = new JSDOM(read('rejhub2/partnerstwo.html'), {url:'https://rejson59.github.io/partnerstwo',runScripts:'outside-only'});
   const w=dom.window, d=w.document, form=d.getElementById('partner-form');
   let response={received:true}, calls=[];
   w.RejsonCloud={rpc:(fn,data,auth)=>{ calls.push({fn,data,auth}); return response instanceof Error ? Promise.reject(response) : Promise.resolve(response); }};
@@ -29,7 +29,7 @@ const tick = () => new Promise(r => setTimeout(r,5));
   form.dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true})); await tick();
   assert.match(d.getElementById('partner-feedback').textContent,/dotarła do panelu/);
   assert.equal(form.elements.namedItem('message').value,'');
-  assert.ok(!read('partnerstwo.html').includes('view-tracker.js'));
+  assert.ok(!read('rejhub2/partnerstwo.html').includes('view-tracker.js'));
   assert.match(read('sw.js'),/logowanie\|partnerstwo/);
   dom.window.close();
 

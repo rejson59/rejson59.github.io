@@ -25,7 +25,7 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 (async function main() {
   console.log('\n=== A. ZNACZNIKI I PLIKI ===');
 
-  const pages = ['profil.html', 'rejhub2/profil.html'];
+  const pages = ['rejhub2/profil.html', 'rejhub2/profil.html'];
   await check('obie wersje profilu ładują nowy arkusz i skrypt', () => {
     pages.forEach((file) => {
       const html = read(file);
@@ -174,7 +174,7 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
   console.log('\n=== C. NAWIGACJA ===');
 
   await check('RejTools ma ikonę narzędzi, a RejClass książkę w głównym pasku', () => {
-    const pages = ['index.html', 'rejhub2/index.html', 'rejhub2/profil.html', 'rejhub2/rejclass.html'];
+    const pages = ['rejhub2/index.html', 'rejhub2/index.html', 'rejhub2/profil.html', 'rejhub2/rejclass.html'];
     pages.forEach((file) => {
       const doc = new JSDOM(read(file)).window.document;
       const nav = doc.querySelector('.rj-shared-header .site-nav');

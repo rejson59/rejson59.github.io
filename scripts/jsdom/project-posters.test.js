@@ -299,9 +299,8 @@ const posterOf = (doc) => doc.querySelector('.card-preview-poster');
       assert.match(css, /\.card-preview\.has-poster:not\(\.is-loading\) \.card-preview-frame::after\s*\{\s*display:\s*none/);
     });
 
-    const legacy = read('index.html');
-    check('stara strona bez zmian (nie ładuje plakatów)', () => assert.ok(!legacy.includes('project-posters.js')));
-    check('stara strona nadal używa zapamiętanej wersji silnika', () => assert.ok(legacy.includes('js/loader.js?v=21')));
+    const hub = read('rejhub2/index.html');
+    check('strona główna ładuje moduł plakatów', () => assert.ok(hub.includes('project-posters.js')));
   }
 
   console.log('\n========================================================');

@@ -1,6 +1,10 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{JSDOM}=require('jsdom');
-const html=fs.readFileSync(path.join(__dirname,'../../rejfile.html'),'utf8'),js=fs.readFileSync(path.join(__dirname,'../../js/rejchat-notifications.js'),'utf8');
+const html=fs.readFileSync(path.join(__dirname,'../../rejhub2/rejfile.html'),'utf8'),js=fs.readFileSync(path.join(__dirname,'../../js/rejchat-notifications.js'),'utf8');
 const dom=new JSDOM(html,{url:'https://rejson59.github.io/rejfile',runScripts:'outside-only'}),w=dom.window,d=w.document;
+/* W RejHubie 2.0 dzwonek powiadomień siedzi w wyspie (hub/island.js), więc
+   strona nie ma kontenera w topbarze. Wstawiamy go tutaj, żeby sprawdzić
+   samą logikę modułu — niezależnie od tego, gdzie trafi w interfejsie. */
+d.querySelector('.rj-shared-header .header-right').insertAdjacentHTML('beforeend','<div class="rj-chat-alerts"></div>');
 let session={username:'Ania',token:'a'.repeat(32)},files=[{id:'11111111-1111-4111-8111-111111111111',filename:'<obraz>.png',sender:'Karol',created_at:'2026-11-12T10:00:00Z'}],release,hold=false;
 w.matchMedia=()=>({matches:false,addEventListener(){}});w.RJProfiles={session:()=>session,rpc:(name,args)=>{if(name==='rejfile_notifications_list'){if(hold){hold=false;return new Promise(r=>{release=()=>r(files)});}return Promise.resolve(session.token[0]==='a'?files:[]);}if(name==='rejfile_notifications_read'){files=[];return Promise.resolve(1);}if(name==='rejchat_notifications_list'||name==='rejchat_reaction_inbox')return Promise.resolve({items:[],unread:0});if(name==='rejchat_my_warnings')return Promise.resolve({items:[]});return Promise.resolve([])}};
 w.eval(js);const tick=()=>new Promise(r=>setTimeout(r,0));

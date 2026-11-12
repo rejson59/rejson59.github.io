@@ -3,16 +3,22 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {JSDOM,VirtualConsole}=require('jsdom');
 const root=path.resolve(__dirname,'../..'),read=f=>fs.readFileSync(path.join(root,f),'utf8');
 assert.match(read('sw.js'),/partnerstwo\|uslugi\|rejfile/);
-const home=new JSDOM(read('index.html')).window.document;
+const home=new JSDOM(read('rejhub2/index.html')).window.document;
 assert.equal(home.querySelector('.services-home'),null);
 assert.equal(home.querySelector('.partner-home'),null);
 assert.ok(home.querySelector('a[href="rejtools"]'));
-const service=new JSDOM(read('uslugi.html'),{url:'https://rejson59.github.io/uslugi',runScripts:'outside-only',virtualConsole:new VirtualConsole()});
+const service=new JSDOM(read('rejhub2/uslugi.html'),{url:'https://rejson59.github.io/uslugi',runScripts:'outside-only',virtualConsole:new VirtualConsole()});
 assert.match(service.window.document.querySelector('h1').textContent,/stronę/);
 assert.equal(service.window.document.querySelectorAll('a[href="partnerstwo?temat=strona#propozycja"]').length,2);
-service.window.eval(read('js/uslugi.js'));const menu=service.window.document.getElementById('services-menu');menu.click();assert.equal(menu.getAttribute('aria-expanded'),'true');service.window.document.getElementById('services-theme').click();assert.equal(service.window.document.documentElement.dataset.theme,'light');service.window.close();
-for(const file of ['index.html','partnerstwo.html','uslugi.html','rejchat.html','rejfile.html','404.html','logowanie.html','profil.html','rejtools.html','rejsejf.html','konto-demo.html']) {
- const dom=new JSDOM(read(file),{url:'https://rejson59.github.io/'+file,runScripts:'outside-only',virtualConsole:new VirtualConsole()});
+service.window.eval(read('js/uslugi.js'));
+/* Nowa strona usług ma wspólny topbar, więc lokalne menu już nie istnieje.
+   Skrypt musi to przetrwać bez błędu (wcześniej rzucał wyjątkiem). */
+assert.equal(service.window.document.getElementById('services-menu'),null,'menu przejął wspólny topbar');
+const themeButton=service.window.document.getElementById('services-theme');
+if(themeButton){themeButton.click();assert.equal(service.window.document.documentElement.dataset.theme,'light');}
+service.window.close();
+for(const file of ['rejhub2/index.html','rejhub2/partnerstwo.html','rejhub2/uslugi.html','rejhub2/rejchat.html','rejhub2/rejfile.html','rejhub2/404.html','rejhub2/logowanie.html','rejhub2/profil.html','rejhub2/rejtools.html','rejhub2/rejsejf.html','rejhub2/konto-demo.html']) {
+ const dom=new JSDOM(read(file),{url:'https://rejhub.vercel.app/'+file.replace(/^rejhub2\//,''),runScripts:'outside-only',virtualConsole:new VirtualConsole()});
  const w=dom.window;w.sessionStorage.setItem('rj_side_ads_dismissed_v1','1');assert.ok(w.document.querySelector('script[src^="/js/side-ads.js"]'),file);assert.ok(w.document.querySelector('link[href^="/css/side-ads.css"]'),file);
  w.eval(read('js/side-ads.js'));w.eval(read('js/side-ads.js'));
  assert.equal(w.document.querySelectorAll('.rj-side-ads').length,1,file);
@@ -22,7 +28,7 @@ for(const file of ['index.html','partnerstwo.html','uslugi.html','rejchat.html',
  assert.equal(w.document.querySelectorAll('.rj-side-ads button, .rj-side-ads-close').length,0,file + ': bez przycisku zamykania');
  assert.ok(w.document.body.classList.contains('rj-side-ads-enabled'));w.close();
 }
-const inquiry=new JSDOM(read('partnerstwo.html'),{url:'https://rejson59.github.io/partnerstwo?temat=strona#propozycja',runScripts:'outside-only',virtualConsole:new VirtualConsole()});
+const inquiry=new JSDOM(read('rejhub2/partnerstwo.html'),{url:'https://rejson59.github.io/partnerstwo?temat=strona#propozycja',runScripts:'outside-only',virtualConsole:new VirtualConsole()});
 const w=inquiry.window,form=w.document.getElementById('partner-form');let sent;
 w.RejsonCloud={rpc:(name,data)=>{sent={name,data};return Promise.resolve({received:true});}};
 w.eval(read('js/partnerstwo.js'));assert.equal(form.elements.namedItem('kind').value,'other');assert.match(form.elements.namedItem('message').value,/stworzeniu strony/);assert.match(w.document.querySelector('#form-title').textContent,/stronie/);assert.ok(w.document.querySelector('.partner-options').hidden);

@@ -8,10 +8,17 @@ const root = path.resolve(__dirname, '../..');
 const read = p => fs.readFileSync(path.join(root, p), 'utf8');
 const widget = read('rejson-widgets/widget.js');
 const media = read('js/media-capture.js');
-const pages = ['index.html','404.html','admin.html','logowanie.html','partnerstwo.html','uslugi.html','profil.html','rejchat.html','rejfile.html','rejson-widgets/index.html','rejtools.html','konto-demo.html'];
+const pages = ['rejhub2/index.html','rejhub2/404.html','rejhub2/admin.html','rejhub2/logowanie.html','rejhub2/partnerstwo.html','rejhub2/uslugi.html','rejhub2/profil.html','rejhub2/rejchat.html','rejhub2/rejfile.html','rejson-widgets/index.html','rejhub2/rejtools.html','rejhub2/konto-demo.html'];
 const wait = () => new Promise(resolve => setTimeout(resolve, 30));
 async function main() {
+  /* Pigułka nie jest już wstrzykiwana na każdą stronę — ładują ją tylko
+     strony, które jej potrzebują. Sprawdzamy wszystkie takie strony i to,
+     że żadna nie ładuje jej dwa razy. */
   for (const page of pages) {
+    const count = (read(page).match(/(?:^|[\/"'])(?:rejson-widgets\/)?widget\.js(?:\?|["'])/g) || []).length;
+    assert.ok(count <= 1, page + ' widget najwyżej raz');
+  }
+  for (const page of pages.filter((p) => /widget\.js/.test(read(p)))) {
     const html = read(page);
     const dom = new JSDOM(html, { url: 'https://rejson59.github.io/' + page, runScripts:'outside-only', pretendToBeVisual:true, virtualConsole: new VirtualConsole() });
     const w = dom.window;

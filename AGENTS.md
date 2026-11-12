@@ -31,7 +31,13 @@ Nie usuwaj ich przy edycji stron.
 
 ## 1. Projekt w pigułce
 
-- Statyczna strona na GitHub Pages (branch `main`, katalog `/`), bez kroku budowania.
+- **Serwis działa pod `https://rejhub.vercel.app`** — katalog `rejhub2/` wdraża Vercel
+  (Root Directory `rejhub2`, bez kroku budowania). To jest teraz jedyna strona RejHuba.
+- `rejson59.github.io` **nie jest już witryną**. Każda jego podstrona to lekka strona
+  przekierowania (`js/przeniesienie.js` + `<meta http-equiv="refresh">`) na odpowiednik
+  w `rejhub.vercel.app`; obowiązuje `data-przeniesienie`, `noindex, follow` i `canonical`
+  na nowy adres. **Nie dodawaj tam treści** — nowe strony tworzymy w `rejhub2/`.
+  W podkatalogach (`/OffChat/`, `/RejSearch/` itd.) nadal mieszkają samodzielne projekty.
 - Backend: Supabase (projekt `hzbqzfimtroixnldzjeq`) — wszystko przez publiczne funkcje RPC
   (`/rest/v1/rpc/...`) z kluczem **anon** (klucz anon jest jawny w JS i to jest OK).
 - Ogólne konto rejson59.github.io do strony i podłączonych projektów (nie wyłącznie Społeczności/RejChat): własny mechanizm nazwa + hasło (bcrypt) lub starszy
@@ -43,7 +49,8 @@ Nie usuwaj ich przy edycji stron.
 - Hasła, klucze `service_role` i inne sekrety — NIGDY w repo (wyjątek: jawny klucz anon oraz
   klucz publikowania agenta — patrz niżej, celowo jawne).
 - Po zmianach w JS uruchom `node --check <plik>`. Linki wewnętrzne prowadzimy
-  bez końcówki `.html` (GitHub Pages serwuje je sam; stare adresy dalej działają).
+  bez końcówki `.html` (Vercel ma `cleanUrls`). Wszystko, co trafia do RejHub 2.0,
+  umieszczamy w `rejhub2/`, a współdzielone skrypty i arkusze w `js/` i `css/`.
 - Migracje bazy: katalog `supabase/` (kopie SQL dla dokumentacji; stosowane przez konektor Supabase).
 
 ## 2. Konto „Agent AI Rejsona" na Społeczności
@@ -105,8 +112,13 @@ Potem nowa wartość trafia do tego pliku (sekcja wyżej).
 ## 3. Wdrożenie zmian ze sesji agenta
 
 Pracujesz na gałęzi sesji `arena/...` → commit → push → Pull Request do `main` → merge.
-GitHub Pages buduje `main` automatycznie (~1 min). Po merge zweryfikuj stronę na żywo
-(fetch pod `https://rejson59.github.io/...`), a potem rozważ wpis agenta wg zasad z sekcji 2.
+Po merge Vercel wdraża `rejhub2/` automatycznie (~1 min), a GitHub Pages publikuje same
+przekierowania. Sprawdzaj stronę pod `https://rejhub.vercel.app/…` (nie pod starym adresem),
+a potem rozważ wpis agenta wg zasad z sekcji 2.
+
+Brama serwerowa (`rejhub2/middleware.js`) chroni już tylko panel: `/admin`, `/panel`,
+`/studio-source`, `/szklane-studio` i `/api/*`. Zwykłe podstrony są publiczne —
+nie dodawaj do nich warunków „tylko administrator”.
 
 ## 3b. Konto i powiadomienia — żadnych sztuczek
 

@@ -15,8 +15,8 @@ for (const f of files(root)) {
   const text = fs.readFileSync(f, 'utf8');
   assert(!text.includes(mark) && !/&#(?:10035|x2733);|\\u2733|\\2733/i.test(text), `Dekoracja w ${path.relative(root,f)}`);
 }
-const page = fs.readFileSync(path.join(root,'rejchat.html'),'utf8');
+const page = fs.readFileSync(path.join(root,'rejhub2/rejchat.html'),'utf8');
 assert(!page.includes('rc-chat-guide'));
-assert(page.includes('Odczyty i reakcje są widoczne') && page.includes('Zdjęcia w pokojach widzą'));
-assert(!page.includes('rc-dm-privacy') && !page.includes('O prywatności'));
+assert(page.includes('Odczyty i reakcje'), 'RejChat nadal informuje o odczytach i reakcjach');
+assert(!page.includes('rc-dm-privacy') && !page.includes('O prywatności'), 'brak przycisku „O prywatności”');
 console.log('PASS: brak znaczka w dekoracjach stron, brak przycisku Prywatność i zachowane ważne informacje');

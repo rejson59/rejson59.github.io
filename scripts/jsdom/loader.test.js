@@ -16,7 +16,7 @@ const path = require("path");
 const { JSDOM } = require("jsdom");
 
 const ROOT = path.resolve(__dirname, "..", "..");
-const HTML = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
+const HTML = fs.readFileSync(path.join(ROOT, "rejhub2/index.html"), "utf8");
 const LOADER = fs.readFileSync(path.join(ROOT, "js", "loader.js"), "utf8");
 
 /* Szybkie warianty watchdogów — inaczej testy trwałyby minutami. */
@@ -213,11 +213,22 @@ function mk(html, evalBoot, evalLoader) {
     d.window.Element.prototype.animate = function (f, o) { calls.push({ el: this.className, delay: o && o.delay }); return { cancel() {} }; };
     d.window.eval(bootCode);
     const g = d.window.document.querySelector("#rj-page-loader .rj-dough");
-    check("6 animacji kulek", calls.length === 6, String(calls.length));
-    check("grupa ma is-waapi", g.classList.contains("is-waapi"), g.className);
-    check("fala 0/130/260 ms", calls.filter((c) => c.el.includes("ball")).map((c) => c.delay).join(",") === "0,130,260");
-    d.window.eval(LOADER);
-    check("loader.js nie dubluje animacji", calls.length === 6, String(calls.length));
+    if (g) {
+      check("6 animacji kulek", calls.length === 6, String(calls.length));
+      check("grupa ma is-waapi", g.classList.contains("is-waapi"), g.className);
+      check("fala 0/130/260 ms", calls.filter((c) => c.el.includes("ball")).map((c) => c.delay).join(",") === "0,130,260");
+      d.window.eval(LOADER);
+      check("loader.js nie dubluje animacji", calls.length === 6, String(calls.length));
+    } else {
+      /* Nowa strona główna rysuje w loaderce orbitę marki, a nie trzy kulki.
+         Animacja jest wtedy czystym CSS — skrypt nie może nic zepsuć. */
+      const orbit = d.window.document.querySelector("#rj-page-loader .loader-mark");
+      check("loader ma własną animację (orbita marki)", !!orbit && orbit.querySelectorAll("span").length >= 3);
+      check("brak zbędnych animacji WAAPI", calls.length === 0, String(calls.length));
+      let crashed = false;
+      try { d.window.eval(LOADER); } catch (error) { crashed = true; }
+      check("loader.js działa też bez kulek", !crashed);
+    }
   }
   {
     const d = mk(overlayHtml + CARD(0), false, LOADER_FAST);

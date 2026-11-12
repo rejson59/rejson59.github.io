@@ -9,7 +9,7 @@ const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 
 console.log('\n=== A. PANEL „O PRYWATNOŚCI" ZNIKA ===');
 
-for (const file of ['rejhub2/rejchat.html', 'rejchat.html']) {
+for (const file of ['rejhub2/rejchat.html', 'rejhub2/rejchat.html']) {
   const html = read(file);
   assert.ok(!/rc-dm-privacy/.test(html), file + ': panel „O prywatności" nie może wracać');
   assert.ok(!/O prywatności/.test(html), file + ': brak nagłówka „O prywatności"');

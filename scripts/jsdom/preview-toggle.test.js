@@ -16,7 +16,6 @@ const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 const HOME = read('rejhub2/index.html');
 const TOGGLE = read('js/preview-toggle.js');
 const CSS = read('rejhub2/hub/glass2.css');
-const LEGACY = read('index.html');
 
 let passed = 0;
 const failures = [];
@@ -263,10 +262,8 @@ function fakeLoader(initial, liveAllowed) {
     });
   }
 
-  console.log('\n=== F. STARA STRONA BEZ ZMIAN ===');
+  console.log('\n=== F. GLOBALNE SZKŁO PRZYCISKÓW ===');
   {
-    check('stara witryna nie dostaje przełącznika', () => assert.ok(!LEGACY.includes('data-preview-toggle')));
-    check('stara witryna nie ładuje skryptu przełącznika', () => assert.ok(!LEGACY.includes('preview-toggle.js')));
     check('globalne szkło przycisków jest tylko w RejHubie', () => {
       const legacyCss = read('css/style.css');
       assert.ok(!legacyCss.includes('-webkit-tap-highlight-color'));

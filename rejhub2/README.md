@@ -1,18 +1,21 @@
-# RejHub 2.0 — wersja robocza
+# RejHub 2.0 — produkcja
 
-Nowa wersja RejHub rozwijana w osobnym katalogu, ale wdrażana **tylko przez Vercel**
-(`rejhub.vercel.app`). GitHub Pages nie serwuje tego katalogu jako strony głównej,
-więc publiczna strona `rejson59.github.io` działa bez zmian.
+To jest **cały serwis RejHub**, wdrażany przez Vercel pod
+[rejhub.vercel.app](https://rejhub.vercel.app). Stara witryna na GitHub Pages
+została wyłączona i tylko przekierowuje tutaj (szczegóły w `js/przeniesienie.js`).
 
-## Jak działa brama
+## Jak działa ochrona panelu
+
+Serwis jest publiczny — brama nie ukrywa już zwykłych podstron.
 
 1. `login.html` wysyła e-mail i hasło do `/api/session`.
 2. Funkcja serwerowa sprawdza je w Supabase Auth i pyta bazę o `is_widget_admin()`.
 3. Tylko wtedy ustawia ciasteczko `rejhub_admin` — `HttpOnly`, `Secure`,
    podpisane HMAC-SHA256 kluczem `REJHUB_SESSION_SECRET` (12 godzin).
-4. `middleware.js` sprawdza podpis **przed** wydaniem jakiegokolwiek pliku.
-   Bez ważnego ciasteczka nie ma HTML, CSS ani JS nowej wersji — dostaje się
-   wyłącznie kartkę „w budowie”.
+4. `middleware.js` sprawdza podpis **tylko dla panelu**: `/admin`, `/panel`,
+   `/studio-source`, `/szklane-studio` oraz `/api/*` (poza `/api/session`
+   i `/api/push-send`). Bez sesji te adresy przekierowują do `/login?next=…`,
+   a API odpowiada `401`.
 
 Brak ukrywania w DOM i brak sprawdzania po stronie przeglądarki: decyduje serwer.
 
@@ -26,11 +29,12 @@ Brak ukrywania w DOM i brak sprawdzania po stronie przeglądarki: decyduje serwe
 
 ## Struktura
 
-- `index.html`, `assets/` — panel roboczy (tylko administrator),
-- `w-budowie.html` — publiczna kartka dla gości,
-- `login.html` — logowanie administratora,
+- `index.html`, `hub/` — strona główna z wyspą, aplikacjami i RejAsystentem,
+- `aplikacje.html`, `pobierz.html` — lista aplikacji i strona APK,
+- `login.html` — logowanie administratora (wraca pod `?next=`),
 - `api/session.js` — weryfikacja w Supabase + podpisana sesja,
-- `middleware.js` — serwerowa brama na każdym żądaniu.
+- `middleware.js` — brama wyłącznie dla panelu i API,
+- `sitemap.xml`, `robots.txt` — adresy publiczne dla wyszukiwarek.
 
 ## Konfiguracja projektu Vercel
 

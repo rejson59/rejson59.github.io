@@ -20,7 +20,7 @@ const { JSDOM } = require("jsdom");
 const ROOT = path.resolve(__dirname, "..", "..");
 const PREMIUM = fs.readFileSync(path.join(ROOT, "js", "premium.js"), "utf8");
 const WIDGET = fs.readFileSync(path.join(ROOT, "rejson-widgets", "widget.js"), "utf8");
-const INDEX = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
+const INDEX = fs.readFileSync(path.join(ROOT, "rejhub2/index.html"), "utf8");
 const CSS = fs.readFileSync(path.join(ROOT, "css", "premium.css"), "utf8");
 const STYLE_CSS = fs.readFileSync(path.join(ROOT, "css", "style.css"), "utf8");
 
@@ -258,7 +258,7 @@ const count = (doc) => {
   {
     check("karta premium podpięta na stronie głównej", /id="rj-club"/.test(INDEX));
     check("arkusz premium dołączony", /css\/premium\.css\?v=5/.test(INDEX));
-    check("skrypt premium dołączony", /js\/premium\.js\?v=11/.test(INDEX));
+    check("skrypt premium dołączony", /js\/premium\.js\?v=12/.test(INDEX));
     check("karta premium stoi przed listą projektów",
       INDEX.indexOf('id="rj-club"') < INDEX.indexOf('id="projekty"'));
     check("karta premium jest widoczna przed wyróżnionymi projektami",

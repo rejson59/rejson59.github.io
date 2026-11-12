@@ -13,7 +13,7 @@ const path = require("path");
 const { JSDOM, VirtualConsole } = require("jsdom");
 
 const ROOT = path.resolve(__dirname, "..", "..");
-const PAGE = path.join(ROOT, "admin.html");
+const PAGE = path.join(ROOT, "rejhub2/admin.html");
 const PANEL_JS = fs.readFileSync(path.join(ROOT, "js", "admin-panel.js"), "utf8");
 const SQL_DAYS = fs.readFileSync(path.join(ROOT, "supabase", "2026-10-28_visitor_days_rollup.sql"), "utf8");
 const SQL_ADMIN = fs.readFileSync(path.join(ROOT, "supabase", "2026-10-28_admin_visitors_from_days.sql"), "utf8");
@@ -48,19 +48,20 @@ const DAY_LOG = [
   const vc = new VirtualConsole();
   vc.on("jsdomError", () => { /* offline: zasoby sieciowe nie są tu potrzebne */ });
 
-  const dom = await JSDOM.fromFile(PAGE, {
-    runScripts: "dangerously",
-    resources: "usable",
+  /* Strona administracyjna leży w `rejhub2/`, a skrypty w korzeniu — pod
+     `file://` przeglądarka ich nie znajdzie, więc wczytujemy panel ręcznie. */
+  const dom = new JSDOM(fs.readFileSync(PAGE, "utf8"), {
+    url: "https://rejhub.vercel.app/admin",
+    runScripts: "outside-only",
     pretendToBeVisual: true,
-    virtualConsole: vc,
-    beforeParse(w) {
-      w.matchMedia = () => ({ matches: false, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} });
-      w.fetch = () => Promise.reject(new Error("offline"));
-    }
+    virtualConsole: vc
   });
   const w = dom.window;
   const d = w.document;
-  await wait(1200);
+  w.matchMedia = () => ({ matches: false, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {} });
+  w.fetch = () => Promise.reject(new Error("offline"));
+  w.eval(PANEL_JS);
+  await wait(200);
 
   const api = w.__rjAdmin;
   const today = "2026-10-28";
