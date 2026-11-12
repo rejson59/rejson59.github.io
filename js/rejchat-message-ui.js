@@ -21,11 +21,13 @@
   function observe(list){if(!list)return;new MutationObserver(function(){group(list);}).observe(list,{childList:true});group(list);}
   observe(document.getElementById('chat-list'));observe(document.getElementById('dm-messages'));
   function reactions(bubble,rows,scope,enabled){
-    var menu=bubble.querySelector('.rc-menu-items'),meta=bubble.querySelector('.chat-meta');if(!menu||!meta)return;
+    /* Podsumowanie reakcji jest wierszem dymka (order: 3), nie nagłówka:
+       nazwa i godzina są teraz zwykłym wierszem w środku dymka. */
+    var menu=bubble.querySelector('.rc-menu-items');if(!menu)return;
     rows=Array.isArray(rows)?rows:[];
-    var picker=menu.querySelector('.rc-reaction-picker'),summary=meta.querySelector('.rc-reaction-summary');
+    var picker=menu.querySelector('.rc-reaction-picker'),summary=bubble.querySelector('.rc-reaction-summary');
     if(!picker){picker=document.createElement('div');picker.className='rc-reaction-picker';picker.setAttribute('aria-label','Dodaj lub usuń reakcję');menu.prepend(picker);}
-    if(!summary){summary=document.createElement('span');summary.className='rc-reaction-summary';summary.setAttribute('aria-label','Dodane reakcje');meta.insertBefore(summary,meta.querySelector('.rc-message-menu')); }
+    if(!summary){summary=document.createElement('span');summary.className='rc-reaction-summary';summary.setAttribute('aria-label','Dodane reakcje');bubble.appendChild(summary);}
     var signature=JSON.stringify([rows,enabled,scope]);if(picker.dataset.signature===signature)return;picker.dataset.signature=signature;picker.replaceChildren();summary.replaceChildren();var prior=menu.querySelector('.rc-reaction-full');if(prior)prior.remove();
     function button(emoji,r,compact){var b=document.createElement('button');b.type='button';b.className='rejchat-reaction'+(compact?' rc-reaction-count':'');b.dataset[scope==='public'?'reaction':'dmReaction']=emoji;b.setAttribute('aria-pressed',String(!!(r&&r.mine)));b.setAttribute('aria-label','Reakcja '+emoji+(r?' · '+r.count:''));b.disabled=!enabled;b.title=enabled?'Dodaj lub usuń reakcję':'Zaloguj się, aby reagować';b.textContent=emoji+(compact?' '+r.count:'');return b;}
     emojis.forEach(function(emoji){var r=rows.find(function(x){return x.emoji===emoji&&Number(x.count)>0;});picker.appendChild(button(emoji,r,false));});

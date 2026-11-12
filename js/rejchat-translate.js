@@ -354,7 +354,7 @@
       panel.className = 'rj-tr-panel';
       panel.innerHTML = '<p class="rj-tr-text" lang="' + TARGET + '"></p>' +
         '<div class="rj-tr-foot">' +
-          '<span class="rj-tr-note">Tłumaczenie automatyczne</span>' +
+          '<span class="rj-tr-note">przetłumaczone automatycznie</span>' +
           '<button class="rj-tr-toggle" type="button">Pokaż oryginał</button>' +
         '</div>';
       panel.querySelector('.rj-tr-toggle').addEventListener('click', function () {
@@ -368,8 +368,8 @@
     }
     panel.querySelector('.rj-tr-text').textContent = entry.text;
     panel.querySelector('.rj-tr-note').textContent = entry.masked
-      ? 'Tłumaczenie automatyczne · filtr zamaskował niedozwolone słowa'
-      : 'Tłumaczenie automatyczne';
+      ? 'przetłumaczone automatycznie · filtr zamaskował niedozwolone słowa'
+      : 'przetłumaczone automatycznie';
     panel.classList.remove('is-original');
     body.classList.add('rj-tr-original-hidden');
     el.classList.add('rj-tr-on');

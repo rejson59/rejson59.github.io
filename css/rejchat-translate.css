@@ -54,41 +54,49 @@ body.rj-community .rj-tr-draft:focus-visible {
 
 /* ------------------------------------------------------- panel tłumaczenia --- */
 
+/* Tłumaczenie wygląda jak zwykła treść wiadomości, nie jak karta w karcie.
+   Wcześniej każda przetłumaczona wiadomość dostawała drugi, obramowany panel
+   z tłem i wielkim podpisem „TŁUMACZENIE AUTOMATYCZNE”, przez co dymek miał
+   dwa poziomy i wyglądał na zepsuty. Zostaje sam tekst + jedna drobna linia. */
 body.rj-community .rj-tr-panel {
-  order: 3;
+  order: 1;
   align-self: stretch;
-  margin: 4px 0 0;
-  padding: 8px 11px 7px;
-  border: 1px solid var(--rm-line-2, rgba(140, 175, 235, 0.24));
-  border-left: 2px solid var(--rm-accent, #8bbdff);
-  border-radius: 4px 12px 12px 12px;
-  background: linear-gradient(160deg, rgba(139, 189, 255, 0.12), rgba(139, 189, 255, 0.04));
-}
-
-html[data-theme="light"] body.rj-community .rj-tr-panel {
-  background: linear-gradient(160deg, rgba(35, 92, 179, 0.1), rgba(35, 92, 179, 0.03));
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
 }
 
 body.rj-community .rj-tr-text {
   margin: 0;
-  color: var(--rm-ink, #eaf1fb);
-  font-size: 12.5px;
-  line-height: 1.55;
+  color: #e2ebfa;
+  font: 400 13.5px/1.55 "Inter", system-ui, sans-serif;
   overflow-wrap: anywhere;
+}
+
+html[data-theme="light"] body.rj-community .rj-tr-text {
+  color: #16263d;
+}
+
+body.rj-community .chat-msg.is-mine .rj-tr-text {
+  color: #f4f9ff;
 }
 
 body.rj-community .rj-tr-foot {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-top: 6px;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 3px;
 }
 
 body.rj-community .rj-tr-note {
+  min-width: 0;
   color: var(--rm-faint, #7d90ab);
-  font: 600 8.5px/1.2 "JetBrains Mono", ui-monospace, monospace;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font: 500 9px/1.3 "Inter", system-ui, sans-serif;
+  letter-spacing: 0.01em;
+  text-transform: none;
 }
 
 body.rj-community .rj-tr-toggle {
@@ -97,10 +105,15 @@ body.rj-community .rj-tr-toggle {
   border: 0;
   background: none;
   color: var(--rm-sub, #a9bcd6);
-  font: 600 9.5px/1.2 "Inter", system-ui, sans-serif;
+  font: 500 9px/1.3 "Inter", system-ui, sans-serif;
   text-decoration: underline;
   text-underline-offset: 2px;
   cursor: pointer;
+}
+
+body.rj-community .chat-msg.is-mine .rj-tr-note,
+body.rj-community .chat-msg.is-mine .rj-tr-toggle {
+  color: rgba(228, 240, 255, 0.72);
 }
 
 body.rj-community .rj-tr-toggle:hover { color: var(--rm-ink, #eaf1fb); }
@@ -195,15 +208,6 @@ body.rj-community .rj-tr-blocked {
   color: var(--rm-sub, #a9bcd6);
   font: 500 10px/1.45 "Inter", system-ui, sans-serif;
   opacity: 0.85;
-}
-
-body.rj-community .rj-tr-foot {
-  flex-wrap: wrap;
-}
-
-body.rj-community .rj-tr-note {
-  min-width: 0;
-  line-height: 1.35;
 }
 
 /* ------------------------------------------- nagłówek pokoju na telefonie --- */
