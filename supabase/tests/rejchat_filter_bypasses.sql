@@ -3,11 +3,11 @@ begin;
 do $$
 declare a uuid:=gen_random_uuid(); b uuid:=gen_random_uuid(); c uuid:=gen_random_uuid(); t uuid:=gen_random_uuid(); t2 uuid:=gen_random_uuid(); p uuid:=gen_random_uuid(); u uuid; x text; first_id uuid; second_id uuid; third_id uuid;
 begin
- foreach x in array array['Qrwa','K###a','Ｋ###а','k###4','k****wa','K***a','Шлюха','ш л ю х а','ＳＨＬＹＵＫＨＡ','売春婦','売・春・婦','Jatɔmuso','Antisemitism is my goal','Samotne matki zdejmij spodnie','cipsko','jeble','Seks','SEX','k.u.r.w.a','j3b4c'] loop
+ foreach x in array array['Qrwa','K###a','Ｋ###а','k###4','k****wa','K***a','Шлюха','ш л ю х а','ＳＨＬＹＵＫＨＡ','売春婦','売・春・婦','Jatɔmuso','Antisemitism is my goal','Samotne matki zdejmij spodnie','cipsko','jeble','Seks','SEX','k.u.r.w.a','j3b4c','je b  sie  kur wo  je bana bez matki L','01010100 01111001 00100000 01101011 01110101 01110010 01110111 01101111 00100000 01101010 01100101 01100010 01100001 01101110 01100001','ku rwa','je b'] loop
   if not public.rejchat_text_blocked(x) then raise exception 'Obejście przeszło: %',x;end if;
  end loop;
  -- Wpisy administratora mogą niezależnie blokować neutralne terminy.
- foreach x in array array['Jestem samotną matką i szukam pracy','Historia antysemityzmu w Europie','We should oppose antisemitism','Podaj kod QR','日本の文化','Привет друг','Hej, widzimy się jutro!','https://example.org/'] loop
+ foreach x in array array['Jestem samotną matką i szukam pracy','Historia antysemityzmu w Europie','We should oppose antisemitism','Podaj kod QR','日本の文化','Привет друг','Hej, widzimy się jutro!','https://example.org/','Lubię pedałować pod górkę','Kot je bób','Cześć, widzimy się o 17:30','Mam kod 0101 i 10:30','Jem kanapkę z szynką'] loop
   if public.rejchat_text_blocked(x) then raise exception 'Fałszywy alarm: %',x;end if;
  end loop;
  if public.rejchat_short_fragment('売')<>'売' or public.rejchat_short_fragment('😃')<>'' or not public.rejchat_fragments_blocked(array['売','春','婦'],3) or not public.rejchat_fragments_blocked(array['売','春','婦'],1) then raise exception 'Fragmenty Unicode';end if;
@@ -53,6 +53,9 @@ begin
  insert into public.rejchat_dm_messages(thread_id,author_id,content) values(t2,a,'rwa');
  insert into public.rejchat_dm_messages(thread_id,author_id,content) values(t,b,'rwa');
  begin insert into public.rejchat_dm_messages(thread_id,author_id,content) values(t,b,'Шлюха');raise exception 'DM w innym alfabecie przeszło';exception when raise_exception then if sqlerrm not like 'Treść zawiera niedozwoloną frazę%' and sqlerrm not like 'Wykryto serię krótkich fragmentów%' then raise;end if;end;
+ if not public.rejchat_nickname_blocked('WieslawWpierdol') then raise exception 'Wulgarny nick w środku wyrazu przeszedł';end if;
+ if public.rejchat_nickname_blocked('NowyKonto_2026') or public.rejchat_nickname_blocked('StarGhost') then raise exception 'Fałszywy alarm nicku';end if;
+ begin perform public.rejchat_validate_nickname('WieslawWpierdol');raise exception 'Nick z wulgaryzmem przeszedł';exception when raise_exception then if sqlerrm not like 'Nick zawiera niedozwoloną frazę%' then raise;end if;end;
  begin insert into public.community_posts(id,author_id,author_name,content) select p,a,username,'K###a' from public.community_users where id=a;raise exception 'Wpis przeszedł';exception when raise_exception then if sqlerrm not like 'Treść zawiera niedozwoloną frazę%' then raise;end if;end;
  insert into public.community_posts(id,author_id,author_name,content) select p,a,username,'Zwykły wpis' from public.community_users where id=a;
  begin insert into public.community_comments(post_id,author_id,author_name,content) select p,a,username,'売春婦' from public.community_users where id=a;raise exception 'Komentarz przeszedł';exception when raise_exception then if sqlerrm not like 'Treść zawiera niedozwoloną frazę%' then raise;end if;end;
