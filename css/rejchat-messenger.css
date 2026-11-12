@@ -1015,6 +1015,18 @@ body.rj-community .rejchat-photo-expired {
   font-size: 11px !important;
 }
 
+/* Zdjęcie zatrzymane przez moderację: jasny komunikat zamiast pustki. */
+body.rj-community .rejchat-photo-blocked {
+  display: block !important;
+  margin-top: 5px !important;
+  padding: 5px 10px !important;
+  border: 1px dashed var(--rm-line) !important;
+  border-radius: 10px !important;
+  color: var(--rm-sub) !important;
+  font-size: 11px !important;
+  line-height: 1.45 !important;
+}
+
 /* ------------------------------------------------------------ grupowanie --- */
 
 body.rj-community .chat-msg.is-grouped .chat-author,

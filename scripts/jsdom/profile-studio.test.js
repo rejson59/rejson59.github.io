@@ -30,7 +30,7 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
     pages.forEach((file) => {
       const html = read(file);
       assert.match(html, /profile-studio\.css\?v=1/, file + ': brak arkusza');
-      assert.match(html, /js\/profil\.js\?v=6/, file + ': stary skrypt profilu');
+      assert.match(html, /js\/profil\.js\?v=7/, file + ': stary skrypt profilu');
       assert.match(html, /rejchat-profiles\.js\?v=3/, file + ': stary katalog profili');
     });
   });

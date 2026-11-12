@@ -363,6 +363,19 @@
     }, 350);
   }
 
+  /* Ten sam identyfikator co na stronie logowania — limit kont działa w obu
+     miejscach, bo oba wołają community_register(). */
+  function deviceId() {
+    try {
+      var key = "rejson_device_id_v1", value = localStorage.getItem(key);
+      if (value && value.length >= 8 && value.length <= 64) return value;
+      value = (window.crypto && window.crypto.randomUUID) ? window.crypto.randomUUID()
+        : "fp-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 12);
+      localStorage.setItem(key, value);
+      return value;
+    } catch (e) { return null; }
+  }
+
   function handleAuthSubmit(ev) {
     ev.preventDefault();
     var nameEl = document.getElementById("auth-username");
@@ -380,7 +393,9 @@
     btn.disabled = true;
     var fn = nameStatus.taken ? "community_login" : "community_register";
 
-    rpc(fn, { p_username: name, p_pin: pin })
+    var authArgs = { p_username: name, p_pin: pin };
+    if (!nameStatus.taken) authArgs.p_fp = deviceId();
+    rpc(fn, authArgs)
       .then(function (data) {
         if (!data || !data.token) throw new Error("Brak tokena sesji w odpowiedzi.");
         saveSession({ token: data.token, username: data.username });
@@ -1404,7 +1419,7 @@
           (session && isOwnerName(session.username) ? '<button class="rejchat-message-action" type="button" data-pin-scope="public" data-pin-id="' + esc(m.id) + '">Przypnij wiadomość</button>' : '') +
           (session && !mine ? '<button class="rejchat-message-action" type="button" data-report-scope="public" data-report-id="' + esc(m.id) + '">Zgłoś wiadomość</button>' : '') +
           (session ? '<button class="rejchat-message-action" type="button" data-save-sejf="text" data-save-scope="public" data-save-message="' + esc(m.id) + '">Zapisz tekst w RejSejfie</button>' : '') +
-          (session && m.photo && Date.parse(m.photo.expires_at)>Date.now() ? '<button class="rejchat-message-action" type="button" data-save-sejf="photo" data-save-scope="public" data-save-message="' + esc(m.id) + '" title="Kopia w Sejfie nie wygaśnie po 14 dniach">Zapisz zdjęcie w RejSejfie</button>' : '') +
+          (session && m.photo && (m.photo.status||'ok')==='ok' && Date.parse(m.photo.expires_at)>Date.now() ? '<button class="rejchat-message-action" type="button" data-save-sejf="photo" data-save-scope="public" data-save-message="' + esc(m.id) + '" title="Kopia w Sejfie nie wygaśnie po 14 dniach">Zapisz zdjęcie w RejSejfie</button>' : '') +
           (mine ? '<button class="rejchat-message-action" type="button" data-chat-edit="' + esc(m.id) + '">Edytuj</button>' : '') +
           (canDel ? '<button class="chat-delete" type="button" data-chat-delete="' + esc(m.id) + '">Usuń wiadomość</button>' : '') +
           (session ? '</div></details>' : '') +
