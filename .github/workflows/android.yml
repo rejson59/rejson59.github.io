@@ -176,6 +176,24 @@ jobs:
           BUILD_TOOLS=$(ls -d "${ANDROID_SDK_ROOT:-$ANDROID_HOME}"/build-tools/* | sort -V | tail -n 1)
           "$BUILD_TOOLS/apksigner" verify --print-certs RejHub.apk | tee /tmp/certs.txt
 
+          # APK musi być podpisany dokładnie tym kluczem, który jest w
+          # assetlinks.json — inaczej linki z rejhub.vercel.app nie otwierałyby
+          # aplikacji, a aktualizacja nie weszłaby „na wierzch” starszej wersji.
+          # Sprawdzamy to tutaj, żeby zła sygnatura nie przeszła do wydania.
+          SIGNER=$(grep -m 1 'certificate SHA-256 digest' /tmp/certs.txt \
+            | sed 's/.*digest: *//' | tr -d ':' | tr 'A-F' 'a-f' | tr -d ' ')
+          EXPECTED=$(node -e '
+            const links = require("./rejhub2/assetlinks.json");
+            const wanted = links[0].target.sha256_cert_fingerprints[0];
+            process.stdout.write(wanted.replace(/:/g, "").toLowerCase());
+          ')
+          echo "Sygnatura APK:    $SIGNER"
+          echo "Klucz w linkach: $EXPECTED"
+          if [ "$SIGNER" != "$EXPECTED" ]; then
+            echo "::error::APK jest podpisany innym kluczem niż w rejhub2/assetlinks.json."
+            exit 1
+          fi
+
           SHA=$(sha256sum RejHub.apk | cut -d' ' -f1)
           SIZE=$(stat -c%s RejHub.apk)
           echo "sha=$SHA" >> "$GITHUB_OUTPUT"
