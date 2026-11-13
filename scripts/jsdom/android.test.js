@@ -332,7 +332,7 @@ await check('splash i pasek stanu pasują do motywu, bez czarnej belki', async (
   assert.match(styles, /windowOptOutEdgeToEdgeEnforcement/, 'treść wejdzie pod pasek stanu');
   const v31 = read('mobile/android/app/src/main/res/values-v31/styles.xml');
   assert.match(v31, /windowSplashScreenBackground/, 'brak ekranu startowego Androida 12+');
-  assert.match(v31, /postSplashScreenTheme/, 'splash nie odda sterowania aplikacji');
+  assert.match(v31, /windowSplashScreenAnimatedIcon/, 'splash nie pokazuje znaku RejHuba');
   const shell = read('js/native-shell.js');
   assert.match(shell, /setBackgroundColor/, 'strona nie ustawia koloru paska stanu');
   assert.match(shell, /data-theme/, 'pasek stanu nie reaguje na motyw');
