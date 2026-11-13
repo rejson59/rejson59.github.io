@@ -26,6 +26,17 @@ on:
         description: 'Adres serwisu (bez ukośnika na końcu)'
         required: false
         default: 'https://rejhub.vercel.app'
+  # Każda zmiana w pobieraniu APK sprawdza się na żywej produkcji jeszcze
+  # przed połączeniem z główną gałęzią — cicho zepsuty przycisk byłby gorszy
+  # niż brak zmiany.
+  pull_request:
+    paths:
+      - 'rejhub2/api/apk.js'
+      - 'rejhub2/vercel.json'
+      - 'rejhub2/middleware.js'
+      - 'rejhub2/pobierz.html'
+      - 'js/app-update.js'
+      - '.github/workflows/apk-download.yml'
   schedule:
     - cron: '17 4 * * *'
 
