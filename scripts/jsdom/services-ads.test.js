@@ -6,7 +6,7 @@ assert.match(read('sw.js'),/partnerstwo\|uslugi\|rejfile/);
 const home=new JSDOM(read('rejhub2/index.html')).window.document;
 assert.equal(home.querySelector('.services-home'),null);
 assert.equal(home.querySelector('.partner-home'),null);
-assert.ok(home.querySelector('a[href="rejtools"]'));
+assert.ok(home.querySelector('a[href="/rejtools"]'));
 const service=new JSDOM(read('rejhub2/uslugi.html'),{url:'https://rejson59.github.io/uslugi',runScripts:'outside-only',virtualConsole:new VirtualConsole()});
 assert.match(service.window.document.querySelector('h1').textContent,/stronę/);
 assert.equal(service.window.document.querySelectorAll('a[href="partnerstwo?temat=strona#propozycja"]').length,2);

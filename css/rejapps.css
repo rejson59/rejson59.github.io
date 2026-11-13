@@ -905,3 +905,6 @@ button.rjapp-appcard {
   .meme-lightbox-close { width: 46px; height: 46px; }
   .meme-gallery { grid-template-columns: 1fr; }
 }
+
+/* Dwa skróty w nagłówku siatki aplikacji: projekty i pełna lista. */
+.rjapps-links { display: flex; flex-wrap: wrap; gap: 8px; }

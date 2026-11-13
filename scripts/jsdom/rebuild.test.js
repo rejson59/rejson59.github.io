@@ -181,8 +181,8 @@ console.log('\n=== D. TOPBAR: BEZ USTAWIEŃ, PEŁNE MENU NA TELEFONIE ===');
   check('wersje skryptu i arkusza topbaru podbite na wszystkich stronach', () => {
     pages.forEach(({ file, html }) => {
       if (!html.includes('shared-topbar.js')) return;
-      assert.match(html, /shared-topbar\.js\?v=10/, file + ': stary skrypt topbaru');
-      assert.match(html, /topbar-split\.css\?v=6/, file + ': stary arkusz topbaru');
+      assert.match(html, /shared-topbar\.js\?v=11/, file + ': stary skrypt topbaru');
+      assert.match(html, /topbar-split\.css\?v=7/, file + ': stary arkusz topbaru');
     });
   });
 }

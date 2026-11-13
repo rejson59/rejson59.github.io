@@ -379,3 +379,92 @@ html[data-motion-force="off"] body .rj-shared-header .brand::before {
     animation: none !important;
   }
 }
+
+/* ---------- 10. Wszystkie aplikacje RejHuba w jednym pasku ----------
+   Do tej pory planer, gry, muzyka, memy i asystent siedziały schowane
+   w „Więcej”. Teraz każda aplikacja jest widoczna od razu — pasek liczy się
+   z szerokością ekranu:
+     • ≥1340 px: ikona + nazwa (zmieszczone, bo odstępy są o 1 px),
+     • 1201–1339 px: same ikony 36 px — nazwy zostają w title i aria-label,
+     • ≤1200 px: menu z dwiema kolumnami kafelków, wszystkie pozycje widoczne. */
+
+body .rj-shared-header .site-nav > button.nav-icon-link {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  padding: 9px 11px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--bar-muted);
+  font: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+body .rj-shared-header .site-nav > button.nav-icon-link:hover {
+  background: #7f9dbe20;
+  color: var(--bar-text);
+}
+
+@media (min-width: 1201px) {
+  body .rj-shared-header .site-nav {
+    gap: 1px;
+    padding: 4px;
+  }
+
+  body .rj-shared-header .site-nav > a,
+  body .rj-shared-header .site-nav > button.nav-icon-link,
+  body .rj-shared-header .site-nav .nav-more > summary {
+    padding: 6px 7px;
+    gap: 4px;
+    font-size: 11.5px;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+  }
+
+  body .rj-shared-header .site-nav .ui-icon {
+    width: 15px;
+    height: 15px;
+  }
+
+  /* Konto stoi tuż obok przycisku profilu, więc w ciasnym pasku zostaje
+     sama ikona — reszta miejsca idzie na nazwy aplikacji. */
+  body .rj-shared-header .site-nav > a[href="/logowanie"] {
+    padding: 6px;
+  }
+
+  body .rj-shared-header .site-nav > a[href="/logowanie"] .nav-label {
+    display: none;
+  }
+}
+
+/* Środek przedziału: same ikony. Wszystkie aplikacje nadal widać. */
+@media (min-width: 1201px) and (max-width: 1339px) {
+  body .rj-shared-header .site-nav > a,
+  body .rj-shared-header .site-nav > button.nav-icon-link {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  body .rj-shared-header .site-nav > a .nav-label,
+  body .rj-shared-header .site-nav > button.nav-icon-link .nav-label {
+    display: none;
+  }
+}
+
+/* Telefon: asystent jest kafelkiem tak samo jak reszta aplikacji. */
+@media (max-width: 1200px) {
+  body .rj-shared-header .site-nav > button.nav-icon-link {
+    min-height: 46px;
+    padding: 10px 12px;
+    border-radius: 12px !important;
+    justify-content: flex-start;
+    text-align: left;
+    white-space: normal;
+    line-height: 1.2;
+  }
+}
