@@ -1,6 +1,6 @@
 /* © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
    Licencja: /LICENSE, /licencja */
-/* Powiadomienia push na telefon — RejHub 2.0 (v3)
+/* Powiadomienia push na telefon — RejHub 2.0 (v4)
 
    Zasada: jedno kliknięcie „Włącz”, zero pytań przy każdym wejściu.
    Subskrypcja trafia do bazy (push_subscriptions), a wysyłką zajmuje się
@@ -15,6 +15,12 @@
      - iPhone dowiaduje się, że push działa dopiero po dodaniu RejHuba do
        ekranu głównego (iOS 16.4+).
 
+   Wersja 4 dodaje drugą drogę: w aplikacji na Androida WebView nie ma
+   Push API, więc powiadomienia idą przez Firebase Cloud Messaging
+   (PushNotifications) — działają też przy zamkniętym RejHubie, a dotknięcie
+   powiadomienia otwiera właściwe miejsce w aplikacji. Ten sam panel
+   obsługuje obie drogi, więc użytkownik widzi jedno „Włącz”.
+
    Gdy przeglądarka nie wspiera push albo użytkownik odmówił zgody, panel
    pokazuje spokojną informację zamiast błędu. */
 (function (window, document) {
@@ -23,7 +29,197 @@
   var SW_PATH = '/push-sw.js';
   var BUTTON_ID = 'rj-push-toggle';
   var TEST_ID = 'rj-push-test';
-  var state = { supported: false, subscribed: false, busy: false, devices: 0, error: '', test: '' };
+  var state = { supported: false, subscribed: false, busy: false, devices: 0, error: '', test: '', nativePermission: 'default' };
+
+  /* --------------------------------------------------- aplikacja Android */
+  /* WebView nie ma Push API — w aplikacji korzystamy z FCM przez natywny
+     plugin. Wszystko poniżej działa tylko wtedy, gdy mostek Capacitora
+     istnieje; w przeglądarce zostaje dotychczasowa droga (VAPID). */
+  var cap = window.Capacitor;
+  var isNative = !!(cap && typeof cap.isNativePlatform === 'function' && cap.isNativePlatform());
+  var PN = isNative && cap.Plugins ? cap.Plugins.PushNotifications : null;
+  var LN = isNative && cap.Plugins ? cap.Plugins.LocalNotifications : null;
+  var CHANNEL = 'rejhub';
+  var tokenTimer = 0;
+
+  function noop() {}
+
+  function safe(promise) {
+    if (promise && typeof promise.catch === 'function') promise.catch(noop);
+    return promise;
+  }
+
+  function nativeReady() { return Boolean(PN); }
+
+  function ensureChannel() {
+    if (!PN) return Promise.resolve();
+    return PN.createChannel({
+      id: CHANNEL,
+      name: 'RejHub',
+      description: 'Wiadomości, odpowiedzi i pliki z RejHubu',
+      importance: 4,
+      visibility: 1,
+      vibration: true,
+      lights: true,
+      lightColor: '#8BBDFF'
+    }).catch(noop);
+  }
+
+  function nativePermission() {
+    if (!PN) return Promise.resolve('denied');
+    return PN.checkPermissions()
+      .then(function (result) { return (result && result.receive) || 'denied'; })
+      .catch(function () { return 'denied'; });
+  }
+
+  function registerNativeToken(token) {
+    var client = api();
+    if (!client) return Promise.reject(new Error('Sesja wygasła — zaloguj się ponownie.'));
+    return client.rpc('push_subscribe_native', {
+      p_token: client.token,
+      p_endpoint: 'fcm:' + token,
+      p_agent: String(navigator.userAgent || '').slice(0, 300)
+    });
+  }
+
+  function subscribeNative() {
+    return ensureChannel()
+      .then(function () { return PN.requestPermissions(); })
+      .then(function (result) {
+        var granted = Boolean(result && result.receive === 'granted');
+        state.nativePermission = granted ? 'granted' : 'denied';
+        if (!granted) throw new Error('Powiadomienia zablokowane w ustawieniach telefonu.');
+        return new Promise(function (resolve, reject) {
+          var settled = false;
+          function finish(fn, value) {
+            if (settled) return;
+            settled = true;
+            window.clearTimeout(tokenTimer);
+            fn(value);
+          }
+          PN.addListener('registration', function (token) {
+            var value = token && token.value;
+            if (!value) return finish(reject, new Error('Telefon nie zwrócił tokenu powiadomień.'));
+            registerNativeToken(value).then(
+              function (result) { finish(resolve, result); },
+              function (error) { finish(reject, error); }
+            );
+          });
+          PN.addListener('registrationError', function (error) {
+            finish(reject, new Error((error && error.error) || 'Telefon nie mógł zarejestrować powiadomień.'));
+          });
+          PN.register();
+          tokenTimer = window.setTimeout(function () {
+            finish(reject, new Error('Telefon nie odpowiedział w sprawie powiadomień. Spróbuj ponownie.'));
+          }, 15000);
+        });
+      });
+  }
+
+  function unsubscribeNative() {
+    return Promise.resolve(PN ? PN.unregister() : null).catch(noop).then(function () {
+      if (PN) safe(PN.removeAllDeliveredNotifications());
+      var client = api();
+      if (!client) return null;
+      return client.rpc('push_unsubscribe_native', { p_token: client.token });
+    });
+  }
+
+  function refreshNative() {
+    state.supported = true;
+    var client = api();
+    state.subscribed = false;
+    if (!client) { paint(); return Promise.resolve(); }
+
+    return Promise.all([
+      nativePermission(),
+      client.rpc('push_devices', { p_token: client.token }).catch(function () { return []; })
+    ]).then(function (values) {
+      state.nativePermission = values[0];
+      var devices = Array.isArray(values[1]) ? values[1] : [];
+      /* Starsza baza nie zna kolumny `kind` — wtedy liczymy wszystkie urządzenia. */
+      var hasKind = devices.some(function (item) { return item && typeof item.kind === 'string'; });
+      var nativeDevices = hasKind
+        ? devices.filter(function (item) { return item && item.kind === 'fcm'; })
+        : devices;
+
+      state.devices = nativeDevices.length;
+      state.subscribed = state.nativePermission === 'granted' && nativeDevices.length > 0;
+      paint();
+    }).catch(function (error) {
+      state.error = (error && error.message) || '';
+      paint();
+    });
+  }
+
+  function sendNativeTest() {
+    if (!LN) return Promise.resolve(false);
+    state.test = 'Wysyłam powiadomienie testowe…';
+    state.error = '';
+    paint();
+
+    return ensureChannel()
+      .then(function () { return LN.requestPermissions(); })
+      .then(function () {
+        return LN.schedule({
+          notifications: [{
+            id: Math.floor((Date.now() % 100000) + 1),
+            title: 'RejHub — powiadomienia działają',
+            body: 'To powiadomienie testowe. Jeśli je widzisz, wszystko jest gotowe.',
+            smallIcon: 'rj_notification',
+            iconColor: '#8BBDFF',
+            channelId: CHANNEL,
+            autoCancel: true,
+            /* `allowWhileIdle` — nawet bez zgody na dokładne alarmy (Android 12+)
+               system pokaże test w kilka sekund, a nie dopiero po wyjściu z Doze. */
+            schedule: { at: new Date(Date.now() + 1200), allowWhileIdle: true }
+          }]
+        });
+      })
+      .then(function () {
+        state.test = 'Test wysłany. Sprawdź powiadomienia systemowe.';
+        paint();
+        return true;
+      })
+      .catch(function (error) {
+        state.test = '';
+        state.error = (error && error.message) || 'Nie udało się pokazać powiadomienia testowego.';
+        paint();
+        return false;
+      });
+  }
+
+  function nativeBoot() {
+    if (!PN) return;
+    ensureChannel();
+    safe(PN.addListener('pushNotificationActionPerformed', function (action) {
+      var data = action && action.notification && action.notification.data;
+      var url = data && data.url;
+      if (!url) return;
+      try {
+        var parsed = new URL(url, location.origin);
+        if (parsed.origin === location.origin) {
+          location.href = parsed.pathname + parsed.search + parsed.hash;
+        } else if (window.RejNative && window.RejNative.openExternal) {
+          window.RejNative.openExternal(url);
+        } else {
+          window.open(url, '_blank', 'noopener');
+        }
+      } catch (error) { /* niepoprawny adres w powiadomieniu */ }
+    }));
+    safe(PN.addListener('pushNotificationReceived', function (notification) {
+      /* Gdy RejHub jest otwarty, FCM nie pokazuje powiadomienia w pasku —
+         zamiast tego dyskretna pigułka na dole ekranu. */
+      if (notification && window.RejNative && window.RejNative.toast) {
+        var title = notification.title || 'RejHub';
+        var body = notification.body ? ' — ' + notification.body : '';
+        window.RejNative.toast(String(title + body).slice(0, 140));
+      }
+      try {
+        document.dispatchEvent(new CustomEvent('rj:push', { detail: notification }));
+      } catch (error) { /* starsze WebView bez CustomEvent */ }
+    }));
+  }
 
   function isIos() {
     var ua = navigator.userAgent || '';
@@ -37,6 +233,7 @@
   }
 
   function supported() {
+    if (nativeReady()) return true;
     if (!('serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window)) return false;
     /* Worker powiadomień leży tylko na domenie RejHuba — na starym adresie
        GitHub Pages rejestracja kończyłaby się błędem 404. */
@@ -54,6 +251,7 @@
   /* Bezpieczny odczyt zgody: w przeglądarkach bez Notification (albo w trybie
      prywatnym z wyłączonym API) samo `Notification.permission` rzuca wyjątek. */
   function permission() {
+    if (nativeReady()) return state.nativePermission || 'default';
     try { return Notification.permission || 'default'; }
     catch (error) { return 'denied'; }
   }
@@ -80,6 +278,7 @@
   }
 
   function subscribe() {
+    if (nativeReady()) return subscribeNative();
     return registerWorker()
       .then(function (registration) {
         return registration.pushManager.getSubscription().then(function (existing) {
@@ -107,6 +306,7 @@
   }
 
   function unsubscribe() {
+    if (nativeReady()) return unsubscribeNative();
     return navigator.serviceWorker.ready
       .then(function (registration) { return registration.pushManager.getSubscription(); })
       .then(function (subscription) {
@@ -121,6 +321,13 @@
   }
 
   function label() {
+    if (nativeReady()) {
+      if (state.error) return state.error;
+      if (state.test) return state.test;
+      if (permission() === 'denied') return 'Powiadomienia zablokowane w ustawieniach telefonu.';
+      if (state.subscribed) return 'Włączone w aplikacji — powiadomienia przyjdą też przy zamkniętym RejHubie.';
+      return 'Powiadomienia systemowe w aplikacji, także gdy RejHub jest zamknięty.';
+    }
     if (!state.supported) {
       if (isIos() && !standalone()) {
         return 'Na iPhonie powiadomienia działają po dodaniu RejHub do ekranu głównego (iOS 16.4+).';
@@ -155,6 +362,7 @@
   }
 
   function refresh() {
+    if (nativeReady()) return refreshNative();
     if (!supported()) { state.supported = false; paint(); return Promise.resolve(); }
     state.supported = true;
     var client = api();
@@ -176,6 +384,7 @@
      je od razu, więc testuje dokładnie to, co widzi użytkownik: zgodę,
      rejestrację workera i warstwę systemową. */
   function sendTest() {
+    if (nativeReady()) return sendNativeTest();
     if (!state.subscribed) {
       state.error = 'Najpierw włącz powiadomienia.';
       paint();
@@ -235,17 +444,30 @@
     state.error = '';
     state.test = '';
     paint();
-    var job = state.subscribed
-      ? unsubscribe().then(refresh)
-      : requestPermission().then(function (permission) {
-          if (permission !== 'granted') throw new Error('Bez zgody przeglądarki nie da się wysłać powiadomienia.');
-          return subscribe().then(refresh).then(function () {
-            /* Chwila oddechu, żeby panel zdążył się przerysować, i test. */
+    var job;
+    if (nativeReady()) {
+      /* W aplikacji zgodę i token załatwia natywny plugin — nie ma
+         `Notification.requestPermission()` w WebView. */
+      job = state.subscribed
+        ? unsubscribe().then(refresh)
+        : subscribe().then(refresh).then(function () {
             return new Promise(function (resolve) {
               window.setTimeout(resolve, 700);
             }).then(sendTest);
           });
-        });
+    } else {
+      job = state.subscribed
+        ? unsubscribe().then(refresh)
+        : requestPermission().then(function (permission) {
+            if (permission !== 'granted') throw new Error('Bez zgody przeglądarki nie da się wysłać powiadomienia.');
+            return subscribe().then(refresh).then(function () {
+              /* Chwila oddechu, żeby panel zdążył się przerysować, i test. */
+              return new Promise(function (resolve) {
+                window.setTimeout(resolve, 700);
+              }).then(sendTest);
+            });
+          });
+    }
     job.catch(function (error) {
       state.error = (error && error.message) || 'Nie udało się włączyć powiadomień.';
     }).then(function () {
@@ -289,6 +511,7 @@
   }
 
   function boot() {
+    nativeBoot();
     var tries = 0;
     (function attempt() {
       if (mount() || tries > 40) { refresh(); return; }

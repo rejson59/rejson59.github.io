@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
+     Ikona powiadomień: znak RejHuba (R + kropka) w bieli, bez tła. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="64"
+    android:viewportHeight="64">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M19,46V18h13.2c6.1,0 10.4,3.7 10.4,9.2 0,4.2 -2.4,7.3 -6.2,8.6L44,46h-7.9l-6.4,-9.3H25.6V46H19zM25.6,31.6h6.2c2.6,0 4.2,-1.7 4.2,-4.3s-1.6,-4.2 -4.2,-4.2h-6.2v8.5z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M46.5,39a4.5,4.5 0,1 0,0.001,0z" />
+</vector>

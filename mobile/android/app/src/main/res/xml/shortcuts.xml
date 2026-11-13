@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
+     Skróty po długim przytrzymaniu ikony RejHuba. Adresy są takie same jak
+     linki App Links, więc Android otwiera je w tej samej aktywności. -->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <shortcut
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutId="rejchat"
+        android:shortcutLongLabel="@string/rj_shortcut_chat_long"
+        android:shortcutShortLabel="@string/rj_shortcut_chat">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="https://rejhub.vercel.app/rejchat"
+            android:targetClass="pl.rejson59.rejhub.MainActivity"
+            android:targetPackage="pl.rejson59.rejhub" />
+        <categories android:name="android.shortcut.conversation" />
+    </shortcut>
+
+    <shortcut
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutId="rejfile"
+        android:shortcutLongLabel="@string/rj_shortcut_file_long"
+        android:shortcutShortLabel="@string/rj_shortcut_file">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="https://rejhub.vercel.app/rejfile"
+            android:targetClass="pl.rejson59.rejhub.MainActivity"
+            android:targetPackage="pl.rejson59.rejhub" />
+        <categories android:name="android.shortcut.conversation" />
+    </shortcut>
+
+    <shortcut
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutId="rejclass"
+        android:shortcutLongLabel="@string/rj_shortcut_class_long"
+        android:shortcutShortLabel="@string/rj_shortcut_class">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="https://rejhub.vercel.app/rejclass"
+            android:targetClass="pl.rejson59.rejhub.MainActivity"
+            android:targetPackage="pl.rejson59.rejhub" />
+    </shortcut>
+
+    <shortcut
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutId="rejplanner"
+        android:shortcutLongLabel="@string/rj_shortcut_planner_long"
+        android:shortcutShortLabel="@string/rj_shortcut_planner">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="https://rejhub.vercel.app/rejplanner"
+            android:targetClass="pl.rejson59.rejhub.MainActivity"
+            android:targetPackage="pl.rejson59.rejhub" />
+    </shortcut>
+</shortcuts>
