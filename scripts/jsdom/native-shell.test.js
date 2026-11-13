@@ -46,6 +46,7 @@ function boot(html, options = {}) {
 
   const calls = [];
   const listeners = {};
+  let updaterFailures = Number(options.updaterFails || 0);
   const record = (plugin, method, args) => calls.push({ plugin, method, args });
   const ok = (value) => Promise.resolve(value || {});
 
@@ -76,7 +77,16 @@ function boot(html, options = {}) {
     },
     RejUpdater: {
       status: () => ok({ supported: true, allowed: true }),
-      install: (value) => { record('RejUpdater', 'install', value); return ok({ ok: true }); },
+      install: (value) => {
+        record('RejUpdater', 'install', value);
+        if (updaterFailures > 0) {
+          updaterFailures -= 1;
+          const error = new Error('Serwer odpowiedział 502 — spróbuj ponownie później.');
+          error.code = options.updaterCode || 'install_failed';
+          return Promise.reject(error);
+        }
+        return ok({ ok: true });
+      },
       settings: () => { record('RejUpdater', 'settings'); return ok(); },
       addListener: (event, callback) => { listeners.updater = callback; return ok({ remove() {} }); }
     },
@@ -271,6 +281,41 @@ await check('aktualizacja w aplikacji przekazuje adres i SHA-256', async () => {
   dom.window.close();
 });
 
+await check('gdy GitHub odmówi, aktualizacja bierze plik z własnej domeny', async () => {
+  const { dom, w, calls } = boot('<main></main>', {
+    updaterFails: 1,
+    url: 'https://rejhub.vercel.app/pobierz'
+  });
+  w.eval(read('js/native-shell.js'));
+  await w.RejNative.update.install({
+    apk: 'https://github.com/rejson59/rejson59.github.io/releases/latest/download/RejHub.apk',
+    download: '/app/RejHub.apk',
+    sha256: 'd'.repeat(64),
+    versionName: '1.0.10'
+  });
+  const installs = calls.filter((call) => call.plugin === 'RejUpdater' && call.method === 'install');
+  assert.equal(installs.length, 2, 'brak drugiej próby po błędzie GitHuba');
+  assert.equal(installs[1].args.url, 'https://rejhub.vercel.app/app/RejHub.apk',
+    'druga próba nie prowadzi do własnej domeny');
+  assert.equal(installs[1].args.sha256, 'd'.repeat(64), 'druga próba bez sumy kontrolnej');
+  dom.window.close();
+});
+
+await check('brak zgody na instalację nie jest ponawiany innym adresem', async () => {
+  const { dom, w, calls } = boot('<main></main>', { updaterFails: 1, updaterCode: 'permission' });
+  w.eval(read('js/native-shell.js'));
+  await w.RejNative.update.install({
+    apk: 'https://github.com/rejson59/rejson59.github.io/releases/latest/download/RejHub.apk',
+    download: '/app/RejHub.apk',
+    sha256: 'e'.repeat(64)
+  }).then(() => { throw new Error('błąd został połknięty'); }, (error) => {
+    assert.equal(error.code, 'permission');
+  });
+  const installs = calls.filter((call) => call.plugin === 'RejUpdater' && call.method === 'install');
+  assert.equal(installs.length, 1, 'zgoda na instalację wymaga użytkownika — bez ponawiania');
+  dom.window.close();
+});
+
 await check('RejSejf jest zasłonięty do czasu potwierdzenia odciskiem', async () => {
   const { dom, w, calls } = boot('<main><section class="safe-list-heading"></section></main>', {
     url: 'https://rejhub.vercel.app/rejsejf'
@@ -290,7 +335,7 @@ console.log('\n=== F. PLIKI POWŁOKI ===');
 
 await check('strona ładuje warstwę natywną na każdej podstronie', async () => {
   const pages = fs.readdirSync(path.join(root, 'rejhub2')).filter((file) => file.endsWith('.html'));
-  const withNative = pages.filter((file) => read('rejhub2/' + file).includes('/js/native-shell.js?v=1'));
+  const withNative = pages.filter((file) => read('rejhub2/' + file).includes('/js/native-shell.js?v=2'));
   assert.ok(withNative.length >= 20, 'za mało stron z warstwą natywną: ' + withNative.length);
   const without = pages.filter((file) => !read('rejhub2/' + file).includes('/js/app-update.js'));
   without.forEach((file) => {
