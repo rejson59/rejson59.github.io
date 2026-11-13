@@ -3,7 +3,7 @@
 
 package pl.rejson59.rejhub;
 
-import android.app.PackageInstaller;
+import android.content.pm.PackageInstaller;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
