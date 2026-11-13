@@ -23,7 +23,16 @@ async function call(url, method, body) {
   return data;
 }
 async function rpc(name, args = {}) { return await call(SUPABASE_URL + '/rest/v1/rpc/' + name, 'POST', args); }
-function part(id, index) { return id + '/' + index; }
+function part(id, index, revision) {
+  const rev = Number.isInteger(revision) ? revision : 0;
+  return rev > 0 ? id + '/r' + rev + '/' + index : id + '/' + index;
+}
+// Stara wersja znika dopiero po udanym potwierdzeniu nowej — best effort.
+async function dropRevision(id, revision, chunks) {
+  if (!validId(id) || !Number.isInteger(revision) || revision < 0 || !Number.isInteger(chunks) || chunks < 1 || chunks > 10) return;
+  const prefixes = Array.from({ length: chunks }, (_, i) => part(id, i, revision));
+  try { await call(STORAGE + '/object/' + BUCKET, 'DELETE', { prefixes }); } catch { /* zostaw do sprzątania */ }
+}
 function validId(id) { return typeof id === 'string' && UUID.test(id); }
 function validKey(key) { return typeof key === 'string' && HEX.test(key); }
 function session(body) { return typeof body.session === 'string' && body.session.length <= 512 ? body.session : null; }
@@ -63,7 +72,25 @@ Deno.serve(async (req) => {
     }
     if (body.action === 'finish') {
       if (!validId(body.id) || !validKey(body.owner)) throw new Error('Nieprawidłowe żądanie.');
-      return reply(req,await rpc('rejfile_finish',{p_id:body.id,p_owner:body.owner}));
+      const done = await rpc('rejfile_finish',{p_id:body.id,p_owner:body.owner});
+      // Po podmianie treści pod tym samym linkiem kasujemy poprzednią rewizję.
+      if (done && Number.isInteger(done.previous_revision)) await dropRevision(done.id, done.previous_revision, done.previous_chunks);
+      return reply(req, done);
+    }
+    if (body.action === 'edit') {
+      // Nowa wersja pliku lub notatki pod tym samym linkiem. Link, właściciel
+      // i odbiorca zostają; dopóki nowa wersja nie jest kompletna, działa stara.
+      if (!validId(body.id) || !Number.isSafeInteger(body.size) || Number(body.size) < 1 || Number(body.size) > MAX || typeof body.name !== 'string') throw new Error('Nieprawidłowy plik.');
+      const result = await rpc('rejfile_edit_begin',{p_id:body.id,p_owner:validKey(body.owner) ? body.owner : null,p_bytes:body.size,p_name:body.name,p_session:session(body)});
+      if (!result || !validId(result.id) || !Number.isInteger(result.chunks) || result.chunks < 1 || result.chunks > 10 || !Number.isInteger(result.revision)) throw new Error('Nieprawidłowa odpowiedź magazynu.');
+      const urls = [];
+      for (let i=0; i<result.chunks; i++) {
+        const signed = await call(STORAGE + '/object/upload/sign/' + BUCKET + '/' + part(result.id,i,result.revision), 'POST', {});
+        const url = new URL(STORAGE + signed.url);
+        if (url.origin !== new URL(SUPABASE_URL).origin || !url.searchParams.has('token')) throw new Error('Nieprawidłowy adres przesyłania.');
+        urls.push(url.href);
+      }
+      return reply(req,{id:result.id,chunkSize:CHUNK,urls,revision:result.revision});
     }
     if (body.action === 'info') return reply(req,await getAccess(body));
     if (body.action === 'chunk') {
@@ -72,7 +99,7 @@ Deno.serve(async (req) => {
       const info = await rpc('rejfile_sign_chunk', {p_id:body.id,p_share:validKey(body.share) ? body.share : null,p_owner:validKey(body.owner) ? body.owner : null,p_session:session(body),p_index:n,p_ip:await ipHash(req)});
       const left = Math.floor((new Date(info.expires_at).getTime() - Date.now()) / 1000);
       if (!Number.isFinite(left) || left < 1) throw new Error('Plik jest niedostępny lub wygasł');
-      const signed = await call(STORAGE + '/object/sign/' + BUCKET + '/' + part(info.id,n),'POST',{expiresIn:Math.min(60,left)});
+      const signed = await call(STORAGE + '/object/sign/' + BUCKET + '/' + part(info.id,n,info.revision),'POST',{expiresIn:Math.min(60,left)});
       const url = new URL(STORAGE + signed.signedURL);
       if (url.origin !== new URL(SUPABASE_URL).origin || !url.searchParams.has('token')) throw new Error('Nieprawidłowy adres pobierania.');
       return reply(req,{url:url.href});
@@ -90,8 +117,8 @@ Deno.serve(async (req) => {
       const list = await rpc('rejfile_cleanup_list'); let removed = 0;
       for (const item of list) {
         if (!validId(item.id) || !Number.isInteger(item.chunks) || item.chunks < 1 || item.chunks > 10) continue;
-        const paths = Array.from({length:item.chunks}, (_,i) => part(item.id,i));
-        try { await call(STORAGE + '/object/' + BUCKET, 'DELETE', {prefixes:paths}); if (await rpc('rejfile_cleanup_done',{p_id:item.id})) removed++; }
+        // Prefiks obejmuje wszystkie rewizje tego pliku, także wcześniejsze edycje.
+        try { await call(STORAGE + '/object/' + BUCKET, 'DELETE', {prefixes:[item.id + '/']}); if (await rpc('rejfile_cleanup_done',{p_id:item.id})) removed++; }
         catch { /* zostaw rekord do następnej próby */ }
       }
       return reply(req,{removed});
