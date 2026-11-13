@@ -105,19 +105,99 @@
     }).join('') + '</div>';
   }
 
+  /* Multikonta — tylko podpowiedzi dla właściciela. Automat nic nie blokuje,
+     nie zmienia nazw i nie kasuje kont. */
+  function riskChips(names) {
+    return (names || []).map(function (name) {
+      return '<button type="button" class="srv-chip" data-risk-name="' + text(name) + '" ' +
+        'title="Scal „' + text(name) + '” z inną nazwą">@' + text(name) + '</button>';
+    }).join('');
+  }
+
+  function riskItem(head, meta, names) {
+    return '<div class="srv-risk-item">' +
+      '<div class="srv-risk-line"><strong>' + head + '</strong>' +
+      (meta ? '<span class="srv-risk-meta">' + text(meta) + '</span>' : '') + '</div>' +
+      (names && names.length ? '<div class="srv-risk-chips">' + riskChips(names) + '</div>' : '') +
+      '</div>';
+  }
+
+  function riskGroup(title, note, items) {
+    if (!items.length) return '';
+    return '<div class="srv-risk-group"><h3 class="srv-risk-head">' + text(title) +
+      (note ? '<span>' + text(note) + '</span>' : '') + '</h3>' + items.join('') + '</div>';
+  }
+
+  function paintRisk(risk) {
+    var box = $('srv-risk');
+    if (!box) return;
+    if (!risk) {
+      box.innerHTML = '<div class="pa-empty">Nie udało się wczytać listy ryzyka.</div>';
+      return;
+    }
+    var networks = (risk.networks || []).map(function (row) {
+      return riskItem(
+        row.count + ' konta z jednej sieci',
+        when(row.first_at) + ' → ' + when(row.last_at) + ' · sieć #' + (row.net || ''),
+        row.accounts
+      );
+    });
+    var devices = (risk.devices || []).map(function (row) {
+      return riskItem(
+        row.count + ' konta z jednej przeglądarki',
+        'ostatnio ' + when(row.last_at) + ' · urządzenie #' + (row.fp || ''),
+        row.accounts
+      );
+    });
+    var similar = (risk.similar || []).map(function (row) {
+      return riskItem(
+        '@' + text(row.name) + ' ≈ @' + text(row.similar_to),
+        'podobieństwo ' + (row.score || 0),
+        [row.name, row.similar_to]
+      );
+    });
+    var bursts = (risk.bursts || []).map(function (row) {
+      return riskItem(
+        row.count + ' kont w jednej godzinie',
+        when(row.hour),
+        row.accounts
+      );
+    });
+    var echoes = (risk.echoes || []).map(function (row) {
+      return riskItem(
+        '„' + text(row.excerpt || '') + '”',
+        row.count + ' konta · ' + when(row.last_at),
+        row.accounts
+      );
+    });
+    var html = riskGroup('Wspólna sieć', 'rejestracje po 13.11.2026', networks) +
+      riskGroup('Wspólne urządzenie', '', devices) +
+      riskGroup('Łudząco podobne nazwy', '', similar) +
+      riskGroup('Fale rejestracji', '4 lub więcej kont w godzinę', bursts) +
+      riskGroup('Ta sama wiadomość z różnych kont', 'ostatnie 24 h', echoes);
+    box.innerHTML = html || '<div class="pa-empty">Brak podejrzanych układów — czysto.</div>';
+    var status = $('srv-risk-status');
+    if (status) {
+      status.textContent = 'Nowych kont w 24 h: ' + (risk.new_24h || 0) +
+        ' · lista wygenerowana ' + when(risk.generated_at) + '.';
+    }
+  }
+
   function refresh() {
     if (busy) return;
     busy = true;
     var status = $('srv-merge-status');
-    Promise.all([
+    return Promise.all([
       rpc('admin_server_stats', {}),
-      rpc('admin_identity_issues', {})
+      rpc('admin_identity_issues', {}),
+      rpc('admin_account_risk', {}).catch(function () { return null; })
     ]).then(function (result) {
       var stats = result[0] || {};
       paintKpis(stats);
       paintTables(stats.tables || []);
       paintAccounts((stats.storage && stats.storage.accounts) || []);
       paintIdentities(result[1] || {});
+      paintRisk(result[2]);
       if (status) status.textContent = '';
       loaded = true;
     }).catch(function (error) {
@@ -173,6 +253,18 @@
     var forgetBtn = $('srv-forget-btn');
     if (forgetBtn) forgetBtn.addEventListener('click', function () {
       forget($('srv-merge-from').value.trim());
+    });
+    var riskBox = $('srv-risk');
+    if (riskBox) riskBox.addEventListener('click', function (event) {
+      var chip = event.target.closest('[data-risk-name]');
+      if (!chip) return;
+      var name = chip.getAttribute('data-risk-name');
+      var from = $('srv-merge-from');
+      var into = $('srv-merge-into');
+      if (from) from.value = name;
+      if (into) { into.value = ''; into.focus(); }
+      var status = $('srv-merge-status');
+      if (status) status.textContent = 'Wybrano „' + name + '” — wpisz nazwę docelową i wybierz „Scal historię”.';
     });
     var list = $('srv-identities');
     if (list) list.addEventListener('click', function (event) {

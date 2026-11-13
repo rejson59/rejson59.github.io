@@ -78,7 +78,7 @@
 
   <script defer src="/js/shared-topbar.js?v=10"></script>
 
-  <link rel="stylesheet" href="/css/admin-server.css?v=1" />
+  <link rel="stylesheet" href="/css/admin-server.css?v=2" />
 
   <link rel="stylesheet" href="/css/admin-rebuild.css?v=3">
   <link rel="stylesheet" href="/css/admin-memes.css?v=1">
@@ -804,6 +804,18 @@
         <div class="srv-accounts" id="srv-accounts"></div>
       </section>
 
+      <section class="adm-card" id="srv-risk-card">
+        <header class="adm-card-head">
+          <span class="adm-card-ico" aria-hidden="true">🕵️</span>
+          <div class="adm-card-titles">
+            <h2>Multikonta do sprawdzenia</h2>
+            <p class="adm-card-sub">Automat tylko pokazuje układy: wspólną sieć, wspólną przeglądarkę, podobne nazwy, fale rejestracji i powtórzone wiadomości. Niczego nie blokuje, nie zmienia i nie kasuje — decyzja należy do Ciebie.</p>
+          </div>
+        </header>
+        <div class="srv-risk" id="srv-risk"><div class="pa-empty">Wczytywanie…</div></div>
+        <p class="srv-status" id="srv-risk-status" role="status" aria-live="polite"></p>
+      </section>
+
       <section class="adm-card">
         <header class="adm-card-head">
           <span class="adm-card-ico" aria-hidden="true">🪪</span>
@@ -838,7 +850,7 @@
   <script src="js/admin-rejchat-moderation.js?v=8"></script>
   <script src="js/admin-panel.js?v=2026-11-15-memes"></script>
   <script defer src="/js/admin-memes.js?v=1"></script>
-  <script defer src="/js/admin-server.js?v=1"></script>
+  <script defer src="/js/admin-server.js?v=2"></script>
   <script defer src="/js/media-capture.js?v=2"></script>
   <script defer src="/hub/island.js?v=14" data-project="rejhub" data-project-name="RejHub"></script>
   <script src="/hub/hub-shell.js?v=4" defer></script>
