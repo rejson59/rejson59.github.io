@@ -27,7 +27,8 @@ public class InstallResultReceiver extends BroadcastReceiver {
             PackageInstaller.STATUS_FAILURE);
 
         if (status == PackageInstaller.STATUS_PENDING_USER_ACTION) {
-            Intent confirmation = intent.getParcelableExtra(PackageInstaller.EXTRA_INTENT);
+            /* Stała należy do Intent, nie do PackageInstallera. */
+            Intent confirmation = intent.getParcelableExtra(Intent.EXTRA_INTENT);
             if (confirmation != null) {
                 confirmation.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 try {

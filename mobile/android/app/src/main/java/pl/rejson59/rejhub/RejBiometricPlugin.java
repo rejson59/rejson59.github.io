@@ -105,8 +105,6 @@ public class RejBiometricPlugin extends Plugin {
                 return "Czytnik jest chwilowo niedostępny.";
             case BiometricManager.BIOMETRIC_ERROR_NONE_ENROLLED:
                 return "Najpierw dodaj odcisk palca w ustawieniach telefonu.";
-            case BiometricManager.BIOMETRIC_ERROR_SECURITY_UPDATE_REQUIRED:
-                return "Najpierw zaktualizuj zabezpieczenia telefonu.";
             default:
                 return "Biometria jest niedostępna na tym urządzeniu.";
         }

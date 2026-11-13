@@ -180,8 +180,11 @@ jobs:
           status=${PIPESTATUS[0]}
           if [ "$status" -ne 0 ]; then
             echo "::error::Gradle nie zbudował APK (kod $status)."
-            grep -n -E "^e: |error: |What went wrong|Caused by:|> Task .*FAILED|Could not resolve|AAPT" /tmp/gradle.log \
-              | tail -n 8 | while IFS= read -r line; do echo "::error::$line"; done
+            # Jedna adnotacja z wszystkimi błędami kompilacji — czytelna z API
+            # i odporna na limit dziesięciu adnotacji na krok.
+            ERRORS=$(grep -E "^e: |error: |What went wrong|Caused by:|> Task .*FAILED|Could not resolve|AAPT" /tmp/gradle.log \
+              | head -n 25 | tr '\n' '|')
+            echo "::error title=Gradle::${ERRORS:0:60000}"
           fi
           exit $status
 
