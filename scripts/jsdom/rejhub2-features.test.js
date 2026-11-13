@@ -137,7 +137,7 @@ check('admin ma zakładkę Serwer', () => {
   const html = read('rejhub2/admin.html');
   assert.ok(html.includes('data-tab="server"'));
   assert.ok(html.includes('id="tab-server"'));
-  assert.ok(html.includes('/js/admin-server.js?v=1'));
+  assert.match(html, /\/js\/admin-server\.js\?v=\d+/);
   const panel = read('js/admin-panel.js');
   assert.ok(panel.includes('server: "tab-server"'), 'brak mapy zakładki');
   assert.ok(panel.includes('RJAdminServer'), 'brak wywołania ładowania');

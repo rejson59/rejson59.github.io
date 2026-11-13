@@ -159,3 +159,95 @@
     min-width: 0;
   }
 }
+
+/* Multikonta — lista ryzyka (tylko podpowiedzi, nic nie blokuje). */
+.srv-risk {
+  display: grid;
+  gap: 14px;
+  padding: 4px 0 2px;
+}
+
+.srv-risk-group {
+  display: grid;
+  gap: 8px;
+}
+
+.srv-risk-head {
+  margin: 0;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  opacity: 0.72;
+}
+
+.srv-risk-head span {
+  margin-left: 8px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+  opacity: 0.6;
+}
+
+.srv-risk-item {
+  display: grid;
+  gap: 7px;
+  padding: 10px 12px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 12px;
+  background: linear-gradient(158deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.015));
+}
+
+.srv-risk-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 12.5px;
+}
+
+.srv-risk-line strong {
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.srv-risk-meta {
+  font-size: 11.5px;
+  opacity: 0.62;
+  font-variant-numeric: tabular-nums;
+}
+
+.srv-risk-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.srv-chip {
+  padding: 3px 10px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.1);
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 140ms ease, border-color 140ms ease;
+}
+
+.srv-chip:hover,
+.srv-chip:focus-visible {
+  background: rgba(106, 166, 255, 0.2);
+  border-color: rgba(106, 166, 255, 0.5);
+}
+
+[data-theme="light"] .srv-risk-item {
+  border-color: rgba(15, 23, 42, 0.1);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+[data-theme="light"] .srv-chip {
+  border-color: rgba(15, 23, 42, 0.16);
+  background: rgba(15, 23, 42, 0.05);
+}
