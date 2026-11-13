@@ -6,7 +6,7 @@
   var LIMIT = 104857600, CHUNK = 10485760;
   var SESSION = 'rejson_community_session_v1', HISTORY = 'rejfile_sent_v1', CHAT_DRAFT = 'rejfile_chat_draft_v1';
   var $ = function (id) { return document.getElementById(id); };
-  var form=$('upload-form'), fileInput=$('file-input'), zone=$('dropzone'), selected=null, token=null, history=[], active=null, busy=false, downloadBusy=false, sessionVersion=0;
+  var form=$('upload-form'), fileInput=$('file-input'), zone=$('dropzone'), selected=null, token=null, history=[], active=null, busy=false, downloadBusy=false, sessionVersion=0, editing=null, noteLoading=false, noteLoaded=false;
   var uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, secret=/^[0-9a-f]{64}$/;
   function validItem(x) { return x && uuid.test(x.id) && secret.test(x.owner) && typeof x.name === 'string' && (x.share == null || secret.test(x.share)); }
   try { var saved=JSON.parse(localStorage.getItem(HISTORY)||'[]'); if(Array.isArray(saved)) history=saved.filter(validItem).slice(0,50); } catch (_) {}
@@ -36,13 +36,15 @@
     location.assign('/rejchat');
   }
   var shareKind='file', noteContent=$('note-content');
+  function setShareKind(kind) {
+    shareKind=kind==='note'?'note':'file';
+    document.querySelectorAll('[data-share-kind]').forEach(function(x){x.setAttribute('aria-pressed',String(x.dataset.shareKind===shareKind));});
+    $('file-editor').hidden=shareKind!=='file';$('note-editor').hidden=shareKind!=='note';
+    $('send').firstChild.textContent=editing?(shareKind==='note'?'Zapisz nową wersję notatki ':'Zmień plik pod linkiem '):(shareKind==='note'?'Udostępnij notatkę ':'Prześlij plik ');
+    report($('error'),'');
+  }
   document.querySelectorAll('[data-share-kind]').forEach(function(button) {
-    button.addEventListener('click',function(){
-      if(busy)return;shareKind=button.dataset.shareKind;
-      document.querySelectorAll('[data-share-kind]').forEach(function(x){x.setAttribute('aria-pressed',String(x===button));});
-      $('file-editor').hidden=shareKind!=='file';$('note-editor').hidden=shareKind!=='note';
-      $('send').firstChild.textContent=shareKind==='note'?'Udostępnij notatkę ':'Prześlij plik ';report($('error'),'');
-    });
+    button.addEventListener('click',function(){ if(busy)return; setShareKind(button.dataset.shareKind); });
   });
   document.querySelectorAll('[data-note-command]').forEach(function(button){
     button.addEventListener('mousedown',function(e){e.preventDefault();});
@@ -107,6 +109,67 @@
     var attempt=navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(text) : Promise.reject();
     return attempt.catch(function(){var input=document.createElement('textarea');input.value=text;document.body.appendChild(input);input.focus();input.select();var ok=false;try {ok=document.execCommand('copy');} catch (_) {} input.remove();if(!ok){window.prompt('Skopiuj link:',text);return false;}return true;}).then(function(ok){if(b&&ok!==false)b.textContent='Skopiowano ✓';});
   }
+  // ---------------------------------------------------------------- edycja ---
+  // Edycja podmienia treść pod tym samym adresem: link, właściciel i odbiorca
+  // zostają, a nowa wersja jest widoczna od razu po zapisaniu.
+  function editBanner(text) {
+    var box=$('edit-banner'); if(!box) return;
+    $('edit-banner-text').textContent=text||'';box.hidden=!text;
+  }
+  function cancelEdit() {
+    editing=null;editBanner('');if($('edit-cancel'))$('edit-cancel').hidden=true;
+    document.querySelectorAll('input[name="mode"]').forEach(function(x){x.disabled=false;});$('recipient').disabled=false;
+    document.querySelectorAll('[data-share-kind]').forEach(function(x){x.disabled=false;});
+    var account=document.querySelector('input[name="mode"]:checked').value==='account';
+    $('recipient-wrap').hidden=!account;$('recipient').required=account;
+    setShareKind(shareKind);
+  }
+  function editingNote(item) { return /\.rjnote$/i.test(String(item&&item.name||'')); }
+  async function loadNoteIntoEditor(item) {
+    noteLoading=true;
+    try { return await loadNoteIntoEditorNow(item); } finally { noteLoading=false; }
+  }
+  async function loadNoteIntoEditorNow(item) {
+    var info=item.info;
+    if(!info||info.id!==item.id) { info=await rpc('info',{id:item.id,owner:item.owner,session:token});item.info=info; }
+    if(!info||typeof info.size!=='number'||info.size<1||info.size>1048576) throw new Error('Tej notatki nie można otworzyć w edytorze.');
+    var grant=await rpc('chunk',{id:item.id,owner:item.owner,session:token});
+    var res=await fetch(publicUrl(grant.url),{cache:'no-store',referrerPolicy:'no-referrer'});
+    if(!res.ok) throw new Error('Nie udało się pobrać notatki.');
+    var blob=await res.blob();if(blob.size!==info.size) throw new Error('Pobrana notatka ma nieprawidłowy rozmiar.');
+    var note=window.RejFileNotes.decode(await blob.text());noteLoaded=true;
+    $('note-title').value=note.title||'';noteContent.replaceChildren();
+    Array.from(note.content.childNodes).forEach(function(node){noteContent.appendChild(node.cloneNode(true));});
+  }
+  function startEdit(item) {
+    if(busy) return;
+    if(!item||!item.id||!item.owner||!uuid.test(item.id)) { report($('error'),'Edytować można tylko przesyłki wysłane z tej przeglądarki.'); return; }
+    editing=item;noteLoaded=false;$('success').hidden=true;form.hidden=false;
+    document.querySelectorAll('[data-share-kind]').forEach(function(x){x.disabled=true;});
+    var accountMode=document.querySelector('input[name="mode"][value="account"]');
+    var linkMode=document.querySelector('input[name="mode"][value="link"]');
+    var radio=item.share?linkMode:accountMode;
+    if(radio){radio.checked=true;radio.dispatchEvent(new Event('change'));}
+    if(item.recipient)$('recipient').value=item.recipient;
+    // Sposób udostępnienia zostaje bez zmian — edytujemy tylko treść.
+    $('recipient-wrap').hidden=true;$('recipient').required=false;
+    document.querySelectorAll('input[name="mode"]').forEach(function(x){x.disabled=true;});$('recipient').disabled=true;
+    $('edit-cancel').hidden=false;
+    report($('error'),'');
+    if(editingNote(item)) {
+      setShareKind('note');
+      editBanner('Edytujesz notatkę pod istniejącym linkiem. Adres się nie zmieni, a nowa treść będzie dostępna po zapisaniu.');
+      loadNoteIntoEditor(item).catch(function(e){report($('error'),e.message||'Nie udało się wczytać notatki do edycji.');});
+      $('note-title').focus();
+    } else {
+      setShareKind('file');updateFile(null);
+      $('file-label').textContent='Wybierz nową wersję pliku';
+      editBanner('Zmieniasz plik pod istniejącym linkiem. Adres się nie zmieni; stara wersja działa, dopóki nie zapiszesz nowej.');
+      zone.focus();
+    }
+    $('send').scrollIntoView({behavior:'smooth',block:'center'});
+  }
+
   function renderHistory() {
     var list=$('sent-list');list.textContent='';
     history=history.filter(function(x){return !x.expires || new Date(x.expires).getTime()>Date.now();});persist();
@@ -114,6 +177,7 @@
     history.forEach(function(item){var acts=[];
       if(item.share && item.status==='ready'){var cp=button('Kopiuj link',function(){copy(shareLink(item),cp);});acts.push(cp);}
       if(item.status==='ready')acts.push(button('Pobierz',function(){openFile({id:item.id,owner:item.owner});}));
+      if(item.status==='ready')acts.push(button(item.name&&/\.rjnote$/i.test(item.name)?'Edytuj notatkę':'Zmień plik',function(){startEdit(item);}));
       acts.push(button('Cofnij dostęp',function(){
         if(!confirm('Cofnąć dostęp do tego pliku?'))return;
         rpc('revoke',{id:item.id,owner:item.owner,session:token}).then(function(){history=history.filter(function(x){return x.id!==item.id;});persist();renderHistory();}).catch(function(e){report($('error'),e.message);});
@@ -141,33 +205,54 @@
   }
   form.addEventListener('submit',async function(e){e.preventDefault();if(busy)return;report($('error'),'');var file=selected;
     if(shareKind==='note'){try{if(!window.RejFileNotes)throw new Error('Edytor notatek jest niedostępny.');file=window.RejFileNotes.encode(noteContent.innerHTML,$('note-title').value);}catch(err){report($('error'),err.message);return;}}
-    if(!file){report($('error'),'Wybierz plik.');return;} if(file.size<1||file.size>LIMIT){report($('error'),'Plik musi mieć od 1 bajtu do 100 MB.');return;}
+    if(editing&&shareKind==='note'&&noteLoading){report($('error'),'Poczekaj, aż notatka wczyta się do edytora.');return;}
+    if(editing&&shareKind==='note'&&!noteLoaded){report($('error'),'Najpierw poczekaj, aż obecna treść notatki wczyta się do edytora.');return;}
+    if(!file){report($('error'),editing?'Wybierz nową wersję pliku.':'Wybierz plik.');return;} if(file.size<1||file.size>LIMIT){report($('error'),'Plik musi mieć od 1 bajtu do 100 MB.');return;}
     if(!window.crypto||!crypto.getRandomValues){report($('error'),'Ta przeglądarka nie obsługuje bezpiecznego tworzenia linków.');return;}
     var mode=document.querySelector('input[name="mode"]:checked').value, recipient=mode==='account'?$('recipient').value.trim():null;
-    if(recipient&&!/^[A-Za-z0-9][A-Za-z0-9_.-]{2,23}$/.test(recipient)){report($('error'),'Wpisz poprawną nazwę odbiorcy.');return;} if(mode==='account'&&!recipient){report($('error'),'Podaj nazwę odbiorcy.');return;}
-    busy=true;$('send').disabled=true;noteContent.contentEditable='false';$('note-title').disabled=true;document.querySelectorAll('[data-share-kind], [data-note-command], #note-heading').forEach(function(x){x.disabled=true;});var item={name:escapeName(file.name),owner:key(),share:mode==='link'?key():null,recipient:recipient,status:'uploading'},created=false;
+    if(!editing){
+      if(recipient&&!/^[A-Za-z0-9][A-Za-z0-9_.-]{2,23}$/.test(recipient)){report($('error'),'Wpisz poprawną nazwę odbiorcy.');return;} if(mode==='account'&&!recipient){report($('error'),'Podaj nazwę odbiorcy.');return;}
+    }
+    var editingItem=editing, created=false;
+    busy=true;$('send').disabled=true;noteContent.contentEditable='false';$('note-title').disabled=true;document.querySelectorAll('[data-share-kind], [data-note-command], #note-heading').forEach(function(x){x.disabled=true;});
+    var item=editingItem||{name:escapeName(file.name),owner:key(),share:mode==='link'?key():null,recipient:recipient,status:'uploading'};
     try {
-      progress('Przygotowuję przesyłkę…',0,file.size);
-      var start=await rpc('create',{name:item.name,size:file.size,owner:item.owner,share:item.share,recipient:recipient,session:token});
-      if(!uuid.test(start.id)||start.chunkSize!==CHUNK||!Array.isArray(start.urls)||start.urls.length!==Math.ceil(file.size/CHUNK))throw new Error('Nieprawidłowa odpowiedź magazynu.');
-      item.id=start.id;history.unshift(item);history=history.slice(0,50);persist();renderHistory();created=true;
+      progress(editingItem?'Przygotowuję nową wersję…':'Przygotowuję przesyłkę…',0,file.size);
+      var start;
+      if(editingItem){
+        // Ten sam id i ten sam link — zmienia się tylko treść.
+        start=await rpc('edit',{id:editingItem.id,owner:editingItem.owner,size:file.size,name:escapeName(file.name),session:token});
+        if(!uuid.test(start.id)||start.id!==editingItem.id||start.chunkSize!==CHUNK||!Array.isArray(start.urls)||start.urls.length!==Math.ceil(file.size/CHUNK)||!Number.isInteger(start.revision))throw new Error('Nieprawidłowa odpowiedź magazynu.');
+      } else {
+        start=await rpc('create',{name:item.name,size:file.size,owner:item.owner,share:item.share,recipient:recipient,session:token});
+        if(!uuid.test(start.id)||start.chunkSize!==CHUNK||!Array.isArray(start.urls)||start.urls.length!==Math.ceil(file.size/CHUNK))throw new Error('Nieprawidłowa odpowiedź magazynu.');
+        item.id=start.id;history.unshift(item);history=history.slice(0,50);persist();renderHistory();created=true;
+      }
       for(var i=0;i<start.urls.length;i++){var pos=i*CHUNK;await uploadPart(start.urls[i],file.slice(pos,Math.min(pos+CHUNK,file.size),'application/octet-stream'),pos,file.size);}
-      progress('Kończę przesyłanie…',file.size,file.size);
+      progress(editingItem?'Podmieniam treść pod linkiem…':'Kończę przesyłanie…',file.size,file.size);
       var result=await rpc('finish',{id:item.id,owner:item.owner});if(!result.expires_at)throw new Error('Nie udało się potwierdzić przesłania.');
-      item.status='ready';item.expires=result.expires_at;persist();renderHistory();form.hidden=true;$('success').hidden=false;
-      $('success').querySelector('h3').textContent=shareKind==='note'?'Notatka jest gotowa!':'Plik jest gotowy!';$('another').textContent='Wyślij kolejną przesyłkę ↗';
-      $('success-text').textContent=mode==='link'?'Wyślij link osobie, której chcesz udostępnić '+(shareKind==='note'?'notatkę':'plik')+'. Wygasa: '+when(item.expires)+'.':(shareKind==='note'?'Notatka':'Plik')+' czeka w skrzynce użytkownika '+recipient+'. Wygasa: '+when(item.expires)+'.';
+      item.status='ready';item.expires=result.expires_at;item.name=escapeName(file.name);item.info=null;persist();renderHistory();form.hidden=true;$('success').hidden=false;
+      $('success').querySelector('h3').textContent=editingItem?(shareKind==='note'?'Notatka zaktualizowana!':'Plik podmieniony!'):(shareKind==='note'?'Notatka jest gotowa!':'Plik jest gotowy!');
+      $('another').textContent='Wyślij kolejną przesyłkę ↗';
+      $('success-text').textContent=editingItem?'Link się nie zmienił — ta sama osoba zobaczy nową wersję '+(shareKind==='note'?'notatki':'pliku')+'. Wygasa: '+when(item.expires)+'.':(mode==='link'?'Wyślij link osobie, której chcesz udostępnić '+(shareKind==='note'?'notatkę':'plik')+'. Wygasa: '+when(item.expires)+'.':(shareKind==='note'?'Notatka':'Plik')+' czeka w skrzynce użytkownika '+recipient+'. Wygasa: '+when(item.expires)+'.');
       $('link-wrap').hidden=!item.share;if(item.share){$('share-link').value=shareLink(item);$('share-chat').onclick=function(){prepareChat(item);};}$('copy-link').textContent='Kopiuj';
-    } catch(err){report($('error'),err.message || 'Nie udało się przesłać pliku.'); if(created)renderHistory();}
-    finally {busy=false;$('send').disabled=false;$('progress-wrap').hidden=true;noteContent.contentEditable='true';$('note-title').disabled=false;document.querySelectorAll('[data-share-kind], [data-note-command], #note-heading').forEach(function(x){x.disabled=false;});}
+      if(editingItem){editing=null;editBanner('');$('edit-cancel').hidden=true;}
+    } catch(err){report($('error'),err.message || (editingItem?'Nie udało się zapisać nowej wersji.':'Nie udało się przesłać pliku.')); if(created)renderHistory();}
+    finally {busy=false;$('send').disabled=false;$('progress-wrap').hidden=true;noteContent.contentEditable='true';$('note-title').disabled=false;document.querySelectorAll('[data-note-command], #note-heading').forEach(function(x){x.disabled=false;});document.querySelectorAll('[data-share-kind]').forEach(function(x){x.disabled=!!editing;});$('send').firstChild.textContent=editing?(shareKind==='note'?'Zapisz nową wersję notatki ':'Zmień plik pod linkiem '):(shareKind==='note'?'Udostępnij notatkę ':'Prześlij plik ');}
   });
   $('copy-link').addEventListener('click',function(){copy($('share-link').value,$('copy-link'));});
-  $('another').addEventListener('click',function(){form.hidden=false;$('success').hidden=true;fileInput.value='';updateFile(null);if(shareKind==='note'){noteContent.replaceChildren();$('note-title').value='';$('note-heading').value='p';}});
+  $('edit-cancel').addEventListener('click',function(){cancelEdit();fileInput.value='';updateFile(null);noteContent.replaceChildren();$('note-title').value='';$('note-heading').value='p';report($('error'),'');});
+  $('another').addEventListener('click',function(){cancelEdit();form.hidden=false;$('success').hidden=true;fileInput.value='';updateFile(null);if(shareKind==='note'){noteContent.replaceChildren();$('note-title').value='';$('note-heading').value='p';}});
   function credentials(entry) { entry=entry||active; return entry ? {id:entry.id,share:entry.share||null,owner:entry.owner||null,session:token} : {}; }
+  function refreshEditButton() {
+    var b=$('edit-file'); if(!b) return;
+    b.hidden=!(active&&active.owner&&uuid.test(active.id));
+    if(!b.hidden) b.textContent=/\.rjnote$/i.test(String(active.info&&active.info.name||''))?'Edytuj tę notatkę pod linkiem':'Zmień ten plik pod linkiem';
+  }
   async function openFile(data) {
-    if(!data||!uuid.test(data.id))return;if(downloadBusy){report($('download-error'),'Poczekaj na zakończenie bieżącego pobierania.');return;}active=data;$('note-preview').hidden=true;$('note-preview-content').replaceChildren();$('copy-note-status').textContent='';$('download-panel').hidden=false;$('download').hidden=true;$('download').firstChild.textContent='Pobierz plik ';$('download-progress').hidden=true;report($('download-error'),'');$('download-meta').textContent='Sprawdzam plik…';$('download-panel').scrollIntoView({behavior:'smooth',block:'center'});
+    if(!data||!uuid.test(data.id))return;if(downloadBusy){report($('download-error'),'Poczekaj na zakończenie bieżącego pobierania.');return;}active=data;$('note-preview').hidden=true;$('note-preview-content').replaceChildren();$('copy-note-status').textContent='';$('download-panel').hidden=false;$('download').hidden=true;$('download').firstChild.textContent='Pobierz plik ';$('download-progress').hidden=true;report($('download-error'),'');$('download-meta').textContent='Sprawdzam plik…';refreshEditButton();$('download-panel').scrollIntoView({behavior:'smooth',block:'center'});
     var opening=active;
-    try {var info=await rpc('info',credentials(opening));if(active!==opening)return;if(typeof info.name!=='string'||!Number.isSafeInteger(info.size)||info.size<1||info.size>LIMIT||!Number.isInteger(info.chunks)||info.chunks!==Math.ceil(info.size/CHUNK))throw new Error('Nieprawidłowe dane pliku.');active.info=info;$('download-title').textContent=escapeName(info.name);$('download-meta').textContent=human(info.size)+' · dostępny do '+when(info.expires_at)+(info.sender?' · od '+info.sender:'');$('download').hidden=false;if(/\.rjnote$/i.test(info.name)&&info.size<=1024*1024) previewNote(opening);}
+    try {var info=await rpc('info',credentials(opening));if(active!==opening)return;if(typeof info.name!=='string'||!Number.isSafeInteger(info.size)||info.size<1||info.size>LIMIT||!Number.isInteger(info.chunks)||info.chunks!==Math.ceil(info.size/CHUNK))throw new Error('Nieprawidłowe dane pliku.');active.info=info;refreshEditButton();$('download-title').textContent=escapeName(info.name);$('download-meta').textContent=human(info.size)+' · dostępny do '+when(info.expires_at)+(info.sender?' · od '+info.sender:'');$('download').hidden=false;if(/\.rjnote$/i.test(info.name)&&info.size<=1024*1024) previewNote(opening);}
     catch(e){if(active!==opening)return;$('download-meta').textContent='';report($('download-error'),e.message);}
   }
   async function previewNote(entry) {
@@ -181,6 +266,11 @@
       $('download-meta').textContent='Notatka · dostępna do '+when(entry.info.expires_at)+(entry.info.sender?' · od '+entry.info.sender:'');
     }catch(e){if(active===entry)report($('download-error'),'Nie można wyświetlić notatki. Możesz spróbować pobrać plik.');}
   }
+  $('edit-file').addEventListener('click',function(){
+    if(!active) return;
+    var entry=active;
+    startEdit({id:entry.id,owner:entry.owner,share:entry.share||null,name:(entry.info&&entry.info.name)||'',expires:entry.info&&entry.info.expires_at,status:'ready',info:entry.info});
+  });
   $('copy-note').addEventListener('click',async function(){
     var content=$('note-preview-content');
     try {
