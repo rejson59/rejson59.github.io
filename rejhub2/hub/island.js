@@ -847,6 +847,7 @@
             '<div class="rj-switches">' +
               '<button class="rj-switch-row" type="button" data-switch="theme" aria-pressed="false"><span class="rj-label">Jasny motyw</span><span class="rj-switch" aria-hidden="true"></span></button>' +
               '<button class="rj-switch-row" type="button" data-switch="motion" aria-pressed="true"><span class="rj-label">Animacje zawsze</span><span class="rj-switch" aria-hidden="true"></span></button>' +
+              '<button class="rj-switch-row" type="button" data-switch="potato" aria-pressed="false"><span class="rj-label">Tryb ziemniaka<small data-potato-state>czuwa w tle</small></span><span class="rj-switch" aria-hidden="true"></span></button>' +
             "</div>" +
             '<p class="rj-hintline">Animacje omijają systemowe blokady ruchu — tak, jak w Szklanym studiu.</p>' +
 
@@ -2608,6 +2609,19 @@
     if (verticalSwitch) verticalSwitch.setAttribute("aria-pressed", String(vertical()));
     if (startSwitch) startSwitch.setAttribute("aria-pressed", String(isCollapsed()));
     if (hapticSwitch) hapticSwitch.setAttribute("aria-pressed", String(haptics()));
+    var potatoSwitch = island.querySelector('[data-switch="potato"]');
+    if (potatoSwitch && window.RJPotato) {
+      potatoSwitch.setAttribute("aria-pressed", String(!!window.RJPotato.on));
+      var potatoHint = potatoSwitch.querySelector("[data-potato-state]");
+      if (potatoHint) {
+        var state = window.RJPotato.status ? window.RJPotato.status() : null;
+        potatoHint.textContent = !window.RJPotato.on
+          ? (state && state.mode === "off" ? "wyłączony ręcznie" : "czuwa w tle")
+          : state && state.reason === "fps" ? "włączony automatycznie (spadki płynności)"
+          : state && state.reason === "ręcznie" ? "włączony ręcznie"
+          : "włączony dla tego urządzenia";
+      }
+    }
   }
 
   function toggleTheme() {
@@ -3000,6 +3014,13 @@
           store(HAPTIC_KEY, on ? "1" : "0");
           syncSwitches();
           toast(on ? "Wibracje włączone" : "Wibracje wyłączone");
+        } else if (which === "potato") {
+          /* Tryb ziemniaka należy do js/potato.js — wyspa tylko go przełącza. */
+          if (window.RJPotato && typeof window.RJPotato.toggle === "function") {
+            var potatoOn = window.RJPotato.toggle() === "on" || window.RJPotato.on === true;
+            toast(potatoOn ? "Tryb ziemniaka włączony" : "Tryb ziemniaka wyłączony");
+          }
+          syncSwitches();
         }
         return;
       }

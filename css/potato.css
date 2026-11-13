@@ -1,0 +1,135 @@
+/* © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
+   Licencja: /LICENSE, /licencja
+   ==========================================================================
+   Tryb ziemniaka — warstwa CSS dla html.rj-potato (patrz js/potato.js).
+
+   Zasada: wygląd ma zostać czytelny, ale tani. Znikają rozmycia pod taflami
+   (najdroższa operacja GPU), soczewka, cienie i animacje. Tła stają się
+   niemal kryjące, więc tekst nie potrzebuje już rozmycia za plecami.
+   ========================================================================== */
+
+html.rj-potato {
+  --gl-blur: none;
+  --rm-blur: none;
+  --rj-glass-blur: none;
+  --glass-lens: none;
+
+  /* Półprzezroczyste taflе bez blura = nieczytelny tekst, dlatego podnosimy
+     krycie zamiast zostawiać „szkło bez szkła”. */
+  --card: rgba(21, 27, 40, 0.94);
+  --card-2: rgba(18, 24, 36, 0.93);
+  --bg-elev: rgba(26, 33, 48, 0.95);
+  --input-bg: rgba(15, 20, 31, 0.96);
+  --header-bg: rgba(11, 16, 27, 0.94);
+  --rj-glass-bg: rgba(19, 26, 39, 0.95);
+  --rj-glass-solid: rgba(19, 26, 39, 0.98);
+  --rju-surface: rgba(23, 30, 44, 0.94);
+  --gl-tint: rgba(15, 21, 33, 0.95);
+  --gl-shadow: none;
+  --rj-glass-shadow: none;
+}
+
+html.rj-potato[data-theme="light"] {
+  --card: rgba(255, 255, 255, 0.96);
+  --card-2: rgba(250, 252, 255, 0.95);
+  --bg-elev: rgba(255, 255, 255, 0.97);
+  --input-bg: rgba(255, 255, 255, 0.98);
+  --header-bg: rgba(248, 251, 255, 0.96);
+  --rj-glass-bg: rgba(255, 255, 255, 0.95);
+  --rj-glass-solid: rgba(255, 255, 255, 0.99);
+  --rju-surface: rgba(255, 255, 255, 0.94);
+  --gl-tint: rgba(255, 255, 255, 0.96);
+}
+
+/* Rozmycie pod czymkolwiek to koszt na każdej klatce przewijania. */
+html.rj-potato *,
+html.rj-potato *::before,
+html.rj-potato *::after {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  animation-duration: 0.001ms !important;
+  animation-delay: 0s !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  transition-delay: 0s !important;
+  scroll-behavior: auto !important;
+}
+
+/* Soczewka i ozdobne warstwy nie mają sensu bez szkła. */
+html.rj-potato [data-glass-lens] { --glass-lens: none !important; }
+html.rj-potato #rj-lens-svg,
+html.rj-potato .rj-lens,
+html.rj-potato .rj-lens-layer { display: none !important; }
+
+/* Wyspa ma zostać czarna i czytelna — bez własnego blura i poświaty. */
+html.rj-potato #rj-island-root .rj-island,
+html.rj-potato #rj-island-root .rj-panel {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45) !important;
+}
+
+/* Ozdoby, które tylko malują piksele. */
+html.rj-potato .art-spark,
+html.rj-potato .hero-art,
+html.rj-potato .art-orbit,
+html.rj-potato .rj-aurora,
+html.rj-potato .trail-dot { display: none !important; }
+
+/* Podglądy projektów i reklamy: statyczne, bez animowanego tła. */
+html.rj-potato .rj-side-ads,
+html.rj-potato .rj-mobile-ads,
+html.rj-potato .ad-frame {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* -------------------------------------------------------------- pigułka --- */
+
+.rj-potato-note {
+  position: fixed;
+  left: 50%;
+  bottom: max(18px, env(safe-area-inset-bottom, 0px) + 14px);
+  transform: translateX(-50%);
+  z-index: 99990;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: min(92vw, 520px);
+  padding: 11px 14px;
+  border: 1px solid rgba(178, 205, 245, 0.2);
+  border-radius: 14px;
+  background: rgba(12, 17, 27, 0.96);
+  color: #e9eefb;
+  font: 12.5px/1.5 "DM Sans", system-ui, sans-serif;
+  box-shadow: 0 16px 36px -20px rgba(0, 0, 0, 0.8);
+}
+
+.rj-potato-note[hidden] { display: none !important; }
+
+.rj-potato-note-text { flex: 1 1 auto; }
+
+.rj-potato-note-btn {
+  flex: 0 0 auto;
+  padding: 6px 11px;
+  border: 0;
+  border-radius: 999px;
+  background: #b0f0d0;
+  color: #14261f;
+  font: 700 11.5px/1 "DM Sans", system-ui, sans-serif;
+  cursor: pointer;
+}
+
+.rj-potato-note-btn:hover { background: #d3ffe5; }
+
+html[data-theme="light"] .rj-potato-note {
+  background: rgba(255, 255, 255, 0.97);
+  border-color: rgba(30, 50, 80, 0.18);
+  color: #16202e;
+}
+
+@media (max-width: 520px) {
+  .rj-potato-note { bottom: max(12px, env(safe-area-inset-bottom, 0px) + 10px); font-size: 12px; }
+}
