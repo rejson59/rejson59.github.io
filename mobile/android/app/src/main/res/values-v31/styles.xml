@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
      Android 12+ rysuje ekran startowy sam (SplashScreen API). Dajemy mu ten sam
-     ciemny kolor i znak RejHuba, więc przejście do aplikacji nie mruga. -->
+     ciemny kolor i znak RejHuba, więc przejście do aplikacji nie mruga.
+
+     Uwaga: nie używamy `postSplashScreenTheme` — to atrybut biblioteki
+     androidx, a motyw po starcie przełącza sam Capacitor w onCreate.
+     Sam atrybut `android:` nie istnieje i wywalał kompilację zasobów. -->
 <resources>
 
     <style name="AppTheme.NoActionBarLaunch" parent="AppTheme.NoActionBar">
         <item name="android:windowSplashScreenBackground">@color/rjBackground</item>
         <item name="android:windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
-        <item name="android:postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
     </style>
 </resources>

@@ -172,7 +172,18 @@ jobs:
           RJ_KEY_PASSWORD: rejhub-android
         run: |
           chmod +x gradlew
-          ./gradlew --no-daemon --stacktrace assembleRelease
+          # Log zostaje na dysku, żeby po nieudanym buildzie wypisać sedno błędu
+          # jako adnotację — da się je odczytać przez API, nawet gdy pełny log
+          # jest niedostępny.
+          set +e
+          ./gradlew --no-daemon --stacktrace assembleRelease 2>&1 | tee /tmp/gradle.log
+          status=${PIPESTATUS[0]}
+          if [ "$status" -ne 0 ]; then
+            echo "::error::Gradle nie zbudował APK (kod $status)."
+            grep -n -E "^e: |error: |What went wrong|Caused by:|> Task .*FAILED|Could not resolve|AAPT" /tmp/gradle.log \
+              | tail -n 8 | while IFS= read -r line; do echo "::error::$line"; done
+          fi
+          exit $status
 
       - name: Sprawdź podpis i przygotuj plik
         id: apk
