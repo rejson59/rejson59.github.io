@@ -113,7 +113,7 @@ const initBlock = COMMUNITY.slice(COMMUNITY.indexOf('primeOnlineFromCache();'));
 assert.match(initBlock.slice(0, 900), /loadOnline\(\);/, 'lista online startuje od razu po wejściu');
 assert.match(COMMUNITY, /chatGeneration\+\+; requestChat\(true\); loadOnline\(\);/, 'po zalogowaniu lista odświeża się natychmiast');
 
-assert.ok(HTML.includes('rejchat-messenger.css?v=15'), 'arkusz dymków z nowym ?v=');
+assert.ok(HTML.includes('rejchat-messenger.css?v=16'), 'arkusz dymków z nowym ?v=');
 assert.ok(HTML.includes('rejchat-translate.css?v=3'), 'arkusz tłumaczeń z nowym ?v=');
 assert.ok(HTML.includes('rejchat-message-ui.js?v=4'), 'skrypt reakcji z nowym ?v=');
 assert.ok(HTML.includes('rejchat-translate.js?v=3'), 'skrypt tłumaczeń z nowym ?v=');

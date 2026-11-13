@@ -34,8 +34,8 @@ console.log('\n=== A. WARSTWA SIECIOWA ===');
 console.log('\n=== B. CZAT: WYSOKOŚĆ I PRZEWIJANIE ===');
 {
   check('lista ma własne przewijanie bez rosnącej wysokości', /overflow-y:\s*auto !important/.test(viewport));
-  check('tafla ma skończoną wysokość na telefonie', /--rj-chat-fit/.test(viewport) && /max-height:\s*var\(--rj-chat-fit/.test(viewport));
-  check('skrypt mierzy realną przestrzeń', /--rj-chat-fit/.test(read('js/chat-viewport.js')));
+  check('tafla ma skończoną wysokość na każdej szerokości', /--rj-chat-h/.test(viewport) && /max-height:\s*var\(--rj-chat-h,/.test(viewport));
+  check('skrypt mierzy realną przestrzeń', /--rj-chat-h/.test(read('js/chat-viewport.js')) && /--rj-chat-fit/.test(read('js/chat-viewport.js')));
   check('arkusz wymiarów dołączony do czatu', /rejchat-viewport\.css/.test(rejchat));
   check('skrypt wymiarów dołączony do czatu', /chat-viewport\.js/.test(rejchat));
   check('pierwsze wejście ląduje na końcu', /if \(firstRender \|\| position\.following\) chatScrollBottom\(\)/.test(community));
