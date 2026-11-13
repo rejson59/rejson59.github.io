@@ -7,10 +7,27 @@ const CHUNK = 10485760;
 const MAX = 104857600;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const HEX = /^[0-9a-f]{64}$/;
-const CORS_ORIGINS = new Set(['https://rejson59.github.io', 'http://localhost:8000', 'http://127.0.0.1:8000']);
+// Strona działa teraz pod rejhub.vercel.app; stare adresy i podglądy Vercela
+// też muszą móc korzystać z RejFile, inaczej przeglądarka blokuje odpowiedź
+// („NetworkError when attempting to fetch resource.”).
+const CORS_ORIGINS = new Set([
+  'https://rejhub.vercel.app',
+  'https://rejhub-jakubelozioms-projects.vercel.app',
+  'https://rejhub-git-main-jakubelozioms-projects.vercel.app',
+  'https://rejson59.github.io',
+  'https://www.rejson59.github.io',
+  'http://localhost:8000',
+  'http://127.0.0.1:8000',
+]);
+const CORS_PREVIEW = /^https:\/\/rejhub-[a-z0-9-]+-jakubelozioms-projects\.vercel\.app$/;
+function allowedOrigin(origin) {
+  if (!origin) return '';
+  if (CORS_ORIGINS.has(origin) || CORS_PREVIEW.test(origin)) return origin;
+  return '';
+}
 function headers(req) {
   const origin = req.headers.get('origin') || '';
-  return { 'Access-Control-Allow-Origin': CORS_ORIGINS.has(origin) ? origin : 'null',
+  return { 'Access-Control-Allow-Origin': allowedOrigin(origin) || 'null',
     'Access-Control-Allow-Headers': 'authorization, apikey, content-type, x-client-info',
     'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Vary': 'Origin',
     'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' };

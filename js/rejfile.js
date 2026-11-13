@@ -19,7 +19,10 @@
   function rpc(action, data) {
     var body=Object.assign({action:action},data||{});
     return fetch(BASE+'/functions/v1/rejfile', {method:'POST',cache:'no-store',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json'},body:JSON.stringify(body)})
-      .then(function(r){ return r.json().catch(function(){return null;}).then(function(json){if(!r.ok) throw new Error(json&&json.error||'Nie udało się połączyć z RejFile.'); if(!json) throw new Error('Nieprawidłowa odpowiedź serwera.'); return json;}); });
+      .then(function(r){ return r.json().catch(function(){return null;}).then(function(json){if(!r.ok) throw new Error(json&&json.error||'Nie udało się połączyć z RejFile.'); if(!json) throw new Error('Nieprawidłowa odpowiedź serwera.'); return json;}); })
+      // Przeglądarka zgłasza zablokowane połączenie jako „NetworkError…”. Dla
+      // użytkownika to ma być zdanie po polsku, a nie komunikat silnika.
+      .catch(function(err){ if(err && (err.name==='TypeError' || /NetworkError|Failed to fetch|Load failed|Network request failed/i.test(String(err.message||'')))) throw new Error('Nie udało się połączyć z RejFile. Sprawdź połączenie z internetem i spróbuj jeszcze raz.'); throw err; });
   }
   function publicUrl(url) { var u=new URL(url); if(u.origin !== BASE || u.pathname.indexOf('/storage/v1/object/')!==0) throw new Error('Nieprawidłowy adres magazynu.'); return u.href; }
   function shareLink(item) { return location.origin+'/rejfile#f='+item.id+'.'+item.share; }
