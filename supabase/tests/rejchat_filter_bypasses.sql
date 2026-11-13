@@ -55,6 +55,10 @@ begin
  begin insert into public.rejchat_dm_messages(thread_id,author_id,content) values(t,b,'Шлюха');raise exception 'DM w innym alfabecie przeszło';exception when raise_exception then if sqlerrm not like 'Treść zawiera niedozwoloną frazę%' and sqlerrm not like 'Wykryto serię krótkich fragmentów%' then raise;end if;end;
  if not public.rejchat_nickname_blocked('WieslawWpierdol') then raise exception 'Wulgarny nick w środku wyrazu przeszedł';end if;
  if public.rejchat_nickname_blocked('NowyKonto_2026') or public.rejchat_nickname_blocked('StarGhost') then raise exception 'Fałszywy alarm nicku';end if;
+ -- Warianty slurs z 13.11.2026: cyfra zamiast litery i „negroid” w nazwie oraz treści.
+ if not public.rejchat_nickname_blocked('blackn1gger') or not public.rejchat_nickname_blocked('negroid') then raise exception 'Slur w nazwie konta przeszedł';end if;
+ if not public.rejchat_text_blocked('Negroid') or not public.rejchat_text_blocked('нэгроид') or not public.rejchat_text_blocked('blackn1gger') then raise exception 'Slur w treści przeszedł';end if;
+ if public.rejchat_nickname_blocked('Konto_8c41') or public.rejchat_nickname_blocked('JasiekJodlowski') then raise exception 'Fałszywy alarm nowych reguł';end if;
  begin perform public.rejchat_validate_nickname('WieslawWpierdol');raise exception 'Nick z wulgaryzmem przeszedł';exception when raise_exception then if sqlerrm not like 'Nick zawiera niedozwoloną frazę%' then raise;end if;end;
  begin insert into public.community_posts(id,author_id,author_name,content) select p,a,username,'K###a' from public.community_users where id=a;raise exception 'Wpis przeszedł';exception when raise_exception then if sqlerrm not like 'Treść zawiera niedozwoloną frazę%' then raise;end if;end;
  insert into public.community_posts(id,author_id,author_name,content) select p,a,username,'Zwykły wpis' from public.community_users where id=a;
