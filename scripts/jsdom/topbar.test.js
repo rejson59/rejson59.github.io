@@ -224,7 +224,7 @@ function headerOf(html) {
   check('pasek ma reguły na zmieszczenie wszystkich aplikacji', () => {
     const css = read('css/topbar-split.css');
     assert.match(css, /@media \(min-width: 1201px\)/, 'brak kompaktowych odstępów');
-    assert.match(css, /@media \(min-width: 1201px\) and \(max-width: 1339px\)/, 'brak trybu samych ikon');
+    assert.match(css, /@media \(min-width: 1201px\) and \(max-width: 1399px\)/, 'brak trybu samych ikon');
     assert.match(css, /button\.nav-icon-link/, 'brak stylu przycisku asystenta');
   });
 

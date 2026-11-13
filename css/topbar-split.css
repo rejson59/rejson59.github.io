@@ -384,8 +384,8 @@ html[data-motion-force="off"] body .rj-shared-header .brand::before {
    Do tej pory planer, gry, muzyka, memy i asystent siedziały schowane
    w „Więcej”. Teraz każda aplikacja jest widoczna od razu — pasek liczy się
    z szerokością ekranu:
-     • ≥1340 px: ikona + nazwa (zmieszczone, bo odstępy są o 1 px),
-     • 1201–1339 px: same ikony 36 px — nazwy zostają w title i aria-label,
+     • ≥1400 px: ikona + nazwa (zmieszczone, bo odstępy są o 1 px),
+     • 1201–1399 px: same ikony 36 px — nazwy zostają w title i aria-label,
      • ≤1200 px: menu z dwiema kolumnami kafelków, wszystkie pozycje widoczne. */
 
 body .rj-shared-header .site-nav > button.nav-icon-link {
@@ -441,7 +441,7 @@ body .rj-shared-header .site-nav > button.nav-icon-link:hover {
 }
 
 /* Środek przedziału: same ikony. Wszystkie aplikacje nadal widać. */
-@media (min-width: 1201px) and (max-width: 1339px) {
+@media (min-width: 1201px) and (max-width: 1399px) {
   body .rj-shared-header .site-nav > a,
   body .rj-shared-header .site-nav > button.nav-icon-link {
     width: 36px;
