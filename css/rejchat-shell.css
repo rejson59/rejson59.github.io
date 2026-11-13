@@ -1,0 +1,292 @@
+/* © 2026 rejson59 — wszystkie prawa zastrzeżone. Licencja: /LICENSE
+   ==========================================================================
+   RejChat — powłoka aplikacji (arkusz ostatniej warstwy).
+
+   Problem, który to rozwiązuje: okno czatu nie miało na komputerze ŻADNEJ
+   skończonej wysokości. `@media (min-width: 861px)` ustawiało
+   `height: auto; flex: 1 1 auto`, a rodzic miał tylko `min-height` — więc
+   siatka rosła razem z treścią, lista wiadomości nie dostawała własnego
+   przewijania, a strona wydłużała się z każdą wiadomością („nieskończony
+   czat”). Na telefonie działało to tylko dzięki `--rj-chat-fit`.
+
+   Teraz obowiązuje jedna zasada, na każdej szerokości:
+   - tafla ma WYSOKOŚĆ WYLICZONĄ (`--rj-chat-h`, mierzy chat-viewport.js)
+     i nigdy nie rośnie od treści,
+   - nagłówek pokoju i pole pisania są nieruchome (`flex: 0 0 auto`),
+   - przewija się wyłącznie lista wiadomości (`flex: 1 1 0; min-height: 0`),
+   - stopka dociąga dokładnie do dolnej krawędzi ekranu, także nad wyspą.
+
+   Oprócz naprawy: spokojniejszy, „messengerowy” wygląd — cieńszy nagłówek,
+   wyraźniejsza aktywna rozmowa, kompaktowy pasek pisania.
+   ========================================================================== */
+
+:root {
+  /* Zapas zanim skrypt zmierzy realną przestrzeń (brak migotania na starcie). */
+  --rj-chat-h: clamp(340px, calc(100dvh - 176px), 1120px);
+}
+
+/* `main` nie może mieć własnego `min-height: 100dvh` — wtedy stopka pod nim
+   wypychała stronę poza ekran, mimo że tafla była już dopasowana. */
+body.rj-community .comm-main {
+  min-height: 0 !important;
+}
+
+/* ------------------------------------------------ 1. tafla: stała wysokość --- */
+
+body.rj-community .comm-layout {
+  height: var(--rj-chat-h) !important;
+  max-height: var(--rj-chat-h) !important;
+  min-height: 0 !important;
+  flex: 0 0 auto !important;
+  grid-template-rows: minmax(0, 1fr) !important;
+  align-items: stretch !important;
+  overflow: hidden !important;
+  border-radius: 26px !important;
+  border: 1px solid rgba(140, 175, 235, 0.14) !important;
+  box-shadow:
+    0 50px 110px -70px rgba(0, 4, 16, 0.95),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+}
+
+html[data-theme="light"] body.rj-community .comm-layout {
+  border-color: rgba(28, 66, 122, 0.12) !important;
+  box-shadow:
+    0 40px 90px -70px rgba(20, 45, 85, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+}
+
+/* ------------------------------------- 2. kolumna: tylko lista się przewija --- */
+
+body.rj-community .comm-primary {
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+body.rj-community #panel-chat:not([hidden]) {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 0 !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+body.rj-community #chat-public-view:not([hidden]),
+body.rj-community #chat-private-view:not([hidden]) {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Nagłówek pokoju, wyszukiwarka, przypięte, szkice i pasek pisania stoją. */
+body.rj-community .comm-chat-head,
+body.rj-community .rc-search-panel,
+body.rj-community .rc-pinned,
+body.rj-community .rejchat-file-draft,
+body.rj-community .rejchat-compose-context,
+body.rj-community .comm-chat-form,
+body.rj-community .chat-length,
+body.rj-community .comm-chat-note,
+body.rj-community #chat-note,
+body.rj-community .chat-jump {
+  flex: 0 0 auto !important;
+}
+
+/* Lista wiadomości jest jedynym przewijanym elementem. */
+body.rj-community #chat-public-view > #chat-list,
+body.rj-community #dm-thread > #dm-messages {
+  flex: 1 1 0 !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  height: auto !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+}
+
+body.rj-community #chat-private-view > #dm-member:not([hidden]) {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 0 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+body.rj-community #dm-thread:not([hidden]) {
+  display: flex !important;
+  flex-direction: column !important;
+  flex: 1 1 0 !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Skrzynka to rząd pigułek nad wątkiem — może się skurczyć, ale nigdy nie
+   zabiera wątkowi połowy tafli. */
+body.rj-community #dm-inbox {
+  flex: 0 1 auto !important;
+  max-height: 120px !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+}
+
+/* Wszystko w wątku poza listą wiadomości stoi w miejscu. */
+body.rj-community #dm-thread > :not(#dm-messages),
+body.rj-community #chat-private-view > :not(#dm-member) {
+  flex: 0 0 auto !important;
+}
+
+/* Panel „Wpisy” przewija się w tej samej tafli — nigdy nie wydłuża strony. */
+body.rj-community #panel-posts:not([hidden]) {
+  flex: 1 1 0 !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+}
+
+/* --------------------------------------------------- 3. spokojniejszy rytm --- */
+
+body.rj-community .comm-chat-head {
+  min-height: 58px !important;
+  padding: 9px 16px !important;
+  border-bottom: 1px solid var(--rm-line) !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent) !important;
+}
+
+body.rj-community .chat-room-mark {
+  width: 38px !important;
+  height: 38px !important;
+  font-size: 16px !important;
+}
+
+body.rj-community .chat-room-heading h2,
+body.rj-community .comm-chat-head h2 {
+  font-size: 15px !important;
+}
+
+body.rj-community .comm-chat-list {
+  padding: 14px 18px 16px !important;
+  gap: 8px !important;
+  scrollbar-gutter: stable;
+}
+
+/* Pasek pisania: niżej, ciaśniej i zawsze nad dolną krawędzią tafli. */
+body.rj-community .comm-chat-form {
+  margin: 0 14px 8px !important;
+  border-radius: 22px !important;
+}
+
+body.rj-community .comm-chat-note,
+body.rj-community .chat-length {
+  margin: 0 18px 8px !important;
+}
+
+/* Na komputerze stopka zostaje widoczna pod czatem, więc odstęp pod taflą
+   jest minimalny — cała strona mieści się w jednym ekranie bez przewijania. */
+@media (min-width: 861px) {
+  body.rj-community .comm-main {
+    padding-bottom: 8px !important;
+  }
+
+  /* Stopka zostaje (link do strony głównej i profile społecznościowe), ale
+     w wersji jednolinijkowej — inaczej zabierała czatowi ponad 150 px. */
+  body.rj-community .site-footer {
+    padding: 10px 0 14px !important;
+    font-size: 11.5px !important;
+  }
+
+  body.rj-community .site-footer .footer-note {
+    display: none !important;
+  }
+
+  body.rj-community .site-footer .footer-inner {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    flex-wrap: wrap !important;
+    gap: 8px 16px !important;
+  }
+
+  body.rj-community .site-footer .social-links {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}
+
+/* ------------------------------------------------- 4. aktywana rozmowa w doku --- */
+
+body.rj-community .chat-channel {
+  border-radius: 16px !important;
+  transition: background 0.18s var(--rm-ease), color 0.18s var(--rm-ease) !important;
+}
+
+body.rj-community .chat-channel.is-active {
+  background: linear-gradient(160deg, rgba(90, 149, 255, 0.22), rgba(90, 149, 255, 0.06)) !important;
+  box-shadow: inset 0 0 0 1px rgba(120, 175, 255, 0.28) !important;
+}
+
+html[data-theme="light"] body.rj-community .chat-channel.is-active {
+  background: linear-gradient(160deg, rgba(35, 92, 179, 0.14), rgba(35, 92, 179, 0.04)) !important;
+  box-shadow: inset 0 0 0 1px rgba(35, 92, 179, 0.2) !important;
+}
+
+
+/* Wyspa jest już odjęta w pomiarze wysokości — drugi zapas w paddingu
+   zwężałby tylko listę wiadomości. */
+html.has-rj-island body.rj-community .comm-chat,
+html.has-rj-island body.rj-community .dm-view {
+  padding-bottom: 0 !important;
+}
+
+/* ----------------------------------------------------------- 5. telefon --- */
+
+@media (max-width: 860px) {
+  body.rj-community .comm-layout {
+    height: var(--rj-chat-h) !important;
+    max-height: var(--rj-chat-h) !important;
+    border-radius: 22px !important;
+    grid-template-rows: auto minmax(0, 1fr) !important;
+  }
+
+  /* Reklamy i wyspa są przyklejone do krawędzi ekranu, a ich wysokość
+     odejmuje już chat-viewport.js. Pod taflą zostaje tylko cienki odstęp,
+     dzięki czemu strona nie urosła o zapas, którego nikt nie widzi. */
+  body.rj-community .comm-main {
+    padding-bottom: 10px !important;
+  }
+
+  /* Czat jest aplikacją na cały ekran — stopka strony tylko dokładałaby
+     przewijanie pod rozmową. */
+  body.rj-community .site-footer {
+    display: none !important;
+  }
+
+  body.rj-community .comm-chat-form {
+    margin: 0 10px calc(8px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  body.rj-community .comm-chat-head {
+    min-height: 54px !important;
+    padding: 8px 12px !important;
+  }
+
+  body.rj-community .comm-chat-list {
+    padding: 12px 12px 14px !important;
+  }
+}
+
+/* Na niskim ekranie (telefon w poziomie) nagłówek pokoju chowa opis. */
+@media (max-height: 480px) and (max-width: 860px) {
+  body.rj-community .chat-room-heading p,
+  body.rj-community .comm-chat-head p {
+    display: none !important;
+  }
+
+  body.rj-community .comm-chat-head {
+    min-height: 46px !important;
+  }
+}

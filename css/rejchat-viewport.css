@@ -5,8 +5,9 @@
    Na telefonie tafla musi mieć skończoną wysokość. Bez tego lista wiadomości
    (flex-basis: 0) rosła razem z treścią, strona wydłużała się bez końca,
    a lista nie miała własnego przewijania — przewijała się cała strona.
-   `--rj-chat-fit` ustawia skrypt chat-viewport.js na podstawie realnej
-   przestrzeni między górą tafli a dolną krawędzią ekranu.
+   `--rj-chat-h` (i zgodnościowo `--rj-chat-fit`) ustawia skrypt
+   chat-viewport.js na podstawie realnej przestrzeni między górą tafli
+   a dolną krawędzią ekranu — na każdej szerokości, nie tylko na telefonie.
    ========================================================================== */
 
 body.rj-community .comm-chat-list,
@@ -23,8 +24,8 @@ body.rj-community #dm-messages {
        wysokości tafli wiersz czatu dostawał wysokość treści i lista znów
        rosła w nieskończoność (bez własnego paska przewijania). */
     grid-template-rows: auto minmax(0, 1fr) !important;
-    height: var(--rj-chat-fit, calc(100dvh - 152px)) !important;
-    max-height: var(--rj-chat-fit, calc(100dvh - 152px)) !important;
+    height: var(--rj-chat-h, var(--rj-chat-fit, calc(100dvh - 152px))) !important;
+    max-height: var(--rj-chat-h, var(--rj-chat-fit, calc(100dvh - 152px))) !important;
     min-height: 220px !important;
     overflow: hidden !important;
   }

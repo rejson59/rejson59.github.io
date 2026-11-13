@@ -2343,8 +2343,9 @@ body.rj-community .rejchat-mute-notice {
     padding: 12px 10px 28px !important;
   }
   body.rj-community .comm-layout {
-    height: calc(100dvh - 170px) !important;
-    min-height: 420px !important;
+    height: var(--rj-chat-h, calc(100dvh - 170px)) !important;
+    max-height: var(--rj-chat-h, calc(100dvh - 170px)) !important;
+    min-height: 0 !important;
     border-radius: 22px !important;
     grid-template-columns: minmax(0, 1fr) !important;
     grid-template-rows: auto minmax(0, 1fr) !important;
@@ -2488,7 +2489,8 @@ body.rj-community .rejchat-mute-notice {
     justify-content: center !important;
   }
   body.rj-community .comm-layout {
-    height: calc(100dvh - 168px) !important;
+    height: var(--rj-chat-h, calc(100dvh - 168px)) !important;
+    max-height: var(--rj-chat-h, calc(100dvh - 168px)) !important;
     border-radius: 18px !important;
   }
   body.rj-community .chat-bubble {
@@ -2528,7 +2530,8 @@ body.rj-community .rejchat-mute-notice {
 /* na niskich ekranach composer i nagłówek muszą zostać widoczne */
 @media (max-height: 620px) and (min-width: 861px) {
   body.rj-community .comm-layout {
-    height: calc(100dvh - 150px) !important;
+    height: var(--rj-chat-h, calc(100dvh - 150px)) !important;
+    max-height: var(--rj-chat-h, calc(100dvh - 150px)) !important;
   }
   body.rj-community .comm-chat-head {
     padding: 8px 16px !important;
@@ -2784,10 +2787,14 @@ html[data-theme="light"] body.rj-community .rejchat-tabs button[aria-selected="t
     margin-bottom: 0 !important;
   }
 
+  /* Skończona wysokość także na komputerze. Wcześniej `height: auto`
+     pozwalało siatce rosnąć razem z treścią — czat był „nieskończony”.
+     Wartość mierzy js/chat-viewport.js (rejchat-shell.css). */
   body.rj-community .comm-layout {
-    flex: 1 1 auto !important;
-    height: auto !important;
-    min-height: 440px !important;
+    flex: 0 0 auto !important;
+    height: var(--rj-chat-h, clamp(340px, calc(100dvh - 176px), 1120px)) !important;
+    max-height: var(--rj-chat-h, clamp(340px, calc(100dvh - 176px), 1120px)) !important;
+    min-height: 0 !important;
   }
 
   body.rj-community .comm-primary,
@@ -2871,8 +2878,8 @@ body.rj-community .rc-side-link {
 /* 10. Na wąskim ekranie dolny pasek nie może zasłaniać composera. */
 @media (max-width: 860px) {
   body.rj-community .comm-layout {
-    height: auto !important;
-    max-height: calc(100dvh - 150px) !important;
+    height: var(--rj-chat-h, calc(100dvh - 150px)) !important;
+    max-height: var(--rj-chat-h, calc(100dvh - 150px)) !important;
   }
 }
 
@@ -3050,8 +3057,8 @@ body.rj-community .comm-chat-note[hidden] {
     display: flex !important;
     flex-direction: column !important;
     gap: 8px !important;
-    min-height: calc(100dvh - 76px - var(--rj-top-ads-height, 0px)) !important;
-    padding: 8px 8px calc(var(--rj-mobile-ads-height, 0px) + 58px + env(safe-area-inset-bottom, 0px) + 8px) !important;
+    min-height: 0 !important;
+    padding: 8px 8px 10px !important;
   }
 
   body.rj-community .comm-hero {
@@ -3059,11 +3066,14 @@ body.rj-community .comm-chat-note[hidden] {
     margin-bottom: 0 !important;
   }
 
+  /* Tafla dostaje zmierzoną wysokość (chat-viewport.js); wyspa i pasek
+     reklam są już odjęte w pomiarze, więc nie rezerwujemy ich drugi raz
+     w paddingu `main`. */
   body.rj-community .comm-layout {
-    flex: 1 1 auto !important;
-    height: auto !important;
-    max-height: none !important;
-    min-height: 320px !important;
+    flex: 0 0 auto !important;
+    height: var(--rj-chat-h, var(--rj-chat-fit, clamp(320px, calc(100dvh - 160px), 1120px))) !important;
+    max-height: var(--rj-chat-h, var(--rj-chat-fit, clamp(320px, calc(100dvh - 160px), 1120px))) !important;
+    min-height: 0 !important;
   }
 
   html.has-rj-island body.rj-community .comm-chat,
