@@ -26,7 +26,16 @@ for (const page of pages.filter(p => p !== 'rejhub2/404.html')) {
   }
 }
 const home = new JSDOM(read('rejhub2/index.html')).window.document;
-for (const href of ['#projekty','rejchat','rejfile']) assert.ok(home.querySelector(`.universe-nav a[href="${href}"]`));
+/* Wszystko, co zaczyna się na „Rej”, jest aplikacją RejHuba — dlatego
+   osobny pasek „W twoim zasięgu” zniknął, a jego pozycje żyją w jednej
+   siatce aplikacji. */
+assert.equal(home.querySelector('.universe-nav'), null, 'stary pasek „w twoim zasięgu” nadal istnieje');
+assert.ok(home.querySelector('.rjapps-more[href="#projekty"]'), 'brak skrótu do projektów');
+for (const app of ['rejchat','rejfile','rejsejf','rejtools','rejclass','rejplanner','rejgames','rejmusic','rejmeme']) {
+  assert.ok(home.querySelector(`.rjapp-grid--apps a[href="/${app}"]`), `brak kafelka ${app}`);
+  assert.ok(home.querySelector(`header .site-nav a[href="/${app}"]`), `brak ${app} w topbarze`);
+}
+assert.ok(home.querySelector('header .site-nav [data-island="assistant"]'), 'brak asystenta w topbarze');
 assert.ok(home.querySelector('[data-tilt]'), 'zachowany efekt 3D');
 const comm = new JSDOM(read('rejhub2/rejchat.html')).window.document;
 for (const id of ['login-card','composer-card','posts-feed','comm-online','chat-list','chat-form']) assert.equal(comm.querySelectorAll(`#${id}`).length, 1, id);

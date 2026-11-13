@@ -1,7 +1,7 @@
 /* © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
    Licencja: /LICENSE, /licencja */
 /*!
- * RejHub 2.0 — wspólna obsługa topbaru (v10).
+ * RejHub 2.0 — wspólna obsługa topbaru (v11).
  *
  * Jeden binder dla wszystkich podstron: menu mobilne, panel „Więcej”, Escape
  * i podświetlenie bieżącej strony. Znaczniki są identyczne w każdej podstronie
@@ -49,7 +49,9 @@
     });
 
     nav.addEventListener("click", function (event) {
-      if (event.target && event.target.closest && event.target.closest("a")) setOpen(false);
+      /* Link zmienia stronę, a przycisk asystenta otwiera wyspę — w obu
+         przypadkach menu ma się zamknąć, żeby nie zasłaniać tego, co się dzieje. */
+      if (event.target && event.target.closest && event.target.closest("a, [data-island]")) setOpen(false);
     });
 
     document.addEventListener("click", function (event) {

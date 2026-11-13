@@ -89,6 +89,17 @@ function headerOf(html) {
     assert.ok(header.includes('data-shared-menu'), 'menu bez wspólnego znacznika');
   });
 
+  check('topbar pokazuje wszystkie aplikacje RejHuba — nic nie chowa się w „Więcej”', () => {
+    const header = headers[0].header;
+    ['/rejchat', '/rejfile', '/rejsejf', '/rejtools', '/rejclass', '/rejplanner', '/rejgames', '/rejmusic', '/rejmeme']
+      .forEach((href) => assert.ok(header.includes('href="' + href + '"'), 'brak ' + href + ' w pasku'));
+    assert.ok(header.includes('data-island="assistant"'), 'brak RejAsystenta w pasku');
+    const more = header.slice(header.indexOf('<details class="nav-more"'));
+    ['/rejplanner', '/rejgames', '/rejmusic', '/rejmeme'].forEach((href) => {
+      assert.ok(more.indexOf('href="' + href + '"') < 0, href + ' nadal schowany w „Więcej”');
+    });
+  });
+
   check('nie ma resztek starych id topbaru', () => {
     PAGES.forEach((file) => {
       const header = headerOf(read('rejhub2/' + file));
@@ -210,6 +221,13 @@ function headerOf(html) {
   check('wspólny skrypt nie kasuje API scalania topbaru', () => {
     assert.ok(!/window\.RejTopbar\s*=\s*\{/.test(AJS), 'nadpisuje RejTopbar z topbar-split.js');
   });
+  check('pasek ma reguły na zmieszczenie wszystkich aplikacji', () => {
+    const css = read('css/topbar-split.css');
+    assert.match(css, /@media \(min-width: 1201px\)/, 'brak kompaktowych odstępów');
+    assert.match(css, /@media \(min-width: 1201px\) and \(max-width: 1339px\)/, 'brak trybu samych ikon');
+    assert.match(css, /button\.nav-icon-link/, 'brak stylu przycisku asystenta');
+  });
+
   check('wszystkie strony mają tę samą wersję arkusza szkła', () => {
     const versions = new Set(PAGES.map((file) => (/glass2\.css\?v=(\d+)/.exec(read('rejhub2/' + file)) || [])[1]));
     assert.equal(versions.size, 1, 'różne wersje: ' + Array.from(versions).join(', '));
