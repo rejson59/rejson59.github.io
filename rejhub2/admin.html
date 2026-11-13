@@ -483,7 +483,7 @@
       </div>
 
       <details class="adm-card rcmod" id="rcmod-panel">
-        <summary><span class="rcmod-icon" aria-hidden="true">✦</span><span><strong>Centrum moderacji RejChat</strong><small>Wyciszenia, filtry, zgłoszenia i ostrzeżenia</small></span></summary>
+        <summary><span class="rcmod-icon" aria-hidden="true">✦</span><span><strong>Centrum moderacji RejChat</strong><small>Wyciszenia, zmiana nazw, filtry, zgłoszenia i ostrzeżenia</small></span></summary>
         <div class="rcmod-content">
           <p class="rcmod-intro">Zarządzaj nowymi treściami bez usuwania kont. Filtr obejmuje czat, wpisy, komentarze i wiadomości prywatne. Panel nie pokazuje prywatnych rozmów. Wyjątkiem jest wyłącznie tekst pojedynczej wiadomości świadomie zgłoszonej przez uczestnika; zdjęcie nie jest przekazywane.</p>
           <p class="rcmod-intro"><strong>Automatyczna ochrona:</strong> limity wysyłania, powtarzane treści, długie ciągi znaków i nadmiar linków sprawdzane są na serwerze we wszystkich rozmowach i wpisach. Automat sprawdza też co 5 minut nowe treści i zdjęcia: usuwa wpisy łamiące filtr, ukrywa urwane pliki i duplikaty, a po trzech usunięciach w godzinie wycisza konto na godzinę. To reguły, nie AI: mogą się mylić i nie rozpoznają wszystkich naruszeń. Każdą decyzję widać na liście działań, a zdjęcie można przywrócić. Panel nie pokazuje prywatnych wiadomości.</p>
@@ -507,6 +507,9 @@
           </div>
           <section class="rcmod-section"><h3>Publiczny nick konta</h3><p>Nick jest widoczny obok nazwy konta. Puste pole usuwa nick; użytkownik także może go zmienić.</p>
             <form id="rcmod-nick-form" class="rcmod-form"><label for="rcmod-nick-user">Nazwa konta</label><input id="rcmod-nick-user" maxlength="24" required><label for="rcmod-nick-value">Nowy nick (pusty = usuń)</label><input id="rcmod-nick-value" maxlength="32"><button class="btn btn-primary btn-sm" type="submit">Zapisz nick</button></form>
+          </section>
+          <section class="rcmod-section"><h3>Nazwa konta · wymuszona zmiana</h3><p>Zmienia nazwę konta, czyli login. Nowa nazwa przechodzi ten sam filtr co przy rejestracji, idzie za nią każda kopia w czacie, wpisach i komentarzach, a użytkownik dostaje ostrzeżenie z nową nazwą. Nick publiczny zostaje bez zmian.</p>
+            <form id="rcmod-rename-form" class="rcmod-form"><label for="rcmod-rename-user">Obecna nazwa konta</label><input id="rcmod-rename-user" maxlength="32" required placeholder="Nazwa użytkownika"><label for="rcmod-rename-value">Nowa nazwa (2–32 znaki)</label><input id="rcmod-rename-value" maxlength="32" minlength="2" required placeholder="np. Konto_8c41"><label for="rcmod-rename-reason">Powód (widoczny dla użytkownika)</label><input id="rcmod-rename-reason" maxlength="200" placeholder="np. nazwa zawierała treści dyskryminujące"><button class="btn btn-primary btn-sm" type="submit">Zmień nazwę konta</button></form>
           </section>
           <section class="rcmod-section"><h3>Ostrzeżenie</h3><p>Odbiorca zobaczy powód we wspólnym dzwonku i potwierdzi odczyt. Ostrzeżenie nie nakłada kary; jest przechowywane około 180 dni.</p><form id="rcmod-warning-form" class="rcmod-form"><label for="rcmod-warning-user">Nazwa konta</label><input id="rcmod-warning-user" maxlength="24" required><label for="rcmod-warning-reason">Powód</label><input id="rcmod-warning-reason" minlength="3" maxlength="300" required><button class="btn btn-primary btn-sm" type="submit">Wyślij ostrzeżenie</button></form></section>
           <section class="rcmod-section"><h3>Zgłoszenia</h3><p>Wyłącznie zgłoszone teksty, bez zdjęć. Zgłoszenia usuwane są po około 90 dniach. Rozpatrzenie nie nakłada kary.</p><div class="rcmod-actions"><label><input type="checkbox" id="rcmod-reports-all"> Zaznacz wszystkie</label><button type="button" id="rcmod-reports-resolve" class="btn btn-glass btn-sm" disabled>Rozpatrz zaznaczone</button><button type="button" id="rcmod-reports-refresh" class="btn btn-glass btn-sm">Odśwież zgłoszenia</button></div><p id="rcmod-reports-status" role="status"></p><div id="rcmod-reports" class="rcmod-list"></div></section>
@@ -828,7 +831,7 @@
   <script src="js/error-reporter.js?v=1" defer></script>
   <script src="js/admin-errors.js?v=1"></script>
   <script src="js/admin-partner.js?v=1"></script>
-  <script src="js/admin-rejchat-moderation.js?v=7"></script>
+  <script src="js/admin-rejchat-moderation.js?v=8"></script>
   <script src="js/admin-panel.js?v=2026-11-15-memes"></script>
   <script defer src="/js/admin-memes.js?v=1"></script>
   <script defer src="/js/admin-server.js?v=1"></script>

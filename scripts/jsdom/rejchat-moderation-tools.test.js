@@ -26,5 +26,8 @@ const el=id=>d.getElementById('rcmod-'+id),tick=()=>new Promise(r=>setTimeout(r,
  const hide=Array.from(el('photos').querySelectorAll('button')).find(b=>b.textContent==='Ukryj');hide.click();await tick();
  const action=calls.find(x=>x.name==='admin_rejchat_photo_action');assert.deepStrictEqual(JSON.parse(JSON.stringify(action.args)),{p_id:'p1',p_action:'block'});
  const restore=Array.from(el('photos').querySelectorAll('button')).find(b=>b.textContent==='Przywróć');assert(restore,'przywracanie ukrytego zdjęcia');
- console.log('PASS: typy reguł, ostrzeżenia, podgląd, brak zapisu podglądu, czyszczenie i dodawanie, zdjęcia i działania automatu');dom.window.close();
+ el('rename-user').value='blackn1gger';el('rename-value').value='Konto_8c41';el('rename-reason').value='treści dyskryminujące';submit(el('rename-form'));await tick();await tick();
+ const rename=calls.find(x=>x.name==='admin_rejchat_rename_user');assert(rename,'wymuszona zmiana nazwy konta');assert.deepStrictEqual(JSON.parse(JSON.stringify(rename.args)),{p_username:'blackn1gger',p_new_username:'Konto_8c41',p_reason:'treści dyskryminujące'});
+ assert.equal(el('rename-user').value,'','formularz zmiany nazwy wyczyszczony po zapisie');
+ console.log('PASS: typy reguł, ostrzeżenia, podgląd, brak zapisu podglądu, czyszczenie i dodawanie, zdjęcia i działania automatu, wymuszona zmiana nazwy');dom.window.close();
 })().catch(e=>{console.error(e);dom.window.close();process.exitCode=1;});
