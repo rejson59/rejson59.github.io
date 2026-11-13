@@ -2,7 +2,7 @@
   "name": "rejhub-android",
   "version": "1.0.0",
   "private": true,
-  "description": "RejHub na Androida — powłoka Capacitor wokół rejhub.vercel.app",
+  "description": "RejHub na Androida — aplikacja Capacitor wokół rejhub.vercel.app",
   "license": "SEE LICENSE IN ../LICENSE",
   "scripts": {
     "sync": "cap sync android",
@@ -11,7 +11,18 @@
   },
   "dependencies": {
     "@capacitor/android": "^6.2.3",
+    "@capacitor/browser": "^6.0.0",
+    "@capacitor/camera": "^6.0.0",
     "@capacitor/cli": "^6.2.3",
-    "@capacitor/core": "^6.2.3"
+    "@capacitor/clipboard": "^6.0.0",
+    "@capacitor/core": "^6.2.3",
+    "@capacitor/filesystem": "^6.0.0",
+    "@capacitor/haptics": "^6.0.0",
+    "@capacitor/local-notifications": "^6.0.0",
+    "@capacitor/network": "^6.0.0",
+    "@capacitor/push-notifications": "^6.0.0",
+    "@capacitor/share": "^6.0.0",
+    "@capacitor/splash-screen": "^6.0.0",
+    "@capacitor/status-bar": "^6.0.0"
   }
 }

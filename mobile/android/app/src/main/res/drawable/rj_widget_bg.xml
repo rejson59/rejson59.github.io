@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
+     Tło widżetu: czerń wyspy z delikatną krawędzią, jak szklane karty w aplikacji. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#0B111A" />
+    <stroke android:width="1dp" android:color="#2A3A52" />
+    <corners android:radius="24dp" />
+</shape>

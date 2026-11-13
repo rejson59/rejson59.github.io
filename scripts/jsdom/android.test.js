@@ -167,7 +167,7 @@ await check('każda strona pamięta o aktualizacji aplikacji, a nie tylko /pobie
     .filter((file) => !['w-budowie.html'].includes(file));
   const withPrompt = pages.filter((file) => read('rejhub2/' + file).includes('install-prompt.js'));
   withPrompt.forEach((file) => {
-    assert.ok(read('rejhub2/' + file).includes('/js/app-update.js?v=1'),
+    assert.ok(read('rejhub2/' + file).includes('/js/app-update.js?v=2'),
       file + ': brak sprawdzania nowej wersji aplikacji');
   });
   assert.ok(withPrompt.length >= 20, 'za mało stron ze sprawdzaniem wersji');
@@ -222,7 +222,7 @@ await check('w aplikacji ze starszą wersją pojawia się baner z nową wersją'
   host.shadowRoot.querySelector('button').click();
   await wait(20);
   assert.equal(w.document.getElementById('rj-app-update'), null, '„Później” nie chowa banera');
-  assert.ok(w.localStorage.getItem('rj_app_update_snooze_v1'), 'brak zapamiętania odroczenia');
+  assert.ok(w.localStorage.getItem('rj_app_update_snooze_v2'), 'brak zapamiętania odroczenia');
   dom.window.close();
 });
 
@@ -275,6 +275,76 @@ await check('/pobierz pokazuje wersję, rozmiar i SHA-256 z metadanych', async (
   dom.window.close();
 });
 
+
+console.log('\n=== D. APLIKACJA, NIE UKRYTA PRZEGLĄDARKA ===');
+
+await check('powłoka ma natywne pluginy, a nie sam WebView', async () => {
+  const pkg = JSON.parse(read('mobile/package.json'));
+  const deps = Object.keys(pkg.dependencies || {});
+  ['@capacitor/status-bar', '@capacitor/splash-screen', '@capacitor/haptics',
+   '@capacitor/share', '@capacitor/browser', '@capacitor/clipboard', '@capacitor/network',
+   '@capacitor/camera', '@capacitor/filesystem', '@capacitor/local-notifications',
+   '@capacitor/push-notifications'].forEach((name) => {
+    assert.ok(deps.includes(name), 'brak pluginu ' + name);
+  });
+  assert.ok(read('mobile/README.md').includes('google-services.json'),
+    'README nie mówi, jak włączyć powiadomienia FCM');
+});
+
+await check('manifest przyjmuje udostępnianie, powiadomienia, skróty i widżet', async () => {
+  const manifest = read('mobile/android/app/src/main/AndroidManifest.xml');
+  assert.match(manifest, /android\.intent\.action\.SEND/, 'nie można udostępnić treści do RejHuba');
+  assert.match(manifest, /android:mimeType="text\/\*"/, 'udostępnianie nie przyjmuje tekstu i linków');
+  assert.match(manifest, /android\.app\.shortcuts/, 'brak skrótów pod ikoną');
+  assert.match(manifest, /RejWidgetProvider/, 'brak widżetu na ekran główny');
+  assert.match(manifest, /REQUEST_INSTALL_PACKAGES/, 'brak zgody na aktualizację w aplikacji');
+  assert.match(manifest, /OPEN_REJHUB/, 'dotknięcie powiadomienia nie otworzy właściwego miejsca');
+  assert.match(manifest, /default_notification_channel_id[\s\S]{0,80}rejhub/, 'brak kanału powiadomień');
+  assert.match(manifest, /default_notification_icon|rj_notification/, 'brak ikony powiadomień');
+  assert.match(manifest, /InstallResultReceiver/, 'system nie pokaże pytania o instalację');
+  assert.match(manifest, /enableOnBackInvokedCallback="true"/, 'brak gestu wstecz z podglądem');
+  assert.match(read('mobile/android/app/src/main/res/xml/shortcuts.xml'), /rejchat/, 'skróty nie prowadzą do aplikacji');
+  assert.match(read('mobile/android/app/src/main/res/xml/rj_widget_info.xml'), /rj_widget/, 'zły opis widżetu');
+});
+
+await check('kod natywny robi coś, czego nie potrafi przeglądarka', async () => {
+  const activity = read('mobile/android/app/src/main/java/pl/rejson59/rejhub/MainActivity.java');
+  assert.match(activity, /registerPlugin\(RejUpdaterPlugin\.class\)/, 'brak aktualizacji w aplikacji');
+  assert.match(activity, /registerPlugin\(RejBiometricPlugin\.class\)/, 'brak biometrii RejSejfu');
+  assert.match(activity, /setOnLongClickListener/, 'brak własnego menu długiego dotknięcia');
+  assert.match(activity, /rj:longpress/, 'strona nie dostaje informacji o długim dotknięciu');
+  assert.match(activity, /EXTRA_TEXT/, 'udostępniona treść nie trafia do aplikacji');
+  assert.match(activity, /OnBackInvokedDispatcher/, 'brak gestu wstecz na Androidzie 13+');
+
+  const updater = read('mobile/android/app/src/main/java/pl/rejson59/rejhub/RejUpdaterPlugin.java');
+  assert.match(updater, /PackageInstaller/, 'aktualizacja nie trafia do systemowego instalatora');
+  assert.match(updater, /SHA-256/, 'brak weryfikacji pobranego APK');
+  assert.match(updater, /canRequestPackageInstalls/, 'brak sprawdzenia zgody na instalację');
+  assert.match(read('mobile/android/app/src/main/java/pl/rejson59/rejhub/InstallResultReceiver.java'),
+    /STATUS_PENDING_USER_ACTION/, 'brak ekranu „Zaktualizować aplikację?”');
+
+  const biometric = read('mobile/android/app/src/main/java/pl/rejson59/rejhub/RejBiometricPlugin.java');
+  assert.match(biometric, /BiometricPrompt/, 'RejSejf nie pyta o odcisk palca');
+});
+
+await check('splash i pasek stanu pasują do motywu, bez czarnej belki', async () => {
+  const styles = read('mobile/android/app/src/main/res/values/styles.xml');
+  assert.match(styles, /windowOptOutEdgeToEdgeEnforcement/, 'treść wejdzie pod pasek stanu');
+  const v31 = read('mobile/android/app/src/main/res/values-v31/styles.xml');
+  assert.match(v31, /windowSplashScreenBackground/, 'brak ekranu startowego Androida 12+');
+  assert.match(v31, /postSplashScreenTheme/, 'splash nie odda sterowania aplikacji');
+  const shell = read('js/native-shell.js');
+  assert.match(shell, /setBackgroundColor/, 'strona nie ustawia koloru paska stanu');
+  assert.match(shell, /data-theme/, 'pasek stanu nie reaguje na motyw');
+});
+
+await check('baner aktualizacji instaluje APK bez wychodzenia z aplikacji', async () => {
+  const script = read('js/app-update.js');
+  assert.match(script, /nativeUpdate\(\)/, 'baner nie zna warstwy natywnej');
+  assert.match(script, /installInApp/, 'brak aktualizacji w aplikacji');
+  assert.match(script, /\.install\(latest/, 'brak wywołania natywnego instalatora');
+  assert.match(script, /sha256/, 'brak sumy kontrolnej w żądaniu');
+});
 await check('zachęta „Dodaj do ekranu” nie pokazuje się w aplikacji', async () => {
   const script = read('js/install-prompt.js');
   assert.match(script, /RejHubApp\\\//, 'brak rozpoznawania aplikacji');
@@ -288,7 +358,7 @@ if (failures.length) {
   process.exit(1);
 }
 console.log('WYNIK: ' + passed + '/' + passed + ' ✔');
-console.log('PASS: powłoka Androida, podpis i aktualizacje, strona pobierania i baner nowej wersji');
+console.log('PASS: powłoka Androida, natywne funkcje aplikacji, podpis i aktualizacje, strona pobierania i baner nowej wersji');
 
 })().catch((error) => {
   console.error(error);

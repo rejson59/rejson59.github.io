@@ -148,6 +148,17 @@ jobs:
         working-directory: mobile
         run: npx cap sync android
 
+      - name: Powiadomienia FCM (informacja)
+        run: |
+          # google-services.json nie jest sekretem (to identyfikator projektu
+          # i klucz API aplikacji), ale bez niego Firebase nie wystartuje.
+          # Build ma działać zawsze — brak pliku tylko wyłącza FCM.
+          if [ -f mobile/android/app/google-services.json ]; then
+            echo "google-services.json obecny — powiadomienia FCM włączone."
+          else
+            echo "::notice title=Powiadomienia FCM::Brak mobile/android/app/google-services.json — APK powstanie bez FCM. Instrukcja w mobile/README.md."
+          fi
+
       - name: Zbuduj podpisany APK
         working-directory: mobile/android
         env:
@@ -210,8 +221,9 @@ jobs:
             echo "### RejHub ${{ steps.version.outputs.name }}"
             echo
             echo "Aplikacja zawsze ładuje aktualny rejhub.vercel.app, więc treść"
-            echo "i funkcje serwisu aktualizują się same. Ten plik zmienia tylko"
-            echo "samą powłokę (uprawnienia, linki, pobieranie)."
+            echo "i funkcje serwisu aktualizują się same. Ten plik zmienia powłokę:"
+            echo "pasek stanu, wibracje, udostępnianie, aparat, zapis plików,"
+            echo "powiadomienia i aktualizację bez wychodzenia z aplikacji."
             echo
             if [ -n "$PREV" ]; then
               echo "Zmiany w powłoce od \`$PREV\`:"

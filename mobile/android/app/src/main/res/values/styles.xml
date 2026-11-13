@@ -3,7 +3,13 @@
 <resources>
 
     <!-- Bazowy motyw: ciemny, bez akcji, żeby przy starcie nie mignął biały
-         prostokąt i żeby pasek stanu był tego samego koloru co wyspa. -->
+         prostokąt i żeby pasek stanu był tego samego koloru co wyspa.
+
+         `windowOptOutEdgeToEdgeEnforcement` zostawia treści własne miejsce pod
+         paskami systemowymi. Bez tego Android 15 (targetSdk 35) wpuszcza stronę
+         pod pasek stanu i górna nawigacja RejHuba chowa się pod zegarkiem.
+         Kolor pasków i jasność ikon ustawia potem js/native-shell.js, żeby
+         zgadzały się z motywem wybranym na stronie. -->
     <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
@@ -11,6 +17,7 @@
         <item name="android:windowBackground">@color/rjBackground</item>
         <item name="android:statusBarColor">@color/rjBackground</item>
         <item name="android:navigationBarColor">@color/rjBackground</item>
+        <item name="android:windowOptOutEdgeToEdgeEnforcement">true</item>
     </style>
 
     <style name="AppTheme.NoActionBar" parent="AppTheme">
@@ -19,8 +26,8 @@
         <item name="android:background">@null</item>
     </style>
 
-    <!-- Ekran startowy: ciemne tło z logo RejHuba, bez animacji systemowej
-         (Core Splash Screen z AndroidX nie jest tu potrzebny). -->
+    <!-- Ekran startowy dla Androida 11 i starszych: ciemne tło z logo RejHuba.
+         Android 12+ ma własny ekran startowy (values-v31/styles.xml). -->
     <style name="AppTheme.NoActionBarLaunch" parent="AppTheme.NoActionBar">
         <item name="android:background">@drawable/rj_splash</item>
     </style>

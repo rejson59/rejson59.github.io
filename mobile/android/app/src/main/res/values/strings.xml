@@ -4,4 +4,22 @@
     <string name="title_activity_main">RejHub</string>
     <string name="package_name">pl.rejson59.rejhub</string>
     <string name="custom_url_scheme">pl.rejson59.rejhub</string>
+
+    <!-- Skróty pod ikoną (długie przytrzymanie). -->
+    <string name="rj_shortcut_chat">RejChat</string>
+    <string name="rj_shortcut_chat_long">Otwórz RejChat</string>
+    <string name="rj_shortcut_file">RejFile</string>
+    <string name="rj_shortcut_file_long">Wyślij plik w RejFile</string>
+    <string name="rj_shortcut_class">RejClass</string>
+    <string name="rj_shortcut_class_long">Ucz się w RejClass</string>
+    <string name="rj_shortcut_planner">Planer</string>
+    <string name="rj_shortcut_planner_long">Zaplanuj dzień w RejPlanner</string>
+
+    <!-- Widżet na ekran główny. -->
+    <string name="rj_widget_title">REJHUB · SKRÓTY</string>
+    <string name="rj_widget_description">Czat, pliki, sejf i lekcje — zawsze pod ręką.</string>
+    <string name="rj_widget_chat">Czat</string>
+    <string name="rj_widget_file">Pliki</string>
+    <string name="rj_widget_sejf">Sejf</string>
+    <string name="rj_widget_class">Lekcje</string>
 </resources>

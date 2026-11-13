@@ -10,6 +10,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:usesCleartextTraffic="false"
+        android:enableOnBackInvokedCallback="true"
         android:theme="@style/AppTheme">
 
         <activity
@@ -45,7 +46,56 @@
                 <data android:scheme="rejhub" />
             </intent-filter>
 
+            <!-- Dotknięcie powiadomienia FCM: akcja `click_action` z serwera
+                 niesie adres miejsca, które ma się otworzyć (np. czat). -->
+            <intent-filter>
+                <action android:name="OPEN_REJHUB" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+
+            <!-- „Udostępnij do RejHub” z przeglądarki, WhatsAppa czy notatek.
+                 Treść (link, tekst) trafia do pola wiadomości w RejChacie. -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/*" />
+            </intent-filter>
+
+            <!-- Skróty po długim przytrzymaniu ikony. -->
+            <meta-data
+                android:name="android.app.shortcuts"
+                android:resource="@xml/shortcuts" />
         </activity>
+
+        <!-- Wynik instalacji aktualizacji z wnętrza aplikacji (PackageInstaller). -->
+        <receiver
+            android:name=".InstallResultReceiver"
+            android:exported="false" />
+
+        <!-- Widżet „RejHub · skróty”. -->
+        <receiver
+            android:name=".RejWidgetProvider"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/rj_widget_info" />
+        </receiver>
+
+        <!-- Powiadomienia FCM: własna ikona, kolor akcentu i kanał „rejhub”.
+             Kanał tworzy strona przy pierwszym włączeniu powiadomień, więc
+             system nie musi zgadywać jego nazwy. -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="rejhub" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/rj_notification" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/colorPrimary" />
 
         <provider
             android:name="androidx.core.content.FileProvider"
@@ -62,4 +112,6 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- Aktualizacja z wnętrza aplikacji: systemowy instalator pakietów. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 </manifest>

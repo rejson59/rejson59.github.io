@@ -20,31 +20,46 @@ import android.webkit.WebView;
 import com.getcapacitor.Bridge;
 import com.getcapacitor.BridgeActivity;
 
+import org.json.JSONObject;
+
 /**
- * RejHub na Androida — cienka powłoka wokół rejhub.vercel.app.
+ * RejHub na Androida — powłoka aplikacji wokół rejhub.vercel.app.
  *
  * Aplikacja nie trzyma kopii strony: WebView ładuje aktualny RejHub, więc
  * zmiany w serwisie widać od razu po ich wdrożeniu, bez wydawania nowego APK.
- * Nowy APK jest potrzebny tylko wtedy, gdy zmienia się sama powłoka (uprawnienia,
- * linki, sposób pobierania) — wtedy wydanie tworzy GitHub Actions, a strona
- * /pobierz i baner w aplikacji pokazują nowszą wersję.
+ * Nowy APK jest potrzebny tylko wtedy, gdy zmienia się sama powłoka.
  *
  * Co robi ta klasa poza samym WebView:
- *  - dopisuje do User-Agenta „RejHubApp/<wersja> (<kod>)”, żeby strona wiedziała,
- *    że działa w aplikacji i jaką ma wersję (stąd baner aktualizacji),
- *  - obsługuje przycisk Wstecz (wraca w historii strony, potem zamyka aplikację),
- *  - otwiera linki https://rejhub.vercel.app/... i rejhub://... w aplikacji,
+ *  - dopisuje do User-Agenta „RejHubApp/<wersja> (<kod>)” (zapasowo — zwykle
+ *    robi to `appendUserAgent` z capacitor.config.json), żeby strona wiedziała,
+ *    że działa w aplikacji i jaką ma wersję,
+ *  - obsługuje przycisk Wstecz: Android 13+ przez OnBackInvokedCallback
+ *    (gest wstecz z podglądem), starsze wersje przez onBackPressed,
+ *  - przyjmuje treści „Udostępnij do RejHub” (ACTION_SEND text/*) i podaje je
+ *    stronie: na RejChacie przez zdarzenie `rj:share`, poza nim przez adres
+ *    `/rejchat?share=…`, który strona czyta przy starcie,
+ *  - otwiera w aplikacji linki https://rejhub.vercel.app/... i rejhub://...,
  *  - pobiera pliki (np. nowy APK) przez DownloadManager, z powiadomieniem.
+ *
+ * Natywne dodatki (aktualizacja w aplikacji, biometria) mieszkają w osobnych
+ * pluginach: RejUpdaterPlugin i RejBiometricPlugin — rejestrowanych poniżej,
+ * jeszcze przed utworzeniem mostka Capacitora.
  */
 public class MainActivity extends BridgeActivity {
 
     private static final String SERVER = "https://rejhub.vercel.app";
     private static final String UA_MARK = "RejHubApp/";
+    private static final String PUSH_ACTION = "OPEN_REJHUB";
+    private static final int SHARE_LIMIT = 4000;
 
     private String pendingUrl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        /* Pluginy własne muszą być znane, zanim powstanie mostek. */
+        registerPlugin(RejUpdaterPlugin.class);
+        registerPlugin(RejBiometricPlugin.class);
+
         super.onCreate(savedInstanceState);
 
         Bridge bridge = getBridge();
@@ -55,17 +70,45 @@ public class MainActivity extends BridgeActivity {
         appendAppVersion(webView);
         CookieManager.getInstance().setAcceptCookie(true);
         installDownloadHandler(webView);
+        installLongPressHandler(webView);
+        installBackHandler();
+    }
 
-        pendingUrl = pathFromIntent(getIntent());
-        openPendingUrl();
+    /**
+     * Wstecz: najpierw historia strony, potem wyjście z aplikacji.
+     *
+     * Od Androida 13 system nie woła już onBackPressed, gdy w manifeście jest
+     * `enableOnBackInvokedCallback="true"` — wtedy gest obsługuje ten callback.
+     */
+    private void installBackHandler() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            getOnBackInvokedDispatcher().registerOnBackInvokedCallback(
+                android.window.OnBackInvokedDispatcher.PRIORITY_DEFAULT,
+                this::handleBack
+            );
+        }
+    }
+
+    private void handleBack() {
+        Bridge bridge = getBridge();
+        WebView webView = bridge == null ? null : bridge.getWebView();
+        if (webView != null && webView.canGoBack()) {
+            webView.goBack();
+            return;
+        }
+        finish();
+    }
+
+    @Override
+    public void onBackPressed() {
+        handleBack();
     }
 
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
-        pendingUrl = pathFromIntent(intent);
-        openPendingUrl();
+        handleIntent(intent);
     }
 
     /* `public`, bo tyle ma BridgeActivity — Java nie pozwala zawęzić widoczności. */
@@ -76,15 +119,56 @@ public class MainActivity extends BridgeActivity {
         openPendingUrl();
     }
 
-    /** Wstecz: najpierw historia strony, potem normalne wyjście z aplikacji. */
-    @Override
-    public void onBackPressed() {
-        Bridge bridge = getBridge();
-        if (bridge != null && bridge.getWebView() != null && bridge.getWebView().canGoBack()) {
-            bridge.getWebView().goBack();
+    /** Rozpoznaje powiadomienie, „Udostępnij do RejHub” i linki do aplikacji. */
+    private void handleIntent(Intent intent) {
+        if (intent == null) return;
+
+        /* Dotknięcie powiadomienia: FCM przekazuje adres w danych powiadomienia. */
+        if (PUSH_ACTION.equals(intent.getAction())) {
+            String url = intent.getStringExtra("url");
+            if (url != null && url.startsWith("http")) {
+                pendingUrl = url.startsWith(SERVER) ? url : SERVER + "/";
+                openPendingUrl();
+            }
             return;
         }
-        super.onBackPressed();
+
+        if (Intent.ACTION_SEND.equals(intent.getAction())) {
+            CharSequence shared = intent.getCharSequenceExtra(Intent.EXTRA_TEXT);
+            if (shared != null && shared.length() > 0) {
+                deliverShare(shared.toString());
+                return;
+            }
+        }
+
+        pendingUrl = pathFromIntent(intent);
+        openPendingUrl();
+    }
+
+    /**
+     * Treść z innej aplikacji (link, notatka) trafia do czatu.
+     *
+     * Gdy RejChat jest już otwarty, wystarczy zdarzenie w stronie — nie
+     * przeładowujemy widoku, więc otwarta rozmowa i wpisany tekst zostają.
+     * W innym wypadku ładujemy /rejchat z parametrem `share`, który strona
+     * czyta przy starcie i od razu usuwa z adresu.
+     */
+    private void deliverShare(String text) {
+        String value = text.length() > SHARE_LIMIT ? text.substring(0, SHARE_LIMIT) : text;
+
+        Bridge bridge = getBridge();
+        WebView webView = bridge == null ? null : bridge.getWebView();
+        String current = webView == null ? null : webView.getUrl();
+
+        if (webView != null && current != null && current.startsWith(SERVER + "/rejchat")) {
+            final String js = "window.dispatchEvent(new CustomEvent('rj:share',{detail:{text:"
+                + JSONObject.quote(value) + "}}))";
+            webView.post(() -> webView.evaluateJavascript(js, null));
+            return;
+        }
+
+        pendingUrl = SERVER + "/rejchat?share=" + Uri.encode(value);
+        openPendingUrl();
     }
 
     /** Dopisuje wersję aplikacji do User-Agenta. Format: „… RejHubApp/1.0.7 (7)”. */
@@ -106,6 +190,30 @@ public class MainActivity extends BridgeActivity {
         }
         webView.getSettings().setUserAgentString(
             current + " " + UA_MARK + versionName + " (" + versionCode + ")");
+    }
+
+    /**
+     * Długie dotknięcie linku otwiera menu RejHuba (Udostępnij / Kopiuj /
+     * Przeglądarka) zamiast systemowego menu WebView.
+     *
+     * WebView nie przekazuje tego zdarzenia do strony, więc pytamy go o trafiony
+     * element. Zwracamy `true` tylko dla linków — dzięki temu zaznaczanie tekstu
+     * i menu obrazków działają jak dotychczas.
+     */
+    private void installLongPressHandler(WebView webView) {
+        webView.setOnLongClickListener(view -> {
+            WebView.HitTestResult hit = webView.getHitTestResult();
+            if (hit == null) return false;
+            int kind = hit.getType();
+            if (kind != WebView.HitTestResult.ANCHOR_TYPE
+                && kind != WebView.HitTestResult.IMAGE_ANCHOR_TYPE) return false;
+            String url = hit.getExtra();
+            if (url == null || !url.startsWith("http")) return false;
+            String js = "window.dispatchEvent(new CustomEvent('rj:longpress',{detail:{url:"
+                + JSONObject.quote(url) + "}}))";
+            webView.evaluateJavascript(js, null);
+            return true;
+        });
     }
 
     /* Pobieranie plików (np. nowej wersji APK) zostaje w systemowym menedżerze

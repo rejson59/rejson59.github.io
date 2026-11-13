@@ -1,17 +1,20 @@
 /* © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
    Licencja: /LICENSE, /licencja */
 /*!
- * Aplikacja Android — informacja o nowej wersji (v1).
+ * Aplikacja Android — informacja o nowej wersji (v2).
  *
- * Aplikacja RejHuba to cienka powłoka, która zawsze ładuje aktualny
- * rejhub.vercel.app. Treść i funkcje serwisu aktualizują się więc same.
- * Nowy APK jest potrzebny tylko wtedy, gdy zmienia się sama powłoka —
- * i o tym mówi ten skrypt:
+ * Aplikacja RejHuba to powłoka, która zawsze ładuje aktualny rejhub.vercel.app.
+ * Treść i funkcje serwisu aktualizują się więc same. Nowy APK jest potrzebny
+ * tylko wtedy, gdy zmienia się sama powłoka — i o tym mówi ten skrypt:
  *
  *  - czyta `/app/latest.json` (wydanie zapisuje GitHub Actions),
  *  - rozpoznaje aplikację po User-Agencie „RejHubApp/<wersja> (<kod>)”,
  *  - gdy w aplikacji działa starsza wersja, pokazuje dyskretny baner
- *    „Nowa wersja RejHuba” z przyciskiem pobierania i „Później” (24 h),
+ *    „Nowa wersja RejHuba” z przyciskiem „Później” (24 h),
+ *  - **w aplikacji aktualizacja idzie bez wychodzenia z RejHuba**: plik leci
+ *    w tle z widocznym postępem, jest sprawdzany SHA-256 i przekazywany
+ *    systemowemu instalatorowi (RejUpdater). W przeglądarce zostaje zwykły
+ *    link do APK,
  *  - na stronie /pobierz wypełnia wersję, rozmiar, datę i SHA-256.
  *
  * Baner mieszka w shadow DOM (jak zachęta do instalacji PWA), więc żaden
@@ -22,12 +25,18 @@
   'use strict';
 
   var LATEST_URL = '/app/latest.json';
-  var SNOOZE_KEY = 'rj_app_update_snooze_v1';
+  var SNOOZE_KEY = 'rj_app_update_snooze_v2';
   var DAY = 24 * 60 * 60 * 1000;
   var FALLBACK_APK = 'https://github.com/rejson59/rejson59.github.io/releases/latest/download/RejHub.apk';
   var host = null;
   var latest = null;
   var installed = null;
+
+  /** Warstwa natywna (js/native-shell.js) — tylko w aplikacji. */
+  function nativeUpdate() {
+    var api = window.RejNative;
+    return api && api.update && api.update.available ? api.update : null;
+  }
 
   function storage(key) {
     try { return window.localStorage.getItem(key); } catch (error) { return null; }
@@ -93,6 +102,47 @@
     if (node && value != null) node.textContent = value;
   }
 
+  /* ------------------------------------------------- aktualizacja w aplikacji */
+
+  /**
+   * Pobiera APK w aplikacji i oddaje go systemowemu instalatorowi.
+   * Postęp trafia prosto w przycisk, więc użytkownik widzi, że coś się dzieje.
+   * Po przekazaniu pliku system sam pyta „Zaktualizować aplikację?”.
+   */
+  function installInApp(button, note) {
+    var api = nativeUpdate();
+    if (!api || !latest) return;
+
+    button.disabled = true;
+    button.onclick = null;
+    button.style.pointerEvents = 'none';
+    button.textContent = 'Pobieram… 0%';
+    if (note) note.textContent = 'Pobieranie w tle — możesz dalej korzystać z RejHuba.';
+
+    api.install(latest, function (percent) {
+      button.textContent = percent >= 100 ? 'Sprawdzam plik…' : 'Pobieram… ' + percent + '%';
+    }).then(function () {
+      button.disabled = false;
+      button.style.pointerEvents = '';
+      button.textContent = 'Zainstaluj';
+      if (note) note.textContent = 'Plik gotowy. System zapyta o potwierdzenie — konto i ustawienia zostają.';
+      button.onclick = function () { installInApp(button, note); };
+    }).catch(function (error) {
+      button.disabled = false;
+      button.style.pointerEvents = '';
+      var code = String((error && error.code) || '');
+      if (code === 'permission') {
+        button.textContent = 'Zezwól na instalację';
+        if (note) note.textContent = 'Android wymaga zgody na instalowanie aplikacji z tego źródła.';
+        button.onclick = function () { api.openSettings(); };
+        return;
+      }
+      button.textContent = 'Spróbuj ponownie';
+      if (note) note.textContent = (error && error.message) || 'Nie udało się pobrać aktualizacji.';
+      button.onclick = function () { installInApp(button, note); };
+    });
+  }
+
   /* ------------------------------------------------------------- baner */
 
   function styles() {
@@ -106,6 +156,7 @@
       '.sub{display:block;margin-top:2px;font:400 11.5px/1.4 "Inter",system-ui,sans-serif;color:rgba(214,228,247,.62)}',
       '.actions{display:flex;gap:6px;margin-top:9px}',
       '.btn{display:inline-flex;align-items:center;justify-content:center;min-height:34px;padding:0 14px;border:1px solid transparent;border-radius:999px;background:linear-gradient(180deg,#a9ccff,#7fb2ff);color:#071527;font:700 12px/1 "Inter",system-ui,sans-serif;text-decoration:none;cursor:pointer}',
+      '.btn[disabled]{opacity:.7;cursor:default}',
       '.btn.ghost{background:rgba(255,255,255,.06);border-color:rgba(178,205,245,.22);color:#e8f2ff}',
       '.btn:focus-visible{outline:2px solid #cfe3ff;outline-offset:2px}',
       '@media (max-width:400px){.card{gap:10px;padding:12px 12px 12px 14px}.sub{display:none}}'
@@ -144,11 +195,20 @@
       var actions = document.createElement('div');
       actions.className = 'actions';
 
-      var download = document.createElement('a');
-      download.className = 'btn';
-      download.href = next.apk || FALLBACK_APK;
-      download.rel = 'noopener';
-      download.textContent = 'Pobierz';
+      var action;
+      if (nativeUpdate()) {
+        action = document.createElement('button');
+        action.type = 'button';
+        action.className = 'btn';
+        action.textContent = 'Zaktualizuj';
+        action.onclick = function () { installInApp(action, sub); };
+      } else {
+        action = document.createElement('a');
+        action.className = 'btn';
+        action.href = next.apk || FALLBACK_APK;
+        action.rel = 'noopener';
+        action.textContent = 'Pobierz';
+      }
 
       var later = document.createElement('button');
       later.className = 'btn ghost';
@@ -159,7 +219,7 @@
         remove();
       });
 
-      actions.appendChild(download);
+      actions.appendChild(action);
       actions.appendChild(later);
       copy.appendChild(title);
       copy.appendChild(sub);
@@ -201,6 +261,16 @@
 
     var release = document.getElementById('apk-release');
     if (release && latest.page) release.href = latest.page;
+
+    /* W aplikacji „Pobierz” znaczy „zaktualizuj tutaj”, bez skoku do przeglądarki. */
+    if (link && nativeUpdate() && !link.dataset.rjNativeBound) {
+      link.dataset.rjNativeBound = '1';
+      link.textContent = installed ? 'Zaktualizuj w aplikacji' : 'Pobierz w aplikacji';
+      link.onclick = function (event) {
+        event.preventDefault();
+        installInApp(link, document.getElementById('pobierz-status'));
+      };
+    }
 
     var status = document.getElementById('pobierz-status');
     if (!status) return;
