@@ -1,7 +1,7 @@
 /* © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
    Licencja: /LICENSE, /licencja */
 /*!
- * Aplikacja Android — informacja o nowej wersji (v2).
+ * Aplikacja Android — informacja o nowej wersji (v3).
  *
  * Aplikacja RejHuba to powłoka, która zawsze ładuje aktualny rejhub.vercel.app.
  * Treść i funkcje serwisu aktualizują się więc same. Nowy APK jest potrzebny
@@ -13,8 +13,9 @@
  *    „Nowa wersja RejHuba” z przyciskiem „Później” (24 h),
  *  - **w aplikacji aktualizacja idzie bez wychodzenia z RejHuba**: plik leci
  *    w tle z widocznym postępem, jest sprawdzany SHA-256 i przekazywany
- *    systemowemu instalatorowi (RejUpdater). W przeglądarce zostaje zwykły
- *    link do APK,
+ *    systemowemu instalatorowi (RejUpdater). W przeglądarce link prowadzi do
+ *    `/app/RejHub.apk` — plik wychodzi z naszej domeny i pobiera się od razu,
+ *    bez skoku na stronę wydania GitHuba (patrz api/apk.js),
  *  - na stronie /pobierz wypełnia wersję, rozmiar, datę i SHA-256.
  *
  * Baner mieszka w shadow DOM (jak zachęta do instalacji PWA), więc żaden
@@ -27,7 +28,9 @@
   var LATEST_URL = '/app/latest.json';
   var SNOOZE_KEY = 'rj_app_update_snooze_v2';
   var DAY = 24 * 60 * 60 * 1000;
-  var FALLBACK_APK = 'https://github.com/rejson59/rejson59.github.io/releases/latest/download/RejHub.apk';
+  /* Własny adres pliku: przeglądarka dostaje APK z rejhub.vercel.app
+     (nagłówek Content-Disposition), a nie przekierowanie na GitHuba. */
+  var FALLBACK_APK = '/app/RejHub.apk';
   var host = null;
   var latest = null;
   var installed = null;
@@ -100,6 +103,15 @@
   function text(id, value) {
     var node = document.getElementById(id);
     if (node && value != null) node.textContent = value;
+  }
+
+  /**
+   * Adres, który w przeglądarce zaczyna pobieranie od razu.
+   * `download` to nasz własny plik (`/app/RejHub.apk`), `apk` — wydanie na
+   * GitHubie, z którego korzysta natywna aktualizacja w aplikacji.
+   */
+  function downloadUrl() {
+    return (latest && (latest.download || latest.apk)) || FALLBACK_APK;
   }
 
   /* ------------------------------------------------- aktualizacja w aplikacji */
@@ -205,7 +217,7 @@
       } else {
         action = document.createElement('a');
         action.className = 'btn';
-        action.href = next.apk || FALLBACK_APK;
+        action.href = (next && (next.download || next.apk)) || FALLBACK_APK;
         action.rel = 'noopener';
         action.textContent = 'Pobierz';
       }
@@ -251,7 +263,7 @@
   function paintPage() {
     if (!latest) return;
     var link = document.getElementById('apk-download');
-    if (link) link.href = latest.apk || FALLBACK_APK;
+    if (link) link.href = downloadUrl();
 
     text('apk-version', latest.versionName ? latest.versionName : '—');
     text('apk-size', formatSize(latest.size));

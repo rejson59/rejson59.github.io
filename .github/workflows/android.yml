@@ -8,7 +8,9 @@
 #   2. buduje podpisany APK (ten sam klucz w każdym wydaniu = aktualizacja
 #      instaluje się na poprzednią wersję, bez odinstalowywania),
 #   3. publikuje GitHub Release z plikiem RejHub.apk (stały adres
-#      /releases/latest/download/RejHub.apk),
+#      /releases/latest/download/RejHub.apk). Strona i aplikacja pobierają
+#      go przez własny adres /app/RejHub.apk (api/apk.js), który oddaje plik
+#      od razu — bez przekierowania na GitHuba,
 #   4. zapisuje wersję, rozmiar i SHA-256 do rejhub2/app/latest.json, z którego
 #      korzysta strona /pobierz i baner aktualizacji w samej aplikacji.
 #
@@ -296,6 +298,11 @@ jobs:
               size: Number(process.env.SIZE),
               sha256: process.env.SHA,
               apk: `https://github.com/${repo}/releases/latest/download/RejHub.apk`,
+              // Adres dla przeglądarki: plik wychodzi z naszej domeny
+              // (`api/apk.js`), więc pobieranie zaczyna się od razu i nigdy
+              // nie przenosi na stronę wydania GitHuba. Względny — działa
+              // też na podglądzie wdrożenia.
+              download: "/app/RejHub.apk",
               page: `https://github.com/${repo}/releases/tag/${tag}`,
               minAndroid: "7.0"
             };

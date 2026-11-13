@@ -33,7 +33,7 @@
   <link rel="stylesheet" href="/css/liquid.css?v=2026-10-19-1">
   <link rel="stylesheet" href="/css/responsive.css?v=3">
   <link rel="stylesheet" href="/css/rejapps.css?v=7">
-  <link rel="stylesheet" href="/css/pobierz.css?v=1">
+  <link rel="stylesheet" href="/css/pobierz.css?v=2">
 
   <script src="/js/motion-unlock.js?v=1"></script>
   <script src="/js/shell-cache.js?v=1" defer></script>
@@ -134,10 +134,11 @@
       </div>
       <p>Instalujesz raz i korzystasz z aktualnego RejHuba — aplikacja zawsze otwiera najnowszą wersję serwisu, więc treść i funkcje zmieniają się same. Nowy plik APK jest potrzebny tylko wtedy, gdy zmienia się sama powłoka, a wtedy aplikacja sama powie o aktualizacji. W aplikacji nowa wersja pobiera się i instaluje bez wychodzenia z RejHuba — z paskiem postępu i sprawdzeniem pliku.</p>
       <div class="rjapp-actions">
-        <a class="rjapp-btn" id="apk-download" href="https://github.com/rejson59/rejson59.github.io/releases/latest/download/RejHub.apk" rel="noopener noreferrer" download>Pobierz APK</a>
+        <a class="rjapp-btn" id="apk-download" href="/app/RejHub.apk" download="RejHub.apk">Pobierz APK</a>
         <a class="rjapp-btn rjapp-btn--ghost" href="/aplikacje">Wszystkie aplikacje</a>
       </div>
       <p class="pobierz-status" id="pobierz-status" role="status">Sprawdzam najnowszą wersję…</p>
+      <p class="rjapp-muted pobierz-direct">Plik pobiera się bezpośrednio z RejHuba — bez przechodzenia na stronę wydania GitHuba.</p>
     </section>
 
     <section class="pobierz-meta-grid" aria-label="Informacje o wydaniu">
@@ -157,7 +158,7 @@
       <article class="rjapp-card pobierz-card">
         <h2>Jak zainstalować</h2>
         <ol class="pobierz-steps">
-          <li><strong>Pobierz plik</strong> przyciskiem powyżej — trafi do folderu Pobrane.</li>
+          <li><strong>Pobierz plik</strong> przyciskiem powyżej — pobieranie zaczyna się od razu, a plik trafia do folderu Pobrane.</li>
           <li><strong>Otwórz APK.</strong> Android zapyta o zgodę na instalację z tego źródła — włącz ją raz dla przeglądarki lub plików.</li>
           <li><strong>Gotowe.</strong> Ikona RejHuba pojawi się na ekranie głównym, obok innych aplikacji.</li>
         </ol>
@@ -187,7 +188,7 @@
   </main>
   <script defer src="/js/media-capture.js?v=2"></script>
     <script defer src="/js/native-shell.js?v=1"></script>
-  <script defer src="/js/app-update.js?v=2"></script>
+  <script defer src="/js/app-update.js?v=3"></script>
   <script defer src="/hub/island.js?v=14" data-project="rejhub" data-project-name="RejHub"></script>
   <script src="/hub/hub-shell.js?v=4" defer></script>
   <script src="/js/glass-lens.js?v=2" defer></script>

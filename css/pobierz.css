@@ -64,6 +64,12 @@
   display: none;
 }
 
+/* Dopisek pod przyciskiem: plik wychodzi z RejHuba, nie z GitHuba. */
+.rj-pobierz .pobierz-direct {
+  margin: 6px 0 0;
+  max-width: 58ch;
+}
+
 .rj-pobierz .pobierz-meta-grid {
   display: grid;
   gap: 14px;
