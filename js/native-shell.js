@@ -635,6 +635,15 @@
 
   /* ----------------------------------------------------- aktualizacja w aplikacji */
 
+  /** Adres względny (`/app/RejHub.apk`) zamieniamy na pełny. */
+  function absoluteUrl(url) {
+    var value = String(url || '');
+    if (!value) return '';
+    if (/^https?:/i.test(value)) return value;
+    if (value.charAt(0) === '/') return window.location.origin + value;
+    return value;
+  }
+
   var update = {
     available: Boolean(Updater),
     installed: appVersion(),
@@ -644,30 +653,50 @@
     },
     install: function (latest, onProgress) {
       if (!Updater) return Promise.reject(new Error('Aktualizacja w aplikacji jest niedostępna.'));
-      if (latest && typeof latest === 'object' && latest.apk) {
-        var listener = null;
-        if (typeof onProgress === 'function') {
-          listener = Updater.addListener('progress', function (event) {
-            onProgress(Math.max(0, Math.min(100, Number(event && event.percent) || 0)));
-          });
-        }
-        return Promise.resolve(listener)
-          .then(function () {
-            return Updater.install({
-              url: latest.apk,
-              sha256: latest.sha256 || '',
-              versionName: latest.versionName || ''
-            });
-          })
-          .then(function (result) {
-            if (listener && listener.remove) safe(listener.remove());
-            return result;
-          }, function (error) {
-            if (listener && listener.remove) safe(listener.remove());
-            throw error;
-          });
+      if (!latest || typeof latest !== 'object') return Updater.install(latest);
+
+      /* Najpierw GitHub (szybki CDN), a gdy zawiedzie — własna domena
+         (`/app/RejHub.apk`). Aktualizacja nie może utknąć na jednym adresie. */
+      var sources = [];
+      if (latest.apk) sources.push(absoluteUrl(latest.apk));
+      var mirror = absoluteUrl(latest.download);
+      if (mirror && sources.indexOf(mirror) === -1) sources.push(mirror);
+      if (!sources.length) {
+        return Promise.reject(new Error('Brak adresu aktualizacji.'));
       }
-      return Updater.install(latest);
+
+      var listener = null;
+      if (typeof onProgress === 'function') {
+        listener = Updater.addListener('progress', function (event) {
+          onProgress(Math.max(0, Math.min(100, Number(event && event.percent) || 0)));
+        });
+      }
+
+      function attempt(index) {
+        return Updater.install({
+          url: sources[index],
+          sha256: latest.sha256 || '',
+          versionName: latest.versionName || ''
+        }).catch(function (error) {
+          var code = String((error && error.code) || '');
+          /* Zgoda na instalację i brak adresu wymagają użytkownika —
+             ponawianie innym adresem nic tu nie da. */
+          if (index + 1 < sources.length && code !== 'permission' && code !== 'no_url') {
+            return attempt(index + 1);
+          }
+          throw error;
+        });
+      }
+
+      return Promise.resolve(listener)
+        .then(function () { return attempt(0); })
+        .then(function (result) {
+          if (listener && listener.remove) safe(listener.remove());
+          return result;
+        }, function (error) {
+          if (listener && listener.remove) safe(listener.remove());
+          throw error;
+        });
     },
     openSettings: function () {
       if (Updater) safe(Updater.settings());

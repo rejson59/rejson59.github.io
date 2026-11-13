@@ -36,6 +36,7 @@ on:
       - 'rejhub2/middleware.js'
       - 'rejhub2/pobierz.html'
       - 'js/app-update.js'
+      - 'js/native-shell.js'
       - '.github/workflows/apk-download.yml'
   schedule:
     - cron: '17 4 * * *'
