@@ -1,0 +1,137 @@
+# © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
+# Licencja: /LICENSE, /licencja
+#
+# Kontrola pobierania aplikacji Android.
+#
+# Sprawdza na żywym serwisie, że przycisk „Pobierz APK” naprawdę pobiera plik:
+#   * /app/RejHub.apk odpowiada 200 (bez przekierowania na GitHuba),
+#   * typ to application/vnd.android.package-archive,
+#   * jest nagłówek Content-Disposition: attachment; filename="RejHub.apk",
+#   * SHA-256 i rozmiar zgadzają się z rejhub2/app/latest.json,
+#   * strona /pobierz i metadane wskazują właśnie ten adres.
+#
+# Uruchomienie: ręcznie („Run workflow”) po wdrożeniu na Vercel albo codziennie.
+# Można podać inny adres (np. podgląd wdrożenia), żeby sprawdzić zmianę przed
+# połączeniem z główną gałęzią.
+#
+# Gdy kontrola się wywali, pobieranie jest zepsute — ten sam komunikat trafia
+# do adnotacji, więc błąd widać bez otwierania logu.
+
+name: Pobieranie APK (kontrola)
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: 'Adres serwisu (bez ukośnika na końcu)'
+        required: false
+        default: 'https://rejhub.vercel.app'
+  schedule:
+    - cron: '17 4 * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: apk-download-check
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Pobierz repozytorium
+        uses: actions/checkout@v4
+
+      - name: Nagłówki i plik
+        env:
+          INPUT_URL: ${{ github.event.inputs.url }}
+        run: |
+          set -euo pipefail
+          BASE="${INPUT_URL:-https://rejhub.vercel.app}"
+          BASE="${BASE%/}"
+          URL="$BASE/app/RejHub.apk"
+          OUT=/tmp/RejHub.apk
+          HEAD=/tmp/headers.txt
+
+          # Bez -L: przekierowanie na GitHuba to właśnie błąd, którego pilnujemy.
+          STATUS=$(curl -sS --max-time 180 -o "$OUT" -D "$HEAD" \
+            -w '%{http_code}' "$URL")
+          echo "Adres: $URL"
+          echo "HTTP: $STATUS"
+          if [ "$STATUS" != "200" ]; then
+            echo "::error title=Pobieranie APK::$URL odpowiedziało $STATUS zamiast 200 (przekierowanie na GitHuba?)."
+            cat "$HEAD" || true
+            exit 1
+          fi
+
+          TYPE=$(grep -i '^content-type:' "$HEAD" | tr -d '\r' | cut -d' ' -f2- | tail -n 1)
+          DISP=$(grep -i '^content-disposition:' "$HEAD" | tr -d '\r' | cut -d' ' -f2- | tail -n 1)
+          echo "Typ:                 $TYPE"
+          echo "Content-Disposition: $DISP"
+
+          case "$TYPE" in
+            application/vnd.android.package-archive*) ;;
+            *)
+              echo "::error title=Pobieranie APK::Zły typ pliku: $TYPE"
+              exit 1
+              ;;
+          esac
+          if ! printf '%s' "$DISP" | grep -qi 'attachment'; then
+            echo "::error title=Pobieranie APK::Brak Content-Disposition: attachment — przeglądarka może pokazać plik zamiast go pobrać."
+            exit 1
+          fi
+          if ! printf '%s' "$DISP" | grep -qi 'RejHub\.apk'; then
+            echo "::error title=Pobieranie APK::Plik nie nazywa się RejHub.apk: $DISP"
+            exit 1
+          fi
+
+          SIZE=$(stat -c%s "$OUT")
+          SHA=$(sha256sum "$OUT" | cut -d' ' -f1)
+          EXPECTED=$(node -e 'const j=require("./rejhub2/app/latest.json");process.stdout.write(j.sha256)')
+          echo "Rozmiar pliku: $SIZE B"
+          echo "SHA-256:       $SHA"
+          echo "Oczekiwany:    $EXPECTED"
+
+          if [ "$SHA" != "$EXPECTED" ]; then
+            echo "::error title=Pobieranie APK::Pobrany plik nie zgadza się z latest.json (SHA-256)."
+            exit 1
+          fi
+
+          {
+            echo "### Pobieranie APK działa"
+            echo
+            echo "| Co | Wynik |"
+            echo "| --- | --- |"
+            echo "| Adres | \`$URL\` |"
+            echo "| HTTP | $STATUS |"
+            echo "| Typ | \`$TYPE\` |"
+            echo "| Plik | \`$DISP\` |"
+            echo "| Rozmiar | $SIZE B |"
+            echo "| SHA-256 | \`$SHA\` |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Strona i metadane wskazują własny adres
+        env:
+          INPUT_URL: ${{ github.event.inputs.url }}
+        run: |
+          set -euo pipefail
+          BASE="${INPUT_URL:-https://rejhub.vercel.app}"
+          BASE="${BASE%/}"
+
+          PAGE=$(curl -sS --max-time 60 "$BASE/pobierz")
+          if ! printf '%s' "$PAGE" | grep -q 'href="/app/RejHub.apk"'; then
+            echo "::error title=Pobieranie APK::Przycisk na /pobierz nie prowadzi do /app/RejHub.apk."
+            exit 1
+          fi
+
+          LATEST=$(curl -sS --max-time 60 "$BASE/app/latest.json")
+          if ! printf '%s' "$LATEST" | grep -q '"/app/RejHub.apk"'; then
+            echo "::error title=Pobieranie APK::latest.json nie zawiera pola download wskazującego /app/RejHub.apk."
+            exit 1
+          fi
+
+          echo "Strona /pobierz i /app/latest.json wskazują /app/RejHub.apk."
+          echo "- Strona: \`/app/RejHub.apk\`" >> "$GITHUB_STEP_SUMMARY"

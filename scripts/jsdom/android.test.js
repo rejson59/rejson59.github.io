@@ -146,7 +146,9 @@ await check('/pobierz mówi, co się aktualizuje samo, a co wymaga nowego APK', 
   assert.match(html, /<title>[^<]*Rej/, 'brak tytułu');
   assert.match(html, /<link rel="canonical" href="\/pobierz">/, 'brak adresu kanonicznego');
   assert.match(html, /id="apk-download"/, 'brak przycisku pobierania');
-  assert.match(html, /releases\/latest\/download\/RejHub\.apk/, 'przycisk nie prowadzi do najnowszego APK');
+  assert.match(html, /href="\/app\/RejHub\.apk"/, 'przycisk nie prowadzi do pliku na własnej domenie');
+  assert.ok(!/href="https:\/\/github\.com\/[^"]*RejHub\.apk"/.test(html),
+    'przycisk wciąż wysyła na GitHuba — pobieranie ma iść z rejhub.vercel.app');
   assert.match(html, /id="pobierz-status"/, 'brak statusu wersji');
   assert.match(html, /\/js\/app-update\.js\?v=\d+/, 'strona nie czyta metadanych wydania');
   assert.match(html, /class="license-line"/, 'brak informacji o licencji');
@@ -161,13 +163,37 @@ await check('/pobierz mówi, co się aktualizuje samo, a co wymaga nowego APK', 
   assert.match(topbar, /href="\/pobierz"/, 'menu nie ma aplikacji na Androida');
 });
 
+await check('APK wychodzi z własnej domeny — bez skoku na stronę GitHuba', async () => {
+  const api = read('rejhub2/api/apk.js');
+  assert.match(api, /releases\/latest\/download\/RejHub\.apk/, 'funkcja nie zna adresu wydania');
+  assert.match(api, /redirect: "follow"/, 'funkcja nie idzie za przekierowaniem GitHuba');
+  assert.match(api, /Content-Disposition/, 'brak wymuszonego pobierania pliku');
+  assert.match(api, /attachment/, 'nagłówek nie każe przeglądarce pobrać pliku');
+  assert.match(api, /application\/vnd\.android\.package-archive/, 'zły typ APK');
+  assert.match(api, /getReader\(\)/, 'plik nie jest przekazywany strumieniem (limit 4,5 MB)');
+  assert.match(api, /range/, 'brak wznawiania pobierania');
+
+  const vercel = JSON.parse(read('rejhub2/vercel.json'));
+  const rule = vercel.rewrites.find((item) => item.source === '/app/RejHub.apk');
+  assert.ok(rule && rule.destination === '/api/apk', 'brak własnego adresu /app/RejHub.apk');
+
+  const middleware = read('rejhub2/middleware.js');
+  assert.ok(middleware.includes('"/api/apk"'), 'brama panelu blokuje pobieranie APK');
+
+  const latest = JSON.parse(read('rejhub2/app/latest.json'));
+  assert.equal(latest.download, '/app/RejHub.apk', 'metadane nie wskazują własnego adresu');
+
+  const workflow = read(WORKFLOW);
+  assert.match(workflow, /download: "\/app\/RejHub\.apk"/, 'wydanie nie zapisze pola download');
+});
+
 await check('każda strona pamięta o aktualizacji aplikacji, a nie tylko /pobierz', async () => {
   const pages = fs.readdirSync(path.join(root, 'rejhub2'))
     .filter((file) => file.endsWith('.html'))
     .filter((file) => !['w-budowie.html'].includes(file));
   const withPrompt = pages.filter((file) => read('rejhub2/' + file).includes('install-prompt.js'));
   withPrompt.forEach((file) => {
-    assert.ok(read('rejhub2/' + file).includes('/js/app-update.js?v=2'),
+    assert.ok(read('rejhub2/' + file).includes('/js/app-update.js?v=3'),
       file + ': brak sprawdzania nowej wersji aplikacji');
   });
   assert.ok(withPrompt.length >= 20, 'za mało stron ze sprawdzaniem wersji');
@@ -204,7 +230,8 @@ await check('w aplikacji ze starszą wersją pojawia się baner z nową wersją'
     latest: {
       versionCode: 9, versionName: '1.0.9', size: 8000000,
       sha256: 'a'.repeat(64), published: '2026-11-12T10:00:00Z',
-      apk: 'https://github.com/rejson59/rejson59.github.io/releases/latest/download/RejHub.apk'
+      apk: 'https://github.com/rejson59/rejson59.github.io/releases/latest/download/RejHub.apk',
+      download: '/app/RejHub.apk'
     }
   });
   w.eval(read('js/app-update.js'));
@@ -215,7 +242,7 @@ await check('w aplikacji ze starszą wersją pojawia się baner z nową wersją'
   assert.match(text, /Nowa wersja RejHuba: 1\.0\.9/, 'baner nie pokazuje nowej wersji');
   assert.match(text, /Masz 1\.0\.5/, 'baner nie pokazuje zainstalowanej wersji');
   const link = host.shadowRoot.querySelector('a');
-  assert.match(link.href, /releases\/latest\/download\/RejHub\.apk/, 'baner nie prowadzi do APK');
+  assert.match(link.href, /\/app\/RejHub\.apk$/, 'baner nie prowadzi do pliku na własnej domenie');
   assert.ok(w.RjApp && w.RjApp.latest && w.RjApp.installed, 'brak danych dla strony');
 
   /* „Później” chowa baner na dobę. */
@@ -256,6 +283,7 @@ await check('/pobierz pokazuje wersję, rozmiar i SHA-256 z metadanych', async (
       versionCode: 9, versionName: '1.0.9', size: 8388608,
       sha256: 'b'.repeat(64), published: '2026-11-12T10:00:00Z',
       apk: 'https://github.com/rejson59/rejson59.github.io/releases/latest/download/RejHub.apk',
+      download: '/app/RejHub.apk',
       page: 'https://github.com/rejson59/rejson59.github.io/releases/tag/android-v1.0.9',
       minAndroid: '7.0'
     }
@@ -269,7 +297,7 @@ await check('/pobierz pokazuje wersję, rozmiar i SHA-256 z metadanych', async (
   assert.equal(d.getElementById('apk-date').textContent, '12 listopada 2026', 'zła data wydania');
   assert.equal(d.getElementById('apk-sha').textContent, 'b'.repeat(64), 'brak sumy kontrolnej');
   assert.match(d.getElementById('pobierz-status').textContent, /Masz wersję 1\.0\.5/, 'brak statusu wersji');
-  assert.match(d.getElementById('apk-download').href, /download\/RejHub\.apk/, 'zły link pobierania');
+  assert.match(d.getElementById('apk-download').href, /\/app\/RejHub\.apk$/, 'zły link pobierania');
   assert.match(d.getElementById('apk-release').href, /android-v1\.0\.9/, 'brak linku do wydania');
   assert.equal(d.getElementById('rj-app-update'), null, 'baner nie powinien dublować się na /pobierz');
   dom.window.close();

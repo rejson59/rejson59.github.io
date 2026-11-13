@@ -116,6 +116,15 @@ Co robi pipeline:
 6. zapisuje `rejhub2/app/latest.json` (wersja, rozmiar, data, SHA-256, linki),
 7. commituje ten plik na `main` (Vercel wdraża go razem z resztą strony).
 
+**Pobieranie dla ludzi:** strona i baner w przeglądarce prowadzą do
+`https://rejhub.vercel.app/app/RejHub.apk`. To nasza funkcja `api/apk.js`:
+pobiera najnowsze wydanie z GitHuba po stronie serwera i oddaje plik
+strumieniem z nagłówkiem `Content-Disposition: attachment`. Dzięki temu
+pobieranie zaczyna się od razu — bez przekierowania na stronę wydania GitHuba
+i bez limitu 4,5 MB dla zwykłych odpowiedzi funkcji. Natywna aktualizacja
+w aplikacji dalej pobiera plik bezpośrednio z GitHuba (jest szybsza), a gdy
+GitHub nie odpowiada, funkcja oddaje przekierowanie na wydanie.
+
 ## Aktualizacje
 
 - **Treść** — zawsze aktualna, bo aplikacja ładuje stronę z serwera.

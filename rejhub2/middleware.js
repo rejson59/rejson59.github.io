@@ -27,7 +27,7 @@ const PRIVATE_PREFIXES = ["/admin", "/panel", "/studio-source", "/szklane-studio
 
 /* API z własną kontrolą dostępu — brama cookie musi je przepuścić, inaczej
    harmonogram powiadomień dostawał 401, zanim żądanie dotarło do funkcji. */
-const PUBLIC_API_PREFIXES = ["/api/session", "/api/push-send"];
+const PUBLIC_API_PREFIXES = ["/api/session", "/api/push-send", "/api/apk"];
 
 function isPrivate(pathname) {
   if (PUBLIC_API_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(prefix + "/"))) {

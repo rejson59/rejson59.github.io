@@ -4,6 +4,10 @@
   "trailingSlash": false,
   "rewrites": [
     {
+      "source": "/app/RejHub.apk",
+      "destination": "/api/apk"
+    },
+    {
       "source": "/.well-known/assetlinks.json",
       "destination": "/assetlinks.json"
     },
