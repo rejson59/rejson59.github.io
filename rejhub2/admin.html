@@ -515,6 +515,10 @@
               </form>
               <div id="rcmod-blocks" class="rcmod-list"></div>
             </section>
+            <section class="rcmod-section rcmod-ipbans"><h3>Blokada sieci · IP</h3><p>Trwale odcina całą sieć, z której powstało konto: logowanie, zakładanie nowych kont i każdą akcję na czacie. Adres jest przechowywany wyłącznie jako hash z solą — panel go nie pokazuje. Blokada obejmuje też inne konta z tej samej sieci.</p>
+              <form id="rcmod-ipban-form" class="rcmod-form"><label for="rcmod-ipban-user">Nazwa konta</label><input id="rcmod-ipban-user" maxlength="24" required placeholder="Nazwa użytkownika"><label for="rcmod-ipban-reason">Powód (zapisany w dzienniku)</label><input id="rcmod-ipban-reason" maxlength="300" placeholder="np. podszywanie się i nękanie właściciela"><button class="btn btn-primary btn-sm" type="submit">Zablokuj sieć konta</button></form>
+              <div id="rcmod-ipbans" class="rcmod-list"></div>
+            </section>
           </div>
           <section class="rcmod-section"><h3>Publiczny nick konta</h3><p>Nick jest widoczny obok nazwy konta. Puste pole usuwa nick; użytkownik także może go zmienić.</p>
             <form id="rcmod-nick-form" class="rcmod-form"><label for="rcmod-nick-user">Nazwa konta</label><input id="rcmod-nick-user" maxlength="24" required><label for="rcmod-nick-value">Nowy nick (pusty = usuń)</label><input id="rcmod-nick-value" maxlength="32"><button class="btn btn-primary btn-sm" type="submit">Zapisz nick</button></form>
@@ -854,7 +858,7 @@
   <script src="js/error-reporter.js?v=1" defer></script>
   <script src="js/admin-errors.js?v=1"></script>
   <script src="js/admin-partner.js?v=1"></script>
-  <script src="js/admin-rejchat-moderation.js?v=8"></script>
+  <script src="js/admin-rejchat-moderation.js?v=9"></script>
   <script src="js/admin-panel.js?v=2026-11-15-memes"></script>
   <script defer src="/js/admin-memes.js?v=1"></script>
   <script defer src="/js/admin-server.js?v=2"></script>

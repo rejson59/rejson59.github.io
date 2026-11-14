@@ -64,7 +64,24 @@
   $('filter-test-form').addEventListener('submit',function(e){e.preventDefault();var text=$('filter-test').value, candidate=$('phrase').value.trim(),mode=$('phrase-mode').value,turn=++testSeq;if(!text.trim())return;$('filter-test-result').textContent='Sprawdzam…';rpc('admin_rejchat_filter_check',{p_text:text,p_candidate:candidate,p_mode:mode}).then(function(result){if(turn!==testSeq)return;if(!result||typeof result.blocked!=='boolean'||typeof result.candidate_blocked!=='boolean')throw Error('Nieprawidłowa odpowiedź.');$('filter-test-result').textContent=(result.blocked?'Obecny filtr: tekst zostałby zablokowany.':'Obecny filtr: tekst przeszedłby.')+(candidate?(result.candidate_blocked?' Nowa reguła: zablokowałaby tekst.':' Nowa reguła: nie zablokowałaby tekstu.'):'');}).catch(function(err){if(turn===testSeq)$('filter-test-result').textContent=err.message||'Nie udało się sprawdzić tekstu.';});});
   ['filter-test','phrase','phrase-mode'].forEach(function(id){$(id).addEventListener('input',clearFilterTest);$(id).addEventListener('change',clearFilterTest);});
   $('phrase-search').addEventListener('input',renderPhrases);
-  function load(){var generation=++seq;message('Wczytuję moderację…');return rpc('admin_rejchat_overview',{}).then(function(data){if(generation!==seq)return;if(!data||!Array.isArray(data.phrases)||!Array.isArray(data.blocks)||!Array.isArray(data.messages))throw Error('Nieprawidłowa odpowiedź.');render(data);message('Dane aktualne.');}).catch(function(err){if(generation===seq)message(err.message||'Nie udało się wczytać danych.');});}
+  function renderIpBans(list){
+    var box=$('ipbans');if(!box)return;box.replaceChildren();
+    if(!Array.isArray(list)||!list.length)return empty(box,'Brak zablokowanych sieci.');
+    list.forEach(function(b){
+      var row=node('div','rcmod-row'),body=node('span',''),names=Array.isArray(b.usernames)?b.usernames:[];
+      body.appendChild(node('strong','',b.label||('sieć '+b.hash)));
+      body.appendChild(node('small','','Konta z tej sieci: '+(names.length?names.join(', '):'brak zapisanych')));
+      body.appendChild(node('small','','Od: '+new Date(b.created_at).toLocaleString('pl-PL')+' · '+(b.expires_at?'do '+new Date(b.expires_at).toLocaleString('pl-PL'):'bezterminowo')));
+      if(b.reason)body.appendChild(node('small','','Powód: '+b.reason));
+      body.appendChild(node('small','','Hash sieci: '+b.hash+'…'));
+      row.append(body,button('Zdejmij blokadę',function(){
+        if(window.confirm('Zdjąć blokadę sieci '+(b.label||b.hash)+'? Będzie można się z niej znów zalogować.'))action('admin_ip_ban_remove',{p_hash:b.hash});
+      }));
+      box.appendChild(row);
+    });
+  }
+  function loadIpBans(){return rpc('admin_ip_bans_list',{}).then(renderIpBans).catch(function(err){var box=$('ipbans');if(box)box.textContent=err.message||'Nie udało się wczytać blokad sieci.';});}
+  function load(){var generation=++seq;message('Wczytuję moderację…');return rpc('admin_rejchat_overview',{}).then(function(data){if(generation!==seq)return;if(!data||!Array.isArray(data.phrases)||!Array.isArray(data.blocks)||!Array.isArray(data.messages))throw Error('Nieprawidłowa odpowiedź.');render(data);loadIpBans();message('Dane aktualne.');}).catch(function(err){if(generation===seq)message(err.message||'Nie udało się wczytać danych.');});}
   panel.addEventListener('toggle',function(){if(panel.open){load();loadReports();}else clearFilterTest();});
   $('refresh').addEventListener('click',load);
   $('phrase-form').addEventListener('submit',function(e){e.preventDefault();var value=$('phrase').value.trim();if(!value)return;action('admin_rejchat_phrase_v2',{p_phrase:value,p_mode:$('phrase-mode').value},function(){$('phrase').value='';clearFilterTest();});});
@@ -82,6 +99,12 @@
   $('photos-refresh').addEventListener('click',function(){load();});
   $('reports-refresh').addEventListener('click',loadReports);$('reports').addEventListener('change',reportSelection);$('reports-all').addEventListener('change',function(){$('reports').querySelectorAll('[data-report]').forEach(function(c){c.checked=$('reports-all').checked;});reportSelection();});
   $('reports-resolve').addEventListener('click',async function(){var ids=Array.from($('reports').querySelectorAll('[data-report]:checked')).map(function(c){return c.dataset.report;});if(!ids.length||!window.confirm('Oznaczyć '+ids.length+' zgłoszeń jako rozpatrzone? Nie nakłada to kary.'))return;var turn=reportSeq;this.disabled=true;var results=await Promise.allSettled(ids.map(function(id){return rpc('admin_rejchat_resolve_report',{p_id:id});}));if(turn!==reportSeq)return;var failed=results.filter(function(r){return r.status!=='fulfilled'||r.value!==true;}).length;await loadReports();if(failed)$('reports-status').textContent='Nie udało się rozpatrzyć '+failed+' zgłoszeń. Spróbuj ponownie.';});
+  $('ipban-form').addEventListener('submit',function(e){
+    e.preventDefault();
+    var name=$('ipban-user').value.trim(),why=$('ipban-reason').value.trim();
+    if(!name||!window.confirm('Zablokować bezterminowo całą sieć konta '+name+'? Blokada obejmie też inne konta z tego samego adresu i wyloguje je.'))return;
+    action('admin_ip_ban_user',{p_username:name,p_reason:why},function(result){$('ipban-form').reset();if(result&&result.hash)message('Zablokowano sieć '+result.hash+'… ('+result.accounts+' kont).');});
+  });
   $('warning-form').addEventListener('submit',function(e){e.preventDefault();var name=$('warning-user').value.trim(),reason=$('warning-reason').value.trim();if(!name||reason.length<3||!window.confirm('Wysłać ostrzeżenie do '+name+'?'))return;action('admin_rejchat_warn',{p_username:name,p_reason:reason},function(){$('warning-form').reset();});});
-  window.RJAdminRejChat={clear:function(){seq++;reportSeq++;clearFilterTest();$('filter-test-form').reset();$('reports').replaceChildren();$('reports-status').textContent='';$('warning-form').reset();reportSelection();panel.open=false;['phrases','blocks','messages','photos','actions'].forEach(function(id){$(id).replaceChildren();});message('');phraseCache=[];$('phrase-search').value='';$('phrase-count').textContent='';$('phrase-form').reset();$('block-form').reset();$('nick-form').reset();}};
+  window.RJAdminRejChat={clear:function(){seq++;reportSeq++;clearFilterTest();$('filter-test-form').reset();$('reports').replaceChildren();$('reports-status').textContent='';$('warning-form').reset();reportSelection();panel.open=false;['phrases','blocks','messages','photos','actions','ipbans'].forEach(function(id){$(id).replaceChildren();});message('');phraseCache=[];$('phrase-search').value='';$('phrase-count').textContent='';$('phrase-form').reset();$('block-form').reset();$('nick-form').reset();$('ipban-form').reset();}};
 })(window,document);
