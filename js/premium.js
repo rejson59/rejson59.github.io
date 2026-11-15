@@ -27,6 +27,8 @@
   var FOLLOW_KEY = "rj_following_v1";
   var SEEN_KEY = "rj_seen_v1";
   var LINK_KEY = "rj_identity_link_v1";
+  var PROJECTS_KEY = "rejson_premium_projects_cache_v1"; /* kopia listy GitHuba dla podstron */
+  var PROJECTS_TTL_MS = 30 * 60 * 1000;
   var NOTICES_KEY = "rj_general_notifications_v1:";
   var READ_KEY = "rj_general_read_v1:";
   var VISIT_KEY = "rj_visit_v1";           /* sessionStorage: raz na wizytę */
@@ -146,18 +148,55 @@
 
   // Na podstronach nie ma app.js; dla obserwowanych projektów użyj prawdziwych
   // danych GitHuba, z limitem odpytywania i bez zerowania migawki przy błędzie.
+  // Cache w localStorage obowiązuje 30 min — bez niego każde wejście na
+  // podstronę zjadało limit API GitHuba (60/h na IP) i kończyło się 403.
   var lastProjectFetch = 0, fetchedProjects = [], projectFetchError = false;
+
+  function readProjectsCache() {
+    try {
+      var raw = window.localStorage.getItem(PROJECTS_KEY);
+      if (!raw) return null;
+      var val = JSON.parse(raw);
+      if (val && Array.isArray(val.data) && val.data.length) return val;
+    } catch (e) { /* prywatny tryb */ }
+    return null;
+  }
+
+  function writeProjectsCache(rows) {
+    try {
+      window.localStorage.setItem(PROJECTS_KEY, JSON.stringify({ savedAt: Date.now(), data: rows }));
+    } catch (e) { /* prywatny tryb */ }
+  }
+
   function projectData(followed) {
     var local = projects();
     if (local.length || !followed.length) { projectFetchError = false; return Promise.resolve(local); }
     if (Date.now() - lastProjectFetch < 5 * 60 * 1000) return Promise.resolve(fetchedProjects);
+    var cached = readProjectsCache();
+    if (cached && Date.now() - cached.savedAt < PROJECTS_TTL_MS) {
+      fetchedProjects = cached.data;
+      lastProjectFetch = cached.savedAt;
+      projectFetchError = false;
+      return Promise.resolve(fetchedProjects);
+    }
     lastProjectFetch = Date.now();
     var controller = window.AbortController ? new AbortController() : null;
     var timeout = controller ? setTimeout(function () { controller.abort(); }, 8000) : null;
     return fetch("https://api.github.com/users/rejson59/repos?per_page=100&sort=updated", {cache:"no-store", signal:controller ? controller.signal : undefined})
       .then(function (res) { if (!res.ok) throw new Error("GitHub"); return res.json(); })
-      .then(function (rows) { if (!Array.isArray(rows)) throw new Error("GitHub"); projectFetchError = false; fetchedProjects = rows; return fetchedProjects; })
-      .catch(function () { projectFetchError = true; return fetchedProjects; })
+      .then(function (rows) {
+        if (!Array.isArray(rows)) throw new Error("GitHub");
+        projectFetchError = false;
+        fetchedProjects = rows;
+        writeProjectsCache(rows);
+        return fetchedProjects;
+      })
+      .catch(function () {
+        projectFetchError = true;
+        /* nawet przeterminowana kopia jest lepsza niż pusta sekcja */
+        if (!fetchedProjects.length && cached) fetchedProjects = cached.data;
+        return fetchedProjects;
+      })
       .finally(function () { if (timeout) clearTimeout(timeout); });
   }
 

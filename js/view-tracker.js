@@ -1496,10 +1496,24 @@
     return false;
   }
 
+  /* Główny worker trackerów leży tylko na GitHub Pages. Na rejhub.vercel.app
+     /sw.js zwraca 404, a jego rejestracja w scope „/” wypiera /push-sw.js
+     (powiadomienia i cache powłoki RejHuba). */
+  function globalWorkerAllowed() {
+    try {
+      if (location.protocol !== "https:" && !/^(localhost|127\.0\.0\.1)$/i.test(location.hostname)) return false;
+      return /(^|\.)github\.io$/i.test(location.hostname) ||
+        /^(localhost|127\.0\.0\.1)$/i.test(location.hostname);
+    } catch (e) {
+      return false;
+    }
+  }
+
   function registerGlobalServiceWorker() {
     try {
       if (
         "serviceWorker" in navigator &&
+        globalWorkerAllowed() &&
         !isInsideCardThumbnail()
       ) {
         navigator.serviceWorker
