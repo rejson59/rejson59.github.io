@@ -11,10 +11,11 @@
  * scripts/update-project-updates.py). Ręcznie edytuj TYLKO dopiski note.
  */
 window.PROJECT_UPDATES = {
+  "nullczat": { version: "v2026.11.14" },
+  "rejson59.github.io": { version: "v2026.11.14", note: "Społeczność 2.0: zdjęcia i filmy w postach, wątki odpowiedzi, agent AI" },
+  "GiftStream": { version: "v2026.11.14" },
   "RejPlay": { version: "v2026.11.13" },
-  "rejson59.github.io": { version: "v2026.11.13", note: "Społeczność 2.0: zdjęcia i filmy w postach, wątki odpowiedzi, agent AI" },
   "RejTag": { version: "v2026.11.13" },
-  "GiftStream": { version: "v2026.11.13" },
   "mconline": { version: "v2026.11.12" },
   "RejStream": { version: "v2026.11.10" },
   "Jakuplayer": { version: "v2026.11.10" },
