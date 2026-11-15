@@ -14,6 +14,12 @@
   var API_URL = "https://api.github.com/users/" + GH_USER + "/repos?per_page=100&sort=updated";
   var CACHE_KEY = "rejson_repos_cache_v2";
 
+  /* Limit API GitHuba (60 żądań/h na adres IP) nie jest awarią strony.
+     Po 403/429 przez kwadrans korzystamy z zapisanego cache — bez dobijania
+     się przy każdym wejściu i bez pustej sekcji projektów. */
+  var BACKOFF_KEY = "rejson_repos_backoff_until";
+  var BACKOFF_MS = 15 * 60 * 1000;
+
   /* Repozytoria infrastrukturalne — to nie projekty, więc nie pokazujemy ich jako kart. */
   var EXCLUDED = { "rejson59": true, "rejson59.github.io": true };
 
@@ -1275,12 +1281,21 @@
     } catch (e) { /* ignorujemy */ }
   }
 
+  function backoffUntil() {
+    try { return Number(localStorage.getItem(BACKOFF_KEY)) || 0; } catch (e) { return 0; }
+  }
+
+  function startBackoff() {
+    try { localStorage.setItem(BACKOFF_KEY, String(Date.now() + BACKOFF_MS)); } catch (e) { /* ignorujemy */ }
+  }
+
   var fetchInFlight = false;
   var lastCheckAt = 0;
 
   function syncWithGitHub(force) {
     if (!window.fetch || fetchInFlight) return;
     var now = Date.now();
+    if (now < backoffUntil()) return; /* trwa karencja po limicie API */
     if (!force && now - lastCheckAt < 10000) return;
     fetchInFlight = true;
     lastCheckAt = now;
@@ -1303,6 +1318,11 @@
         clearTimeout(timeout);
         if (res.status === 304 && cached && cached.data) {
           setProjects(cached.data, true);
+          return null;
+        }
+        if (res.status === 403 || res.status === 429) {
+          /* limit API — zostajemy przy cache i nie ponawiamy przez 15 minut */
+          startBackoff();
           return null;
         }
         if (!res.ok) return Promise.reject(new Error(res.status));

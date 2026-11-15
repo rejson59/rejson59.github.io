@@ -282,7 +282,7 @@ const posterOf = (doc) => doc.querySelector('.card-preview-poster');
   {
     const home = read('rejhub2/index.html');
     const posterAt = home.indexOf('js/project-posters.js?v=1');
-    const loaderAt = home.indexOf('js/loader.js?v=22');
+    const loaderAt = home.indexOf('js/loader.js?v=23');
     check('RejHub ładuje plakaty', () => assert.ok(posterAt !== -1, 'brak znacznika'));
     check('plakaty są przed silnikiem podglądów', () => assert.ok(posterAt !== -1 && posterAt < loaderAt));
 

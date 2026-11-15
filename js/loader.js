@@ -787,8 +787,27 @@
      potrafi wyciszyć ją przed wykonaniem kodu projektu. Bez workera zostaje
      dostępny link i fallback; osobne projekty nie zmieniają swoich ustawień. */
   var silentWorkerReady = null;
+  /* Główny worker trackerów (/sw.js) leży wyłącznie na GitHub Pages.
+     Na rejhub.vercel.app tego pliku nie ma (404), a udana rejestracja w scope
+     „/” podmieniłaby /push-sw.js — czyli powiadomienia i cache powłoki RejHuba.
+     Dlatego rejestrujemy go tylko tam, gdzie naprawdę istnieje. */
+  function globalWorkerAllowed() {
+    try {
+      if (location.protocol !== "https:" && !/^(localhost|127\.0\.0\.1)$/i.test(location.hostname)) return false;
+      return /(^|\.)github\.io$/i.test(location.hostname) ||
+        /^(localhost|127\.0\.0\.1)$/i.test(location.hostname);
+    } catch (e) {
+      return false;
+    }
+  }
+
   function ensureSilentPreviewWorker() {
     if (silentWorkerReady) return silentWorkerReady;
+    if (!globalWorkerAllowed()) {
+      /* Wdrożenie bez /sw.js: podgląd jedzie wprost do projektu, bez czekania. */
+      silentWorkerReady = Promise.resolve(false);
+      return silentWorkerReady;
+    }
     silentWorkerReady = new Promise(function (resolve) {
       if (!navigator.serviceWorker || typeof MessageChannel !== "function") { resolve(false); return; }
       var done = false, timer;

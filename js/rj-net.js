@@ -248,7 +248,7 @@
   /* Nazwy funkcji tylko czytających. Tylko one mogą być ponawiane:
      powtórzone „wyślij”, „polub”, „zareaguj” albo „wgraj” zrobiłoby to
      drugi raz po zerwanym połączeniu. */
-  var READ_ONLY = /(?:^|_)(?:list|lists|get|profile|profiles|inbox|history|overview|status|whoami|details|online|search|check|count|usage|breakdown|notifications?|warnings?|reaction_inbox)(?:$|_)/i;
+  var READ_ONLY = /(?:^|_)(?:list|lists|get|profile|profiles|inbox|history|overview|status|whoami|details|online|search|check|count|usage|breakdown|notifications?|warnings?|reaction_inbox|pinned|my_mute)(?:$|_)/i;
 
   function readOnly(name) {
     return READ_ONLY.test(String(name || '').replace(/^https?:.*\/rpc\//i, ''));

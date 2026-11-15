@@ -49,7 +49,15 @@
     return null;
   }
   var workerPending = null, workerSettled = false;
-  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+  /* /sw.js istnieje tylko na GitHub Pages — na rejhub.vercel.app zwraca 404
+     i wypiera pracownika powłoki (/push-sw.js). */
+  var globalWorkerAllowed = (function () {
+    try {
+      return (/(^|\.)github\.io$/i.test(location.hostname) || /^(localhost|127\.0\.0\.1)$/i.test(location.hostname)) &&
+        (location.protocol === 'https:' || /^(localhost|127\.0\.0\.1)$/i.test(location.hostname));
+    } catch (e) { return false; }
+  })();
+  if (globalWorkerAllowed && 'serviceWorker' in navigator) {
     try { workerPending = navigator.serviceWorker.register('/sw.js?v=2', {scope:'/', updateViaCache:'none'}).then(function () { return navigator.serviceWorker.ready; }).then(function () { workerSettled = true; }, function () { workerSettled = true; }); } catch (e) { workerSettled = true; }
   }
   function navigate(animateArrival) {

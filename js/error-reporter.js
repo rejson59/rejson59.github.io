@@ -26,7 +26,9 @@
 
   var MAX_PER_PAGE = 5;
   var MAX_PER_SESSION = 20;
-  var SLOW_LOAD_MS = 4000;
+  /* 4 s na telefonie to normalne wczytanie, nie awaria. Raportujemy dopiero
+     naprawdę długie wejścia (8 s+), żeby „slow” nie przykrywał realnych błędów. */
+  var SLOW_LOAD_MS = 8000;
   var RPC_TIMEOUT_MS = 8000;
 
   if (window.RJ_ERROR_REPORTS_OFF) return;
@@ -227,9 +229,13 @@
     /* Błąd zasobu (obrazek/skrypt) ma ev.target zamiast ev.message */
     if (ev.target && ev.target !== window && ev.target.tagName) {
       var t = ev.target.tagName.toLowerCase();
+      var asset = String(ev.target.src || ev.target.href || "");
+      /* Awatary z CDN GitHuba bywają blokowane przez sieć/adblock użytkownika —
+         to nie usterka strony, a wpis bez wartości diagnostycznej. */
+      if (/^https:\/\/avatars\.githubusercontent\.com\//i.test(asset)) return;
       if (t === "img" || t === "script" || t === "link") {
         send("network", "Nie wczytał się zasób: " + t, {
-          source: String(ev.target.src || ev.target.href || "").slice(0, 300),
+          source: asset.slice(0, 300),
           fpSalt: t
         });
       }
@@ -237,6 +243,10 @@
     }
 
     var msg = ev.message || "Nieznany błąd";
+    /* „Script error.” bez pliku i stosu pochodzi z obcego kontekstu
+       (rozszerzenia przeglądarki, wstrzykiwane skrypty) — bez danych
+       do naprawy, więc nie zaśmieca panelu. */
+    if (msg === "Script error." && !ev.filename) return;
     send("js", msg, {
       stack: (ev.error && ev.error.stack) || (ev.filename ? ev.filename + ":" + ev.lineno + ":" + ev.colno : ""),
       source: ev.filename || ""
@@ -265,6 +275,22 @@
     }
   }
 
+  /* Szum obserwacyjny: piki obecności i liczników lecą w tle i są przerywane
+     przy ukryciu karty (AbortController) — to nie usterka strony. Limity
+     zewnętrznego API GitHuba (403/429) też nie są błędem RejHuba: strona ma
+     własny cache i kopię zapasową listy projektów. Takie wpisy nie trafiają
+     do panelu, bo zaniżały statystyki i przykrywały prawdziwe awarie. */
+  var QUIET_PATH = /\/(heartbeat_page_presence|page_views|community_online_users|count_total_online)$/;
+
+  function isQuietFailure(target, status) {
+    var path = urlPath(target);
+    if (QUIET_PATH.test(path)) return true;
+    if (/^https?:\/\/api\.github\.com\//i.test(path)) {
+      return !status || status === 403 || status === 429;
+    }
+    return false;
+  }
+
   var nativeFetch = window.fetch;
   if (typeof nativeFetch === "function") {
     window.fetch = function (input, init) {
@@ -274,7 +300,7 @@
       return nativeFetch.apply(this, arguments).then(
         function (res) {
           try {
-            if (!isOwnReport && res && !res.ok) {
+            if (!isOwnReport && res && !res.ok && !isQuietFailure(target, res.status)) {
               var p = urlPath(target);
               /* walidacyjne 4xx z RPC potrafią być normalnym zachowaniem aplikacji */
               var isRpc = p.indexOf("/rest/v1/rpc/") !== -1;
@@ -290,7 +316,7 @@
         },
         function (err) {
           try {
-            if (!isOwnReport) send("network", "Zerwane połączenie sieciowe", {
+            if (!isOwnReport && !isQuietFailure(target, 0)) send("network", "Zerwane połączenie sieciowe", {
               source: urlPath(target),
               fpSalt: "offline"
             });
@@ -314,6 +340,7 @@
       var xhr = this;
       xhr.addEventListener("loadend", function () {
         try {
+          if (isQuietFailure(xhr._rjUrl, xhr.status)) return;
           if (xhr.status === 0 && !xhr._rjSilent) {
             send("network", "Zerwane połączenie sieciowe (XHR)", {
               source: urlPath(xhr._rjUrl),
@@ -352,7 +379,9 @@
       var nav = performance.getEntriesByType && performance.getEntriesByType("navigation")[0];
       var ms = nav ? Math.round(nav.duration || 0) : Math.round(performance.now());
       if (ms >= SLOW_LOAD_MS) {
-        send("slow", "Strona wczytywała się " + (ms / 1000).toFixed(1) + " s", {
+        /* Stały komunikat = jedna pozycja na stronę (rosnąca liczba wystąpień)
+           zamiast setek wierszy „4,1 s / 4,2 s / 4,3 s…”. Czas zostaje w diagnostyce. */
+        send("slow", "Strona wczytywała się dłużej niż 8 s", {
           source: pageUrlClean(),
           fpSalt: "slow",
           diagnostics: { loadMs: ms }
