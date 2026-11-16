@@ -34,6 +34,7 @@ const COMMUNITY = read("js/community.js");
 const ISLAND = read("rejhub2/hub/island.js");
 const ADMIN = read("js/admin-panel.js");
 const SQL = read("supabase/2026-11-17_presence_budget.sql");
+const PRIVATE = read("js/rejchat-private.js");
 
 console.log("\n=== A. PĘTLA OBECNOŚCI (największy wyciek) ===");
 check("klient nie subskrybuje już page_presence", () => {
@@ -71,6 +72,14 @@ check("total_online nie jest pobierane drugi raz przy każdym powrocie do karty"
 check("powrót do karty nie odświeża liczników częściej niż co 30 s", () => {
   ok(/lastCountsFetch > 30000/.test(TRACKER), "brak progu 30 s");
 });
+check("miniatura karty (iframe) nie odpytuje Supabase", () => {
+  const init = TRACKER.slice(TRACKER.indexOf("function init()"), TRACKER.indexOf("window.RejsonViews = {"));
+  ok(init, "nie znaleziono init()");
+  ok(/\n      fetchAllCounts\(\)\.then/.test(init), "fetchAllCounts poza bramką miniatury");
+  ok(!/\n    fetchAllCounts\(\)\.then/.test(init), "fetchAllCounts wywołane bez bramki");
+  ok(/fetchDailySiteVisitors\(\);/.test(init), "brak licznika odwiedzin dziennych");
+  ok(!/\n    fetchDailySiteVisitors\(\);/.test(init), "fetchDailySiteVisitors poza bramką");
+});
 
 console.log("\n=== C. REJCHAT I PANEL ===");
 check("pełne przeładowanie czatu co ~54 s (było ~22 s)", () => {
@@ -89,6 +98,11 @@ check("wyspa sprawdza kropkę czatu co 2 min", () => {
   const at = ISLAND.indexOf("chatIdlePoll = setInterval");
   ok(at !== -1 && /}, 120000\);/.test(ISLAND.slice(at, at + 400)), "zły interwał wyspy");
 });
+check("prywatne rozmowy: cały wątek tylko przy zmianie skrzynki (max co ~40 s)", () => {
+  ok(/'rejchat-dm',8000/.test(PRIVATE), "zły interwał skrzynki");
+  ok(/dmTicks%5===0/.test(PRIVATE), "brak ograniczenia pełnego odświeżania wątku");
+  ok(/refreshInbox\(\)\.then\(function\(changed\)/.test(PRIVATE), "skrzynka nie zwraca zmiany");
+});
 check("panel admina odświeża się co 15 s, ciężkie dane co 60 s", () => {
   ok(/REFRESH_MS\s*=\s*15000/.test(ADMIN), "zły REFRESH_MS");
   ok(/SLOW_CYCLE_DIV\s*=\s*4/.test(ADMIN), "zły SLOW_CYCLE_DIV");
@@ -98,17 +112,18 @@ console.log("\n=== D. WERSJE W STRONACH ===");
 const INDEX = read("rejhub2/index.html");
 const REJCHAT = read("rejhub2/rejchat.html");
 const ADMIN_HTML = read("rejhub2/admin.html");
-check("index: view-tracker v12 + powiadomienia v8", () => {
-  ok(INDEX.indexOf("view-tracker.js?v=12") !== -1, "brak tracker v12");
+check("index: view-tracker v13 + powiadomienia v8", () => {
+  ok(INDEX.indexOf("view-tracker.js?v=13") !== -1, "brak tracker v13");
   ok(INDEX.indexOf("rejchat-notifications.js?v=8") !== -1, "brak powiadomień v8");
 });
-check("rejchat: community z nową wersją i reakcje v7", () => {
+check("rejchat: community z nową wersją, reakcje v7, prywatne v14", () => {
   ok(REJCHAT.indexOf("community.js?v=2026-11-17-budget") !== -1, "brak community");
   ok(REJCHAT.indexOf("rejchat-reactions.js?v=7") !== -1, "brak reakcji v7");
+  ok(REJCHAT.indexOf("rejchat-private.js?v=14") !== -1, "brak prywatnych v14");
 });
 check("admin: panel i tracker z nowymi wersjami", () => {
   ok(ADMIN_HTML.indexOf("admin-panel.js?v=2026-11-17-budget") !== -1, "brak panelu");
-  ok(ADMIN_HTML.indexOf("view-tracker.js?v=12") !== -1, "brak trackera v12");
+  ok(ADMIN_HTML.indexOf("view-tracker.js?v=13") !== -1, "brak trackera v13");
 });
 
 console.log(failures ? "\nWYNIK: " + failures + " błędów ✘" : "\nWYNIK: wszystko ✔");

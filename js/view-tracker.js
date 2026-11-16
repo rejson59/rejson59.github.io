@@ -1559,25 +1559,26 @@
     refreshAllDOMCounters();
     registerGlobalServiceWorker();
     bindPresenceInteractionGate();
-    fetchDailySiteVisitors();
 
     /* 1. Natychmiast meldujemy obecność na tej podstronie (szybka synchronizacja
        przejść widać w panelu), a w tle pobieramy stan liczników z Supabase */
     if (!isInsideCardThumbnail()) {
       sendPresenceHeartbeat(currentActiveSlug, "ping");
       fetchTotalOnline();
-    }
-    fetchAllCounts().then(function () {
-      refreshAllDOMCounters();
-      if (!isInsideCardThumbnail()) {
+      fetchDailySiteVisitors();
+      fetchAllCounts().then(function () {
+        refreshAllDOMCounters();
         registerView(currentActiveSlug).then(fetchDailySiteVisitors);
         sendPresenceHeartbeat(currentActiveSlug, "ping");
         if (currentActiveSlug === SITE_SLUG) {
           checkReferrerProjectVisit();
           checkQueryParamVisit();
         }
-      }
-    });
+      });
+    }
+    /* Miniatura karty (iframe podglądu) nie odpytuje Supabase w ogóle —
+       liczniki biorą się z cache w localStorage, a każdy iframe na stronie
+       głównej to był pełny zestaw zapytań (egress). */
 
     /* 2. Podpinamy zliczanie kliknięć w projekty, dymki wyjaśniające liczników
        oraz rejestr akcji odwiedzających (szczegóły tylko w panelu admina) */

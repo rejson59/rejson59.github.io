@@ -88,9 +88,9 @@ console.log("\n=== C. WERSJE SKRYPTÓW W STRONACH ===");
 for (const [file, needle] of [
   ["rejhub2/index.html", 'js/loader.js?v=23'],
   ["rejhub2/rejchat.html", 'js/loader.js?v=22'],
-  ["rejhub2/index.html", 'js/view-tracker.js?v=12'],
-  ["rejhub2/admin.html", 'js/view-tracker.js?v=12'],
-  ["rejhub2/rejchat.html", 'js/view-tracker.js?v=12']
+  ["rejhub2/index.html", 'js/view-tracker.js?v=13'],
+  ["rejhub2/admin.html", 'js/view-tracker.js?v=13'],
+  ["rejhub2/rejchat.html", 'js/view-tracker.js?v=13']
 ]) {
   check(file + " → " + needle, () => {
     assert(read(file).indexOf(needle) !== -1, "brak " + needle);
