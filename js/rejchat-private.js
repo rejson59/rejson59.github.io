@@ -28,9 +28,18 @@
     api.hydrate(inboxEl);
     navCount.hidden=!total;navCount.textContent=total>99?'99+':String(total);
   }
+  /* Zwraca true, gdy skrzynka faktycznie się zmieniła (nowa wiadomość, odczyt).
+     Dzięki temu otwarta rozmowa nie jest pobierana w całości co kilka sekund —
+     tylko wtedy, gdy w skrzynce przybyło coś nowego. */
+  var inboxSig = "";
   function refreshInbox(){
-    var s=session();if(!s)return Promise.resolve();var token=s.token,seq=++inboxSeq;
-    return api.rpc('rejchat_dm_inbox',{p_token:token}).then(function(rows){if(seq!==inboxSeq||!same(token)||!Array.isArray(rows))return;inbox=rows;paintInbox();}).catch(function(){if(seq===inboxSeq&&same(token)&&!view.hidden)status.textContent='Nie udało się odświeżyć rozmów. Spróbuj ponownie.';});
+    var s=session();if(!s)return Promise.resolve(false);var token=s.token,seq=++inboxSeq;
+    return api.rpc('rejchat_dm_inbox',{p_token:token}).then(function(rows){
+      if(seq!==inboxSeq||!same(token)||!Array.isArray(rows))return false;
+      var sig=JSON.stringify(rows),changed=sig!==inboxSig;
+      inboxSig=sig;inbox=rows;paintInbox();
+      return changed;
+    }).catch(function(){if(seq===inboxSeq&&same(token)&&!view.hidden)status.textContent='Nie udało się odświeżyć rozmów. Spróbuj ponownie.';return false;});
   }
   function appendText(el,content){
     var text=String(content||''), regex=/(?:https?:\/\/|www\.)[^\s<>"']+/g,last=0,m;
@@ -107,9 +116,17 @@
   window.addEventListener('rj:session-change',function(){sync();if(session())refreshInbox();hash();});
   window.addEventListener('storage',function(e){if(e.key==='rejson_community_session_v1'||e.key===null){sync();if(session())refreshInbox();}});
   document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&!view.hidden){refreshInbox();loadThread();}});
-  /* 6 s zamiast 3 s, jedno zadanie na raz i pauza po błędzie (patrz rj-net).
-     Wcześniej kilka otwartych kart wysyłało po dwa żądania co 3 s każda. */
-  if(window.RJNet&&window.RJNet.every){window.RJNet.every('rejchat-dm',6000,function(){refreshInbox();return loadThread();},{when:function(){return !!session()&&!view.hidden;}});}
-  else setInterval(function(){if(document.visibilityState==='visible'&&!view.hidden&&session()){refreshInbox();loadThread();}},6000);
+  /* 8 s (było 6 s, a jeszcze wcześniej 3 s), jedno zadanie na raz i pauza po
+     błędzie (patrz rj-net). Pełny wątek pobieramy tylko przy zmianie skrzynki. */
+  /* Otwarta rozmowa odświeża się od razu, gdy zmieni się skrzynka (nowa
+     wiadomość), a poza tym co piąty tick (~40 s) — żeby nie pobierać całego
+     wątku (do 100 wiadomości) co 6 s bez potrzeby. */
+  var dmTicks = 0;
+  function dmTick(){
+    dmTicks++;
+    return refreshInbox().then(function(changed){if(changed||dmTicks%5===0)return loadThread();});
+  }
+  if(window.RJNet&&window.RJNet.every){window.RJNet.every('rejchat-dm',8000,dmTick,{when:function(){return !!session()&&!view.hidden;}});}
+  else setInterval(function(){if(document.visibilityState==='visible'&&!view.hidden&&session())dmTick();},8000);
   sync();hash();
 })(window,document);
