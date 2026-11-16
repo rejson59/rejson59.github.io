@@ -11,8 +11,8 @@
 (function (window, document) {
   "use strict";
 
-  var REFRESH_MS = 6000;        /* główny cykl: aktywność na żywo */
-  var SLOW_CYCLE_DIV = 3;       /* co 3. cykl (≈18 s): społeczność + statystyki dzienne */
+  var REFRESH_MS = 15000;       /* główny cykl: aktywność na żywo (było 6 s) */
+  var SLOW_CYCLE_DIV = 4;       /* co 4. cykl (≈60 s): społeczność + statystyki dzienne */
   var PRESENCE_WINDOW = 90;
   var SITE_SLUG = "rejson59.github.io";
 

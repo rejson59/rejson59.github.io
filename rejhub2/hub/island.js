@@ -3144,14 +3144,16 @@
     });
 
     /* Muzyka na tej stronie trafia do wspólnego kanału „co gra”, a licznik
-       nowych wiadomości odświeża się co 30 s (tylko gdy karta jest widoczna). */
+       nowych wiadomości odświeża się co 2 min (tylko gdy karta jest widoczna).
+       Wcześniej 30 s na KAŻDEJ podstronie: dwa RPC × 120 = 240 zapytań na
+       godzinę tylko po to, żeby kropka przy czacie była świeża. */
     watchLocalMedia();
     pollChatBadge();
     chatIdlePoll = setInterval(function () {
       watchLocalMedia();
       pollChatBadge();
       if (state === "now") renderNow();
-    }, 30000);
+    }, 120000);
 
     /* ---------- gesty: przesunięcie palcem i długie przytrzymanie ---------- */
 

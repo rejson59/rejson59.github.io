@@ -1635,7 +1635,10 @@
 
   function chatPoll() {
     chatTickCount++;
-    return requestChat(chatTickCount % 5 === 1 || !chatLastId);
+    /* Pełne przeładowanie (50 wiadomości naraz) co ~54 s zamiast co ~22 s.
+       Nowe wiadomości i tak dociąga przyrostowo co 4,5 s — pełny strzał
+       służy tylko wyłapaniu usuniętych wpisów. */
+    return requestChat(chatTickCount % 12 === 1 || !chatLastId);
   }
 
   function handleChatSubmit(ev) {
@@ -1862,11 +1865,11 @@
        pustym, bo obecność zgłaszamy dopiero po pierwszej interakcji. Teraz
        lista dogania rzeczywistość w tle co 30 s, także podczas rozmowy. */
     if (window.RJNet && window.RJNet.every) {
-      window.RJNet.every("rejchat-online", 30000, loadOnline);
+      window.RJNet.every("rejchat-online", 60000, loadOnline);
     } else {
       setInterval(function () {
         if (document.visibilityState === "visible") loadOnline();
-      }, 30000);
+      }, 60000);
     }
 
     /* Odświeżamy wpisy tylko wtedy, gdy zakładka „Wpisy” jest naprawdę
