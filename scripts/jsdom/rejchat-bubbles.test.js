@@ -107,7 +107,7 @@ w.close();
 
 /* ------------------------------------------------------ lista online --- */
 
-assert.match(COMMUNITY, /window\.RJNet\.every\("rejchat-online", 30000, loadOnline\);/,
+assert.match(COMMUNITY, /window\.RJNet\.every\("rejchat-online", 60000, loadOnline\);/,
   'lista online ma własny zegar, niezależny od zakładki „Wpisy”');
 const initBlock = COMMUNITY.slice(COMMUNITY.indexOf('primeOnlineFromCache();'));
 assert.match(initBlock.slice(0, 900), /loadOnline\(\);/, 'lista online startuje od razu po wejściu');

@@ -28,7 +28,7 @@
   }).observe(list,{childList:true});
   window.addEventListener('rj:session-change',function(){seq++;cache={};paint();refresh();});
   window.addEventListener('storage',function(e){if(e.key==='rejson_community_session_v1'||e.key===null){seq++;cache={};paint();refresh();}});
-  if(window.RJNet&&window.RJNet.every){window.RJNet.every('rejchat-reactions',7000,refresh,{when:function(){var v=document.getElementById('chat-public-view');return !!v&&!v.hidden;}});}
-  else setInterval(function(){if(document.visibilityState==='visible'&&!document.getElementById('chat-public-view').hidden)refresh();},7000);
+  if(window.RJNet&&window.RJNet.every){window.RJNet.every('rejchat-reactions',12000,refresh,{when:function(){var v=document.getElementById('chat-public-view');return !!v&&!v.hidden;}});}
+  else setInterval(function(){if(document.visibilityState==='visible'&&!document.getElementById('chat-public-view').hidden)refresh();},12000);
   paint();refresh();
 })(window,document);

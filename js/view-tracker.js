@@ -19,6 +19,12 @@
   var SITE_SLUG = "rejson59.github.io";
   var COOLDOWN_SECONDS = 900; /* 15 minut blokady czasowej przed nabijaniem odświeżeń */
   var PRESENCE_WINDOW_SECONDS = 90; /* aktywne osoby na stronie w oknie 90 sekund */
+  /* Budżet danych: Supabase Free ma 5 GB egressu na cykl rozliczeniowy.
+     Obecność co 25 s i liczniki co 45 s dawały setki tysięcy zapytań.
+     Próg „online” to 90 s, więc 60 s w zupełności wystarcza. */
+  var PRESENCE_EVERY_MS = 60000;      /* było 25 000 */
+  var COUNTERS_EVERY_MS = 180000;     /* było 45 000 */
+  var IDLE_STOP_MS = 20 * 60 * 1000;  /* po 20 min bezczynności przestajemy pingować */
   var VISITOR_KEY = "rejson_views_visitor_id_v1";
   var SESSION_KEY = "rejson_views_session_id_v1";
   var COOLDOWN_PREFIX = "rejson_views_cd_v1:";
@@ -32,7 +38,6 @@
   var ws = null;
   var wsHeartbeat = null;
   var wsReconnectTimer = null;
-  var presenceDebounceTimer = null;
   var bc = null;
 
   try {
@@ -685,8 +690,11 @@
     }).catch(function () { if (requestId === dailyVisitorsRequest) el.textContent = "—"; return null; });
   }
 
+  var lastCountsFetch = 0;
+
   function fetchAllCounts() {
     if (!window.fetch) return Promise.resolve(countsMap);
+    lastCountsFetch = Date.now();
     return fetch(
       SUPABASE_URL + "/rest/v1/page_views?select=project_slug,views_count,unique_visitors_count,views_today_count,views_today_date",
       {
@@ -760,6 +768,7 @@
      Dzięki temu żadne automaty, podglądy ani stare skrypty nie tworzą
      „pustych" identyfikatorów i nie zawyżają licznika online. */
   var userInteracted = false;
+  var lastUserAt = Date.now();
 
   function bindPresenceInteractionGate() {
     if (document.readyState === "loading") {
@@ -772,6 +781,7 @@
         target.addEventListener(
           evt,
           function () {
+            lastUserAt = Date.now();
             if (userInteracted) return;
             userInteracted = true;
             /* pierwszy ping od razu po pierwszym ruchu */
@@ -781,6 +791,20 @@
         );
       }
     );
+
+    /* Osobne, lekkie nasłuchy (bez once) — odświeżają tylko znacznik czasu.
+       Dzięki nim zapomniana karta po 20 min przestaje odpytywać bazę,
+       a każdy kolejny ruch od razu ją budzi. */
+    ["pointerdown", "keydown", "touchstart", "wheel", "scroll"].forEach(function (evt) {
+      window.addEventListener(evt, function () { lastUserAt = Date.now(); }, { passive: true, capture: true });
+    });
+  }
+
+  /* Bezczynność: brak ruchu przez 20 min = nie zaśmiecamy bazy pingami.
+     „leave” przepuszczamy zawsze — jedno żądanie przy zamknięciu karty. */
+  function idleTooLong(action) {
+    if (action === "leave") return false;
+    return Date.now() - lastUserAt > IDLE_STOP_MS;
   }
 
   function sendPresenceHeartbeat(slug, action) {
@@ -788,6 +812,7 @@
     /* Bez interakcji nie zgłaszamy obecności (wyjątek: „leave" po prostu
        przemija, jeśli nigdy nie byliśmy aktywni). */
     if (!userInteracted) return Promise.resolve(null);
+    if (idleTooLong(action)) return Promise.resolve(null);
     var targetSlug = String(slug || currentActiveSlug || SITE_SLUG).trim();
     if (!targetSlug) return Promise.resolve(null);
     var key = targetSlug.toLowerCase();
@@ -983,16 +1008,16 @@
           config: {
             broadcast: { self: false },
             presence: { key: "" },
+            /* Tylko liczniki. `page_presence` aktualizuje się przy każdym
+               heartbeacie KAŻDEJ osoby — subskrypcja wysyłała ten wiersz do
+               wszystkich kart, a każda karta odbijała go dodatkowym pingiem.
+               To była pętla: egress rósł kwadratowo. Obecność i tak wraca
+               w odpowiedzi heartbeatu (active_counts + total_online). */
             postgres_changes: [
               {
                 event: "*",
                 schema: "public",
                 table: "page_views"
-              },
-              {
-                event: "*",
-                schema: "public",
-                table: "page_presence"
               }
             ]
           }
@@ -1029,13 +1054,9 @@
           (dataObj && (dataObj.record || dataObj.new)) ||
           (payload && (payload.record || payload.new));
 
-        if (table === "page_presence") {
-          clearTimeout(presenceDebounceTimer);
-          presenceDebounceTimer = setTimeout(function () {
-            sendPresenceHeartbeat(currentActiveSlug, "ping");
-          }, 350);
-          return;
-        }
+        /* `page_presence` nie jest już subskrybowane — gdyby jednak przyszło
+           (starsza wersja serwera), nie odbijamy go pingiem. */
+        if (table === "page_presence") return;
 
         if (record && record.project_slug && record.views_count !== undefined) {
           applyCountUpdate(
@@ -1570,10 +1591,14 @@
 
       document.addEventListener("visibilitychange", function () {
         if (document.visibilityState === "visible") {
-          fetchAllCounts();
-          fetchDailySiteVisitors();
+          /* Powrót do karty bywa kilka razy na minutę. Liczniki odświeżamy
+             tylko, gdy minęło 30 s — inaczej każde przełączenie aplikacji
+             na telefonie to trzy dodatkowe zapytania do bazy. */
+          if (Date.now() - lastCountsFetch > 30000) {
+            fetchAllCounts();
+            fetchDailySiteVisitors();
+          }
           sendPresenceHeartbeat(currentActiveSlug, "ping");
-          fetchTotalOnline();
           if (!ws) connectRealtime();
         }
       });
@@ -1582,21 +1607,21 @@
         sendPresenceHeartbeat(currentActiveSlug, "leave");
       });
 
-      /* Heartbeat obecności co 25 s. Wcześniej 6 s — przy kilku kartach i
-         kilkunastu osobach dawało to setki tysięcy zapytań na dobę, a i tak
-         nic nie wnosiło: próg „online” to 90 s. Po powrocie do karty i tak
-         wysyłamy ping od razu (visibilitychange wyżej). */
+      /* Heartbeat obecności co 60 s (wcześniej 25 s, a jeszcze wcześniej 6 s).
+         Próg „online” to 90 s, więc 60 s w zupełności wystarcza, a zużycie
+         danych spada o ~60%. Po powrocie do karty ping leci od razu. */
       if (window.RJNet && window.RJNet.every) {
-        window.RJNet.every("presence", 25000, function () { sendPresenceHeartbeat(currentActiveSlug, "ping"); });
+        window.RJNet.every("presence", PRESENCE_EVERY_MS, function () { sendPresenceHeartbeat(currentActiveSlug, "ping"); });
       } else {
         setInterval(function () {
           if (document.visibilityState === "visible") sendPresenceHeartbeat(currentActiveSlug, "ping");
-        }, 25000);
+        }, PRESENCE_EVERY_MS);
       }
 
-      /* Liczniki wejść co 45 s — zmiany i tak przychodzą przez Realtime. */
+      /* Liczniki wejść co 3 min — zmiany i tak przychodzą przez Realtime,
+         a pełna lista wszystkich projektów to kilka KB przy każdym żądaniu. */
       if (window.RJNet && window.RJNet.every) {
-        window.RJNet.every("view-counters", 45000, function () {
+        window.RJNet.every("view-counters", COUNTERS_EVERY_MS, function () {
           fetchAllCounts();
           fetchDailySiteVisitors();
         });
@@ -1606,7 +1631,7 @@
             fetchAllCounts();
             fetchDailySiteVisitors();
           }
-        }, 45000);
+        }, COUNTERS_EVERY_MS);
       }
     }
   }
