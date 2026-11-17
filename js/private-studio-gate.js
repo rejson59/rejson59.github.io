@@ -50,7 +50,7 @@
        z powłoką strony. Widoczny przycisk autodestrukcji rysuje wyłącznie
        dynamiczna wyspa, więc nie ma tu już żadnego stylu przycisku. */
     if (html.indexOf('/js/panic.js') === -1) {
-      html = html.replace('</head>', '<script defer src="/js/panic.js?v=3"></script></head>');
+      html = html.replace('</head>', '<script defer src="/js/panic.js?v=4"></script></head>');
     }
     document.open(); document.write(html); document.close();
     // Zmiana sesji w innej karcie i powrót z bfcache wymagają ponownej kontroli.

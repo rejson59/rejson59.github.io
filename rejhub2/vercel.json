@@ -38,6 +38,10 @@
     {
       "source": "/rejson-widgets/:path*",
       "destination": "https://rejson59.github.io/rejson-widgets/:path*"
+    },
+    {
+      "source": "/.well-known/security.txt",
+      "destination": "/security.txt"
     }
   ],
   "headers": [
@@ -144,8 +148,45 @@
           "value": "none"
         },
         {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; upgrade-insecure-requests; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src-attr 'none'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://esm.sh https://api.deezer.com https://itunes.apple.com; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' wss://*.supabase.co https://hzbqzfimtroixnldzjeq.supabase.co https://*.supabase.co https://api.github.com https://api.mymemory.translated.net https://api.deezer.com https://itunes.apple.com; worker-src 'self' blob:; frame-src 'self' https://rejson59.github.io https://mc-launcher-relay.vercel.app https://zaplecze-resellera.vercel.app https://sitestore-ruddy.vercel.app https://open.spotify.com https://www.youtube.com https://w.soundcloud.com https://widget.deezer.com; form-action 'self'"
+        },
+        {
           "key": "Content-Security-Policy-Report-Only",
-          "value": "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://esm.sh https://api.deezer.com https://itunes.apple.com; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://hzbqzfimtroixnldzjeq.supabase.co https://*.supabase.co https://api.openai.com https://api.deezer.com https://itunes.apple.com; worker-src 'self' blob:; frame-src 'self' https://open.spotify.com https://www.youtube.com https://w.soundcloud.com https://widget.deezer.com; form-action 'self'"
+          "value": "default-src 'self'; upgrade-insecure-requests; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src-attr 'none'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://esm.sh https://api.deezer.com https://itunes.apple.com; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' wss://*.supabase.co https://hzbqzfimtroixnldzjeq.supabase.co https://*.supabase.co https://api.github.com https://api.mymemory.translated.net https://api.deezer.com https://itunes.apple.com; worker-src 'self' blob:; frame-src 'self' https://rejson59.github.io https://mc-launcher-relay.vercel.app https://zaplecze-resellera.vercel.app https://sitestore-ruddy.vercel.app https://open.spotify.com https://www.youtube.com https://w.soundcloud.com https://widget.deezer.com; form-action 'self'; require-trusted-types-for 'script'"
+        },
+        {
+          "key": "Cross-Origin-Resource-Policy",
+          "value": "same-site"
+        },
+        {
+          "key": "X-DNS-Prefetch-Control",
+          "value": "off"
+        },
+        {
+          "key": "Origin-Agent-Cluster",
+          "value": "?1"
+        }
+      ]
+    },
+    {
+      "source": "/(admin|panel|studio-source|szklane-studio)(.*)",
+      "headers": [
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self'; upgrade-insecure-requests; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data: blob: https:; media-src 'self' blob: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; script-src-attr 'none'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://unpkg.com https://esm.sh https://api.deezer.com https://itunes.apple.com; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' wss://*.supabase.co https://hzbqzfimtroixnldzjeq.supabase.co https://*.supabase.co https://api.github.com https://api.mymemory.translated.net https://api.deezer.com https://itunes.apple.com; worker-src 'self' blob:; frame-src 'self' https://rejson59.github.io https://mc-launcher-relay.vercel.app https://zaplecze-resellera.vercel.app https://sitestore-ruddy.vercel.app https://open.spotify.com https://www.youtube.com https://w.soundcloud.com https://widget.deezer.com; form-action 'self'"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow, noarchive"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "private, no-store"
         }
       ]
     },

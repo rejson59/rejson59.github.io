@@ -274,9 +274,17 @@
                  po zalogowaniu wracamy dokładnie tam, gdzie chciał wejść
                  administrator. Tylko ścieżka lokalna: `//host` to adres
                  zewnętrzny i nie może przejąć przekierowania. */
+              /* Rozwiązujemy adres względem własnego origin i porównujemy
+                 origin, a nie pierwszy znak: `/"></script` i podobne
+                 sztuczki potrafią w niektórych przeglądarkach stać się
+                 adresem zewnętrznym. Tylko własna domena przechodzi. */
               var next = new URLSearchParams(location.search).get("next") || "/";
-              if (next.charAt(0) !== "/" || next.charAt(1) === "/") next = "/";
-              window.location.replace(next);
+              var target = new URL("/", location.origin);
+              try {
+                var candidate = new URL(next, location.origin);
+                if (candidate.origin === location.origin) target = candidate;
+              } catch (error) { /* zostaje strona główna */ }
+              window.location.replace(target.pathname + target.search + target.hash);
               return;
             }
             if (response.status === 403) {
@@ -315,7 +323,7 @@
 
   <p class="license-line" role="contentinfo">© 2026 rejson59 — <strong>wszystkie prawa zastrzeżone</strong>. Kopiowanie, modyfikowanie i ponowne użycie bez pisemnej zgody są zabronione. <a href="/licencja">Licencja</a> · <a href="/ai.txt">ai.txt</a></p>
   <script defer src="/js/text-filter.js?v=1"></script>
-  <script defer src="/js/panic.js?v=3"></script>
+  <script defer src="/js/panic.js?v=4"></script>
   <script defer src="/js/topbar-split.js?v=3"></script>
   <script defer src="/js/page-reveal.js?v=6"></script>
 <script defer src="/js/scrollbar.js?v=1"></script>

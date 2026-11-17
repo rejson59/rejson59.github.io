@@ -103,10 +103,12 @@
         'background:#ffffff12;color:#eaf2ff;font:inherit;font-size:13px;cursor:pointer}' +
         'button:hover{background:#ffffff1f}</style>' +
         '<main><b>Karta wyłączona</b><p>RejHub został zamknięty w tej karcie.</p>' +
-        '<button type="button" onclick="window.close()">Zamknij kartę</button></main>';
+        '<button type="button" id="rj-panic-close">Zamknij kartę</button></main>';
       document.open();
       document.write(screen);
       document.close();
+      var closer = document.getElementById("rj-panic-close");
+      if (closer) closer.addEventListener("click", function () { window.close(); });
     } catch (e) {
       try { document.body.textContent = "Karta wyłączona"; } catch (error) {}
     }
