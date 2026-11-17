@@ -21,9 +21,13 @@ const WINDOW_MS = 10 * 60 * 1000;
 const attempts = new Map();
 
 function clientIp(request) {
+  /* Vercel nadpisuje `x-real-ip` adresem klienta; `x-forwarded-for` bywa
+     doklejany przez klienta, więc nie może być pierwszym wyborem — inaczej
+     limit prób obejdzie się jednym nagłówkiem. */
+  const real = request.headers && (request.headers["x-real-ip"] || request.headers["X-Real-IP"]);
   const forwarded = request.headers && (request.headers["x-forwarded-for"] || request.headers["X-Forwarded-For"]);
   const first = String(forwarded || "").split(",")[0].trim();
-  return first || (request.socket && request.socket.remoteAddress) || "unknown";
+  return String(real || "").trim() || first || (request.socket && request.socket.remoteAddress) || "unknown";
 }
 
 function remaining(request) {

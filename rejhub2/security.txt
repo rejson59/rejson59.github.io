@@ -1,0 +1,6 @@
+Contact: https://github.com/rejson59/rejson59.github.io/issues
+Expires: 2027-11-17T00:00:00.000Z
+Preferred-Languages: pl, en
+Canonical: https://rejhub.vercel.app/.well-known/security.txt
+# Zgłoszenia luk w RejHubie: opis, adres podstrony i kroki do odtworzenia.
+# Prosimy nie testować na cudzych kontach i nie usuwać danych.

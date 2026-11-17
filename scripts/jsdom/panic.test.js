@@ -113,7 +113,7 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
     assert.ok(pages.length > 10, 'brak stron RejHuba');
     pages.forEach((file) => {
       const html = fs.readFileSync(path.join(dir, file), 'utf8');
-      assert.ok(html.includes('/js/panic.js?v=3'), 'brak skryptu autodestrukcji w ' + file);
+      assert.ok(html.includes('/js/panic.js?v=4'), 'brak skryptu autodestrukcji w ' + file);
       assert.equal(/panic\.css/.test(html), false, 'stary styl przycisku w ' + file);
       assert.equal(/class="rjhub-pill/.test(html), false, 'pigułka w ' + file);
     });
@@ -122,10 +122,10 @@ const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
   /* 7. Studio podmienia cały dokument — brama musi wnieść przycisk do treści. */
   {
     const gate = fs.readFileSync(path.join(root, 'js/private-studio-gate.js'), 'utf8');
-    assert.ok(gate.includes('/js/panic.js?v=3'), 'brama studia ma wstrzykiwać autodestrukcję');
+    assert.ok(gate.includes('/js/panic.js?v=4'), 'brama studia ma wstrzykiwać autodestrukcję');
     assert.equal(/panic\.css/.test(gate), false, 'brama nie wstrzykuje już stylu przycisku');
     const shell = fs.readFileSync(path.join(root, 'rejhub2/szklane-studio.html'), 'utf8');
-    assert.ok(shell.includes('/js/private-studio-gate.js?v=4'), 'powłoka studia ma świeżą wersję bramy');
+    assert.ok(shell.includes('/js/private-studio-gate.js?v=5'), 'powłoka studia ma świeżą wersję bramy');
   }
 
 

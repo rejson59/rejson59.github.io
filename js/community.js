@@ -132,7 +132,7 @@
       return (
         '<span class="comm-avatar comm-avatar-bot" aria-hidden="true">' +
           esc(initial) +
-          '<img src="' + AGENT_AVATAR_SRC + '" alt="" loading="lazy" onerror="this.remove()">' +
+          '<img src="' + AGENT_AVATAR_SRC + '" alt="" loading="lazy">' +
         "</span>"
       );
     }
@@ -1332,7 +1332,7 @@
       '<span class="comm-online-user">' +
         '<span class="comm-online-dot" aria-hidden="true"></span>' +
         '<span class="comm-avatar comm-avatar-sm' + (isAgent ? " comm-avatar-bot" : "") + '"' + (isAgent ? '' : ' data-profile-avatar="' + esc(name) + '"') + ' aria-hidden="true">' + esc((name.charAt(0) || "?").toUpperCase()) +
-          (isAgent ? '<img src="' + AGENT_AVATAR_SRC + '" alt="" loading="lazy" onerror="this.remove()">' : "") +
+          (isAgent ? '<img src="' + AGENT_AVATAR_SRC + '" alt="" loading="lazy">' : "") +
         "</span>" +
         profileLink(name) + ownerBadgeHTML(name) + botBadgeHTML(isAgent) +
         (tabs > 1 ? '<span class="comm-online-count mono" title="Ta sama osoba ma tyle kart otwartych">' + tabs + " karty</span>" : "") +
