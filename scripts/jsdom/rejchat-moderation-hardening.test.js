@@ -57,8 +57,8 @@ const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
   const chat = read('rejhub2/rejchat.html');
   assert.match(chat, /rejchat-photos\.js\?v=3/, 'rejchat-photos.js bez nowej wersji');
   assert.match(chat, /rejchat-messenger\.css\?v=16/, 'arkusz czatu bez nowej wersji');
-  assert.match(chat, /community\.js\?v=2026-11-17-csp/, 'community.js bez nowej wersji');
-  assert.match(chat, /rejchat-private\.js\?v=14/, 'rejchat-private.js bez nowej wersji');
+  assert.match(chat, /community\.js\?v=2026-11-17-wpisy/, 'community.js bez nowej wersji');
+  assert.match(chat, /rejchat-private\.js\?v=15/, 'rejchat-private.js bez nowej wersji');
   assert.match(read('rejhub2/logowanie.html'), /logowanie\.js\?v=10/, 'logowanie.js bez nowej wersji');
 }
 

@@ -16,7 +16,8 @@
   function notifyBell(){window.dispatchEvent(new Event('rj:dm-read'));}
   function sync(){var s=session(),token=s?s.token:null;if(token!==activeToken){activeToken=token;selectionSeq++;inboxSeq++;selected=null;inbox=[];threadBusy=false;sendBusy=false;if(photoPicker)photoPicker.disabled(false);reactBusy=false;lastRender='';olderRows=[];latestRows=[];hasOlder=false;historyBusy=false;document.getElementById('dm-send').disabled=false;document.getElementById('dm-older').disabled=false;messages.replaceChildren();if(scroll)scroll.reset();threadEl.hidden=true;input.value='';composeMode=null;if(photoPicker)photoPicker.clear();document.getElementById('dm-compose-context').hidden=true;status.textContent='';document.getElementById('dm-save-status').textContent='';}guest.hidden=!!s;member.hidden=!s;paintInbox();}
   function setActive(privateMode){
-    if(privateMode){document.getElementById('chat-tab').click();}
+    /* Zakładki w RejChat już nie ma — widok publiczny i prywatny to dwa
+       sąsiadujące panele, więc wystarczy przełączyć ich widoczność. */
     view.hidden=!privateMode;publicView.hidden=privateMode;
     channel.classList.toggle('is-active',privateMode);channel.setAttribute('aria-pressed',String(privateMode));if(privateMode){general.classList.remove('is-active');general.setAttribute('aria-pressed','false');var links=document.getElementById('channel-links');if(links){links.classList.remove('is-active');links.setAttribute('aria-pressed','false');}}
   }

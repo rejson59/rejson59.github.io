@@ -40,7 +40,8 @@ function checkSources() {
   assert.match(source, /function contextActions\(\)/, 'są akcje dla bieżącej strony');
   assert.match(source, /"\/rejfile":/, 'RejFile ma swoje akcje');
   assert.match(source, /Wgraj plik/, 'RejFile proponuje wgranie pliku');
-  assert.match(source, /Nowy wpis/, 'RejChat proponuje nowy wpis');
+  assert.match(source, /Napisz na czacie/, 'RejChat proponuje napisanie na czacie');
+  assert.ok(!source.includes('Nowy wpis'), 'RejChat proponuje usunięte wpisy');
   assert.match(source, /Kontynuuj lekcję/, 'RejClass proponuje lekcję');
 
   /* 5. kolejka offline */

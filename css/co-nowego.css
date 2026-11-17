@@ -1,0 +1,264 @@
+/* Co nowego — dziennik zmian RejHub. Ten sam szklany język co licencja,
+   ale lżejszy: bez soczewki na każdej karcie, bo lista bywa długa. */
+
+.rj-changelog {
+  --cn-radius: 24px;
+}
+
+.rj-changelog main {
+  padding: 44px 0 10px;
+}
+
+/* ---------- Hero ---------- */
+.cn-hero {
+  position: relative;
+  isolation: isolate;
+  border: 1px solid rgba(255, 255, 255, 0.17);
+  border-radius: var(--cn-radius);
+  padding: clamp(24px, 4vw, 44px);
+  background:
+    radial-gradient(120% 130% at 14% -8%, rgba(150, 182, 255, 0.18), transparent 56%),
+    linear-gradient(165deg, rgba(17, 25, 43, 0.38), rgba(9, 14, 27, 0.26));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.44),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.1),
+    0 28px 64px -42px rgba(2, 6, 18, 0.92);
+  backdrop-filter: blur(9px) saturate(190%);
+  -webkit-backdrop-filter: blur(9px) saturate(190%);
+}
+
+.cn-kicker {
+  margin: 0 0 10px;
+  font: 600 12px/1.2 "JetBrains Mono", ui-monospace, monospace;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted, #9fb0c9);
+}
+
+.cn-hero h1 {
+  margin: 0 0 12px;
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-size: clamp(38px, 7vw, 64px);
+  line-height: 0.98;
+  letter-spacing: -0.03em;
+}
+
+.cn-lead {
+  max-width: 62ch;
+  margin: 0 0 22px;
+  color: var(--text-soft, #c6d2e4);
+  font-size: clamp(15px, 2vw, 18px);
+  line-height: 1.65;
+}
+
+.cn-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.cn-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 18px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.06);
+  color: inherit;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+  transition: background 0.18s ease, transform 0.18s ease;
+}
+
+.cn-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  transform: translateY(-1px);
+}
+
+.cn-btn--primary {
+  background: linear-gradient(135deg, rgba(120, 168, 255, 0.9), rgba(149, 120, 255, 0.9));
+  border-color: transparent;
+  color: #081020;
+}
+
+.cn-btn--primary:hover {
+  background: linear-gradient(135deg, rgba(140, 184, 255, 0.95), rgba(165, 140, 255, 0.95));
+}
+
+/* ---------- Oś czasu ---------- */
+.cn-list {
+  list-style: none;
+  margin: 26px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 16px;
+  counter-reset: cn;
+}
+
+.cn-item {
+  position: relative;
+  padding-left: 22px;
+}
+
+.cn-item::before {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 26px;
+  bottom: -18px;
+  width: 1px;
+  background: linear-gradient(to bottom, rgba(150, 182, 255, 0.45), rgba(150, 182, 255, 0));
+}
+
+.cn-item:last-child::before {
+  display: none;
+}
+
+.cn-item::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 20px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #cfe0ff, #7aa2ff);
+  box-shadow: 0 0 14px rgba(122, 162, 255, 0.65);
+}
+
+.cn-card {
+  position: relative;
+  padding: clamp(18px, 3vw, 26px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--cn-radius);
+  background: linear-gradient(165deg, rgba(17, 25, 43, 0.3), rgba(9, 14, 27, 0.22));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  backdrop-filter: blur(8px) saturate(170%);
+  -webkit-backdrop-filter: blur(8px) saturate(170%);
+}
+
+.cn-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  font: 600 12px/1.2 "JetBrains Mono", ui-monospace, monospace;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted, #9fb0c9);
+}
+
+.cn-tag {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(122, 162, 255, 0.16);
+  border: 1px solid rgba(122, 162, 255, 0.32);
+  color: #b9cdff;
+  letter-spacing: 0.06em;
+}
+
+.cn-card h2 {
+  margin: 0 0 12px;
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-size: clamp(20px, 3vw, 26px);
+  letter-spacing: -0.01em;
+}
+
+.cn-card ul {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 8px;
+  color: var(--text-soft, #c6d2e4);
+  line-height: 1.6;
+}
+
+.cn-card li::marker {
+  color: rgba(122, 162, 255, 0.85);
+}
+
+.cn-card code {
+  padding: 1px 5px;
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 0.92em;
+}
+
+.cn-card a,
+.cn-note a {
+  color: #a9c4ff;
+}
+
+.cn-note {
+  margin: 26px 0 0;
+  padding: clamp(20px, 3vw, 28px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: var(--cn-radius);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.cn-note h2 {
+  margin: 0 0 8px;
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-size: 20px;
+}
+
+.cn-note p {
+  margin: 0;
+  color: var(--text-soft, #c6d2e4);
+  line-height: 1.65;
+}
+
+/* ---------- Telefon ---------- */
+@media (max-width: 640px) {
+  .cn-item {
+    padding-left: 16px;
+  }
+
+  .cn-item::before,
+  .cn-item::after {
+    display: none;
+  }
+
+  .cn-list {
+    gap: 12px;
+  }
+}
+
+/* ---------- Jasny motyw ---------- */
+[data-theme="light"] .cn-hero,
+[data-theme="light"] .cn-card {
+  border-color: rgba(20, 40, 80, 0.12);
+  background:
+    radial-gradient(120% 130% at 14% -8%, rgba(120, 160, 255, 0.16), transparent 56%),
+    linear-gradient(165deg, rgba(255, 255, 255, 0.86), rgba(240, 245, 255, 0.7));
+  color: #16233b;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 24px 54px -40px rgba(30, 60, 120, 0.35);
+}
+
+[data-theme="light"] .cn-lead,
+[data-theme="light"] .cn-card ul,
+[data-theme="light"] .cn-note p {
+  color: #3d4f6b;
+}
+
+[data-theme="light"] .cn-tag {
+  background: rgba(90, 140, 255, 0.12);
+  border-color: rgba(90, 140, 255, 0.28);
+  color: #2e58b0;
+}
+
+[data-theme="light"] .cn-note {
+  background: rgba(255, 255, 255, 0.6);
+  border-color: rgba(20, 40, 80, 0.12);
+}
+
+[data-theme="light"] .cn-card a,
+[data-theme="light"] .cn-note a {
+  color: #2453b8;
+}

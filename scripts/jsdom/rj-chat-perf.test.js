@@ -23,7 +23,7 @@ console.log('\n=== A. WARSTWA SIECIOWA ===');
   check('odstęp rośnie po błędzie, wraca po sukcesie', /current = base;/.test(net) && /Math\.pow\(2/.test(net));
   check('czat korzysta ze wspólnej warstwy', /window\.RJNet\.rpc\(url/.test(community));
   check('odświeżanie czatu nie jest już co 2 s', /CHAT_REFRESH_MS\s*=\s*4500/.test(community));
-  check('feed nie odświeża się co 12 s', /FEED_REFRESH_MS\s*=\s*25000/.test(community));
+  check('feed zniknął razem z wpisami (brak zegara)', !/FEED_REFRESH_MS/.test(community) && !/rejchat-posts/.test(community));
   check('lista rozmowy ma limit węzłów', /CHAT_MAX_SHOWN\s*=\s*60/.test(community));
   check('strona główna też ma warstwę sieciową', /rj-net\.js/.test(index));
   const before=rejchat.indexOf('/js/rj-net.js');
@@ -39,7 +39,7 @@ console.log('\n=== B. CZAT: WYSOKOŚĆ I PRZEWIJANIE ===');
   check('arkusz wymiarów dołączony do czatu', /rejchat-viewport\.css/.test(rejchat));
   check('skrypt wymiarów dołączony do czatu', /chat-viewport\.js/.test(rejchat));
   check('pierwsze wejście ląduje na końcu', /if \(firstRender \|\| position\.following\) chatScrollBottom\(\)/.test(community));
-  check('powrót z zakładki Wpisy wraca na koniec', /rj:tab-change/.test(community) && /chatScroll\.bottom\(\)/.test(community));
+  check('nie ma martwego nasłuchu po usuniętych zakładkach', !/rj:tab-change/.test(community) && !/panel-posts/.test(community));
   check('filtr wyszukiwania nie przebiega po DOM przy każdej zmianie', /scheduleFilter/.test(read('js/rejchat.js')));
 }
 
@@ -47,7 +47,7 @@ console.log('\n=== C. WYDAJNOŚĆ ===');
 {
   check('soczewka SVG wyłączona na telefonie', /pointer: coarse/.test(read('js/glass-lens.js')));
   check('mniejsze rozmycie na małym ekranie', /--gl-blur:\s*blur\(14px\)/.test(read('css/performance.css')));
-  check('feed nie przebudowuje się bez zmian', /postsSignature/.test(community));
+  check('brak martwego kodu wpisów w skrypcie czatu', !/postsSignature|postMediaHTML|community_list_posts/.test(community));
   check('arkusz wydajnościowy na stronie głównej', /performance\.css/.test(index));
 }
 

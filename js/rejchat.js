@@ -1,29 +1,39 @@
-/* Zakładki RejChat i filtrowanie tylko aktualnie wczytanych wiadomości. */
+/* RejChat — pokoje, adresy (#czat/#linki/#rozmowy), dialog logowania
+   i filtrowanie wczytanych wiadomości. Zakładka „Wpisy” została usunięta:
+   publiczny czat jest jedynym widokiem w panelu, a zmiany strony opisuje
+   osobna podstrona /co-nowego. */
 (function(){
   'use strict';
-  var tabs=[document.getElementById('chat-tab'),document.getElementById('posts-tab')];
-  var panels=[document.getElementById('panel-chat'),document.getElementById('panel-posts')];
-  if(!tabs[0]||!tabs[1])return;
   var publicRoom='general';
-  function activate(index,focus,updateHash){
-    tabs.forEach(function(tab,i){tab.setAttribute('aria-selected',String(i===index));tab.tabIndex=i===index?0:-1;panels[i].hidden=i!==index;});
-    var privateView=document.getElementById('chat-private-view'), isPrivate=privateView&&!privateView.hidden;
-    [['channel-general',index===0&&!isPrivate&&publicRoom==='general'],['channel-links',index===0&&!isPrivate&&publicRoom==='links'],['channel-private',index===0&&isPrivate]].forEach(function(pair){var el=document.getElementById(pair[0]);if(el){el.classList.toggle('is-active',pair[1]);el.setAttribute('aria-pressed',String(pair[1]));}});
-    if(focus)tabs[index].focus();
-    if(updateHash && history.replaceState){history.replaceState(null,'',location.pathname+location.search+(index?'#wpisy':isPrivate?'#rozmowy':publicRoom==='links'?'#linki':'#czat'));window.dispatchEvent(new Event('rj:tab-change'));}
+  var panel=document.getElementById('panel-chat');
+  if(!panel)return;
+
+  function setChannels(){
+    var privateView=document.getElementById('chat-private-view');
+    var isPrivate=!!(privateView&&!privateView.hidden);
+    [['channel-general',!isPrivate&&publicRoom==='general'],['channel-links',!isPrivate&&publicRoom==='links'],['channel-private',isPrivate]].forEach(function(pair){
+      var el=document.getElementById(pair[0]);
+      if(el){el.classList.toggle('is-active',pair[1]);el.setAttribute('aria-pressed',String(pair[1]));}
+    });
   }
-  tabs.forEach(function(tab,i){
-    tab.addEventListener('click',function(){activate(i,false,true);});
-    tab.addEventListener('keydown',function(e){if(e.key==='ArrowRight'||e.key==='ArrowLeft'||e.key==='Home'||e.key==='End'){e.preventDefault();activate(e.key==='Home'?0:e.key==='End'?1:1-i,true,true);}});
-  });
+
   function openRoom(room,updateHash){
-    publicRoom=room;document.getElementById('chat-private-view').hidden=true;document.getElementById('chat-public-view').hidden=false;
-    activate(0,false,false);if(updateHash)history.replaceState(null,'',location.pathname+location.search+(room==='links'?'#linki':'#czat'));
-    window.dispatchEvent(new CustomEvent('rj:room-change',{detail:room}));window.dispatchEvent(new Event('rj:dm-hide'));
+    publicRoom=room;
+    var priv=document.getElementById('chat-private-view'), pub=document.getElementById('chat-public-view');
+    if(priv)priv.hidden=true;
+    if(pub)pub.hidden=false;
+    setChannels();
+    if(updateHash&&history.replaceState)history.replaceState(null,'',location.pathname+location.search+(room==='links'?'#linki':'#czat'));
+    window.dispatchEvent(new CustomEvent('rj:room-change',{detail:room}));
+    window.dispatchEvent(new Event('rj:dm-hide'));
   }
+
   function hash(){
-    if(location.hash==='#czat'||location.hash==='#linki')openRoom(location.hash==='#linki'?'links':'general',false);
-    activate(location.hash==='#wpisy'||/^#powiadomienie=[0-9a-f-]{36}$/i.test(location.hash)?1:0,false,false);
+    if(location.hash==='#czat'||location.hash==='#linki'){
+      openRoom(location.hash==='#linki'?'links':'general',false);
+      return;
+    }
+    setChannels();
   }
   window.addEventListener('hashchange',hash);
   var channel=document.getElementById('channel-general'),links=document.getElementById('channel-links');

@@ -203,10 +203,11 @@ console.log('\n=== E. REJCHAT: OKNO, DOK I DYMKI ===');
     assert.match(hero, /box-shadow: none !important;/);
     assert.match(hero, /backdrop-filter: none !important;/);
   });
-  check('przełącznik Czat/Wpisy siedzi w pasku, nie w szynie', () => {
+  check('w pasku jest sam czat i skrót do zmian — bez zakładki „Wpisy”', () => {
     const hero = CHAT_HTML.slice(CHAT_HTML.indexOf('class="comm-hero"'), CHAT_HTML.indexOf('class="comm-layout"'));
-    assert.match(hero, /id="chat-tab"/);
-    assert.match(hero, /id="posts-tab"/);
+    assert.ok(!hero.includes('id="posts-tab"'), 'został przełącznik Wpisy');
+    assert.ok(!hero.includes('id="chat-tab"'), 'został przełącznik Czat (jest tylko jeden widok)');
+    assert.match(hero, /href="\/co-nowego"/);
     assert.ok(!CHAT_HTML.includes('chat-navigation'), 'został stary blok „Co dziś wybierasz?”');
   });
   check('okno aplikacji: dok pokoi, rozmowa, panel informacji', () => {
@@ -261,10 +262,12 @@ console.log('\n=== E. REJCHAT: OKNO, DOK I DYMKI ===');
   });
   check('wszystkie zaczepy JS nadal są w HTML-u', () => {
     ['chat-list', 'chat-form', 'chat-input', 'chat-send', 'chat-public-view', 'chat-private-view',
-      'dm-input', 'dm-messages', 'dm-send', 'post-content', 'post-submit', 'logout-btn',
-      'chat-tab', 'posts-tab', 'channel-general', 'channel-links', 'channel-private',
-      'composer-card', 'panel-chat', 'panel-posts']
+      'dm-input', 'dm-messages', 'dm-send', 'logout-btn',
+      'channel-general', 'channel-links', 'channel-private', 'panel-chat']
       .forEach((id) => assert.ok(CHAT_HTML.includes('id="' + id + '"'), 'brak #' + id));
+    /* Wpisy usunięte: nie może zostać ani kompozytor, ani feed. */
+    ['post-content', 'post-submit', 'composer-card', 'panel-posts', 'posts-feed']
+      .forEach((id) => assert.ok(!CHAT_HTML.includes('id="' + id + '"'), 'został #' + id));
   });
 }
 

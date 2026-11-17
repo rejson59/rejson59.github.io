@@ -38,11 +38,13 @@ for (const app of ['rejchat','rejfile','rejsejf','rejtools','rejclass','rejplann
 assert.ok(home.querySelector('header .site-nav [data-island="assistant"]'), 'brak asystenta w topbarze');
 assert.ok(home.querySelector('[data-tilt]'), 'zachowany efekt 3D');
 const comm = new JSDOM(read('rejhub2/rejchat.html')).window.document;
-for (const id of ['login-card','composer-card','posts-feed','comm-online','chat-list','chat-form']) assert.equal(comm.querySelectorAll(`#${id}`).length, 1, id);
-assert.ok(comm.querySelector('.comm-primary #posts-feed'));
+for (const id of ['login-card','comm-online','chat-list','chat-form']) assert.equal(comm.querySelectorAll(`#${id}`).length, 1, id);
 assert.ok(comm.querySelector('.comm-primary #chat-list'));
-assert.ok(comm.querySelector('#panel-posts[hidden] #posts-feed'));
-assert.ok(comm.querySelector('#chat-tab[aria-selected="true"]'));
+/* Wpisy zniknęły całkowicie: nie ma drugiego panelu ani kompozytora. */
+for (const id of ['posts-feed','composer-card','panel-posts','posts-tab','chat-tab']) {
+  assert.equal(comm.querySelectorAll(`#${id}`).length, 0, 'został #' + id);
+}
+assert.match(read('rejhub2/rejchat.html'), /href="\/co-nowego"/);
 assert.match(read('rejhub2/spolecznosc.html'), /location.replace\('\/rejchat'/);
 /* Menu nowego paska obsługuje js/shared-topbar.js — jego zachowanie pilnuje
    topbar.test.js. Tutaj zostaje sama warstwa szkła. */
