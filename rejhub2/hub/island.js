@@ -1045,7 +1045,7 @@
         { label: "Powiadomienia o plikach", icon: "alerts", state: "alerts" }
       ],
       "/rejchat": [
-        { label: "Nowy wpis", icon: "chat", selector: "#post-content", focus: true, href: "/rejchat#composer-card" },
+        { label: "Napisz na czacie", icon: "chat", selector: "#chat-input", focus: true, href: "/rejchat#czat" },
         { label: "Powiadomienia czatu", icon: "alerts", state: "alerts" }
       ],
       "/rejclass": [
@@ -2144,7 +2144,8 @@
       return true;
     }
     if (/(co nowego|nowosci|co dodano)/.test(text)) {
-      aiReply("Ostatnio w RejHubie:\n• wszystkie podstrony to jedna rodzina aplikacji — od czatu po planer,\n• RejAsystent mieszka w wyspie, obok mini RejChatu,\n• RejMusic szuka utworów w Deezer i Apple Music,\n• RejMeme to galeria memów z kolejką moderacji,\n• powiadomienia push mają test, więc od razu wiadomo, czy działają.");
+      aiReply("Ostatnio w RejHubie:\n• publiczny czat został wyczyszczony — zaczynamy od zera,\n• wpisy w RejChacie zniknęły; zamiast nich jest strona „Co nowego”,\n• cała strona przeszła twardnienie bezpieczeństwa,\n• RejAsystent mieszka w wyspie, obok mini RejChatu.\nPełna lista zmian jest na stronie „Co nowego”.",
+        [{ title: "Co nowego", url: "/co-nowego" }]);
       return true;
     }
     if (/(powiadomien|push|notyfikac)/.test(text)) {

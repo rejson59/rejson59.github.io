@@ -17,7 +17,7 @@ const root = path.join(__dirname, '../..');
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 
 const PAGES = [
-  '404.html', 'admin.html', 'aplikacje.html', 'index.html', 'konto-demo.html',
+  '404.html', 'admin.html', 'aplikacje.html', 'co-nowego.html', 'index.html', 'konto-demo.html',
   'licencja.html', 'logowanie.html', 'panel.html', 'partnerstwo.html', 'pobierz.html', 'profil.html',
   'rejchat.html', 'rejclass.html', 'rejfile.html', 'rejgames.html',
   'rejmeme.html', 'rejmusic.html', 'rejplanner.html', 'rejsejf.html', 'rejtools.html',
@@ -80,6 +80,12 @@ function headerOf(html) {
     assert.ok(header.includes('href="/rejfile"'));
     assert.ok(header.includes('href="/rejchat"'));
     assert.ok(!/href="rejfile"/.test(header), 'znalazł się adres względny');
+  });
+
+  check('menu „Więcej” prowadzi do strony zmian', () => {
+    const header = headers[0].header;
+    const more = header.slice(header.indexOf('<details class="nav-more"'));
+    assert.ok(more.includes('href="/co-nowego"'), 'brak „Co nowego” w menu');
   });
 
   check('topbar ma zawsze ten sam zestaw elementów', () => {

@@ -117,9 +117,9 @@ check("index: view-tracker v13 + powiadomienia v8", () => {
   ok(INDEX.indexOf("rejchat-notifications.js?v=8") !== -1, "brak powiadomień v8");
 });
 check("rejchat: community z nową wersją, reakcje v7, prywatne v14", () => {
-  ok(REJCHAT.indexOf("community.js?v=2026-11-17-csp") !== -1, "brak community");
+  ok(REJCHAT.indexOf("community.js?v=2026-11-17-wpisy") !== -1, "brak community");
   ok(REJCHAT.indexOf("rejchat-reactions.js?v=7") !== -1, "brak reakcji v7");
-  ok(REJCHAT.indexOf("rejchat-private.js?v=14") !== -1, "brak prywatnych v14");
+  ok(REJCHAT.indexOf("rejchat-private.js?v=15") !== -1, "brak prywatnych v14");
 });
 check("admin: panel i tracker z nowymi wersjami", () => {
   ok(ADMIN_HTML.indexOf("admin-panel.js?v=2026-11-17-budget") !== -1, "brak panelu");

@@ -36,8 +36,8 @@
 
   <link rel="apple-touch-icon" href="/assets/app/icon-192.png">
 
-  <title>RejChat — rozmowy i wpisy</title>
-  <meta name="description" content="RejChat — wpisy i rozmowy o projektach Rejson59. Rozmowy są dostępne po zalogowaniu; wpisy i profile pozostają publiczne.">
+  <title>RejChat — rozmowy na żywo</title>
+  <meta name="description" content="RejChat — rozmowy na żywo o projektach Rejson59. Czat i prywatne wiadomości dostępne po zalogowaniu; profile pozostają publiczne.">
   <meta name="robots" content="noindex, follow">
 
   <link rel="canonical" href="/rejchat">
@@ -325,7 +325,7 @@
   <link rel="stylesheet" href="/css/push.css?v=2">
   <link rel="stylesheet" href="/css/topbar-split.css?v=7">
   <link rel="stylesheet" href="/css/page-reveal.css?v=2">
-  <link rel="stylesheet" href="/hub/island.css?v=15">
+  <link rel="stylesheet" href="/hub/island.css?v=16">
   <link rel="stylesheet" href="/css/scrollbar.css?v=1">
   <link rel="stylesheet" href="/css/performance.css?v=2">
   <link rel="stylesheet" href="/css/potato.css?v=1">
@@ -601,7 +601,7 @@
             <summary>Więcej <span class="rj-more-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span></summary>
             <div class="nav-more-panel">
               <span class="nav-more-label">ODKRYJ WIĘCEJ</span><a href="/aplikacje" class="nav-icon-link" title="Aplikacje" aria-label="Aplikacje — wszystkie aplikacje RejHuba"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="3" width="7" height="7" rx="2"/><rect x="14" y="3" width="7" height="7" rx="2"/><rect x="3" y="14" width="7" height="7" rx="2"/><rect x="14" y="14" width="7" height="7" rx="2"/></svg><span class="nav-label">Aplikacje</span></a><a href="/pobierz" class="nav-icon-link" title="Aplikacja Android" aria-label="Aplikacja Android — APK"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="6.5" y="2.5" width="11" height="19" rx="3"/><path d="M10 5.5h4M12 18.4h.01"/></svg><span class="nav-label">Aplikacja</span></a>
-              <a href="/uslugi" class="nav-icon-link" title="Tworzenie stron" aria-label="Tworzenie stron"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#partner"></use></svg><span class="nav-label">Tworzenie stron</span></a>
+              <a href="/co-nowego" class="nav-icon-link" title="Co nowego" aria-label="Co nowego — ostatnie zmiany w RejHubie"><svg class="ui-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M11 3.5c.7 4.2 2 5.5 6.2 6.2-4.2.7-5.5 2-6.2 6.2-.7-4.2-2-5.5-6.2-6.2 4.2-.7 5.5-2 6.2-6.2Z"/><path d="M17.8 15.2c.35 2 .95 2.6 2.95 2.95-2 .35-2.6.95-2.95 2.95-.35-2-.95-2.6-2.95-2.95 2-.35 2.6-.95 2.95-2.95Z"/></svg><span class="nav-label">Co nowego</span></a><a href="/uslugi" class="nav-icon-link" title="Tworzenie stron" aria-label="Tworzenie stron"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#partner"></use></svg><span class="nav-label">Tworzenie stron</span></a>
               <a href="/partnerstwo" class="nav-icon-link" title="Partnerstwo" aria-label="Partnerstwo"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#partner"></use></svg><span class="nav-label">Partnerstwo</span></a>
               <a href="/licencja" class="nav-icon-link" title="Licencja" aria-label="Licencja i prawa autorskie"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#file"></use></svg><span class="nav-label">Licencja</span></a>
               <a href="/szklane-studio" data-admin-only class="nav-icon-link" title="Szklane studio" aria-label="Szklane studio — propozycje interfejsu"><svg class="ui-icon" aria-hidden="true" focusable="false"><use href="/assets/ui-icons.svg#widget"></use></svg><span class="nav-label">Szklane studio</span></a>
@@ -624,13 +624,12 @@
       <div class="rc-hero-copy">
         <p class="rc-kicker"><span class="rc-live-dot" aria-hidden="true"></span> RejHub · społeczność</p>
         <h1 id="rejchat-heading">RejChat</h1>
-        <p class="rc-hero-sub">Rozmowy na żywo i wpisy w jednym, spokojnym miejscu.</p>
+        <p class="rc-hero-sub">Rozmowy na żywo, linki i prywatne wiadomości w jednym, spokojnym miejscu.</p>
       </div>
       <div class="rc-hero-right">
-        <div class="rejchat-tabs" role="tablist" aria-label="Widoki RejChat">
-          <button type="button" role="tab" id="chat-tab" aria-controls="panel-chat" aria-selected="true"><svg class="ui-icon" aria-hidden="true"><use href="/assets/ui-icons.svg?v=2#chat"></use></svg> Czat</button>
-          <button type="button" role="tab" id="posts-tab" aria-controls="panel-posts" aria-selected="false" tabindex="-1"><span class="rejchat-tab-icon" aria-hidden="true">✦</span> Wpisy</button>
-        </div>
+        <a class="btn btn-ghost btn-sm" href="/co-nowego">
+          <span aria-hidden="true">✦</span> Co nowego <span aria-hidden="true">↗</span>
+        </a>
       </div>
     </section>
 
@@ -646,9 +645,10 @@
           <button type="button" id="channel-private" class="chat-channel" aria-pressed="false" aria-controls="panel-chat"><span class="chat-channel-icon" aria-hidden="true">✉</span><span><strong>Prywatne rozmowy</strong><small>Wiadomości między kontami</small></span><span id="dm-nav-unread" class="dm-unread" hidden></span></button>
         </div>
         <a class="rc-side-link" href="/profil"><span aria-hidden="true">◍</span> Twój profil <b aria-hidden="true">↗</b></a>
+        <button class="rc-side-link rc-side-link--logout" id="logout-btn" type="button" hidden><span aria-hidden="true">⏻</span> Wyloguj</button>
       </aside>
       <div class="comm-primary">
-        <section id="panel-chat" role="tabpanel" aria-labelledby="chat-tab">
+        <section id="panel-chat">
         <!-- ============ CZAT NA ŻYWO ============ -->
         <section class="comm-chat glass-card" id="chat-public-view" aria-label="Czat RejChat">
           <header class="comm-chat-head">
@@ -704,59 +704,6 @@
         </section>
 
         </section>
-        <div id="panel-posts" role="tabpanel" aria-labelledby="posts-tab" hidden>
-        <div class="rejchat-target-note" id="rejchat-target-note" role="status" hidden></div>
-        <!-- ============ KOMPONOWANIE WPISU (po zalogowaniu) ============ -->
-        <section class="comm-composer glass-card" id="composer-card" hidden aria-label="Nowy wpis">
-          <div class="comm-user-row">
-            <span class="comm-user-chip" id="user-chip">
-              <span class="comm-avatar" id="user-avatar">?</span>
-              <span id="user-name">—</span>
-            </span>
-            <button class="btn btn-ghost btn-sm" id="logout-btn" type="button">Wyloguj</button>
-          </div>
-          <textarea class="comm-textarea" id="post-content" rows="3" maxlength="2000"
-                    placeholder="Napisz coś do społeczności: opinia o projekcie, propozycja, pytanie…"></textarea>
-          <input type="file" id="post-media-input" accept="image/png,image/jpeg,image/webp,image/gif,video/mp4,video/webm" multiple hidden>
-          <div class="comm-media-preview" id="post-media-preview" hidden></div>
-          <div class="comm-tags" id="post-tags" hidden>
-            <span class="comm-tags-label">Otaguj projekt (opcjonalnie):</span>
-            <div class="comm-tags-chips" id="post-tags-chips"></div>
-          </div>
-          <div class="comm-composer-foot">
-            <button class="comm-pill-btn comm-attach-btn" id="post-attach" type="button"
-                    title="Dodaj zdjęcie (JPG / PNG / WebP / GIF do 6 MB) albo film (MP4 / WebM do 12 MB) — maks. 4 załączniki">
-              📎 Zdjęcie / film
-            </button>
-            <div class="rc-emoji-wrap" data-target="post-content"><button class="rc-emoji-toggle" type="button" aria-label="Wybierz emotkę" aria-expanded="false" aria-controls="post-emojis">☺ Emotki</button><div id="post-emojis" class="rc-emoji-panel" hidden></div></div>
-            <span class="comm-counter mono" id="post-counter">0 / 2000</span>
-            <button class="btn btn-primary btn-sm" id="post-submit" type="button" disabled>Opublikuj wpis</button>
-          </div>
-        </section>
-
-        <!-- ============ LISTA WPISÓW ============ -->
-        <section class="comm-feed" aria-label="Wpisy RejChat">
-          <div class="comm-feed-head">
-            <h2>Wpisy RejChat</h2>
-            <button class="btn btn-ghost btn-sm" id="feed-refresh" type="button">Odśwież</button>
-          </div>
-          <div class="comm-tags comm-tags-filter" id="feed-tags" hidden>
-            <button type="button" class="comm-tags-toggle" id="feed-tags-toggle" aria-expanded="false" aria-controls="feed-tags-body">
-              🏷 <span id="feed-tags-title">Filtry projektów</span>
-              <span class="comm-tags-caret" aria-hidden="true">▾</span>
-            </button>
-            <div class="comm-tags-body" id="feed-tags-body" hidden>
-              <span class="comm-tags-label">Filtruj po projekcie:</span>
-              <div class="comm-tags-chips" id="feed-tags-chips"></div>
-            </div>
-          </div>
-          <div id="posts-feed">
-            <p class="comm-feed-empty" id="feed-empty">Ładowanie wpisów…</p>
-          </div>
-          <p class="comm-feed-note">Wpisy odświeżają się automatycznie co 12 sekund.</p>
-        </section>
-
-        </div>
       </div>
       <aside class="rejchat-info" aria-label="Informacje o społeczności">
         <div class="rejchat-info-heading"><span>WOKÓŁ ROZMOWY</span><strong>Społeczność</strong></div>
@@ -824,19 +771,19 @@
   <script defer src="/js/rejchat-emoji.js?v=2"></script>
   <script defer src="/js/rejchat-message-ui.js?v=4"></script>
   <script defer src="/js/rejchat-translate.js?v=3"></script>
-  <script defer src="js/community.js?v=2026-11-17-csp"></script>
-  <script defer src="/js/rejchat.js?v=10"></script>
+  <script defer src="js/community.js?v=2026-11-17-wpisy"></script>
+  <script defer src="/js/rejchat.js?v=11"></script>
   <script defer src="/js/rejchat-reactions.js?v=7"></script>
   <script defer src="/js/rejchat-details.js?v=3"></script>
-  <script defer src="/js/rejchat-private.js?v=14"></script>
+  <script defer src="/js/rejchat-private.js?v=15"></script>
   <script defer src="/js/rejchat-safety.js?v=1"></script>
   <script defer src="/js/rejchat-pins-search.js?v=2"></script>
   <script defer src="/js/rejchat-rejsejf.js?v=3"></script>
-  <script defer src="/js/rejchat-link-preview.js?v=1"></script>
+  <script defer src="/js/rejchat-link-preview.js?v=2"></script>
   <script defer src="/js/rejchat-mute.js?v=2"></script>
   <script defer src="/js/rejchat-notifications.js?v=8"></script><script defer src="/js/premium.js?v=14"></script>
   <script defer src="/js/media-capture.js?v=2"></script>
-  <script defer src="/hub/island.js?v=15" data-project="rejhub" data-project-name="RejHub"></script>
+  <script defer src="/hub/island.js?v=16" data-project="rejhub" data-project-name="RejHub"></script>
   <noscript><div class="rj-mobile-ads-spacer" aria-hidden="true"></div><aside id="rj-mobile-ads" aria-label="Mini reklamy i promocje"><span class="rj-mobile-ads-label">mini reklamy</span><div class="rj-mobile-ads-frame"><div class="rj-mobile-ads-items" tabindex="0" aria-label="Mini reklamy i promocje (przewijane)"><a class="rj-mobile-ad rj-mobile-ad--chat" href="/rejchat"><span class="rj-mobile-ad-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H10l-5 4v-4H4z"/><path d="M8 9h8M8 12h5"/></svg></span><span class="rj-mobile-ad-copy"><span class="rj-mobile-ad-title">RejChat · pogadaj</span><span class="rj-mobile-ad-desc">Czat na żywo ze społecznością</span></span></a><a class="rj-mobile-ad rj-mobile-ad--site" href="/uslugi"><span class="rj-mobile-ad-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M7 6.5h.01M10 6.5h.01M8 14h8"/></svg></span><span class="rj-mobile-ad-copy"><span class="rj-mobile-ad-title">Masz pomysł na stronę?</span><span class="rj-mobile-ad-desc">Zamów stronę lub projekt</span></span></a><a class="rj-mobile-ad rj-mobile-ad--offer" href="/partnerstwo#propozycja"><span class="rj-mobile-ad-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m4 10 11-5v14L4 14zM4 10v4m3.5 1 1.5 4h3l-1-3.3M18 9l2-2m-2 5h3m-3 3 2 2"/></svg></span><span class="rj-mobile-ad-copy"><span class="rj-mobile-ad-title">Podziel się czymś</span><span class="rj-mobile-ad-desc">Partnerstwo i współpraca</span></span></a><a class="rj-mobile-ad rj-mobile-ad--house" href="/rejfile"><span class="rj-mobile-ad-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v13H6z"/><path d="M14 3v5h4M12 16V10m-2 2 2-2 2 2"/></svg></span><span class="rj-mobile-ad-copy"><span class="rj-mobile-ad-title">RejFile · wyślij plik</span><span class="rj-mobile-ad-desc">Duże pliki i szybkie linki</span></span></a></div></div><span class="rj-mobile-ads-dots" aria-hidden="true"><i></i><i></i><i></i><i></i></span></aside></noscript>
 <dialog id="rc-message-dialog" class="rc-message-dialog" aria-labelledby="rc-message-title"><div class="rc-dialog-head"><div><small>SZCZEGÓŁY WIADOMOŚCI</small><h2 id="rc-message-title">Odczyty i reakcje</h2></div><button type="button" id="rc-dialog-close" aria-label="Zamknij">✕</button></div><p class="rc-dialog-note">Odczyt oznacza, że wiadomość była widoczna na ekranie — nie jest dowodem, że ktoś przeczytał jej treść.</p><div id="rc-message-details" role="status" aria-live="polite"></div></dialog>
   <script src="/hub/hub-shell.js?v=4" defer></script>

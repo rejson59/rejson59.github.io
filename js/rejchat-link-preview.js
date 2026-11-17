@@ -32,6 +32,6 @@
     }
     text.insertAdjacentElement('afterend',card);
   }
-  function scan(){root.querySelectorAll('.chat-text,.post-content,.comment-content').forEach(add);}
+  function scan(){root.querySelectorAll('.chat-text').forEach(add);}
   var queued=false;new MutationObserver(function(){if(queued)return;queued=true;requestAnimationFrame(function(){queued=false;scan();});}).observe(root,{childList:true,subtree:true});scan();
 })(window,document);
