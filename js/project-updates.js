@@ -12,8 +12,8 @@
  */
 window.PROJECT_UPDATES = {
   "FreshBlox": { version: "v2026.11.17" },
+  "rejson59.github.io": { version: "v2026.11.17", note: "Społeczność 2.0: zdjęcia i filmy w postach, wątki odpowiedzi, agent AI" },
   "mconline": { version: "v2026.11.17" },
-  "rejson59.github.io": { version: "v2026.11.16", note: "Społeczność 2.0: zdjęcia i filmy w postach, wątki odpowiedzi, agent AI" },
   "GiftStream": { version: "v2026.11.16" },
   "nullczat": { version: "v2026.11.15" },
   "RejPlay": { version: "v2026.11.13" },
