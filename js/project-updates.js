@@ -11,9 +11,10 @@
  * scripts/update-project-updates.py). Ręcznie edytuj TYLKO dopiski note.
  */
 window.PROJECT_UPDATES = {
+  "redstoneworld": { version: "v2026.11.19" },
+  "rejson59.github.io": { version: "v2026.11.19", note: "Społeczność 2.0: zdjęcia i filmy w postach, wątki odpowiedzi, agent AI" },
   "realith": { version: "v2026.11.18" },
   "FreshBlox": { version: "v2026.11.18" },
-  "rejson59.github.io": { version: "v2026.11.18", note: "Społeczność 2.0: zdjęcia i filmy w postach, wątki odpowiedzi, agent AI" },
   "mconline": { version: "v2026.11.17" },
   "GiftStream": { version: "v2026.11.16" },
   "nullczat": { version: "v2026.11.15" },
