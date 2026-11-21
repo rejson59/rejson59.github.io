@@ -11,8 +11,10 @@
  * scripts/update-project-updates.py). Ręcznie edytuj TYLKO dopiski note.
  */
 window.PROJECT_UPDATES = {
+  "Your-LM": { version: "v2026.11.20" },
+  "RejStream": { version: "v2026.11.20" },
+  "rejson59.github.io": { version: "v2026.11.20", note: "Społeczność 2.0: zdjęcia i filmy w postach, wątki odpowiedzi, agent AI" },
   "redstoneworld": { version: "v2026.11.19" },
-  "rejson59.github.io": { version: "v2026.11.19", note: "Społeczność 2.0: zdjęcia i filmy w postach, wątki odpowiedzi, agent AI" },
   "realith": { version: "v2026.11.18" },
   "FreshBlox": { version: "v2026.11.18" },
   "mconline": { version: "v2026.11.17" },
@@ -20,7 +22,6 @@ window.PROJECT_UPDATES = {
   "nullczat": { version: "v2026.11.15" },
   "RejPlay": { version: "v2026.11.13" },
   "RejTag": { version: "v2026.11.13" },
-  "RejStream": { version: "v2026.11.10" },
   "Jakuplayer": { version: "v2026.11.10" },
   "Zayra-ai-asistant": { version: "v2026.11.06" },
   "RejVoice": { version: "v2026.11.06" },
