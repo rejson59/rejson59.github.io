@@ -11,8 +11,9 @@
  * scripts/update-project-updates.py). Ręcznie edytuj TYLKO dopiski note.
  */
 window.PROJECT_UPDATES = {
-  "Your-LM": { version: "v2026.11.21" },
-  "rejson59.github.io": { version: "v2026.11.21", note: "Społeczność 2.0: zdjęcia i filmy w postach, wątki odpowiedzi, agent AI" },
+  "Your-LM": { version: "v2026.11.22" },
+  "VisionPocket": { version: "v2026.11.22" },
+  "rejson59.github.io": { version: "v2026.11.22", note: "Społeczność 2.0: zdjęcia i filmy w postach, wątki odpowiedzi, agent AI" },
   "RejStream": { version: "v2026.11.20" },
   "redstoneworld": { version: "v2026.11.19" },
   "realith": { version: "v2026.11.18" },
