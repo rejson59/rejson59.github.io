@@ -132,6 +132,44 @@
   }
 
   /* ------------------------------------------------------------------ */
+  /*  Szum spoza RejHuba (rozszerzenia, wstrzyknięcia, obce ramki)       */
+  /* ------------------------------------------------------------------ */
+
+  /* Adresy, których nie hostuje RejHub: rozszerzenia przeglądarki
+     (chrome-extension://, moz-extension://), wstrzykiwane skrypty portali
+     (connect.facebook.net/pcm.js) i tym podobne. Ich błąd nie mówi nic
+     o naszej stronie, a w panelu przykrywał prawdziwe awarie. */
+  var FOREIGN_SOURCE = /^(?:chrome-extension|moz-extension|safari-extension|safari-web-extension|ms-browser-extension|edge-extension):\/\//i;
+  var FOREIGN_HOSTS = /(?:^|\.)(?:connect\.facebook\.net|facebook\.com|doubleclick\.net|googletagmanager\.com|google-analytics\.com|hotjar\.com|clarity\.ms)$/i;
+
+  function isForeignSource(value) {
+    var raw = String(value || "");
+    if (!raw) return false;
+    if (FOREIGN_SOURCE.test(raw)) return true;
+    try {
+      var url = new URL(raw, location.href);
+      return FOREIGN_HOSTS.test(url.hostname);
+    } catch (e) {
+      return FOREIGN_SOURCE.test(raw);
+    }
+  }
+
+  /* Adres wdrożenia podglądowego Vercela (rejhub-a1b2c3-….vercel.app) żyje
+     tylko do najbliższego wdrożenia. „Nie wczytał się zasób” z takiego
+     adresu mówi o starym podglądzie, nie o produkcji — pomijamy go, gdy
+     różni się od domeny, na której naprawdę jest użytkownik. */
+  function isEphemeralPreview(value) {
+    var raw = String(value || "");
+    if (!raw) return false;
+    try {
+      var url = new URL(raw, location.href);
+      return /\.vercel\.app$/i.test(url.hostname) && url.hostname !== location.hostname;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  /* ------------------------------------------------------------------ */
   /*  Wysyłka                                                            */
   /* ------------------------------------------------------------------ */
 
@@ -233,6 +271,9 @@
       /* Awatary z CDN GitHuba bywają blokowane przez sieć/adblock użytkownika —
          to nie usterka strony, a wpis bez wartości diagnostycznej. */
       if (/^https:\/\/avatars\.githubusercontent\.com\//i.test(asset)) return;
+      /* Rozszerzenia przeglądarki i wstrzykiwane skrypty obcych portali
+         podają się za zasób strony — bez nich panel jest czytelny. */
+      if (isForeignSource(asset) || isEphemeralPreview(asset)) return;
       if (t === "img" || t === "script" || t === "link") {
         send("network", "Nie wczytał się zasób: " + t, {
           source: asset.slice(0, 300),
@@ -247,6 +288,9 @@
        (rozszerzenia przeglądarki, wstrzykiwane skrypty) — bez danych
        do naprawy, więc nie zaśmieca panelu. */
     if (msg === "Script error." && !ev.filename) return;
+    /* Błąd z pliku rozszerzenia (np. chrome-extension://…/executors/200.js)
+       albo z wstrzykniętego skryptu — nie jest usterką RejHuba. */
+    if (isForeignSource(ev.filename) || isForeignSource(ev.error && ev.error.stack)) return;
     send("js", msg, {
       stack: (ev.error && ev.error.stack) || (ev.filename ? ev.filename + ":" + ev.lineno + ":" + ev.colno : ""),
       source: ev.filename || ""
@@ -256,6 +300,7 @@
   window.addEventListener("unhandledrejection", function (ev) {
     var reason = ev.reason;
     var msg = reason && reason.message ? reason.message : String(reason || "Odrzucona obietnica");
+    if (isForeignSource(reason && reason.stack)) return;
     send("promise", msg, {
       stack: (reason && reason.stack) || "",
       source: "promise"

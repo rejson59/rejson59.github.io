@@ -1,0 +1,87 @@
+# © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
+# Licencja: /LICENSE, /licencja
+#
+# Testy (jsdom) przy każdym pushu i pull requeście.
+#
+# Do rundy 23 mieliśmy 78 plików testów i ~800 asercji, ale ŻADEN workflow
+# ich nie uruchamiał — jedyny check na PR to Vercel i kontrola APK. Regresje
+# typu „island.css v15 a island.js v16” albo „stare ?v= w asercji” wychodziły
+# dopiero przy ręcznym `npm test`. Ten workflow zamyka tę lukę.
+#
+# Czas: ~2–3 min (najwięcej zajmuje instalacja jsdom).
+# Uruchomienie ręczne: Actions → „Testy (jsdom)” → Run workflow.
+
+name: Testy (jsdom)
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'mobile/**'
+      - 'scripts/update-project-updates.py'
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  jsdom:
+    name: npm test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Pobierz repozytorium
+        uses: actions/checkout@v4
+
+      - name: Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: scripts/jsdom/package.json
+
+      - name: Zależności
+        working-directory: scripts/jsdom
+        run: npm install --no-audit --no-fund
+
+      - name: Testy (każdy plik osobno, zbieramy wszystkie błędy)
+        working-directory: scripts/jsdom
+        run: |
+          # `npm test` to łańcuch `&&` — pada pierwszy plik i reszta się nie
+          # uruchamia. Tu lecimy po kolei i zbieramy WSZYSTKIE niepowodzenia,
+          # więc jeden commit pokazuje pełną listę do naprawy.
+          node -e '
+            const p = require("./package.json");
+            const files = p.scripts.test.split("&&").map(s => s.trim().replace(/^node /, ""));
+            const { spawnSync } = require("child_process");
+            const padly = [];
+            for (const f of files) {
+              const r = spawnSync(process.execPath, [f], { stdio: "inherit" });
+              if (r.status !== 0) padly.push(f);
+            }
+            if (padly.length) {
+              console.log("\n=== PADŁY " + padly.length + " z " + files.length + " ===");
+              for (const f of padly) console.log("  ✘ " + f);
+              for (const f of padly) console.log("::error title=Test nie przeszedł::" + f);
+              process.exit(1);
+            }
+            console.log("\n=== WSZYSTKIE " + files.length + " PLIKÓW OK ===");
+          '
+
+      - name: Podsumowanie niepowodzenia
+        if: failure()
+        run: |
+          echo "### Testy nie przeszły ✘" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "W logu wyżej szukaj linii zaczynających się od \`✘\` —" >> "$GITHUB_STEP_SUMMARY"
+          echo "każda pokazuje nazwę sprawdzenia i powód." >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Najczęstsze przyczyny: rozjazd \`?v=\` między HTML a testem," >> "$GITHUB_STEP_SUMMARY"
+          echo "niezgodna wersja \`island.js\` / \`island.css\` na podstronie," >> "$GITHUB_STEP_SUMMARY"
+          echo "albo brak wpisu nowego pliku w \`package.json\`." >> "$GITHUB_STEP_SUMMARY"
