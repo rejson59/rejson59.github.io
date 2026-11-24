@@ -442,7 +442,7 @@
           return '<span class="adm-proj-chip' + (isPage ? " is-page" : "") + '">' + esc(slug) + "</span>";
         })
         .join("");
-      var isOwner = String(name).toLowerCase() === "rejson59";
+      var isOwner = u.is_owner === true;
       var tabs = Number(u.tabs) || 1;
       return (
         '<div class="adm-online-user">' +

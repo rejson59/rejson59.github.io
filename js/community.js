@@ -46,7 +46,7 @@
       if (!raw) return null;
       var parsed = JSON.parse(raw);
       if (parsed && typeof parsed.token === "string" && parsed.token.length >= 16 && parsed.username) {
-        return { token: parsed.token, username: String(parsed.username) };
+        return { token: parsed.token, username: String(parsed.username), is_owner: parsed.is_owner === true };
       }
     } catch (e) { /* ignorujemy */ }
     return null;
@@ -55,7 +55,7 @@
   function saveSession(s) {
     var oldToken = session && session.token;
     if (s && s.token && s.username) {
-      session = { token: s.token, username: s.username };
+      session = { token: s.token, username: s.username, is_owner: s.is_owner === true };
       try { localStorage.setItem(SESSION_KEY, JSON.stringify(session)); } catch (e) { /* ignorujemy */ }
     } else {
       session = null;
@@ -132,14 +132,16 @@
   }
   function hydrateProfiles(root) { if (window.RJProfiles) window.RJProfiles.hydrate(root || document); }
 
-  /* Odznaka właściciela strony obok nazwy */
-  function isOwnerName(name, flagFromDb) {
-    if (flagFromDb === true) return true;
-    return String(name || "").toLowerCase() === "rejson59";
+  /* Odznaka właściciela strony obok nazwy.
+     Wyłącznie na podstawie flagi `is_owner` z bazy — NIGDY po nazwie.
+     Konto o nazwie „rejson-59” zgłosiło się 19.11 i dostawało koronę oraz
+     przyciski moderacji tylko dlatego, że nazwa wyglądała podobnie. */
+  function isOwnerName(flagFromDb) {
+    return flagFromDb === true;
   }
 
-  function ownerBadgeHTML(name, flagFromDb) {
-    if (!isOwnerName(name, flagFromDb)) return "";
+  function ownerBadgeHTML(flagFromDb) {
+    if (!isOwnerName(flagFromDb)) return "";
     return '<span class="comm-owner-badge" title="Twórca strony rejson59.github.io">👑 Właściciel</span>';
   }
 
@@ -153,7 +155,7 @@
     return '<span class="comm-bot-badge" title="Oficjalny agent AI Rejsona — publikuje zapowiedzi aktualizacji i nowości ze strony">🤖 Agent AI</span>';
   }
   function authorBadges(name, p) {
-    return ownerBadgeHTML(name, p && p.is_owner) + botBadgeHTML(p && p.is_bot);
+    return ownerBadgeHTML(p && p.is_owner) + botBadgeHTML(p && p.is_bot);
   }
 
   /* ================= LOGOWANIE / REJESTRACJA ================= */
@@ -283,7 +285,7 @@
     rpc(fn, authArgs)
       .then(function (data) {
         if (!data || !data.token) throw new Error("Brak tokena sesji w odpowiedzi.");
-        saveSession({ token: data.token, username: data.username });
+        saveSession({ token: data.token, username: data.username, is_owner: data.is_owner === true });
         pinEl.value = "";
         renderAuthZone();
         chatGeneration++; requestChat(true); loadOnline();
@@ -336,7 +338,7 @@
         '<span class="comm-avatar comm-avatar-sm' + (isAgent ? " comm-avatar-bot" : "") + '"' + (isAgent ? '' : ' data-profile-avatar="' + esc(name) + '"') + ' aria-hidden="true">' + esc((name.charAt(0) || "?").toUpperCase()) +
           (isAgent ? '<img src="' + AGENT_AVATAR_SRC + '" alt="" loading="lazy">' : "") +
         "</span>" +
-        profileLink(name) + ownerBadgeHTML(name) + botBadgeHTML(isAgent) +
+        profileLink(name) + ownerBadgeHTML(u && u.is_owner) + botBadgeHTML(isAgent) +
         (tabs > 1 ? '<span class="comm-online-count mono" title="Ta sama osoba ma tyle kart otwartych">' + tabs + " karty</span>" : "") +
         (projects > 1 ? '<span class="comm-online-count mono" title="Ile stron/projektów ma teraz otwarte">' + projects + " strony</span>" : "") +
       "</span>"
@@ -406,7 +408,7 @@
 
   function chatMsgHTML(m) {
     var mine = session && session.username === m.author_name;
-    var canDel = mine || (session && isOwnerName(session.username));
+    var canDel = mine || (session && isOwnerName(session.is_owner));
     return (
       '<div class="chat-msg' + (mine ? " is-mine" : "") + '" data-chat-id="' + esc(m.id) + '" data-message-author="' + esc(m.author_name) + '" data-message-time="' + (Date.parse(m.created_at)||0) + '">' +
         avatarFor(m.author_name, m.is_bot) +
@@ -418,7 +420,7 @@
           (session ? '<details class="rc-message-menu"><summary aria-label="Opcje wiadomości">⋯</summary><div class="rc-menu-items">' +
             '<button type="button" data-message-info="public" data-message-id="' + esc(m.id) + '">Odczyty i reakcje</button>' +
             '<button class="rejchat-message-action" type="button" data-chat-reply="' + esc(m.id) + '">Odpowiedz</button>' : '') +
-          (session && isOwnerName(session.username) ? '<button class="rejchat-message-action" type="button" data-pin-scope="public" data-pin-id="' + esc(m.id) + '">Przypnij wiadomość</button>' : '') +
+          (session && isOwnerName(session.is_owner) ? '<button class="rejchat-message-action" type="button" data-pin-scope="public" data-pin-id="' + esc(m.id) + '">Przypnij wiadomość</button>' : '') +
           (session && !mine ? '<button class="rejchat-message-action" type="button" data-report-scope="public" data-report-id="' + esc(m.id) + '">Zgłoś wiadomość</button>' : '') +
           (session ? '<button class="rejchat-message-action" type="button" data-save-sejf="text" data-save-scope="public" data-save-message="' + esc(m.id) + '">Zapisz tekst w RejSejfie</button>' : '') +
           (session && m.photo && (m.photo.status||'ok')==='ok' && Date.parse(m.photo.expires_at)>Date.now() ? '<button class="rejchat-message-action" type="button" data-save-sejf="photo" data-save-scope="public" data-save-message="' + esc(m.id) + '" title="Kopia w Sejfie nie wygaśnie po 14 dniach">Zapisz zdjęcie w RejSejfie</button>' : '') +
@@ -674,7 +676,7 @@
             author_name: row.author_name,
             content: row.content,
             created_at: row.created_at,
-            is_owner: isOwnerName(row.author_name),
+            is_owner: row.is_owner === true,
             is_bot: isAgentName(row.author_name)
           }]);
           chatGeneration++;

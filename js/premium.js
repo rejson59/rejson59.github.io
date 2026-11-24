@@ -295,8 +295,10 @@
       state.sourceError = projectFetchError ? "Nie udało się sprawdzić aktualizacji projektów." : "";
       var online = Array.isArray(res[0]) ? res[0] : [];
 
+      /* Wyłącznie flaga z bazy — nazwa „rejson59” nic nie dowodzi (19.11
+         powstało konto rejson-59, które podszywało się pod właściciela). */
       var ownerOnline = online.some(function (u) {
-        return u && (u.is_owner === true || String(u.username || "").toLowerCase() === "rejson59");
+        return u && u.is_owner === true;
       });
       state.ownerOnline = ownerOnline;
 
@@ -466,7 +468,7 @@
       ["bell", "Powiadomienia", "Aktualizacje obserwowanych projektów i realna obecność — bez wymyślonych zdarzeń."],
       ["portal", "Obserwowane projekty", "Klikasz „obserwuj” i wiesz, gdy projekt się zmieni."],
       ["account", "Twój profil", "Awatar, kolor nicka i bio — widoczne w RejChat i na profilu."],
-      ["chat", "RejChat", "Czat i wpisy po zalogowaniu, z reakcjami i spokojnym moderowaniem."],
+      ["chat", "RejChat", "Czat po zalogowaniu, z reakcjami, prywatnymi rozmowami i spokojnym moderowaniem."],
       ["file", "Wspólne konto", "Jedno konto strony i projektów — bez e-maila, nazwa i hasło."]
     ];
 

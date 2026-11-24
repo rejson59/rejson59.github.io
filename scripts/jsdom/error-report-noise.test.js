@@ -86,6 +86,46 @@ const SUPABASE = "https://hzbqzfimtroixnldzjeq.supabase.co/rest/v1/rpc/";
     check("zerwane API GitHuba nie trafia do panelu", () => assert(reports.length === 0, "wysłano " + reports.length));
   }
 
+  console.log("\n=== B2. ROZSZERZENIA I WSTRZYKNIĘCIA ===");
+  {
+    const { w, reports } = harness(() => Promise.resolve({ ok: true, status: 200 }));
+    /* Dokładnie ten błąd trafiał do panelu 19.11 z rozszerzenia Opera. */
+    const script = w.document.createElement("script");
+    script.src = "chrome-extension://eppiocemhmnlbhjplcgkofciiegomcon/executors/200.js";
+    w.document.head.appendChild(script);
+    script.dispatchEvent(new w.Event("error"));
+    await tick();
+    check("błąd zasobu z rozszerzenia nie trafia do panelu", () => assert(reports.length === 0, "wysłano " + reports.length));
+  }
+  {
+    const { w, reports } = harness(() => Promise.resolve({ ok: true, status: 200 }));
+    const script = w.document.createElement("script");
+    script.src = "https://connect.facebook.net/en_US/pcm.js";
+    w.document.head.appendChild(script);
+    script.dispatchEvent(new w.Event("error"));
+    await tick();
+    check("wstrzyknięty skrypt Facebooka nie trafia do panelu", () => assert(reports.length === 0, "wysłano " + reports.length));
+  }
+  {
+    const { w, reports } = harness(() => Promise.resolve({ ok: true, status: 200 }));
+    const script = w.document.createElement("script");
+    script.src = "https://rejhub-a1b2c3-jakubelozioms-projects.vercel.app/js/app.js?v=1";
+    w.document.head.appendChild(script);
+    script.dispatchEvent(new w.Event("error"));
+    await tick();
+    check("zasób z martwego podglądu Vercela nie trafia do panelu", () => assert(reports.length === 0, "wysłano " + reports.length));
+  }
+  {
+    const { w, reports } = harness(() => Promise.resolve({ ok: true, status: 200 }));
+    /* Prawdziwy brak zasobu na własnej domenie nadal ma trafiać. */
+    const script = w.document.createElement("script");
+    script.src = "https://rejhub.vercel.app/js/nie-ma-takiego.js?v=1";
+    w.document.head.appendChild(script);
+    script.dispatchEvent(new w.Event("error"));
+    await tick();
+    check("brakujący plik z własnej domeny nadal trafia", () => assert(reports.length === 1, "wysłano " + reports.length));
+  }
+
   console.log("\n=== C. PRAWDZIWA AWARIA NADAL RAPORTOWANA ===");
   {
     const { w, reports } = harness(() => Promise.resolve({ ok: false, status: 500 }));
