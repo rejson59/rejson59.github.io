@@ -11,9 +11,10 @@
  * scripts/update-project-updates.py). Ręcznie edytuj TYLKO dopiski note.
  */
 window.PROJECT_UPDATES = {
-  "Your-LM": { version: "v2026.11.22" },
-  "VisionPocket": { version: "v2026.11.22" },
-  "rejson59.github.io": { version: "v2026.11.22", note: "Społeczność 2.0: zdjęcia i filmy w postach, wątki odpowiedzi, agent AI" },
+  "Your-LM": { version: "v2026.11.23" },
+  "VisionPocket": { version: "v2026.11.23" },
+  "Zayra-ai-asistant": { version: "v2026.11.23" },
+  "rejson59.github.io": { version: "v2026.11.23", note: "Społeczność 2.0: zdjęcia i filmy w postach, wątki odpowiedzi, agent AI" },
   "RejStream": { version: "v2026.11.20" },
   "redstoneworld": { version: "v2026.11.19" },
   "realith": { version: "v2026.11.18" },
@@ -24,7 +25,6 @@ window.PROJECT_UPDATES = {
   "RejPlay": { version: "v2026.11.13" },
   "RejTag": { version: "v2026.11.13" },
   "Jakuplayer": { version: "v2026.11.10" },
-  "Zayra-ai-asistant": { version: "v2026.11.06" },
   "RejVoice": { version: "v2026.11.06" },
   "LuminoOS": { version: "v2026.11.04" },
   "MyPilot": { version: "v2026.11.02" },
