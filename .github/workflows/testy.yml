@@ -50,9 +50,29 @@ jobs:
         working-directory: scripts/jsdom
         run: npm install --no-audit --no-fund
 
-      - name: Testy
+      - name: Testy (każdy plik osobno, zbieramy wszystkie błędy)
         working-directory: scripts/jsdom
-        run: npm test
+        run: |
+          # `npm test` to łańcuch `&&` — pada pierwszy plik i reszta się nie
+          # uruchamia. Tu lecimy po kolei i zbieramy WSZYSTKIE niepowodzenia,
+          # więc jeden commit pokazuje pełną listę do naprawy.
+          node -e '
+            const p = require("./package.json");
+            const files = p.scripts.test.split("&&").map(s => s.trim().replace(/^node /, ""));
+            const { spawnSync } = require("child_process");
+            const padly = [];
+            for (const f of files) {
+              const r = spawnSync(process.execPath, [f], { stdio: "inherit" });
+              if (r.status !== 0) padly.push(f);
+            }
+            if (padly.length) {
+              console.log("\n=== PADŁY " + padly.length + " z " + files.length + " ===");
+              for (const f of padly) console.log("  ✘ " + f);
+              for (const f of padly) console.log("::error title=Test nie przeszedł::" + f);
+              process.exit(1);
+            }
+            console.log("\n=== WSZYSTKIE " + files.length + " PLIKÓW OK ===");
+          '
 
       - name: Podsumowanie niepowodzenia
         if: failure()
