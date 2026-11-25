@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="RejHub">
+  <defs>
+    <linearGradient id="rjMark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="48%" stop-color="#bed6ff"/>
+      <stop offset="100%" stop-color="#6ee7d8"/>
+    </linearGradient>
+    <linearGradient id="rjOrb" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#9fc4ff"/>
+      <stop offset="100%" stop-color="#4fd8c0"/>
+    </linearGradient>
+  </defs>
+  <path d="M19 46V18h13.2c6.1 0 10.4 3.7 10.4 9.2 0 4.2-2.4 7.3-6.2 8.6L44 46h-7.9l-6.4-9.3H25.6V46H19zm6.6-14.4h6.2c2.6 0 4.2-1.7 4.2-4.3s-1.6-4.2-4.2-4.2h-6.2v8.5z" fill="url(#rjMark)"/>
+  <circle cx="46.5" cy="43.5" r="4.5" fill="url(#rjOrb)"/>
+</svg>

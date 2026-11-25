@@ -113,6 +113,13 @@ self.addEventListener("fetch", function (event) {
        widgetów ani rejestracji wejścia przez service worker. */
     if (/^\/(?:logowanie|partnerstwo|uslugi|rejfile|rejchat|rejtools|rejsejf|konto-demo|spolecznosc|profil|testy)(?:\.html)?\/?$/i.test(url.pathname) || /^\/(?:portal|podroz)(?:\/|$)/i.test(url.pathname)) return;
 
+    /* RejHub 2.0 (`/rejhub2/…`) nie jest projektem: te strony mają własną
+       wyspę (`/hub/island.js`) i jej dziedziczone style. Worker wstrzykiwał
+       im starą pigułkę rejson-widgets, przez co obok aktualnej wyspy wisiała
+       druga, nieaktualna pigułka na każdej podstronie. Cały katalog — także
+       zagnieżdżone `podroz/`, `portal/`, `rejchat/` — zostaje nietknięty. */
+    if (/^\/rejhub2(?:\/|$)/i.test(url.pathname)) return;
+
     var parts = (url.pathname || "/").split("/").filter(function (s) {
       return s && !/\.html?$/i.test(s);
     });

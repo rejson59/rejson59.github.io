@@ -17,6 +17,52 @@
     }).catch(function () {});
   }
 
+  /* ---------- aktualna wyspa bez względu na host ----------
+     `/hub/island.js` jest adresem absolutnym, więc działa na rejhub.vercel.app.
+     W starym wdrożeniu GitHub Pages (`/rejhub2/…`) tego katalogu nie ma i skrypt
+     zwracał 404 — zostawała tylko pigułka wstrzykiwana przez `/sw.js`. Dlatego
+     gdy po wczytaniu strony wyspy naprawdę nie ma, dokładamy jej kopię
+     z katalogu tej strony. Samo istnienie tagu nie wystarcza: 404 z sieci
+     wygląda w DOM tak samo jak udany skrypt, więc pytamy o zamontowaną wyspę. */
+  function islandMounted() {
+    return !!window.__RJ_ISLAND__ || !!document.getElementById("rj-island-root");
+  }
+
+  function directoryOf(src) {
+    var base = String(src || "").split("?")[0].split("#")[0];
+    return base.replace(/[^/]*$/, "") || "./";
+  }
+
+  var islandFallbackRequested = false;
+
+  function loadIslandFallback() {
+    if (islandMounted() || islandFallbackRequested) return;
+    islandFallbackRequested = true;
+    var me = document.currentScript ||
+      document.querySelector('script[src*="hub/hub-shell.js"]');
+    var dir = directoryOf(me && me.getAttribute("src"));
+    var script = document.createElement("script");
+    script.src = dir + "island.js";
+    script.defer = true;
+    script.setAttribute("data-project", "rejhub");
+    script.setAttribute("data-project-name", "RejHub");
+    /* 404 (starsze wdrożenie) nie może zasypać konsoli ani zablokować strony. */
+    script.onerror = function () {
+      this.parentNode && this.parentNode.removeChild(this);
+    };
+    (document.head || document.documentElement).appendChild(script);
+  }
+
+  /* Wyspa montuje się przy DOMContentLoaded, więc czekamy na `load` i jeszcze
+     jedną turę pętli — inaczej uznalibyśmy poprawną stronę za pozbawioną wyspy. */
+  function ensureIsland() {
+    if (islandMounted()) return;
+    setTimeout(function () {
+      if (document.readyState === "complete") loadIslandFallback();
+      else window.addEventListener("load", loadIslandFallback, { once: true });
+    }, 0);
+  }
+
   /* ---------- animacje poza kadrem ----------
      Karta z pulsującą kropką, obracająca się poświata premium i smugi szkła
      liczą się w każdej klatce, nawet gdy są kilka ekranów niżej. Zatrzymujemy
@@ -76,5 +122,6 @@
     window.RejPanic.mount();
   }
   dropOldServiceWorkers();
+  ensureIsland();
   watchOffscreenAnimations();
 })();
