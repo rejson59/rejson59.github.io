@@ -162,6 +162,18 @@
       <ol class="cn-list" aria-label="Lista zmian">
         <li class="cn-item">
           <article class="cn-card" data-glass-lens>
+            <div class="cn-meta"><time datetime="2026-11-25">25 listopada 2026</time><span class="cn-tag">Strona</span></div>
+            <h2>Wszędzie ta sama, aktualna pigułka zgłoszeń</h2>
+            <ul>
+              <li>Na każdej podstronie zgłoszenie błędu albo pomysłu otwiera teraz <strong>wyspę RejHuba</strong> — ten sam dock, który był już na stronie głównej. Stara pigułka w rogu zniknęła.</li>
+              <li>Powód był techniczny: stara kopia serwisu na GitHub Pages (<code>/rejhub2/…</code>) dostawała od swojego service workera <strong>dawną pigułkę</strong> dopisywaną do każdej strony — a aktualnej wyspy nie miała skąd wczytać. Worker nie rusza już tego katalogu, a kopia ma własny arkusz i skrypt wyspy.</li>
+              <li>Przy okazji przestały się tam liczyć fałszywe „wejścia do projektu”: zagnieżdżone strony serwisu nie są już traktowane jak osobne projekty.</li>
+            </ul>
+          </article>
+        </li>
+
+        <li class="cn-item">
+          <article class="cn-card" data-glass-lens>
             <div class="cn-meta"><time datetime="2026-11-24">24 listopada 2026</time><span class="cn-tag">Bezpieczeństwo</span></div>
             <h2>Konto właściciela nie da się już podrobić</h2>
             <ul>
