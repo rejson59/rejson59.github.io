@@ -41,6 +41,57 @@ for (const page of pages) {
 }
 assert.ok(pages.length >= 25, 'liczba stron RejHuba się zmniejszyła');
 
+/* ---------- 1b. CZY PLIKI W OGÓLE ISTNIEJĄ (błąd z 25.11) ----------
+
+   Vercel serwuje jako root katalog `rejhub2/`, a GitHub Pages — katalog
+   główny repo. Strona podpięta pod `/hub/x.css` działa więc tylko wtedy,
+   gdy plik leży w OBU miejscach. Poprzednia wersja leżała tylko w `hub/`,
+   więc na rejhub.vercel.app wszystkie trzy pliki zwracały 404 i cały
+   efekt nigdy się nie wczytywał — mimo zielonych testów, bo testy
+   sprawdzały treść, a nie to, czy plik da się pobrać. */
+const fsLocal = require('node:fs');
+const pathLocal = require('node:path');
+const podpięte = new Set();
+for (const page of pages) {
+  const html = read(page);
+  for (const m of html.matchAll(/href="(\/hub\/[^"?]+)/g)) podpięte.add(m[1]);
+  for (const m of html.matchAll(/src="(\/hub\/[^"?]+)/g)) podpięte.add(m[1]);
+}
+for (const asset of podpięte) {
+  const rel = asset.replace(/^\//, '');
+  assert.ok(fsLocal.existsSync(pathLocal.join(root, rel)),
+    `${asset}: brak pliku w katalogu głównym (GitHub Pages)`);
+  assert.ok(fsLocal.existsSync(pathLocal.join(root, 'rejhub2', rel)),
+    `${asset}: brak pliku w rejhub2/ (Vercel) — na produkcji będzie 404`);
+}
+
+/* Obie kopie muszą być IDENTYCZNE. Jeśli ktoś poprawi tylko jedną, efekt
+   będzie inny na Vercelu i inny na GitHub Pages — najgorszy możliwy stan. */
+for (const asset of podpięte) {
+  const rel = asset.replace(/^\//, '');
+  const rootFile = pathLocal.join(root, rel);
+  const vercelFile = pathLocal.join(root, 'rejhub2', rel);
+  if (!fsLocal.existsSync(rootFile) || !fsLocal.existsSync(vercelFile)) continue;
+  assert.equal(
+    fsLocal.readFileSync(rootFile, 'utf8'),
+    fsLocal.readFileSync(vercelFile, 'utf8'),
+    `${asset}: kopie w hub/ i rejhub2/hub/ się rozjechały`
+  );
+}
+
+/* To samo dla plików, które wstrzykuje service worker na projekty. */
+const swSource = fsLocal.readFileSync(pathLocal.join(root, 'sw.js'), 'utf8');
+const wstrzykiwane = new Set();
+/* W sw.js ścieżki siedzą w napisach z escapowanymi cudzysłowami —
+   szukamy po prostu każdego adresu /hub/…, niezależnie od otoczenia. */
+for (const m of swSource.matchAll(/\/hub\/[a-z0-9-]+\.(?:js|css)/g)) wstrzykiwane.add(m[0]);
+assert.ok(wstrzykiwane.size >= 2, 'service worker nie wstrzykuje wyspy');
+for (const asset of wstrzykiwane) {
+  const rel = asset.replace(/^\//, '');
+  assert.ok(fsLocal.existsSync(pathLocal.join(root, rel)),
+    `sw.js: ${asset} nie istnieje na GitHub Pages`);
+}
+
 /* ---------- 2. arkusz ---------- */
 const css = read('hub/lg-glass.css');
 assert.match(css, /@supports\s*\(backdrop-filter:\s*url\(/, 'brak bramki dla url() w backdrop-filter');

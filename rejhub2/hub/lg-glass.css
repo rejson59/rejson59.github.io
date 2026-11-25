@@ -1,0 +1,331 @@
+/* © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
+   Kopiowanie i ponowne użycie bez pisemnej zgody zabronione. Licencja: /LICENSE, /licencja */
+/* ==========================================================================
+   RejHub 2.0 — jeden materiał: szkło z załamaniem krawędzi.
+   Wzorowany na filmiku „Liquid glass vs CSS blur”:
+     · krawędź ugina to, co jest pod panelem (refrakcja — hub/lg-glass.js),
+     · górna krawędź łapie światło (refleks),
+     · przy ramce pojawia się cienka obwódka i delikatna tęcza,
+     · środek zostaje czytelny, więc tekst nie traci kontrastu.
+
+   Ten plik to warstwa WYGLĄDU. Działa sam, bez JS: wtedy zostaje blur
+   i refleks, brakuje tylko ugięcia krawędzi (Safari, Firefox, brak JS).
+
+   Kolejność ładowania: PO liquid.css, glass-update.css, glass2.css
+   i glass-last.css — bo zamyka ich nadpisania w jedną receptę.
+   ========================================================================== */
+
+:root {
+  /* --- materiał --- */
+  /* Blur jest celowo łagodniejszy niż w starym `blur(26px)`: przy mocnym
+     rozmyciu ugięcie krawędzi nie ma czego pokazać. */
+  --lg-blur: blur(13px) saturate(175%) brightness(1.05);
+  --lg-tint: rgba(12, 19, 34, 0.34);
+  --lg-tint-strong: rgba(9, 14, 26, 0.66);
+  --lg-tint-soft: rgba(18, 27, 45, 0.34);
+
+  /* --- krawędź --- */
+  --lg-edge: rgba(255, 255, 255, 0.22);
+  --lg-edge-hi: rgba(255, 255, 255, 0.58);
+  --lg-rainbow: rgba(150, 200, 255, 0.30);
+
+  /* --- refleks i cień --- */
+  --lg-sheen: linear-gradient(
+    148deg,
+    rgba(255, 255, 255, 0.20) 0%,
+    rgba(255, 255, 255, 0.07) 24%,
+    rgba(255, 255, 255, 0.00) 46%,
+    rgba(255, 255, 255, 0.035) 78%,
+    rgba(255, 255, 255, 0.10) 100%
+  );
+  --lg-inset:
+    inset 0 1px 0 rgba(255, 255, 255, 0.42),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.10),
+    inset 1px 0 0 rgba(255, 255, 255, 0.10),
+    inset -1px 0 0 rgba(255, 255, 255, 0.10);
+  --lg-drop:
+    0 26px 60px -30px rgba(0, 3, 12, 0.92),
+    0 2px 10px rgba(0, 3, 12, 0.30);
+
+  /* Filtr neutralny: dopóki mapa się nie policzy, panel wygląda normalnie. */
+  --lg-filter: url(#rj-lg-none);
+  --lg-radius: 22px;
+  --lg-ease: cubic-bezier(0.22, 0.72, 0.2, 1);
+}
+
+html[data-theme="light"] {
+  --lg-blur: blur(12px) saturate(155%) brightness(1.02);
+  --lg-tint: rgba(255, 255, 255, 0.46);
+  --lg-tint-strong: rgba(255, 255, 255, 0.78);
+  --lg-tint-soft: rgba(255, 255, 255, 0.42);
+  --lg-edge: rgba(255, 255, 255, 0.86);
+  --lg-edge-hi: rgba(255, 255, 255, 0.98);
+  --lg-rainbow: rgba(80, 130, 210, 0.26);
+  --lg-sheen: linear-gradient(
+    148deg,
+    rgba(255, 255, 255, 0.72) 0%,
+    rgba(255, 255, 255, 0.30) 26%,
+    rgba(255, 255, 255, 0.02) 50%,
+    rgba(255, 255, 255, 0.20) 100%
+  );
+  --lg-inset:
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    inset 0 -1px 0 rgba(20, 40, 74, 0.06);
+  --lg-drop:
+    0 22px 50px -28px rgba(42, 68, 109, 0.40),
+    0 2px 8px rgba(42, 68, 109, 0.10);
+}
+
+/* ==========================================================================
+   1. Recepta bazowa
+   ==========================================================================
+   Stare warstwy (glass2.css: 854 `!important`, glass-last.css: 96) mają
+   twarde nadpisania na kartach projektu i aplikacji. Nasza recepta stoi
+   w kaskadzie później, ale `!important` i tak by ją przebił — dlatego dla
+   tych dwóch powierzchni piszemy `!important` świadomie, w jednym miejscu,
+   zamiast dokładać piątą warstwę nadpisań. Reszta selektorów obywa się bez. */
+
+/* Każda powierzchnia dostaje ten sam materiał. `isolation` trzyma refleks
+   w środku elementu, a `transform: translateZ(0)` wypycha panel na własną
+   warstwę — bez tego `backdrop-filter` potrafi „przeciekać” na sąsiadów. */
+:is(.rj-lg-surface, .rjapp-card, .project-card, .rj-home-stats,
+    .projects-toolbar, .toolbar, .board-toolbar, .comm-online-card,
+    .rejchat-rules, .rejchat-info-tip, .comm-auth-inner, .services-window,
+    .services-window-top, .rj-chat-alert-panel, .rj-header-profile,
+    .nav-more-panel, .mobile-menu, .card.rj-lg-surface) {
+  position: relative;
+  isolation: isolate;
+  border-radius: var(--lg-radius);
+  border: 1px solid var(--lg-edge);
+  background: var(--lg-tint);
+  -webkit-backdrop-filter: var(--lg-blur);
+  backdrop-filter: var(--lg-blur);
+  box-shadow: var(--lg-drop), var(--lg-inset);
+  transition: border-color 0.3s var(--lg-ease), box-shadow 0.3s var(--lg-ease);
+}
+
+/* Refleks kładziemy na pseudo-elemencie, nie na treści — inaczej przygasza
+   tekst. `mix-blend-mode: screen` rozjaśnia tylko to, co pod nim. */
+:is(.rj-lg-surface, .rjapp-card, .project-card, .rj-home-stats,
+    .projects-toolbar, .toolbar, .board-toolbar, .comm-online-card,
+    .rejchat-rules, .rejchat-info-tip, .comm-auth-inner, .services-window,
+    .services-window-top, .rj-chat-alert-panel, .rj-header-profile,
+    .nav-more-panel, .mobile-menu, .card.rj-lg-surface)::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--lg-sheen);
+  opacity: 0.9;
+  pointer-events: none;
+  z-index: 0;
+  mix-blend-mode: screen;
+}
+
+/* Treść musi być nad refleksem. */
+:is(.rj-lg-surface, .rjapp-card, .project-card, .rj-home-stats,
+    .projects-toolbar, .toolbar, .board-toolbar, .comm-online-card,
+    .rejchat-rules, .rejchat-info-tip, .comm-auth-inner, .services-window,
+    .services-window-top, .rj-chat-alert-panel, .rj-header-profile,
+    .nav-more-panel, .mobile-menu, .card.rj-lg-surface) > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Delikatna tęcza przy krawędzi — to ona sprawia, że szkło wygląda na
+   grube. Bardzo niska intensywność: ma być wyczuwalna, nie kolorowa. */
+:is(.rj-lg-surface, .card.rj-lg-surface)::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(
+    135deg,
+    var(--lg-edge-hi) 0%,
+    transparent 22%,
+    transparent 62%,
+    var(--lg-rainbow) 84%,
+    var(--lg-edge-hi) 100%
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0.75;
+  z-index: 2;
+}
+
+/* Karty projektów i aplikacji: jedyne miejsce z `!important`, bo tyle
+   mają go stare warstwy. Tint jest tu mocniejszy niż na pozostałych
+   powierzchniach — pod kartą leży tapeta, a w karcie jest tekst, więc
+   czytelność wygrywa z przezroczystością. */
+/* Podwojona klasa (`.project-card.project-card`) to nie literówka: podnosi
+   specyficzność o 100, żeby wygrać z `body.rj-home .projects .project-card`
+   ze starej warstwy. Obie reguły są `!important`, więc rozstrzyga właśnie
+   specyficzność — bez tego karta zostawała na starym wyglądzie. */
+body .rjapp-card.rjapp-card,
+body .project-card.project-card,
+html body .rjapp-card,
+html body .project-card {
+  background: rgba(10, 16, 30, 0.62) !important;
+  /* Karta nie może trzymać własnej tafli tapety — refrakcja ma brać to,
+     co jest POD nią, a nie obrazek wklejony w tło karty. */
+  background-image: none !important;
+  border: 1px solid var(--lg-edge) !important;
+  /* Stara warstwa trzyma na karcie `backdrop-filter: none !important`
+     (bo tło kładła na `card-inner`). Musimy to nadpisać jawnie. */
+  -webkit-backdrop-filter: var(--lg-blur) !important;
+  backdrop-filter: var(--lg-blur) !important;
+  box-shadow: var(--lg-drop), var(--lg-inset) !important;
+}
+
+html[data-theme="light"] body .rjapp-card.rjapp-card,
+html[data-theme="light"] body .project-card.project-card,
+html[data-theme="light"] body .rjapp-card,
+html[data-theme="light"] body .project-card {
+  background: rgba(255, 255, 255, 0.70) !important;
+  background-image: none !important;
+}
+
+@supports (backdrop-filter: url(#rj-lg-probe)) {
+  .rjapp-card.rj-lg-on,
+  .project-card.rj-lg-on,
+  body.rj-home .project-card.rj-lg-on {
+    -webkit-backdrop-filter: var(--lg-blur) var(--lg-filter) !important;
+    backdrop-filter: var(--lg-blur) var(--lg-filter) !important;
+  }
+}
+
+/* Panel, który ma być mocniejszy (modal, dock): ten sam materiał, więcej
+   krycia — treść pod spodem i tak nie może przeszkadzać w czytaniu. */
+.rj-lg-solid {
+  background: var(--lg-tint-strong);
+}
+
+/* ==========================================================================
+   2. Prawdziwe załamanie — tylko tam, gdzie przeglądarka to potrafi
+   ==========================================================================
+   `url()` w `backdrop-filter` przyjmuje dziś wyłącznie Chromium. Zapytanie
+   `@supports` sprawia, że Safari i Firefox zostają przy samym blurze z
+   punktu 1 — nigdy nie dostają zepsutego panelu. */
+
+@supports (backdrop-filter: url(#rj-lg-probe)) or (-webkit-backdrop-filter: url(#rj-lg-probe)) {
+  /* Filtr podpina hub/lg-glass.js, wpisując do `--lg-filter` całe `url(#…)`.
+     Zmienna musi stać w deklaracji SAMODZIELNIE — `url(var(--x))` nie jest
+     poprawnym CSS (token `url()` nie przyjmuje zmiennych).
+     Domyślna wartość to filtr neutralny, więc panel nigdy nie traci bluru. */
+  .rj-lg-on {
+    -webkit-backdrop-filter: var(--lg-blur) var(--lg-filter);
+    backdrop-filter: var(--lg-blur) var(--lg-filter);
+  }
+}
+
+/* ==========================================================================
+   3. Powierzchnie, które dostają załamanie
+   ========================================================================== */
+
+/* Karty projektów i aplikacji — największe, więc efekt najbardziej widać. */
+.rjapp-card,
+.project-card,
+.rjapp-appcard {
+  border-radius: 20px;
+}
+
+/* Dock wyspy i modale — tam szkło jest najbardziej „fizyczne”. */
+.rj-island .rj-panel,
+.rj-island .rj-dock,
+.rj-lg-fixed {
+  -webkit-backdrop-filter: blur(16px) saturate(180%) brightness(1.04);
+  backdrop-filter: blur(26px) saturate(185%) brightness(1.05);
+}
+
+/* ==========================================================================
+   4. Stany i dostępność
+   ========================================================================== */
+
+/* Najazd: krawędź łapie więcej światła. Bez przesuwania elementu, żeby nie
+   rozjeżdżać siatki. */
+:is(.rj-lg-surface, .rjapp-card, .project-card):hover {
+  border-color: var(--lg-edge-hi) !important;
+  box-shadow:
+    var(--lg-drop),
+    inset 0 1px 0 rgba(255, 255, 255, 0.62),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.14);
+}
+
+/* Czytelność ponad efekt: jeśli użytkownik prosi o mniej przezroczystości,
+   szkło robi się prawie pełne, a załamanie znika. */
+@media (prefers-reduced-transparency: reduce) {
+  :is(.rj-lg-surface, .rjapp-card, .project-card, .card.rj-lg-surface) {
+    background: var(--lg-tint-strong);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .rj-lg-surface::after,
+  .card.rj-lg-surface::after {
+    display: none;
+  }
+}
+
+/* Tryb oszczędzania: wyłączamy blur i refleks, zostaje płaski panel.
+   To ta sama decyzja, którą podejmuje css/potato.css. */
+html.rj-potato :is(.rj-lg-surface, .rjapp-card, .project-card) {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background: var(--lg-tint-strong);
+}
+html.rj-potato :is(.rj-lg-surface, .rjapp-card, .project-card)::before {
+  display: none;
+}
+
+/* ==========================================================================
+   5. Tło pod szkłem
+   ==========================================================================
+   Załamanie widać tylko wtedy, gdy pod panelem jest coś, co można ugiąć.
+   Płaskie tło daje efekt „mętnej szyby”. Dlatego tapeta dostaje delikatne
+   wstęgi — bez nich krawędź nie ma czego łamać. */
+
+body::before {
+  background-image:
+    radial-gradient(60% 42% at 18% 12%, rgba(96, 150, 255, 0.10), transparent 62%),
+    radial-gradient(52% 38% at 82% 26%, rgba(150, 120, 255, 0.09), transparent 66%),
+    radial-gradient(64% 46% at 52% 88%, rgba(60, 200, 190, 0.07), transparent 64%),
+    url("/hub/wallpaper-1280.webp");
+  background-size: auto, auto, auto, cover;
+  background-position: center, center, center, center;
+}
+
+html[data-theme="light"] body::before {
+  background-image:
+    radial-gradient(58% 40% at 16% 10%, rgba(90, 140, 235, 0.13), transparent 62%),
+    radial-gradient(50% 36% at 84% 24%, rgba(140, 110, 230, 0.10), transparent 66%),
+    url("/hub/wallpaper-glass-light.webp");
+  background-size: auto, auto, cover;
+}
+
+@media (max-width: 700px) {
+  body::before {
+    background-image:
+      radial-gradient(70% 44% at 20% 8%, rgba(96, 150, 255, 0.11), transparent 64%),
+      radial-gradient(60% 40% at 80% 30%, rgba(150, 120, 255, 0.09), transparent 68%),
+      url("/hub/wallpaper-mobile.webp");
+    background-size: auto, auto, cover;
+  }
+}
+
+/* ==========================================================================
+   6. Ruch
+   ==========================================================================
+   Refleks przesuwa się minimalnie przy najechaniu — tak, jakby panel
+   przechylał się pod światło. Wyłączone przy `prefers-reduced-motion`. */
+@media (prefers-reduced-motion: no-preference) {
+  :is(.rj-lg-surface, .rjapp-card, .project-card)::before {
+    transition: opacity 0.4s var(--lg-ease), transform 0.5s var(--lg-ease);
+  }
+  :is(.rj-lg-surface, .rjapp-card, .project-card):hover::before {
+    opacity: 1;
+    transform: translateY(-1.5%) scale(1.02);
+  }
+}
