@@ -2679,7 +2679,7 @@
      skryptu — wcześniej była tu zaszyta stała („3”), przez co przeglądarka
      trzymała w cache stary arkusz pod tym samym adresem i nowe elementy
      wyspy (wybór „błąd czy pomysł”) wyświetlały się bez stylów. */
-  var CSS_VERSION = "17";
+  var CSS_VERSION = "18";
 
   function scriptVersion(src) {
     var match = /[?&]v=([^&#]+)/.exec(String(src || ""));

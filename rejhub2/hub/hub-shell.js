@@ -7,6 +7,11 @@
   /* Strona główna RejHub 2.0 nie ma się rejestrować w starym service workerze. */
   function dropOldServiceWorkers() {
     if (!("serviceWorker" in navigator)) return;
+    /* Tylko strony samego RejHuba. Wcześniej warunek „scope === origin + /”
+       łapał też zwykłe projekty (/JoyPad/, /Jakuplayer/…) i wyrejestrowywał
+       dziedziczony /sw.js — czyli dokładnie tego workera, który wstrzykuje
+       im wyspę. Efekt: na projektach nigdy nie było czego pokazać. */
+    if (!isHubPage()) return;
     navigator.serviceWorker.getRegistrations().then(function (list) {
       list.forEach(function (registration) {
         var scope = registration.scope || "";
@@ -15,6 +20,16 @@
         }
       });
     }).catch(function () {});
+  }
+
+  /* Czy to strona RejHuba, a nie projekt.
+     Na rejhub.vercel.app strony RejHuba są w katalogu głównym (i to one mają
+     tu sprzątać po starym workerze). Na GitHub Pages strony RejHuba mieszkają
+     wyłącznie pod `/rejhub2/…`, a katalog główny zajmują projekty — więc tam
+     nie ruszamy niczego. */
+  function isHubPage() {
+    if (/(^|\.)rejhub\.vercel\.app$/i.test(location.hostname)) return true;
+    return /^\/rejhub2(?:\/|\.html?$)/i.test(String(location.pathname || "/"));
   }
 
   /* ---------- aktualna wyspa bez względu na host ----------

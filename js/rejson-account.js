@@ -56,4 +56,77 @@
   }
   window.RejsonAccount = Object.freeze({getSession:getSession, open:open, subscribe:subscribe});
   window.dispatchEvent(new Event("rj:account-ready"));
+
+  /* ---------- wyspa RejHuba na stronie projektu ----------
+     Ten skrypt ładują projekty (`/js/rejson-account.js`) — między innymi
+     Jakuplayer i RejStream — więc jest pewnym punktem zaczepienia: działa
+     nawet tam, gdzie service worker nie jest zarejestrowany albo przeglądarka
+     go nie ma. Wyspa i tak jest wstrzykiwana przez /sw.js, gdy ten działa,
+     dlatego montujemy ją tylko raz i tylko poza stronami samego RejHuba.
+
+     Warunki:
+       - nie na rejhub.vercel.app (tam wyspa jest w HTML strony),
+       - nie na `/rejhub2/…` (to też jest RejHub, nie projekt),
+       - nie w podglądzie karty na stronie głównej (byłaby druga wyspa
+         w ramce obok wyspy rodzica). */
+  function isProjectPage() {
+    if (!/(^|\.)rejson59\.github\.io$/i.test(location.hostname)) return false;
+    var path = String(location.pathname || "/");
+    if (/^\/rejhub2(?:\/|\.html?$)/i.test(path)) return false;
+    if (/^\/(?:rejson-widgets|hub)\//i.test(path)) return false;
+    /* Strony RejHuba pod tym adresem to jednoplikowe przekierowania
+       (`data-przeniesienie`); ich i tak nie rozwijamy. */
+    return true;
+  }
+
+  function islandMounted() {
+    return !!window.__RJ_ISLAND__ || !!document.getElementById("rj-island-root");
+  }
+
+  function insidePreviewFrame() {
+    try {
+      if (window.name === "rejson-card-preview") return true;
+      if (window.self === window.top) return false;
+      var frame = window.frameElement;
+      if (!frame) return false; /* obca domena — nie dotykamy */
+      if (frame.hasAttribute("data-card-preview")) return true;
+      if (frame.classList && frame.classList.contains("card-preview-iframe")) return true;
+      return !!(frame.closest && frame.closest(".card-preview-frame"));
+    } catch (e) {
+      /* Brak dostępu do frameElement znaczy obcy origin — zostawiamy. */
+      return true;
+    }
+  }
+
+  function mountIsland() {
+    if (islandMounted() || !isProjectPage() || insidePreviewFrame()) return;
+    var base = String(script && script.src ? script.src : "").split("?")[0];
+    var root = base.replace(/\/js\/rejson-account\.js$/i, "");
+    if (!root || root === base) return;
+
+    var link = document.createElement("link");
+    link.rel = "stylesheet";
+    link.href = root + "/hub/island.css";
+    (document.head || document.documentElement).appendChild(link);
+
+    var tag = document.createElement("script");
+    tag.src = root + "/hub/island.js";
+    tag.defer = true;
+    /* Nazwa projektu z adresu: `/Jakuplayer/` → „Jakuplayer”. */
+    var slug = String(location.pathname || "").split("/").filter(Boolean)[0] || "rejhub";
+    tag.setAttribute("data-project", slug);
+    tag.setAttribute("data-project-name", slug);
+    /* Odnośniki czatu i konta mają prowadzić do RejHuba, nie w głąb projektu. */
+    tag.setAttribute("data-hub-base", "https://rejhub.vercel.app");
+    tag.onerror = function () { if (tag.parentNode) tag.parentNode.removeChild(tag); };
+    (document.head || document.documentElement).appendChild(tag);
+  }
+
+  /* Skrypt bywa w `<head>` z `defer` — DOM jest już gotowy, ale na wszelki
+     wypadek czekamy, gdy strona jeszcze się wczytuje. */
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", mountIsland, { once: true });
+  } else {
+    mountIsland();
+  }
 })(window, document);
