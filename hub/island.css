@@ -1,0 +1,2185 @@
+/* © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
+   Dynamiczna wyspa RejHub — czarna, sprężynowa, wspólna dla wszystkich podstron.
+   Style są zamknięte pod #rj-island-root, żeby nie walczyły z glass2.css. */
+
+#rj-island-root {
+  position: fixed;
+  inset: 0;
+  z-index: 2147482000;
+  pointer-events: none;
+  contain: layout style;
+}
+
+#rj-island-root *,
+#rj-island-root *::before,
+#rj-island-root *::after {
+  box-sizing: border-box;
+}
+
+#rj-island-root .rj-island {
+  --w: 172px;
+  --h: 46px;
+  --r: 23px;
+  position: absolute;
+  left: 50%;
+  bottom: calc(max(16px, env(safe-area-inset-bottom)) + var(--rj-kb, 0px) + var(--rj-ads, 0px));
+  width: var(--w);
+  height: var(--h);
+  max-width: calc(100vw - 16px);
+  /* dvh zna pasek przeglądarki na telefonie — wyspa nie wyjdzie za ekran. */
+  max-height: calc(100vh - 24px);
+  max-height: calc(100dvh - 24px);
+  margin-left: calc(var(--w) / -2);
+  border-radius: var(--r);
+  background: #000;
+  color: #f4f7fc;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.14) inset,
+    0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 -1px 0 rgba(0, 0, 0, 0.9) inset,
+    0 24px 60px -22px rgba(0, 0, 0, 0.9),
+    0 4px 14px -6px rgba(0, 0, 0, 0.7);
+  /* `overflow: clip` (nie hidden) — to nie jest kontener przewijania, więc
+     fokus w polu nie może przewinąć treści poza wyspę. `hidden` zostaje jako
+     zapas dla starszych przeglądarek. */
+  overflow: hidden;
+  overflow: clip;
+  /* Bez will-change i bez contain: paint. Wymuszona warstwa graficzna
+     zmieniana co klatkę potrafi pokazać czarny prostokąt. */
+  contain: layout style;
+  overscroll-behavior: contain;
+  touch-action: manipulation;
+  /* Schowanie: wyspa zjeżdża do dolnej krawędzi jako mały uchwyt. */
+  transition: bottom 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: auto;
+  font: 15px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* jedna nitka światła na górnej krawędzi — cały „połysk” czerni */
+#rj-island-root .rj-island::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0) 42%);
+  pointer-events: none;
+  z-index: 2;
+}
+
+#rj-island-root .rj-island:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px rgba(110, 168, 255, 0.7),
+    0 24px 60px -22px rgba(0, 0, 0, 0.9);
+}
+
+#rj-island-root [hidden] {
+  display: none !important;
+}
+
+#rj-island-root .rj-island.is-hidden {
+  display: none;
+}
+
+/* ---------- widoki ---------- */
+
+#rj-island-root .rj-view {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  min-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  transform: scale(0.97);
+  pointer-events: none;
+  transition: opacity 0.16s ease, transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  /* Domyślnie tekst się zawija — wcześniej nowrap wypychał treść paneli
+     poza wyspę i przycisk zamykania był ucięty. */
+  white-space: normal;
+}
+
+#rj-island-root .rj-view--idle,
+#rj-island-root .rj-view--dock {
+  white-space: nowrap;
+}
+
+#rj-island-root .rj-island[data-state="idle"] .rj-view--idle,
+#rj-island-root .rj-island[data-state="dock"] .rj-view--dock,
+#rj-island-root .rj-island[data-state="report"] .rj-view--report,
+#rj-island-root .rj-island[data-state="chat"] .rj-view--chat,
+#rj-island-root .rj-island[data-state="assistant"] .rj-view--assistant,
+#rj-island-root .rj-island[data-state="alerts"] .rj-view--alerts,
+#rj-island-root .rj-island[data-state="now"] .rj-view--now,
+#rj-island-root .rj-island[data-state="profile"] .rj-view--profile,
+#rj-island-root .rj-island[data-state="quick"] .rj-view--quick,
+#rj-island-root .rj-island[data-state="theme"] .rj-view--theme,
+#rj-island-root .rj-island[data-state="tasks"] .rj-view--tasks,
+#rj-island-root .rj-island[data-state="panic"] .rj-view--panic {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+  transition: opacity 0.2s ease 0.05s, transform 0.32s cubic-bezier(0.22, 1, 0.36, 1) 0.02s;
+}
+
+/* ---------- zwinięta ---------- */
+
+#rj-island-root .rj-view--idle {
+  gap: 8px;
+  /* Lewy margines na logo, prawy na strzałkę — oba przyciski muszą zostać
+     WEWNĄTRZ czarnej pigułki, także gdy nazwa projektu jest długa. */
+  padding: 0 8px 0 7px;
+  cursor: pointer;
+}
+
+/* mała strzałka w dół — schowanie wyspy do uchwytu przy dolnej krawędzi */
+#rj-island-root .rj-collapse {
+  margin-left: auto;
+  /* Stała szerokość i brak kurczenia: tytuł zwęża się pierwszy, więc
+     strzałka nigdy nie wyjeżdża poza wyspę (zgłoszenie z telefonu). */
+  flex: 0 0 26px;
+  position: relative;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(240, 246, 255, 0.75);
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease, transform 0.12s ease;
+}
+
+#rj-island-root .rj-collapse svg {
+  width: 15px;
+  height: 15px;
+}
+
+#rj-island-root .rj-collapse:hover,
+#rj-island-root .rj-collapse:focus-visible {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  outline: none;
+}
+
+#rj-island-root .rj-collapse:active {
+  transform: scale(0.9);
+}
+
+#rj-island-root .rj-dock-btn--collapse {
+  flex: 0 0 auto;
+  width: 32px;
+  max-width: 32px;
+  color: rgba(238, 245, 255, 0.55);
+}
+
+#rj-island-root .rj-dock-btn--collapse svg {
+  width: 16px;
+  height: 16px;
+}
+
+#rj-island-root .rj-orb {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, #2b3340, #0b0d11 72%);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.12) inset;
+}
+
+#rj-island-root .rj-orb img {
+  width: 21px;
+  height: 21px;
+  display: block;
+}
+
+#rj-island-root .rj-title {
+  /* Jedyne, co może się zwężać. Bez `min-width: 0` długi tytuł wypychał
+     przycisk zamykania poza krawędź wyspy. */
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  color: #f4f7fc;
+}
+
+#rj-island-root .rj-title small {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(232, 240, 252, 0.52);
+  letter-spacing: 0;
+}
+
+#rj-island-root .rj-hint {
+  margin-left: auto;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  opacity: 0.55;
+}
+
+#rj-island-root kbd {
+  display: inline-grid;
+  place-items: center;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 4px;
+  font: 600 9.5px/1 ui-monospace, monospace;
+  color: rgba(240, 246, 255, 0.8);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+/* ---------- schowana: uchwyt przy dolnej krawędzi ---------- */
+
+#rj-island-root .rj-view--min {
+  justify-content: flex-start;
+  gap: 7px;
+  padding: 0 9px;
+  overflow: hidden;
+}
+
+#rj-island-root .rj-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: rgba(240, 246, 255, 0.78);
+  font: 600 10.5px/1 system-ui, sans-serif;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: color 0.16s ease;
+  text-align: left;
+}
+
+#rj-island-root .rj-handle-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: opacity 0.16s ease;
+}
+
+#rj-island-root .rj-handle-text.is-flash {
+  color: #fff;
+  font-weight: 700;
+}
+
+#rj-island-root .rj-handle-up {
+  display: grid;
+  place-items: center;
+  flex: none;
+  color: rgba(240, 246, 255, 0.5);
+}
+
+/* licznik nieprzeczytanych widoczny także wtedy, gdy wyspa jest schowana */
+#rj-island-root .rj-handle-badge {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #ff453a;
+  color: #fff;
+  font: 700 9.5px/1 system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
+/* kropka stanu sieci: zielona = działa, szara = brak */
+#rj-island-root .rj-handle-net {
+  width: 7px;
+  height: 7px;
+  flex: none;
+  border-radius: 50%;
+  background: #6ea8ff;
+  box-shadow: 0 0 0 2px rgba(110, 168, 255, 0.18);
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+#rj-island-root .rj-handle-net.is-offline {
+  background: #8e8e93;
+  box-shadow: 0 0 0 2px rgba(142, 142, 147, 0.16);
+}
+
+#rj-island-root .rj-handle-net.has-queue {
+  background: #ffd60a;
+  box-shadow: 0 0 0 2px rgba(255, 214, 10, 0.2);
+}
+
+/* pauza/play w schowanym uchwycie */
+#rj-island-root .rj-handle-play {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  flex: none;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.16s ease, transform 0.1s ease;
+}
+
+#rj-island-root .rj-handle-play svg {
+  width: 12px;
+  height: 12px;
+}
+
+#rj-island-root .rj-handle-play:hover {
+  background: rgba(255, 255, 255, 0.24);
+}
+
+#rj-island-root .rj-handle-play:active {
+  transform: scale(0.9);
+}
+
+/* pasek postępu przyklejony do dolnej krawędzi uchwytu */
+#rj-island-root .rj-handle-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.14);
+  overflow: hidden;
+}
+
+#rj-island-root .rj-handle-bar i {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, #6ea8ff, #a9c8ff);
+  transition: width 0.4s linear;
+}
+
+/* ---------- pasek mini reklam na telefonie ---------- */
+
+/* Wyspa, toast i pigułka ciszy nie mogą wchodzić na pasek mini reklam.
+   Wysokość paska trafia do --rj-ads (island.js czyta ją z dokumentu),
+   bo arkusz w shadow DOM nie widzi klas na <html>. */
+#rj-island-root .rj-unquiet {
+  bottom: calc(max(16px, env(safe-area-inset-bottom)) + var(--rj-kb, 0px) + var(--rj-ads, 0px) + 6px);
+}
+
+#rj-island-root .rj-toast {
+  bottom: calc(max(16px, env(safe-area-inset-bottom)) + var(--rj-kb, 0px) + var(--rj-ads, 0px) + 66px);
+}
+
+@media (max-width: 560px) {
+  #rj-island-root .rj-unquiet,
+  #rj-island-root .rj-toast {
+    bottom: calc(max(10px, env(safe-area-inset-bottom)) + var(--rj-kb, 0px) + var(--rj-ads, 0px) + 8px);
+  }
+}
+
+/* ---------- cisza: wyjście awaryjne ---------- */
+
+/* Wyspa chowa się w ciszy, ale NIE znika bez śladu: na dole ekranu zostaje
+   pigułka „Wróć teraz” z odliczaniem. Bez niej 30 minut ciszy było pułapką. */
+#rj-island-root .rj-unquiet {
+  position: absolute;
+  left: 50%;
+  bottom: calc(max(16px, env(safe-area-inset-bottom)) + var(--rj-kb, 0px) + 12px);
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  padding: 6px 16px 6px 7px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  background: #05070c;
+  box-shadow: 0 18px 44px -20px rgba(0, 0, 0, 0.95), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  color: #f2f7ff;
+  font: 600 12px/1.1 system-ui, sans-serif;
+  pointer-events: auto;
+  cursor: pointer;
+  z-index: 3;
+  animation: rj-unquiet-in 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+#rj-island-root .rj-unquiet[hidden] { display: none !important; }
+
+#rj-island-root .rj-unquiet:hover { border-color: rgba(255, 255, 255, 0.28); }
+
+#rj-island-root .rj-unquiet:focus-visible {
+  outline: 2px solid #8fbdff;
+  outline-offset: 3px;
+}
+
+#rj-island-root .rj-unquiet-ico {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: #dcebff;
+}
+
+#rj-island-root .rj-unquiet-ico svg { width: 15px; height: 15px; }
+
+#rj-island-root .rj-unquiet-text { display: grid; gap: 2px; text-align: left; }
+
+#rj-island-root .rj-unquiet-text b { font-size: 12px; font-weight: 700; letter-spacing: -0.01em; }
+
+#rj-island-root .rj-unquiet-text small {
+  color: rgba(214, 228, 248, 0.62);
+  font: 600 10px/1 "JetBrains Mono", ui-monospace, monospace;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes rj-unquiet-in {
+  from { opacity: 0; transform: translate(-50%, 10px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #rj-island-root .rj-unquiet { animation: none; }
+}
+
+/* cisza: wyspa znika z ekranu, ale sama wraca */
+#rj-island-root .rj-island.is-quiet {
+  display: none;
+}
+
+/* ---------- pozycja: lewo / prawo ---------- */
+
+#rj-island-root .rj-island.is-left {
+  left: 10px;
+  margin-left: 0 !important;
+}
+
+#rj-island-root .rj-island.is-right {
+  left: auto;
+  right: 10px;
+  margin-left: 0 !important;
+}
+
+/* ---------- wybór pozycji w panelu wyglądu ---------- */
+
+#rj-island-root .rj-corner {
+  display: flex;
+  gap: 4px;
+  width: 100%;
+  margin-top: 2px;
+}
+
+#rj-island-root .rj-corner button {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 7px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 9px;
+  background: transparent;
+  color: rgba(238, 245, 255, 0.62);
+  font: 600 11px/1 system-ui, sans-serif;
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+}
+
+#rj-island-root .rj-corner button[aria-pressed="true"] {
+  border-color: rgba(110, 168, 255, 0.55);
+  background: rgba(110, 168, 255, 0.18);
+  color: #fff;
+}
+
+#rj-island-root .rj-quiet-hint {
+  color: rgba(232, 240, 252, 0.42);
+  font-size: 10px;
+}
+
+/* ---------- akcje dla bieżącej strony ---------- */
+
+#rj-island-root .rj-quick-context {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+}
+
+#rj-island-root .rj-context-title {
+  margin: 0;
+  color: rgba(232, 240, 252, 0.42);
+  font: 600 9.5px/1 system-ui, sans-serif;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+#rj-island-root .rj-context-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  padding: 7px 8px;
+  border: 0;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(238, 245, 255, 0.86);
+  font: 600 11.5px/1.3 system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.14s ease;
+}
+
+#rj-island-root .rj-context-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+/* ---------- czytniki ekranu ---------- */
+
+#rj-island-root .rj-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  border: 0;
+  white-space: nowrap;
+}
+
+#rj-island-root .rj-handle:hover,
+#rj-island-root .rj-handle:focus-visible {
+  color: #fff;
+  outline: none;
+}
+
+#rj-island-root .rj-handle svg {
+  width: 13px;
+  height: 13px;
+}
+
+/* Przyklejenie do dołu: bez marginesu, dolne rogi proste, lżejszy cień. */
+#rj-island-root .rj-island.is-min {
+  bottom: env(safe-area-inset-bottom, 0px);
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.12) inset,
+    0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 -6px 22px -12px rgba(0, 0, 0, 0.85);
+}
+
+#rj-island-root .rj-island.is-min::before {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0) 60%);
+}
+
+/* ---------- dock ---------- */
+
+#rj-island-root .rj-view--dock {
+  justify-content: center;
+  gap: 2px;
+  padding: 0 8px;
+  width: 100%;
+}
+
+#rj-island-root .rj-dock-btn {
+  display: grid;
+  place-items: center;
+  /* Szerokość dzieli się na osiem przycisków, maksymalnie 44 px.
+     Na wąskim telefonie każdy dostaje po ~36 px i nic nie wychodzi. */
+  flex: 1 1 0;
+  min-width: 0;
+  width: auto;
+  max-width: 44px;
+  height: 40px;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  color: rgba(238, 245, 255, 0.72);
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease, transform 0.1s ease;
+}
+
+#rj-island-root .rj-dock-btn svg {
+  width: 19px;
+  height: 19px;
+}
+
+#rj-island-root .rj-dock-btn:hover,
+#rj-island-root .rj-dock-btn:focus-visible {
+  background: rgba(255, 255, 255, 0.09);
+  color: #fff;
+  outline: none;
+}
+
+#rj-island-root .rj-dock-btn:active {
+  transform: scale(0.92);
+}
+
+#rj-island-root .rj-dock-btn.is-primary {
+  color: #fff;
+}
+
+#rj-island-root .rj-dock-btn.has-dot {
+  position: relative;
+}
+
+#rj-island-root .rj-dock-btn.has-dot::after {
+  content: "";
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #ff453a;
+  box-shadow: 0 0 0 2px #000;
+}
+
+#rj-island-root .rj-dock-sep {
+  width: 1px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.12);
+  margin: 0 3px;
+}
+
+/* ---------- panele ---------- */
+
+#rj-island-root .rj-panel {
+  width: 100%;
+  min-width: 0;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 11px 0 12px;
+  white-space: normal;
+  min-height: 0;
+  overflow: hidden;
+}
+
+#rj-island-root .rj-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 26px;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+#rj-island-root .rj-panel-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12.5px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  color: #f4f7fc;
+}
+
+#rj-island-root .rj-panel-title small {
+  display: block;
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(232, 240, 252, 0.45);
+}
+
+#rj-island-root .rj-x {
+  margin-left: auto;
+  width: 26px;
+  height: 26px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(240, 246, 255, 0.7);
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease;
+}
+
+#rj-island-root .rj-x:hover,
+#rj-island-root .rj-x:focus-visible {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+  outline: none;
+}
+
+#rj-island-root .rj-seg {
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+#rj-island-root .rj-seg button {
+  border: 0;
+  border-radius: 999px;
+  padding: 5px 11px;
+  background: transparent;
+  color: rgba(235, 243, 255, 0.6);
+  font: 650 11.5px/1 system-ui, sans-serif;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+
+#rj-island-root .rj-seg button[aria-selected="true"] {
+  background: rgba(255, 255, 255, 0.16);
+  color: #fff;
+}
+
+#rj-island-root .rj-field,
+#rj-island-root textarea.rj-input {
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #f4f7fc;
+  font: 12.5px/1.45 system-ui, sans-serif;
+  padding: 9px 11px;
+  outline: none;
+  resize: none;
+}
+
+#rj-island-root textarea.rj-input {
+  flex: 1 1 auto;
+  min-height: 52px;
+}
+
+#rj-island-root .rj-field::placeholder,
+#rj-island-root textarea.rj-input::placeholder {
+  color: rgba(232, 240, 252, 0.38);
+}
+
+#rj-island-root .rj-field:focus,
+#rj-island-root textarea.rj-input:focus {
+  border-color: rgba(110, 168, 255, 0.7);
+  box-shadow: 0 0 0 3px rgba(110, 168, 255, 0.16);
+}
+
+#rj-island-root .rj-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+#rj-island-root .rj-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(238, 245, 255, 0.76);
+  font: 600 11.5px/1 system-ui, sans-serif;
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease;
+}
+
+#rj-island-root .rj-ghost svg {
+  width: 13px;
+  height: 13px;
+}
+
+#rj-island-root .rj-ghost:hover,
+#rj-island-root .rj-ghost:focus-visible {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  outline: none;
+}
+
+#rj-island-root .rj-ghost[aria-pressed="true"] {
+  border-color: rgba(110, 168, 255, 0.55);
+  background: rgba(110, 168, 255, 0.18);
+  color: #fff;
+}
+
+#rj-island-root .rj-send {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 999px;
+  background: #fff;
+  color: #000;
+  font: 700 11.5px/1 system-ui, sans-serif;
+  cursor: pointer;
+  transition: transform 0.12s ease, opacity 0.16s ease;
+}
+
+#rj-island-root .rj-send:hover {
+  opacity: 0.9;
+}
+
+#rj-island-root .rj-send:active {
+  transform: scale(0.97);
+}
+
+#rj-island-root .rj-send:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+#rj-island-root .rj-list {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: grid;
+  gap: 2px;
+  margin: 0 -6px;
+  padding: 0 6px;
+  overscroll-behavior: contain;
+}
+
+#rj-island-root .rj-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+#rj-island-root .rj-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 4px;
+}
+
+#rj-island-root .rj-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 8px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  color: rgba(238, 245, 255, 0.8);
+  font: 600 12px/1.3 system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.14s ease, color 0.14s ease;
+  white-space: nowrap;
+  width: 100%;
+}
+
+#rj-island-root .rj-item:hover,
+#rj-island-root .rj-item.is-cursor {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+#rj-island-root .rj-item .rj-key {
+  margin-left: auto;
+  color: rgba(232, 240, 252, 0.4);
+  font: 500 10px/1 ui-monospace, monospace;
+}
+
+#rj-island-root .rj-item .rj-ico {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.09);
+  flex: none;
+  font-size: 11px;
+}
+
+#rj-island-root .rj-empty {
+  padding: 9px 8px;
+  color: rgba(232, 240, 252, 0.45);
+  font-size: 11.5px;
+  line-height: 1.5;
+  white-space: normal;
+}
+
+#rj-island-root .rj-empty a {
+  color: #8fb8ff;
+  text-decoration: none;
+}
+
+#rj-island-root .rj-empty a:hover {
+  text-decoration: underline;
+}
+
+/* alerty */
+#rj-island-root .rj-alert {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  padding: 7px 8px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.055);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.14s ease;
+}
+
+#rj-island-root .rj-alert:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+#rj-island-root .rj-alert i {
+  width: 6px;
+  height: 6px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: #6ea8ff;
+  flex: none;
+}
+
+#rj-island-root .rj-alert.is-read i {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+#rj-island-root .rj-alert b {
+  display: block;
+  font-size: 11.5px;
+  color: #f4f7fc;
+  font-weight: 600;
+  margin-bottom: 1px;
+}
+
+#rj-island-root .rj-alert small {
+  color: rgba(232, 240, 252, 0.45);
+  font-size: 10px;
+}
+
+#rj-island-root .rj-link-btn {
+  border: 0;
+  background: transparent;
+  color: #7fb0ff;
+  font: 600 11px/1 system-ui, sans-serif;
+  cursor: pointer;
+  padding: 4px 0;
+}
+
+#rj-island-root .rj-link-btn:hover {
+  text-decoration: underline;
+}
+
+/* teraz gra */
+#rj-island-root .rj-now {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+}
+
+#rj-island-root .rj-cover {
+  width: 46px;
+  height: 46px;
+  flex: none;
+  border-radius: 10px;
+  background: linear-gradient(145deg, #2a3550, #6e4a8f);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 6px 16px -8px rgba(0, 0, 0, 0.8);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+#rj-island-root .rj-cover svg {
+  width: 20px;
+  height: 20px;
+}
+
+#rj-island-root .rj-now-meta {
+  min-width: 0;
+  flex: 1;
+}
+
+#rj-island-root .rj-now-meta b {
+  display: block;
+  font-size: 12.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #f4f7fc;
+}
+
+#rj-island-root .rj-now-meta small {
+  display: block;
+  color: rgba(232, 240, 252, 0.5);
+  font-size: 10.5px;
+}
+
+#rj-island-root .rj-round {
+  width: 32px;
+  height: 32px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.16s ease, transform 0.1s ease;
+}
+
+#rj-island-root .rj-round:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+#rj-island-root .rj-round:active {
+  transform: scale(0.92);
+}
+
+#rj-island-root .rj-round svg {
+  width: 14px;
+  height: 14px;
+}
+
+#rj-island-root .rj-round.is-play {
+  background: #fff;
+  color: #000;
+}
+
+/* profil */
+#rj-island-root .rj-profile {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+}
+
+#rj-island-root .rj-avatar {
+  width: 42px;
+  height: 42px;
+  flex: none;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font: 700 15px/1 system-ui, sans-serif;
+  color: #06101f;
+  background: linear-gradient(145deg, #cfe0ff, #8fb6ff);
+  overflow: hidden;
+}
+
+#rj-island-root .rj-avatar img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+#rj-island-root .rj-profile-meta b {
+  display: block;
+  font-size: 12.5px;
+  color: #f4f7fc;
+}
+
+#rj-island-root .rj-profile-meta small {
+  display: block;
+  font-size: 10.5px;
+  color: rgba(232, 240, 252, 0.5);
+}
+
+#rj-island-root .rj-statuses {
+  display: flex;
+  gap: 4px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+#rj-island-root .rj-status {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  padding: 4px 8px;
+  background: transparent;
+  color: rgba(238, 245, 255, 0.62);
+  font: 600 10px/1 system-ui, sans-serif;
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease, border-color 0.16s ease;
+}
+
+#rj-island-root .rj-status:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+#rj-island-root .rj-status.is-on {
+  background: rgba(110, 168, 255, 0.16);
+  border-color: rgba(110, 168, 255, 0.5);
+  color: #a9c8ff;
+}
+
+#rj-island-root .rj-status.is-on[data-status="busy"] {
+  background: rgba(255, 69, 58, 0.16);
+  border-color: rgba(255, 69, 58, 0.5);
+  color: #ff8d84;
+}
+
+#rj-island-root .rj-status.is-on[data-status="away"] {
+  background: rgba(255, 214, 10, 0.16);
+  border-color: rgba(255, 214, 10, 0.42);
+  color: #ffdf5c;
+}
+
+/* szybkie akcje */
+#rj-island-root .rj-quick {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  width: 100%;
+}
+
+#rj-island-root .rj-quick a,
+#rj-island-root .rj-quick button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 4px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.055);
+  color: rgba(240, 246, 255, 0.85);
+  font: 600 10px/1.2 system-ui, sans-serif;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.16s ease, border-color 0.16s ease, transform 0.12s ease;
+}
+
+#rj-island-root .rj-quick a:hover,
+#rj-island-root .rj-quick button:hover {
+  background: rgba(255, 255, 255, 0.11);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+#rj-island-root .rj-quick a:active,
+#rj-island-root .rj-quick button:active {
+  transform: scale(0.96);
+}
+
+#rj-island-root .rj-quick svg {
+  width: 17px;
+  height: 17px;
+}
+
+/* przełączniki */
+#rj-island-root .rj-switches {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+}
+
+#rj-island-root .rj-switch-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 7px 2px;
+  font-size: 12px;
+  color: rgba(240, 246, 255, 0.86);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+}
+
+#rj-island-root .rj-switch-row .rj-label {
+  flex: 1;
+}
+
+#rj-island-root .rj-switch {
+  width: 34px;
+  height: 20px;
+  flex: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  position: relative;
+  transition: background 0.22s ease;
+}
+
+#rj-island-root .rj-switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.24s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+#rj-island-root .rj-switch-row[aria-pressed="true"] .rj-switch {
+  background: #0a84ff;
+}
+
+#rj-island-root .rj-switch-row[aria-pressed="true"] .rj-switch::after {
+  transform: translateX(14px);
+}
+
+#rj-island-root .rj-hintline {
+  color: rgba(232, 240, 252, 0.42);
+  font-size: 10.5px;
+  line-height: 1.45;
+}
+
+/* zadania */
+#rj-island-root .rj-task {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+}
+
+#rj-island-root .rj-task-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: rgba(240, 246, 255, 0.86);
+}
+
+#rj-island-root .rj-task-row b {
+  flex: 1;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#rj-island-root .rj-task-row span {
+  color: rgba(232, 240, 252, 0.55);
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+#rj-island-root .rj-progress {
+  height: 4px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.14);
+  overflow: hidden;
+}
+
+#rj-island-root .rj-progress span {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #6ea8ff, #a9c8ff);
+  transition: width 0.25s ease;
+}
+
+/* potwierdzenie */
+#rj-island-root .rj-panic-wrap {
+  width: 100%;
+  display: grid;
+  gap: 8px;
+  text-align: center;
+}
+
+#rj-island-root .rj-panic-wrap b {
+  font-size: 12.5px;
+  color: #f4f7fc;
+}
+
+#rj-island-root .rj-panic-wrap p {
+  margin: 0;
+  color: rgba(232, 240, 252, 0.55);
+  font-size: 10.5px;
+  line-height: 1.4;
+}
+
+#rj-island-root .rj-panic-actions {
+  display: flex;
+  gap: 6px;
+  justify-content: center;
+}
+
+#rj-island-root .rj-panic-actions button {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  padding: 7px 14px;
+  background: rgba(255, 255, 255, 0.07);
+  color: #fff;
+  font: 650 11.5px/1 system-ui, sans-serif;
+  cursor: pointer;
+}
+
+#rj-island-root .rj-panic-actions button:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+#rj-island-root .rj-panic-actions button.is-danger {
+  background: #ff453a;
+  border-color: transparent;
+  color: #fff;
+}
+
+#rj-island-root .rj-panic-actions button.is-danger:hover {
+  filter: brightness(1.1);
+}
+
+/* toast */
+#rj-island-root .rj-toast {
+  position: absolute;
+  left: 50%;
+  bottom: calc(max(16px, env(safe-area-inset-bottom)) + var(--rj-kb, 0px) + 74px);
+  transform: translate(-50%, 8px);
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: #000;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 16px 40px -18px rgba(0, 0, 0, 0.9);
+  color: #f4f7fc;
+  font: 600 11.5px/1 system-ui, sans-serif;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease, transform 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+  white-space: normal;
+  overflow-wrap: anywhere;
+  text-align: center;
+  max-width: calc(100vw - 24px);
+}
+
+#rj-island-root .rj-toast.is-on {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
+/* ---------- telefon ---------- */
+
+@media (max-width: 560px) {
+  #rj-island-root .rj-island {
+    bottom: calc(max(10px, env(safe-area-inset-bottom)) + var(--rj-kb, 0px) + var(--rj-ads, 0px));
+    font-size: 14px;
+  }
+  #rj-island-root .rj-view {
+    padding: 0 11px;
+  }
+  #rj-island-root .rj-view--idle {
+    padding: 0 8px 0 7px;
+  }
+  #rj-island-root .rj-view--dock {
+    gap: 0;
+    padding: 0 5px;
+  }
+  #rj-island-root .rj-dock-btn {
+    max-width: 42px;
+    height: 38px;
+    border-radius: 12px;
+  }
+  #rj-island-root .rj-dock-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+  /* 16 px jest obowiązkowe: mniejsze pole tekstowe każe Safari powiększyć
+     całą stronę przy dotknięciu — wtedy wyspa „uciekała” z ekranu. */
+  #rj-island-root .rj-field,
+  #rj-island-root textarea.rj-input {
+    font-size: 16px;
+  }
+  #rj-island-root .rj-panel {
+    padding: 9px 0 10px;
+    gap: 7px;
+  }
+  #rj-island-root .rj-panel-head {
+    min-height: 24px;
+  }
+  #rj-island-root .rj-item {
+    padding: 8px 7px;
+  }
+  #rj-island-root .rj-ghost,
+  #rj-island-root .rj-send,
+  #rj-island-root .rj-panic-actions button {
+    padding: 8px 12px;
+  }
+  #rj-island-root .rj-toast {
+    bottom: calc(max(10px, env(safe-area-inset-bottom)) + var(--rj-kb, 0px) + 62px);
+  }
+}
+
+/* Wąskie telefony (iPhone SE, małe Androidy) — mniej ozdób, więcej miejsca. */
+@media (max-width: 380px) {
+  #rj-island-root .rj-view {
+    padding: 0 9px;
+  }
+  #rj-island-root .rj-view--idle {
+    padding: 0 7px 0 6px;
+    gap: 7px;
+  }
+  #rj-island-root .rj-quick {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  #rj-island-root .rj-cover {
+    width: 38px;
+    height: 38px;
+  }
+  #rj-island-root .rj-now {
+    gap: 7px;
+  }
+  #rj-island-root .rj-round {
+    width: 30px;
+    height: 30px;
+  }
+  #rj-island-root .rj-status {
+    padding: 4px 7px;
+  }
+  #rj-island-root .rj-seg button {
+    padding: 5px 8px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   ZGŁOSZENIE W DWÓCH KROKACH
+   Najpierw pytanie „błąd czy pomysł?”, dopiero potem pole tekstowe. Kafelki
+   są duże i jednoznaczne, żeby nie dało się ich przeoczyć ani kliknąć „obok”.
+   -------------------------------------------------------------------------- */
+
+#rj-island-root .rj-back {
+  width: 26px;
+  height: 26px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(240, 246, 255, 0.72);
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease;
+}
+
+#rj-island-root .rj-back:hover,
+#rj-island-root .rj-back:focus-visible {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  outline: none;
+}
+
+#rj-island-root .rj-back svg {
+  width: 15px;
+  height: 15px;
+}
+
+#rj-island-root .rj-choose {
+  display: grid;
+  gap: 7px;
+  flex: 1 1 auto;
+  min-height: 0;
+  align-content: start;
+}
+
+#rj-island-root .rj-choose-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 14px;
+  background: linear-gradient(158deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.03));
+  color: #f2f6fd;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.2s ease, transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+#rj-island-root .rj-choose-btn:hover,
+#rj-island-root .rj-choose-btn:focus-visible {
+  background: linear-gradient(158deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.06));
+  border-color: rgba(150, 190, 255, 0.5);
+  outline: none;
+}
+
+#rj-island-root .rj-choose-btn:active {
+  transform: scale(0.985);
+}
+
+#rj-island-root .rj-choose-icon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: 10px;
+  background: rgba(110, 168, 255, 0.16);
+  color: #cfe2ff;
+}
+
+#rj-island-root .rj-choose-icon svg {
+  width: 17px;
+  height: 17px;
+}
+
+#rj-island-root .rj-choose-btn[data-kind="idea"] .rj-choose-icon {
+  background: rgba(255, 215, 163, 0.18);
+  color: #ffe3bd;
+}
+
+#rj-island-root .rj-choose-text {
+  display: block;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+#rj-island-root .rj-choose-text b {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+#rj-island-root .rj-choose-text small {
+  display: block;
+  margin-top: 2px;
+  font-size: 10.5px;
+  line-height: 1.3;
+  color: rgba(232, 240, 252, 0.55);
+}
+
+#rj-island-root .rj-choose-go {
+  flex: none;
+  font-size: 13px;
+  color: rgba(232, 240, 252, 0.4);
+}
+
+#rj-island-root .rj-report-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* Linki w profilu: profil i wylogowanie stoją obok siebie, zawsze widoczne. */
+#rj-island-root .rj-profile-links {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+#rj-island-root .rj-profile-links .rj-ghost {
+  text-decoration: none;
+}
+
+#rj-island-root .rj-ghost--danger {
+  border-color: rgba(255, 138, 138, 0.3);
+  color: #ffc9c9;
+}
+
+#rj-island-root .rj-ghost--danger:hover,
+#rj-island-root .rj-ghost--danger:focus-visible {
+  background: rgba(255, 110, 110, 0.16);
+  border-color: rgba(255, 138, 138, 0.55);
+  color: #fff;
+}
+
+/* ==========================================================================
+   Mini RejChat w wyspie (zastąpił wyszukiwanie stron)
+   --------------------------------------------------------------------------
+   Wyspa ma 396 px szerokości, więc lista wiadomości jest ciasna, ale czytelna:
+   autor i czas w jednym wierszu, treść pod nimi, własne wiadomości delikatnie
+   podświetlone. Zero rozmywania tła — panel jest czarny, jak reszta wyspy.
+   ========================================================================== */
+
+#rj-island-root .rj-panel--chat {
+  gap: 9px;
+}
+
+#rj-island-root .rj-chat-badge {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  flex: none;
+  border-radius: 9px;
+  border: 1px solid rgba(139, 189, 255, 0.32);
+  background: rgba(139, 189, 255, 0.14);
+  color: #dcebff;
+  font: 700 13px/1 system-ui, sans-serif;
+}
+
+#rj-island-root .rj-chat-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 232px;
+  overflow-y: auto;
+  overflow-anchor: none;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0 -4px;
+  padding: 2px 4px;
+  scrollbar-width: thin;
+}
+
+#rj-island-root .rj-chat-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+#rj-island-root .rj-chat-list::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+#rj-island-root .rj-chat-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px;
+  padding: 7px 9px;
+  border-radius: 11px;
+  border: 1px solid transparent;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+#rj-island-root .rj-chat-row.is-mine {
+  border-color: rgba(139, 189, 255, 0.26);
+  background: rgba(77, 141, 246, 0.16);
+}
+
+#rj-island-root .rj-chat-who {
+  color: #eaf2ff;
+  font: 650 11.5px/1.3 system-ui, sans-serif;
+}
+
+#rj-island-root .rj-chat-when {
+  color: rgba(232, 240, 252, 0.42);
+  font: 500 9.5px/1.3 "JetBrains Mono", ui-monospace, monospace;
+}
+
+#rj-island-root .rj-chat-text {
+  flex-basis: 100%;
+  margin: 1px 0 0;
+  color: rgba(232, 240, 252, 0.86);
+  font: 400 12px/1.45 system-ui, sans-serif;
+  overflow-wrap: anywhere;
+}
+
+#rj-island-root .rj-chat-photo {
+  flex-basis: 100%;
+  color: rgba(139, 189, 255, 0.8);
+  font: 600 10px/1.3 system-ui, sans-serif;
+}
+
+#rj-island-root .rj-chat-form {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+#rj-island-root .rj-chat-form .rj-field {
+  flex: 1 1 auto;
+  min-width: 0;
+  border-radius: 999px;
+  padding: 9px 13px;
+}
+
+#rj-island-root .rj-chat-send {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #cfe2ff;
+  color: #071322;
+  cursor: pointer;
+  transition: transform 0.16s ease, opacity 0.16s ease;
+}
+
+#rj-island-root .rj-chat-send svg {
+  width: 16px;
+  height: 16px;
+}
+
+#rj-island-root .rj-chat-send:hover {
+  transform: scale(1.04);
+}
+
+#rj-island-root .rj-chat-send:disabled {
+  opacity: 0.45;
+  transform: none;
+}
+
+#rj-island-root .rj-chat-note {
+  margin: 0;
+  min-height: 0;
+  color: rgba(255, 190, 190, 0.8);
+  font: 500 10px/1.35 system-ui, sans-serif;
+}
+
+#rj-island-root .rj-chat-note:empty {
+  display: none;
+}
+
+#rj-island-root .rj-dock-btn--chat {
+  position: relative;
+}
+
+#rj-island-root .rj-chat-dot {
+  position: absolute;
+  top: 7px;
+  right: 8px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ff453a;
+  box-shadow: 0 0 0 2px #000;
+}
+
+#rj-island-root .rj-chat-dot[hidden] {
+  display: none;
+}
+
+/* ==========================================================================
+   RejAsystent w wyspie
+   --------------------------------------------------------------------------
+   Asystent nie ma osobnej podstrony — otwiera się iskrą w docku. Wygląda jak
+   mini czat (te same klasy panelu i listy), ale mówi innym głosem: własne
+   dymki, podpowiedzi na start i linki do stron RejHuba. Panel jest czarny,
+   jak cała wyspa — zero rozmywania i zero zieleni.
+   ========================================================================== */
+
+#rj-island-root .rj-panel--assistant {
+  gap: 8px;
+}
+
+#rj-island-root .rj-chat-badge--ai {
+  border-color: rgba(139, 189, 255, 0.42);
+  background: radial-gradient(circle at 32% 26%, rgba(139, 189, 255, 0.34), rgba(77, 141, 246, 0.16));
+  color: #eaf3ff;
+  font-size: 15px;
+}
+
+#rj-island-root .rj-ai-chips {
+  display: flex;
+  gap: 5px;
+  flex: 0 0 auto;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+#rj-island-root .rj-ai-chips::-webkit-scrollbar {
+  height: 0;
+}
+
+#rj-island-root .rj-ai-chip {
+  flex: 0 0 auto;
+  min-height: 32px;
+  padding: 6px 11px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.055);
+  color: rgba(230, 240, 255, 0.8);
+  font: 600 10.5px/1 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease;
+}
+
+#rj-island-root .rj-ai-chip:hover,
+#rj-island-root .rj-ai-chip:focus-visible {
+  background: rgba(255, 255, 255, 0.11);
+  color: #fff;
+  outline: none;
+}
+
+#rj-island-root .rj-ai-chip:active {
+  transform: scale(0.97);
+}
+
+#rj-island-root .rj-ai-list {
+  gap: 6px;
+}
+
+#rj-island-root .rj-ai-msg {
+  max-width: 100%;
+  padding: 7px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.045);
+}
+
+#rj-island-root .rj-ai-msg p {
+  margin: 0;
+  color: rgba(238, 245, 255, 0.88);
+  font: 400 12px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  overflow-wrap: anywhere;
+}
+
+#rj-island-root .rj-ai-msg p + p {
+  margin-top: 4px;
+}
+
+#rj-island-root .rj-ai-msg--user {
+  align-self: flex-end;
+  max-width: 90%;
+  border-color: rgba(139, 189, 255, 0.26);
+  background: rgba(77, 141, 246, 0.18);
+}
+
+#rj-island-root .rj-ai-link {
+  display: inline-block;
+  margin: 6px 8px 0 0;
+  color: #bcd9ff;
+  font: 600 11.5px/1.3 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(188, 217, 255, 0.38);
+}
+
+#rj-island-root .rj-ai-link:hover,
+#rj-island-root .rj-ai-link:focus-visible {
+  color: #fff;
+  border-bottom-color: rgba(255, 255, 255, 0.6);
+}
+
+@media (max-width: 560px) {
+  /* Podpowiedzi są dotykane palcem, więc na telefonie mają pełne 46 px —
+     tyle samo, co przyciski aplikacji na stronach. */
+  #rj-island-root .rj-ai-chip {
+    min-height: 46px;
+    padding: 10px 14px;
+    font-size: 11.5px;
+  }
+}
+
+@media (max-height: 620px) {
+  #rj-island-root .rj-chat-list {
+    height: 150px;
+  }
+}
+
+/* Krótki ekran (telefon w poziomie) — panele nie mogą wyjść za górną krawędź. */
+@media (max-height: 560px) {
+  #rj-island-root .rj-panel {
+    padding: 7px 0 8px;
+    gap: 6px;
+  }
+  #rj-island-root .rj-panel-head {
+    min-height: 22px;
+  }
+  #rj-island-root .rj-list {
+    gap: 1px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #rj-island-root .rj-view,
+  #rj-island-root .rj-toast,
+  #rj-island-root .rj-switch::after {
+    transition-duration: 0.01ms;
+  }
+}
+
+@media print {
+  #rj-island-root {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   Ustawienia wyspy (więcej opcji) i pionowa wyspa
+   --------------------------------------------------------------------------
+   Panel ustawień ma własne przewijanie: na telefonie lista opcji bywa wyższa
+   niż ekran, a żadna z nich nie może zniknąć poza wyspą. Pionowa wyspa to
+   wąska kolumna przy krawędzi — dock układa przyciski jeden pod drugim,
+   a zwinięta pigułka staje się pionowym słupkiem z logo i strzałką.
+   ========================================================================== */
+
+#rj-island-root .rj-panel--settings {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  padding-right: 2px;
+}
+
+#rj-island-root .rj-panel--settings::-webkit-scrollbar { width: 4px; }
+#rj-island-root .rj-panel--settings::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+#rj-island-root .rj-settings-title {
+  display: block;
+  margin: 4px 0 -2px;
+  color: rgba(206, 224, 248, 0.52);
+  font: 700 9.5px/1 "JetBrains Mono", ui-monospace, monospace;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+#rj-island-root .rj-switch-row .rj-label small {
+  display: block;
+  margin-top: 1px;
+  color: rgba(232, 240, 252, 0.45);
+  font: 500 10px/1.35 system-ui, sans-serif;
+}
+
+#rj-island-root .rj-reset-island {
+  margin-top: 4px;
+  align-self: flex-start;
+  min-height: 34px;
+}
+
+/* ---------- pionowa wyspa ---------- */
+
+#rj-island-root .rj-island.is-vertical .rj-view--idle {
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 0;
+}
+
+#rj-island-root .rj-island.is-vertical .rj-view--idle .rj-title {
+  display: none;
+}
+
+#rj-island-root .rj-island.is-vertical .rj-view--idle .rj-orb {
+  width: 30px;
+  height: 30px;
+}
+
+#rj-island-root .rj-island.is-vertical .rj-view--idle .rj-collapse {
+  margin-left: 0;
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+}
+
+#rj-island-root .rj-island.is-vertical[data-state="dock"] .rj-view--dock {
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 2px;
+  padding: 6px 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+
+#rj-island-root .rj-island.is-vertical[data-state="dock"] .rj-view--dock::-webkit-scrollbar {
+  width: 0;
+}
+
+#rj-island-root .rj-island.is-vertical .rj-dock-btn {
+  flex: 0 0 40px;
+  width: 44px;
+  max-width: 44px;
+  height: 40px;
+}
+
+#rj-island-root .rj-island.is-vertical .rj-dock-sep {
+  width: 26px;
+  height: 1px;
+  margin: 2px 0;
+}
+
+#rj-island-root .rj-island.is-vertical .rj-dock-btn--collapse {
+  width: 44px;
+  max-width: 44px;
+}
+
+/* Pionowa wyspa nie ma jak pokazać szerokiej etykiety — tytuł paneli
+   dostaje całą szerokość, a „Otwórz ↗” chowa się na najwęższych ekranach. */
+@media (max-width: 380px) {
+  #rj-island-root .rj-island.is-vertical .rj-link-btn { display: none; }
+}
+
+/* ---------- mini RejChat: zakładki i prywatne rozmowy ---------- */
+
+#rj-island-root .rj-chat-rooms {
+  display: flex;
+  gap: 3px;
+  flex: 0 0 auto;
+  padding: 2px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+#rj-island-root .rj-chat-room {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 30px;
+  padding: 5px 8px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(235, 243, 255, 0.62);
+  font: 650 11px/1 system-ui, sans-serif;
+  cursor: pointer;
+  transition: background 0.18s ease, color 0.18s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#rj-island-root .rj-chat-room:hover,
+#rj-island-root .rj-chat-room:focus-visible {
+  color: #fff;
+  outline: none;
+}
+
+#rj-island-root .rj-chat-room.is-on {
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+
+#rj-island-root .rj-chat-dms {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0 -4px;
+  padding: 2px 4px;
+  scrollbar-width: thin;
+}
+
+#rj-island-root .rj-chat-dms::-webkit-scrollbar { width: 4px; }
+#rj-island-root .rj-chat-dms::-webkit-scrollbar-thumb {
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+#rj-island-root .rj-chat-dm {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 46px;
+  padding: 6px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #eef5ff;
+  font: 650 12px/1.2 system-ui, sans-serif;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.16s ease, border-color 0.16s ease;
+}
+
+#rj-island-root .rj-chat-dm:hover,
+#rj-island-root .rj-chat-dm:focus-visible {
+  background: rgba(255, 255, 255, 0.09);
+  border-color: rgba(139, 189, 255, 0.4);
+  outline: none;
+}
+
+#rj-island-root .rj-chat-dm-avatar {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  border-radius: 50%;
+  background: rgba(110, 168, 255, 0.2);
+  color: #dcebff;
+  font: 700 10.5px/1 system-ui, sans-serif;
+  letter-spacing: 0.02em;
+}
+
+#rj-island-root .rj-chat-dm-name {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#rj-island-root .rj-chat-dm-badge {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  flex: none;
+  border-radius: 999px;
+  background: #ff453a;
+  color: #fff;
+  font: 700 10px/1 system-ui, sans-serif;
+}
+
+#rj-island-root .rj-chat-dm-go {
+  flex: none;
+  color: rgba(232, 240, 252, 0.4);
+  font-size: 15px;
+}
+
+#rj-island-root .rj-chat-list {
+  height: auto;
+  min-height: 118px;
+}
+
+/* Strzałka powrotu w nagłówku czatu jest mniejsza niż przycisk zamknięcia. */
+#rj-island-root .rj-panel--chat .rj-back {
+  flex: 0 0 26px;
+  width: 26px;
+  height: 26px;
+}
+
+#rj-island-root .rj-panel--chat .rj-back svg {
+  width: 15px;
+  height: 15px;
+}
+
+/* ---------- kropka sieci bez zieleni ---------- */
+
+#rj-island-root .rj-handle-net {
+  background: #6ea8ff;
+  box-shadow: 0 0 0 2px rgba(110, 168, 255, 0.18);
+}
+
+#rj-island-root .rj-handle-net.has-queue {
+  background: #ffd60a;
+  box-shadow: 0 0 0 2px rgba(255, 214, 10, 0.2);
+}
+
+
+/* Pusty stan czatu (brak logowania / brak rozmów) siedzi na środku panelu —
+   wcześniej tekst wisiał u góry nad pustą czernią. */
+#rj-island-root .rj-chat-list > .rj-empty:only-child,
+#rj-island-root .rj-chat-dms > .rj-empty:only-child {
+  margin: auto;
+  text-align: center;
+  max-width: 260px;
+  line-height: 1.6;
+}
+
+#rj-island-root .rj-chat-list > .rj-empty:only-child a,
+#rj-island-root .rj-chat-dms > .rj-empty:only-child a {
+  display: inline-block;
+  margin-top: 6px;
+  color: #bcd6ff;
+}

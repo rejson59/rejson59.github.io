@@ -832,11 +832,11 @@
       check();
       /* Szybka kontrola: wdrożenie bez /sw.js nie ma po co czekać 8 s. */
       if (typeof fetch === "function") {
-        fetch("/sw.js?v=2", { method: "HEAD", cache: "no-store" }).then(function (res) {
+        fetch("/sw.js?v=3", { method: "HEAD", cache: "no-store" }).then(function (res) {
           if (!res || !res.ok) finish(false);
         }).catch(function () { finish(false); });
       }
-      navigator.serviceWorker.register("/sw.js?v=2", { scope:"/", updateViaCache:"none" }).then(function (reg) {
+      navigator.serviceWorker.register("/sw.js?v=3", { scope:"/", updateViaCache:"none" }).then(function (reg) {
         if (reg && reg.update) reg.update().catch(function () {});
         check();
       }).catch(function () { finish(false); });

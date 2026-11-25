@@ -64,7 +64,9 @@ console.log("\n=== B. UŻYCIE PRZY REJESTRACJI ===");
 check("loader.js sprawdza bramkę przed rejestracją", () => {
   const src = read("js/loader.js");
   const gateAt = src.indexOf("globalWorkerAllowed()");
-  const registerAt = src.indexOf('navigator.serviceWorker.register("/sw.js?v=2"');
+  /* Wersja `?v=` zmienia się przy każdym unieważnieniu cache — test pilnuje
+     samej rejestracji, nie numeru. */
+  const registerAt = src.search(/navigator\.serviceWorker\.register\(\s*"\/sw\.js\?v=\d+"/);
   assert(gateAt !== -1 && registerAt !== -1, "brak bramki albo rejestracji");
   assert(gateAt < registerAt, "bramka jest po rejestracji");
   return "OK";
@@ -72,7 +74,8 @@ check("loader.js sprawdza bramkę przed rejestracją", () => {
 check("view-tracker.js sprawdza bramkę przed rejestracją", () => {
   const src = read("js/view-tracker.js");
   const gateAt = src.indexOf("globalWorkerAllowed()", src.indexOf("function registerGlobalServiceWorker"));
-  const registerAt = src.indexOf('register("/sw.js?v=2"', src.indexOf("function registerGlobalServiceWorker"));
+  const registerAt = src.indexOf('register("/sw.js?v=3"', src.indexOf("function registerGlobalServiceWorker"));
+  /* Ta sama zasada: liczy się rejestracja za bramką, nie numer cache. */
   assert(gateAt !== -1 && registerAt !== -1, "brak bramki albo rejestracji");
   assert(gateAt < registerAt, "bramka jest po rejestracji");
   return "OK";
