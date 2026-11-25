@@ -123,9 +123,81 @@ async function checkIslandOnForeignPage() {
   w.close();
 }
 
+/* ---------- 3. rejson-account.js montuje wyspę na projekcie ----------
+   Service worker nie jest pewny: bywa wyrejestrowany, nieaktualny albo
+   w ogóle niezarejestrowany (JoyPad, mconline). Ten skrypt ładują projekty,
+   więc jest drugą, niezależną drogą do tej samej wyspy. */
+
+async function checkAccountBoot() {
+  const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+  const account = read('js/rejson-account.js');
+
+  function mount(url, { previewFrame = false } = {}) {
+    const dom = new JSDOM('<!doctype html><html><head></head><body></body></html>', {
+      url, runScripts: 'outside-only', pretendToBeVisual: true,
+      virtualConsole: new VirtualConsole()
+    });
+    const w = dom.window;
+    const added = [];
+    /* Rejestrujemy, co strona próbuje doładować. */
+    const push = w.document.head.appendChild.bind(w.document.head);
+    w.document.head.appendChild = function (node) {
+      if (node.tagName === 'SCRIPT' && node.src) added.push({ src: node.src, attrs: node.getAttribute('data-hub-base') });
+      if (node.tagName === 'LINK' && node.href) added.push({ css: node.href });
+      return push(node);
+    };
+    /* `<script src>` ustawiamy przez currentScript — tak jak w przeglądarce. */
+    const tag = w.document.createElement('script');
+    tag.src = 'https://rejson59.github.io/js/rejson-account.js?v=1';
+    w.document.head.appendChild(tag);
+    Object.defineProperty(w.document, 'currentScript', { value: tag, configurable: true });
+    if (previewFrame) {
+      Object.defineProperty(w, 'name', { value: 'rejson-card-preview', configurable: true });
+    }
+    w.eval(account);
+    return { w, added };
+  }
+
+  /* (a) strona projektu: wyspa + arkusz z tego samego originu, linki do RejHuba. */
+  const project = mount('https://rejson59.github.io/Jakuplayer/');
+  await wait(20);
+  const js = project.added.find((x) => x.src && /\/hub\/island\.js$/.test(x.src));
+  const css = project.added.find((x) => x.css && /\/hub\/island\.css$/.test(x.css));
+  assert.ok(css, 'projekt musi dostać arkusz wyspy');
+  assert.ok(js, 'projekt musi dostać skrypt wyspy');
+  assert.equal(js.src, 'https://rejson59.github.io/hub/island.js');
+  assert.equal(js.attrs, 'https://rejhub.vercel.app', 'odnośniki wyspy prowadzą do RejHuba');
+  project.w.close();
+
+  /* (b) podgląd karty na stronie głównej: ani wyspy, ani arkusza. */
+  const preview = mount('https://rejson59.github.io/JoyPad/', { previewFrame: true });
+  await wait(20);
+  assert.equal(preview.added.filter((x) => /island\.(js|css)/.test(x.src || x.css || '')).length, 0,
+    'w podglądzie karty nie ma drugiej wyspy');
+  preview.w.close();
+
+  /* (c) strony RejHuba pod tym adresem: własna kopia, nie dopisujemy drugiej. */
+  for (const url of ['https://rejson59.github.io/rejhub2/rejclass.html',
+    'https://rejson59.github.io/rejson-widgets/']) {
+    const page = mount(url);
+    await wait(20);
+    assert.equal(page.added.filter((x) => /island\.(js|css)/.test(x.src || x.css || '')).length, 0,
+      url + ': strona RejHuba nie dostaje drugiej wyspy');
+    page.w.close();
+  }
+
+  /* (d) na Vercelu wyspa jest w HTML — skrypt nie dopisuje nic. */
+  const vercel = mount('https://rejhub.vercel.app/rejclass');
+  await wait(20);
+  assert.equal(vercel.added.filter((x) => /island\.(js|css)/.test(x.src || x.css || '')).length, 0,
+    'na RejHubie nie montujemy drugi raz');
+  vercel.w.close();
+}
+
 (async function main() {
   await checkInjection();
   await checkIslandOnForeignPage();
+  await checkAccountBoot();
   console.log('projekt-island: projekty dostają wyspę zamiast starej pigułki');
 })().catch((error) => {
   console.error(error);

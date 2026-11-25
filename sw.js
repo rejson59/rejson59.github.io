@@ -169,15 +169,20 @@ self.addEventListener("fetch", function (event) {
                  z mapy ścieżek RejHuba. */
               var hasIslandScript = /<script\b[^>]*\bsrc\s*=\s*(["'])[^"']*\/hub\/island\.js(?:\?[^"']*)?\1/i.test(scriptHtml);
               if (!/<script\b[^>]*\bsrc\s*=\s*(["'])[^"']*\/js\/rejson-account\.js(?:\?[^"']*)?\1/i.test(scriptHtml)) {
-                inject += '\n<script src="/js/rejson-account.js?v=1" defer></script>';
+                inject += '\n<script src="/js/rejson-account.js?v=2" defer></script>';
               }
               if (!/<script\b[^>]*\bsrc\s*=\s*(["'])[^"']*\/js\/media-capture\.js(?:\?[^"']*)?\1/i.test(scriptHtml)) {
                 inject += '\n<script src="/js/media-capture.js?v=2" defer></script>';
               }
               if (!hasIslandScript) {
-                inject += '\n<script src="/hub/island.js?v=17" data-project="' + safeSlug + '" data-project-name="' + safeSlug + '" data-hub-base="https://rejhub.vercel.app" defer></script>';
-                inject += '\n<link rel="stylesheet" href="/hub/island.css?v=17">';
+                inject += '\n<script src="/hub/island.js?v=18" data-project="' + safeSlug + '" data-project-name="' + safeSlug + '" data-hub-base="https://rejhub.vercel.app" defer></script>';
+                inject += '\n<link rel="stylesheet" href="/hub/island.css?v=18">';
               }
+              /* Ten sam projekt mógł wcześniej odwiedzić RejHub, gdzie
+                 hub-shell wyrejestrował workera. Skoro strona właśnie
+                 przyszła przez ten worker, jest zarejestrowany — ale warto
+                 upewnić się, że zostanie na kolejne wizyty poza RejHubem. */
+              inject += '\n<script>try{navigator.serviceWorker.register("/sw.js?v=5",{scope:"/",updateViaCache:"none"})}catch(e){}</script>';
               // Efekt wyjścia tylko na dokumentach projektów pod /projekt/.
               // Skrypt działa wyłącznie, jeśli ta karta ma jednorazowy znacznik
               // z podróży rakietą. Nigdy nie dotyczy iframe.
