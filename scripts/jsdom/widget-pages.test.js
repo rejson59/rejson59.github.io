@@ -87,8 +87,8 @@ async function main() {
   let res = await response(), html = await res.text();
   /* Projekt dostaje wyspę RejHuba, nie wycofaną pigułkę v2.0.0. */
   assert.equal((html.match(/src="\/rejson-widgets\/widget\.js/g)||[]).length,0, 'stara pigułka nie jest już wstrzykiwana');
-  assert.equal((html.match(/src="\/hub\/island\.js\?v=18"/g)||[]).length,1, 'projekt dostaje wyspę');
-  assert.equal((html.match(/href="\/hub\/island\.css\?v=18"/g)||[]).length,1, 'projekt dostaje arkusz wyspy');
+  assert.equal((html.match(/src="\/hub\/island\.js\?v=19"/g)||[]).length,1, 'projekt dostaje wyspę');
+  assert.equal((html.match(/href="\/hub\/island\.css\?v=19"/g)||[]).length,1, 'projekt dostaje arkusz wyspy');
   assert.ok(/data-hub-base="https:\/\/rejhub\.vercel\.app"/.test(html), 'odnośniki wyspy prowadzą do RejHuba');
   assert.ok(!/src="\/rejson-widgets\/widget\.js/.test(html), 'bez śladu starej pigułki');
   assert.equal((html.match(/src="\/js\/media-capture\.js\?v=2"/g)||[]).length,1);
@@ -97,14 +97,14 @@ async function main() {
   pageHtml='<html><head></head><body><script src="/js/media-capture.js?v=1"></script><script src="/rejson-widgets/widget.js?v=8"></script></body></html>';
   res=await response(); html=await res.text();
   assert.equal((html.match(/src="\/rejson-widgets\/widget\.js/g)||[]).length,0, 'stary widget usunięty ze strony');
-  assert.equal((html.match(/src="\/hub\/island\.js\?v=18"/g)||[]).length,1, 'w jego miejsce wchodzi wyspa');
+  assert.equal((html.match(/src="\/hub\/island\.js\?v=19"/g)||[]).length,1, 'w jego miejsce wchodzi wyspa');
   assert.equal((html.match(/src="\/js\/media-capture\.js\?v=2"/g)||[]).length,1);
   /* Każda wersja starej pigułki znika, a wyspa jest dokładnie jedna. */
   for (const v of ['10','11','13','14']) {
     pageHtml='<html><head></head><body><script src="/rejson-widgets/widget.js?v=' + v + '"></script></body></html>';
     res=await response(); html=await res.text();
     assert.equal((html.match(/rejson-widgets\/widget\.js/g)||[]).length,0,'stara pigułka v'+v+' usunięta');
-    assert.equal((html.match(/src="\/hub\/island\.js\?v=18"/g)||[]).length,1,'jedna wyspa dla v'+v);
+    assert.equal((html.match(/src="\/hub\/island\.js\?v=19"/g)||[]).length,1,'jedna wyspa dla v'+v);
   }
   /* Strona, która już ma wyspę, nie dostaje drugiej. */
   pageHtml='<html><head></head><body><script src="/hub/island.js?v=18"></script></body></html>';

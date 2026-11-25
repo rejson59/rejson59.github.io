@@ -175,8 +175,8 @@ self.addEventListener("fetch", function (event) {
                 inject += '\n<script src="/js/media-capture.js?v=2" defer></script>';
               }
               if (!hasIslandScript) {
-                inject += '\n<script src="/hub/island.js?v=18" data-project="' + safeSlug + '" data-project-name="' + safeSlug + '" data-hub-base="https://rejhub.vercel.app" defer></script>';
-                inject += '\n<link rel="stylesheet" href="/hub/island.css?v=18">';
+                inject += '\n<script src="/hub/island.js?v=19" data-project="' + safeSlug + '" data-project-name="' + safeSlug + '" data-hub-base="https://rejhub.vercel.app" defer></script>';
+                inject += '\n<link rel="stylesheet" href="/hub/island.css?v=19">';
               }
               /* Ten sam projekt mógł wcześniej odwiedzić RejHub, gdzie
                  hub-shell wyrejestrował workera. Skoro strona właśnie

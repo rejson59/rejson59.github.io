@@ -2679,7 +2679,7 @@
      skryptu — wcześniej była tu zaszyta stała („3”), przez co przeglądarka
      trzymała w cache stary arkusz pod tym samym adresem i nowe elementy
      wyspy (wybór „błąd czy pomysł”) wyświetlały się bez stylów. */
-  var CSS_VERSION = "18";
+  var CSS_VERSION = "19";
 
   function scriptVersion(src) {
     var match = /[?&]v=([^&#]+)/.exec(String(src || ""));
@@ -2873,6 +2873,13 @@
       sheet.rel = "stylesheet";
       sheet.href = stylesheetUrl();
       shadow.appendChild(sheet);
+      /* Ten sam materiał, co na stronie: obramowanie, refleks i — gdy
+         przeglądarka potrafi — ugięcie krawędzi. Arkusz jest wspólny, żeby
+         wyspa nie miała własnej, rozjeżdżającej się recepty na szkło. */
+      var glassSheet = document.createElement("link");
+      glassSheet.rel = "stylesheet";
+      glassSheet.href = stylesheetUrl().replace(/island\.css(\?.*)?$/, "lg-glass.css") + "?v=1";
+      shadow.appendChild(glassSheet);
     }
 
     root = document.createElement("div");
