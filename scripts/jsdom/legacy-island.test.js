@@ -60,10 +60,14 @@ async function checkWorker() {
     assert.equal(html, null, page + ': worker nie powinien przechwytywać tej strony');
   }
 
-  /* Zwykły projekt nadal dostaje pigułkę — poprawka nie wyłącza trackera. */
+  /* Zwykły projekt dostaje teraz wyspę, a nie wycofaną pigułkę
+     (szczegóły w project-island.test.js). Tracker i konto zostają. */
   const project = await visit('/MyProject/');
-  assert.equal((project.match(/\/rejson-widgets\/widget\.js\?v=14/g) || []).length, 1,
-    'projekty nadal dostają pigułkę');
+  assert.equal((project.match(/\/rejson-widgets\/widget\.js/g) || []).length, 0,
+    'projekty nie dostają już starej pigułki');
+  assert.equal((project.match(/src="\/hub\/island\.js\?v=\d+"/g) || []).length, 1,
+    'projekty dostają wyspę');
+  assert.ok(/view-tracker\.js/.test(project), 'tracker wejść nadal działa');
 }
 
 /* ---------- 2. kopia aktualnej wyspy leży tam, gdzie jej szuka stara kopia ---------- */

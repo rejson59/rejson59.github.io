@@ -1538,7 +1538,7 @@
         !isInsideCardThumbnail()
       ) {
         navigator.serviceWorker
-          .register("/sw.js?v=3", { scope: "/", updateViaCache: "none" })
+          .register("/sw.js?v=4", { scope: "/", updateViaCache: "none" })
           .then(function (reg) {
             try {
               if (reg && typeof reg.update === "function") reg.update();

@@ -36,6 +36,18 @@
   var projectSlug = (scriptEl && scriptEl.getAttribute("data-project")) || "rejhub";
   var projectName = (scriptEl && scriptEl.getAttribute("data-project-name")) || "RejHub";
 
+  /* Gdzie mieszkają strony RejHuba. Na własnych stronach wystarczy ścieżka
+     (`/rejchat`), ale wyspa trafia też na projekty pod `/Projekt/`, gdzie
+     ta sama ścieżka prowadziłaby donikąd. Wtedy `data-hub-base` wskazuje
+     pełny adres RejHuba i wszystkie odnośniki wyspy idą właśnie tam. */
+  var HUB_BASE = String((scriptEl && scriptEl.getAttribute("data-hub-base")) || "")
+    .replace(/\/+$/, "");
+  function hubUrl(path) {
+    var value = String(path || "/");
+    if (value.charAt(0) !== "/") value = "/" + value;
+    return HUB_BASE ? HUB_BASE + value : value;
+  }
+
   /* ------------------------------------------------------------------ ikony */
 
   var ICONS = {
@@ -750,7 +762,7 @@
               '<button class="rj-back" type="button" data-chat-back aria-label="Wróć do listy rozmów" title="Wróć do listy rozmów" hidden>' + ICONS.back + "</button>" +
               '<span class="rj-chat-badge" aria-hidden="true">#</span>' +
               '<span class="rj-panel-title" data-chat-heading>RejChat <small id="rj-island-chat-sub">czat ogólny</small></span>' +
-              '<a class="rj-link-btn" id="rj-island-chat-open" href="/rejchat">Otwórz <span aria-hidden="true">↗</span></a>' +
+              '<a class="rj-link-btn" id="rj-island-chat-open" href="' + hubUrl("/rejchat") + '">Otwórz <span aria-hidden="true">↗</span></a>' +
               '<button class="rj-x" type="button" data-close aria-label="Zamknij">' + ICONS.close + "</button>" +
             "</div>" +
             '<div class="rj-chat-rooms" role="tablist" aria-label="Rozmowy RejChat">' +
@@ -777,7 +789,7 @@
             '<div class="rj-panel-head">' +
               '<span class="rj-chat-badge rj-chat-badge--ai" aria-hidden="true">✦</span>' +
               '<span class="rj-panel-title">RejAsystent <small>asystent RejHuba</small></span>' +
-              '<a class="rj-link-btn" href="/aplikacje">Aplikacje <span aria-hidden="true">↗</span></a>' +
+              '<a class="rj-link-btn" href="' + hubUrl("/aplikacje") + '">Aplikacje <span aria-hidden="true">↗</span></a>' +
               '<button class="rj-x" type="button" data-close aria-label="Zamknij">' + ICONS.close + "</button>" +
             "</div>" +
             '<div class="rj-ai-chips" role="group" aria-label="Podpowiedzi dla asystenta">' +
@@ -828,9 +840,9 @@
             "</div>" +
             '<div class="rj-quick-context" data-quick-context></div>' +
             '<div class="rj-quick">' +
-              '<a href="/rejtools" data-quick="tools">' + ICONS.note + "Narzędzia</a>" +
-              '<a href="/rejchat" data-quick="chat">' + ICONS.chat + "Czat</a>" +
-              '<a href="/rejfile" data-quick="file">' + ICONS.file + "Plik</a>" +
+              '<a href="' + hubUrl("/rejtools") + '" data-quick="tools">' + ICONS.note + "Narzędzia</a>" +
+              '<a href="' + hubUrl("/rejchat") + '" data-quick="chat">' + ICONS.chat + "Czat</a>" +
+              '<a href="' + hubUrl("/rejfile") + '" data-quick="file">' + ICONS.file + "Plik</a>" +
               '<button type="button" data-quick="link">' + ICONS.link + "Kopiuj link</button>" +
             "</div>" +
           "</div>" +
@@ -1034,6 +1046,10 @@
   /* Akcje dobrane do tego, gdzie jest użytkownik. Każda ma selektor, który
      naprawdę istnieje na danej stronie — klikamy go zamiast zgadywać. */
   function contextActions() {
+    /* Na obcym projekcie mapa ścieżek RejHuba nie ma sensu: `/rejchat`
+       wskazałoby stronę projektu, nie RejHub. Zostają uniwersalne akcje
+       (zgłoszenie, wyszukiwarka), a nie podpowiedzi „wejdź w lekcję”. */
+    if (HUB_BASE) return [];
     var path = (location.pathname || "/").replace(/\/+$/, "") || "/";
     var map = {
       "/": [
@@ -1116,7 +1132,7 @@
       apply(item.state);
       return;
     }
-    if (item.href) window.location.href = item.href;
+    if (item.href) window.location.href = hubUrl(item.href);
   }
 
   /* ---------------------------------------------- dostępność: fokus */
@@ -1563,7 +1579,7 @@
     renderPushRow(pushRow, me);
 
     if (!me) {
-      host.innerHTML = '<p class="rj-empty">Zaloguj się, żeby dostawać powiadomienia o czacie, plikach i odpowiedziach. <a href="/logowanie">Konto</a></p>';
+      host.innerHTML = '<p class="rj-empty">Zaloguj się, żeby dostawać powiadomienia o czacie, plikach i odpowiedziach. <a href="' + hubUrl("/logowanie") + '">Konto</a></p>';
       setUnread(0);
       return;
     }
@@ -1603,7 +1619,7 @@
 
     (alertsCache.files || []).forEach(function (item) {
       rows.push(
-        '<a class="rj-alert' + (item.read_at ? " is-read" : "") + '" href="/rejfile" data-file-notification="' + esc(item.id) + '">' +
+        '<a class="rj-alert' + (item.read_at ? " is-read" : "") + '" href="' + hubUrl("/rejfile") + '" data-file-notification="' + esc(item.id) + '">' +
           "<i aria-hidden=\"true\"></i><div><b>" + esc(item.filename || "Nowy plik") + " gotowy do pobrania</b>" +
           "<small>RejFile · " + esc(fmtWhen(item.created_at)) + "</small></div></a>"
       );
@@ -1771,7 +1787,7 @@
     if (dms) dms.hidden = !inbox;
     if (form) form.hidden = inbox || !session();
     var open = byId("rj-island-chat-open");
-    if (open) open.href = chatTab === "dm" ? "/rejchat#rozmowy" : "/rejchat";
+    if (open) open.href = hubUrl(chatTab === "dm" ? "/rejchat#rozmowy" : "/rejchat");
     Array.prototype.forEach.call(island.querySelectorAll("[data-chat-room]"), function (button) {
       var on = button.getAttribute("data-chat-room") === chatTab;
       button.setAttribute("aria-selected", String(on));
@@ -1824,7 +1840,7 @@
 
     if (!me) {
       chatSignature = "";
-      host.innerHTML = '<p class="rj-empty">Zaloguj się, żeby czytać i pisać w czacie.<br><a href="/logowanie">Przejdź do logowania →</a></p>';
+      host.innerHTML = '<p class="rj-empty">Zaloguj się, żeby czytać i pisać w czacie.<br><a href="' + hubUrl("/logowanie") + '">Przejdź do logowania →</a></p>';
       if (note) note.textContent = "";
       return;
     }
@@ -1883,7 +1899,7 @@
     if (!host) return;
     syncChatHeader();
     if (!me) {
-      host.innerHTML = '<p class="rj-empty">Zaloguj się, żeby zobaczyć prywatne rozmowy.<br><a href="/logowanie">Przejdź do logowania →</a></p>';
+      host.innerHTML = '<p class="rj-empty">Zaloguj się, żeby zobaczyć prywatne rozmowy.<br><a href="' + hubUrl("/logowanie") + '">Przejdź do logowania →</a></p>';
       if (note) note.textContent = "";
       return;
     }
@@ -2663,7 +2679,7 @@
      skryptu — wcześniej była tu zaszyta stała („3”), przez co przeglądarka
      trzymała w cache stary arkusz pod tym samym adresem i nowe elementy
      wyspy (wybór „błąd czy pomysł”) wyświetlały się bez stylów. */
-  var CSS_VERSION = "10";
+  var CSS_VERSION = "17";
 
   function scriptVersion(src) {
     var match = /[?&]v=([^&#]+)/.exec(String(src || ""));

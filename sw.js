@@ -159,17 +159,24 @@ self.addEventListener("fetch", function (event) {
               if (html.indexOf("view-tracker.js") === -1) {
                 inject += '\n<script src="/js/view-tracker.js?v=9" defer></script>';
               }
-              // Sam komentarz z przykładem nie oznacza, że skrypt widżetu istnieje.
+              // Sam komentarz z przykładem nie oznacza, że skrypt istnieje.
               var scriptHtml = html.replace(/<!--[\s\S]*?-->/g, "");
-              var hasWidgetScript = /<script\b[^>]*\bsrc\s*=\s*(["'])[^"']*rejson-widgets\/widget\.js(?:\?[^"']*)?\1/i.test(scriptHtml);
+              /* Pigułka v2.0.0 jest wycofana: na projektach wstrzykujemy tę samą
+                 wyspę, którą ma RejHub — jeden dock zgłaszania zamiast dwóch
+                 różnych pigułek na różnych stronach. `data-hub-base` sprawia,
+                 że odnośniki wyspy (czat, konto, aplikacje) prowadzą do RejHuba,
+                 a nie w głąb projektu, i że nie pojawiają się podpowiedzi
+                 z mapy ścieżek RejHuba. */
+              var hasIslandScript = /<script\b[^>]*\bsrc\s*=\s*(["'])[^"']*\/hub\/island\.js(?:\?[^"']*)?\1/i.test(scriptHtml);
               if (!/<script\b[^>]*\bsrc\s*=\s*(["'])[^"']*\/js\/rejson-account\.js(?:\?[^"']*)?\1/i.test(scriptHtml)) {
                 inject += '\n<script src="/js/rejson-account.js?v=1" defer></script>';
               }
               if (!/<script\b[^>]*\bsrc\s*=\s*(["'])[^"']*\/js\/media-capture\.js(?:\?[^"']*)?\1/i.test(scriptHtml)) {
                 inject += '\n<script src="/js/media-capture.js?v=2" defer></script>';
               }
-              if (!hasWidgetScript) {
-                inject += '\n<script src="/rejson-widgets/widget.js?v=14" data-project="' + safeSlug + '" defer></script>';
+              if (!hasIslandScript) {
+                inject += '\n<script src="/hub/island.js?v=17" data-project="' + safeSlug + '" data-project-name="' + safeSlug + '" data-hub-base="https://rejhub.vercel.app" defer></script>';
+                inject += '\n<link rel="stylesheet" href="/hub/island.css?v=17">';
               }
               // Efekt wyjścia tylko na dokumentach projektów pod /projekt/.
               // Skrypt działa wyłącznie, jeśli ta karta ma jednorazowy znacznik
@@ -179,7 +186,10 @@ self.addEventListener("fetch", function (event) {
                 ? '<link rel="stylesheet" href="/css/portal.css?v=17" data-rj-portal-style><script src="/js/portal-arrival.js?v=16"></script>' : "";
               // Zachowujemy politykę CSP projektu, ale wstawiamy wyjście przed
               // blokującymi skryptami, o ile jest już za wszystkimi meta CSP.
-              var upgradedHtml = html.replace(/(<script\b[^>]*\bsrc\s*=\s*["'](?:https:\/\/rejson59\.github\.io)?\/rejson-widgets\/widget\.js)(?:\?v=(?:[0-9]|1[0-3]))?(["'])/gi, "$1?v=14$2");
+              /* Strony, które mają jeszcze wpisany stary widget, tracą ten
+                 tag: wyspa i tak jest dopisywana niżej, a stara pigułka nie
+                 może zostać obok niej. */
+              var upgradedHtml = html.replace(/<script\b[^>]*\bsrc\s*=\s*["'](?:https:\/\/rejson59\.github\.io)?\/rejson-widgets\/widget\.js(?:\?[^"']*)?["'][^>]*>\s*<\/script>\s*/gi, "");
               upgradedHtml = upgradedHtml.replace(/(<script\b[^>]*\bsrc\s*=\s*["'](?:https:\/\/rejson59\.github\.io)?\/js\/media-capture\.js)(?:\?v=[0-1])?(["'])/gi, "$1?v=2$2");
               // Projekty z własnym bootstrapem dostają nowe wersje bez dublowania.
               upgradedHtml = upgradedHtml.replace(/(<script\b[^>]*\bsrc\s*=\s*["'](?:https:\/\/rejson59\.github\.io)?\/js\/portal-arrival\.js)(?:\?v=[^"']*)?(["'])/gi, "$1?v=16$2");
