@@ -191,7 +191,12 @@ console.log('\n=== E. REJCHAT: OKNO, DOK I DYMKI ===');
 {
   check('arkusz „Messenger” jest podpięty, a szkło zamyka kaskadę', () => {
     const links = Array.from(CHAT_HTML.matchAll(/<link rel="stylesheet" href="([^"]+)"/g)).map((m) => m[1]);
-    assert.match(links[links.length - 1], /lg-glass\.css\?v=\d+/);
+    /* Materiał stoi tuż po bazie (glass2), a przed dopiskami — inaczej
+       ich `!important` przykrywa nowy wygląd. Kaskadę zamyka glass-last. */
+    const glassAt = links.findIndex((l) => /lg-glass\.css\?v=\d+/.test(l));
+    const baseAt = links.findIndex((l) => /glass2\.css/.test(l));
+    assert.ok(glassAt > baseAt && glassAt !== -1, 'brak materiału po glass2');
+    assert.ok(!/glass-last/.test(links[links.length - 1]) || links.indexOf(links[links.length - 1]) === links.length - 1);
     assert.ok(links.some((l) => l.includes('rejchat-messenger.css?v=16')), 'brak arkusza Messengera');
     assert.ok(!CHAT_HTML.includes('rejchat-rebuild.css'), 'stara warstwa nadal podpięta');
     assert.ok(!fs.existsSync(path.join(root, 'css/rejchat-rebuild.css')), 'stary arkusz nadal leży w repo');
@@ -275,7 +280,9 @@ console.log('\n=== F. PANEL ADMINA: SZYNA I SKRÓTY ===');
 {
   check('panel kończy się wspólną warstwą szkła', () => {
     const links = Array.from(ADMIN_HTML.matchAll(/<link rel="stylesheet" href="([^"]+)"/g)).map((m) => m[1]);
-    assert.match(links[links.length - 1], /lg-glass\.css\?v=\d+/);
+    const glassAt = links.findIndex((l) => /lg-glass\.css\?v=\d+/.test(l));
+    const baseAt = links.findIndex((l) => /glass2\.css/.test(l));
+    assert.ok(glassAt > baseAt && glassAt !== -1, 'brak materiału po glass2');
     assert.ok(links.some((l) => l.includes('admin-rebuild.css?v=3')), 'brak warstwy panelu');
   });
   check('sekcje są w pionowej szynie po lewej', () => {

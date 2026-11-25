@@ -38,15 +38,15 @@
 
   /* Ile pikseli szeroka jest wstęga załamania przy krawędzi. Grubsza wstęga
      = bardziej „szklana” ramka, ale więcej pracy dla GPU. */
-  var EDGE_BAND = 16;
+  var EDGE_BAND = 30;
 
   /* Siła przesunięcia w pikselach (maksymalne wychylenie na krawędzi).
      Wartość dodatnia wypycha obraz do wewnątrz — tak działa soczewka
      wypukła, czyli szkło. Skala rośnie z rozmiarem panelu: 14 px na małej
      karcie wygląda mocno, a na pełnoekranowym panelu byłoby niewidoczne. */
-  var SCALE_MIN = 22;
-  var SCALE_MAX = 58;
-  var SCALE_RATIO = 0.11;
+  var SCALE_MIN = 34;
+  var SCALE_MAX = 92;
+  var SCALE_RATIO = 0.16;
 
   /* Chromium sprawdzamy po obecności Houdini? Nie — po prostu próbujemy
      zastosować filtr i sprawdzamy, czy przeglądarka go przyjęła. */
@@ -123,12 +123,19 @@
           nx = 0; ny = y < h / 2 ? 1 : -1;
         }
 
-        /* t: 1 na krawędzi → 0 na końcu wstęgi. Poza wstęgą nie ma
-           przesunięcia — środek MUSI zostać neutralny (128/128). Gdyby
-           przesuwał się choć o pół piksela, cały panel „uciekałby” w bok
-           i tekst pod szkłem rozjeżdżał się na płaskich tłach. */
-        var strength = d < b ? 1 - d / b : 0;
-        if (strength === 0) { continue; }
+        /* Profil soczewki: największe ugięcie tuż ZA krawędzią, potem
+           łagodne wygasanie do zera. Liniowy spadek „od krawędzi” dawał
+           efekt niewidoczny — obraz uginał się najmocniej dokładnie tam,
+           gdzie obcinał go border-radius, więc zostawał tylko wąski pasek.
+           Poza wstęgą nie ma przesunięcia: środek MUSI zostać neutralny
+           (128/128), inaczej cały panel ucieka w bok. */
+        var strength = 0;
+        if (d < b) {
+          var t = d / b;                  /* 0 na krawędzi → 1 na końcu wstęgi */
+          /* sin(pi*t) ma szczyt w połowie wstęgi i zero na obu końcach. */
+          strength = Math.sin(Math.PI * Math.pow(t, 0.72));
+        }
+        if (strength <= 0.001) { continue; }
 
         /* Soczewka wypukła: obraz ucieka do środka. `feDisplacementMap` liczy
            (kanał/255 − 0,5) × scale, więc neutralne 128 to zero, a 255 to
@@ -209,9 +216,70 @@
     disp.setAttribute("scale", String(scale));
     disp.setAttribute("xChannelSelector", "R");
     disp.setAttribute("yChannelSelector", "G");
+    disp.setAttribute("result", "bent");
 
     filter.appendChild(image);
     filter.appendChild(disp);
+
+    /* Aberracja chromatyczna: krawędź rozszczepia światło jak pryzmat.
+       Dwa dodatkowe przesunięcia o różnej sile — jedno w kanale R,
+       drugie w B — i złożenie z powrotem. Bez tego ugięcie wygląda
+       „cyfrowo”: obraz się przesuwa, ale nie ma wrażenia grubego szkła. */
+    var chroma = scale * 0.10;
+    var dispR = document.createElementNS(ns, "feDisplacementMap");
+    dispR.setAttribute("in", "bent");
+    dispR.setAttribute("in2", "map");
+    dispR.setAttribute("scale", String(scale + chroma * 2));
+    dispR.setAttribute("xChannelSelector", "R");
+    dispR.setAttribute("yChannelSelector", "G");
+    dispR.setAttribute("result", "warpR");
+
+    var dispB = document.createElementNS(ns, "feDisplacementMap");
+    dispB.setAttribute("in", "bent");
+    dispB.setAttribute("in2", "map");
+    dispB.setAttribute("scale", String(scale - chroma * 2));
+    dispB.setAttribute("xChannelSelector", "R");
+    dispB.setAttribute("yChannelSelector", "G");
+    dispB.setAttribute("result", "warpB");
+
+    /* Rozdziel kanały: R z jednego przebiegu, G ze środkowego, B z drugiego. */
+    var keepR = document.createElementNS(ns, "feColorMatrix");
+    keepR.setAttribute("in", "warpR");
+    keepR.setAttribute("type", "matrix");
+    keepR.setAttribute("values", "1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0");
+    keepR.setAttribute("result", "onlyR");
+
+    var keepG = document.createElementNS(ns, "feColorMatrix");
+    keepG.setAttribute("in", "bent");
+    keepG.setAttribute("type", "matrix");
+    keepG.setAttribute("values", "0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0");
+    keepG.setAttribute("result", "onlyG");
+
+    var keepB = document.createElementNS(ns, "feColorMatrix");
+    keepB.setAttribute("in", "warpB");
+    keepB.setAttribute("type", "matrix");
+    keepB.setAttribute("values", "0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0");
+    keepB.setAttribute("result", "onlyB");
+
+    var blend1 = document.createElementNS(ns, "feBlend");
+    blend1.setAttribute("in", "onlyR");
+    blend1.setAttribute("in2", "onlyG");
+    blend1.setAttribute("mode", "screen");
+    blend1.setAttribute("result", "rg");
+
+    var blend2 = document.createElementNS(ns, "feBlend");
+    blend2.setAttribute("in", "rg");
+    blend2.setAttribute("in2", "onlyB");
+    blend2.setAttribute("mode", "screen");
+
+    filter.appendChild(dispR);
+    filter.appendChild(dispB);
+    filter.appendChild(keepR);
+    filter.appendChild(keepG);
+    filter.appendChild(keepB);
+    filter.appendChild(blend1);
+    filter.appendChild(blend2);
+
     return { filter: filter, feImage: image, disp: disp };
   }
 
