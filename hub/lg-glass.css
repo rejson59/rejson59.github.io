@@ -78,7 +78,12 @@ html[data-theme="light"] {
 
 /* ==========================================================================
    1. Recepta bazowa
-   ========================================================================== */
+   ==========================================================================
+   Stare warstwy (glass2.css: 854 `!important`, glass-last.css: 96) mają
+   twarde nadpisania na kartach projektu i aplikacji. Nasza recepta stoi
+   w kaskadzie później, ale `!important` i tak by ją przebił — dlatego dla
+   tych dwóch powierzchni piszemy `!important` świadomie, w jednym miejscu,
+   zamiast dokładać piątą warstwę nadpisań. Reszta selektorów obywa się bez. */
 
 /* Każda powierzchnia dostaje ten sam materiał. `isolation` trzyma refleks
    w środku elementu, a `transform: translateZ(0)` wypycha panel na własną
@@ -152,6 +157,31 @@ html[data-theme="light"] {
   z-index: 2;
 }
 
+/* Karty projektów i aplikacji: jedyne miejsce z `!important`, bo tyle
+   mają go stare warstwy. Tint jest tu mocniejszy niż na pozostałych
+   powierzchniach — pod kartą leży tapeta, a w karcie jest tekst, więc
+   czytelność wygrywa z przezroczystością. */
+.rjapp-card,
+.project-card {
+  background: rgba(10, 16, 30, 0.62) !important;
+  border: 1px solid var(--lg-edge) !important;
+  -webkit-backdrop-filter: var(--lg-blur);
+  backdrop-filter: var(--lg-blur);
+}
+
+html[data-theme="light"] .rjapp-card,
+html[data-theme="light"] .project-card {
+  background: rgba(255, 255, 255, 0.70) !important;
+}
+
+@supports (backdrop-filter: url(#rj-lg-probe)) {
+  .rjapp-card.rj-lg-on,
+  .project-card.rj-lg-on {
+    -webkit-backdrop-filter: var(--lg-blur) var(--lg-filter);
+    backdrop-filter: var(--lg-blur) var(--lg-filter);
+  }
+}
+
 /* Panel, który ma być mocniejszy (modal, dock): ten sam materiał, więcej
    krycia — treść pod spodem i tak nie może przeszkadzać w czytaniu. */
 .rj-lg-solid {
@@ -202,7 +232,7 @@ html[data-theme="light"] {
 /* Najazd: krawędź łapie więcej światła. Bez przesuwania elementu, żeby nie
    rozjeżdżać siatki. */
 :is(.rj-lg-surface, .rjapp-card, .project-card):hover {
-  border-color: var(--lg-edge-hi);
+  border-color: var(--lg-edge-hi) !important;
   box-shadow:
     var(--lg-drop),
     inset 0 1px 0 rgba(255, 255, 255, 0.62),
