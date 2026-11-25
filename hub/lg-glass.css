@@ -161,24 +161,40 @@ html[data-theme="light"] {
    mają go stare warstwy. Tint jest tu mocniejszy niż na pozostałych
    powierzchniach — pod kartą leży tapeta, a w karcie jest tekst, więc
    czytelność wygrywa z przezroczystością. */
-.rjapp-card,
-.project-card {
+/* Podwojona klasa (`.project-card.project-card`) to nie literówka: podnosi
+   specyficzność o 100, żeby wygrać z `body.rj-home .projects .project-card`
+   ze starej warstwy. Obie reguły są `!important`, więc rozstrzyga właśnie
+   specyficzność — bez tego karta zostawała na starym wyglądzie. */
+body .rjapp-card.rjapp-card,
+body .project-card.project-card,
+html body .rjapp-card,
+html body .project-card {
   background: rgba(10, 16, 30, 0.62) !important;
+  /* Karta nie może trzymać własnej tafli tapety — refrakcja ma brać to,
+     co jest POD nią, a nie obrazek wklejony w tło karty. */
+  background-image: none !important;
   border: 1px solid var(--lg-edge) !important;
-  -webkit-backdrop-filter: var(--lg-blur);
-  backdrop-filter: var(--lg-blur);
+  /* Stara warstwa trzyma na karcie `backdrop-filter: none !important`
+     (bo tło kładła na `card-inner`). Musimy to nadpisać jawnie. */
+  -webkit-backdrop-filter: var(--lg-blur) !important;
+  backdrop-filter: var(--lg-blur) !important;
+  box-shadow: var(--lg-drop), var(--lg-inset) !important;
 }
 
-html[data-theme="light"] .rjapp-card,
-html[data-theme="light"] .project-card {
+html[data-theme="light"] body .rjapp-card.rjapp-card,
+html[data-theme="light"] body .project-card.project-card,
+html[data-theme="light"] body .rjapp-card,
+html[data-theme="light"] body .project-card {
   background: rgba(255, 255, 255, 0.70) !important;
+  background-image: none !important;
 }
 
 @supports (backdrop-filter: url(#rj-lg-probe)) {
   .rjapp-card.rj-lg-on,
-  .project-card.rj-lg-on {
-    -webkit-backdrop-filter: var(--lg-blur) var(--lg-filter);
-    backdrop-filter: var(--lg-blur) var(--lg-filter);
+  .project-card.rj-lg-on,
+  body.rj-home .project-card.rj-lg-on {
+    -webkit-backdrop-filter: var(--lg-blur) var(--lg-filter) !important;
+    backdrop-filter: var(--lg-blur) var(--lg-filter) !important;
   }
 }
 

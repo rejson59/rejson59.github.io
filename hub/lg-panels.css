@@ -1,0 +1,144 @@
+/* © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
+   Kopiowanie i ponowne użycie bez pisemnej zgody zabronione. Licencja: /LICENSE, /licencja */
+/* ==========================================================================
+   RejHub 2.0 — górne powierzchnie: górny pasek, panele nawigacji, hero,
+   toolbar. Wydzielone z lg-glass.css, bo te elementy mają w starych
+   warstwach twarde `!important` (854 wystąpienia w glass2.css). Tutaj
+   wygrywamy je wprost — i to jest jedyne miejsce, gdzie wolno ich użyć.
+
+   Plik MUSI być ładowany po glass2.css, a PRZED glass-update.css
+   i glass-last.css: te dwie ostatnie dopisują resztę (typografia, ikony),
+   ale nie powinny już wracać do tła i obramowań.
+
+   Bez tego górny pasek i panele zostawały na starym wyglądzie, mimo że
+   karty niżej już miały nowy materiał — stąd wrażenie, że nic się nie
+   zmieniło.
+   ========================================================================== */
+
+:root {
+  --lg2-blur: blur(18px) saturate(185%) brightness(1.05);
+  --lg2-fill: linear-gradient(
+    150deg,
+    rgba(255, 255, 255, 0.13) 0%,
+    rgba(255, 255, 255, 0.05) 38%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+  --lg2-edge: rgba(255, 255, 255, 0.20);
+  --lg2-edge-hi: rgba(255, 255, 255, 0.52);
+  --lg2-rim: inset 0 1px 0 rgba(255, 255, 255, 0.40),
+              inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+  --lg2-drop: 0 20px 50px -30px rgba(0, 3, 12, 0.95);
+}
+
+html[data-theme="light"] {
+  --lg2-blur: blur(16px) saturate(160%) brightness(1.02);
+  --lg2-fill: linear-gradient(
+    150deg,
+    rgba(255, 255, 255, 0.88) 0%,
+    rgba(255, 255, 255, 0.66) 46%,
+    rgba(255, 255, 255, 0.54) 100%
+  );
+  --lg2-edge: rgba(255, 255, 255, 0.96);
+  --lg2-edge-hi: rgba(255, 255, 255, 1);
+  --lg2-rim: inset 0 1px 0 rgba(255, 255, 255, 1),
+              inset 0 -1px 0 rgba(20, 40, 74, 0.06);
+  --lg2-drop: 0 18px 44px -28px rgba(42, 68, 109, 0.42);
+}
+
+/* ---------- 1. Górny pasek ---------- */
+body .rj-shared-header,
+body .topbar {
+  background: var(--lg2-fill) !important;
+  border: 1px solid var(--lg2-edge) !important;
+  border-radius: 20px !important;
+  box-shadow: var(--lg2-drop), var(--lg2-rim) !important;
+  -webkit-backdrop-filter: var(--lg2-blur) !important;
+  backdrop-filter: var(--lg2-blur) !important;
+}
+
+/* ---------- 2. Panele nawigacji i menu ---------- */
+body :is(.nav-more-panel, .rj-chat-alert-panel, .rj-header-profile, .mobile-menu) {
+  background: var(--lg2-fill) !important;
+  border: 1px solid var(--lg2-edge) !important;
+  border-radius: 18px !important;
+  box-shadow: var(--lg2-drop), var(--lg2-rim) !important;
+  -webkit-backdrop-filter: var(--lg2-blur) !important;
+  backdrop-filter: var(--lg2-blur) !important;
+}
+
+/* ---------- 3. Hero i paski narzędzi ---------- */
+body.rj-home .hero,
+body:is(.rj-community, .rj-board, .rj-tools, .rj-file, .rj-class, .rj-chat)
+  :is(.comm-hero, .tools-hero, .rjc-hero, .safe-hero) {
+  background: var(--lg2-fill) !important;
+  border: 1px solid var(--lg2-edge) !important;
+  box-shadow: var(--lg2-drop), var(--lg2-rim) !important;
+  -webkit-backdrop-filter: var(--lg2-blur) !important;
+  backdrop-filter: var(--lg2-blur) !important;
+}
+
+body :is(.toolbar, .projects-toolbar, .board-toolbar) {
+  background: var(--lg2-fill) !important;
+  border: 1px solid var(--lg2-edge) !important;
+  border-radius: 18px !important;
+  box-shadow: var(--lg2-rim) !important;
+  -webkit-backdrop-filter: var(--lg2-blur) !important;
+  backdrop-filter: var(--lg2-blur) !important;
+}
+
+body.rj-home .rj-home-stats {
+  background: var(--lg2-fill) !important;
+  border: 1px solid var(--lg2-edge) !important;
+  border-radius: 20px !important;
+  box-shadow: var(--lg2-drop), var(--lg2-rim) !important;
+  -webkit-backdrop-filter: var(--lg2-blur) !important;
+  backdrop-filter: var(--lg2-blur) !important;
+}
+
+/* ---------- 4. Okna usług i karty społeczności ---------- */
+body :is(.services-window, .services-window-top) {
+  background: var(--lg2-fill) !important;
+  border-color: var(--lg2-edge) !important;
+  box-shadow: var(--lg2-drop), var(--lg2-rim) !important;
+  -webkit-backdrop-filter: var(--lg2-blur) !important;
+  backdrop-filter: var(--lg2-blur) !important;
+}
+
+body :is(.comm-online-card, .rejchat-rules, .rejchat-info-tip, .comm-auth-inner) {
+  background: var(--lg2-fill) !important;
+  border: 1px solid var(--lg2-edge) !important;
+  border-radius: 18px !important;
+  box-shadow: var(--lg2-rim) !important;
+  -webkit-backdrop-filter: var(--lg2-blur) !important;
+  backdrop-filter: var(--lg2-blur) !important;
+}
+
+/* ---------- 5. Widoczne zaznaczenie i najazd ---------- */
+body :is(.rj-shared-header, .nav-more-panel, .rj-chat-alert-panel,
+         .rj-header-profile, .mobile-menu):hover {
+  border-color: var(--lg2-edge-hi) !important;
+}
+
+/* ---------- 6. Czytelność i oszczędzanie ---------- */
+@media (prefers-reduced-transparency: reduce) {
+  body :is(.rj-shared-header, .topbar, .nav-more-panel, .rj-chat-alert-panel,
+           .rj-header-profile, .mobile-menu, .toolbar, .projects-toolbar,
+           .board-toolbar, .rj-home-stats, .services-window, .services-window-top,
+           .comm-online-card, .rejchat-rules, .rejchat-info-tip, .comm-auth-inner) {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+  html:not([data-theme="light"]) body .rj-shared-header,
+  html:not([data-theme="light"]) body .topbar {
+    background: rgba(9, 14, 26, 0.96) !important;
+  }
+}
+
+html.rj-potato body .rj-shared-header,
+html.rj-potato body .topbar,
+html.rj-potato body :is(.nav-more-panel, .toolbar, .projects-toolbar,
+  .board-toolbar, .rj-home-stats, .services-window, .services-window-top) {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  background: rgba(9, 14, 26, 0.94) !important;
+}

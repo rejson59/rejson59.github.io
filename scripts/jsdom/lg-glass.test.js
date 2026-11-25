@@ -22,12 +22,22 @@ for (const page of pages) {
   const html = read(page);
   assert.match(html, /href="\/hub\/lg-glass\.css\?v=\d+"/, `${page}: brak wspólnego szkła`);
   assert.match(html, /src="\/hub\/lg-glass\.js\?v=\d+"/, `${page}: brak silnika załamania`);
-  /* Arkusz musi być po starych warstwach — inaczej nie zamyka ich nadpisań. */
-  const last = html.lastIndexOf('glass-last.css');
+  /* Kolejność ma znaczenie, ale odwrotnie niż w pierwszej wersji:
+     nowy materiał musi iść PO glass2.css (baza wyglądu), a PRZED
+     glass-update.css i glass-last.css (dopiski). Wcześniej stał na końcu
+     i przegrywał z ich `!important` — dlatego zmiany były niewidoczne. */
+  const base = html.indexOf('glass2.css');
   const ours = html.indexOf('lg-glass.css');
-  if (last !== -1) {
-    assert.ok(ours > last, `${page}: nowe szkło musi być po glass-last.css`);
+  if (base !== -1) {
+    assert.ok(ours > base, `${page}: nowe szkło musi być po glass2.css`);
   }
+  for (const later of ['glass-update.css', 'glass-last.css']) {
+    const at = html.indexOf(later);
+    if (at !== -1) {
+      assert.ok(ours < at, `${page}: nowe szkło musi być przed ${later}`);
+    }
+  }
+  assert.match(html, /href="\/hub\/lg-panels\.css\?v=\d+"/, `${page}: brak warstwy górnych powierzchni`);
 }
 assert.ok(pages.length >= 25, 'liczba stron RejHuba się zmniejszyła');
 
