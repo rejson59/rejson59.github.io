@@ -74,8 +74,8 @@ check("loader.js sprawdza bramkę przed rejestracją", () => {
 check("view-tracker.js sprawdza bramkę przed rejestracją", () => {
   const src = read("js/view-tracker.js");
   const gateAt = src.indexOf("globalWorkerAllowed()", src.indexOf("function registerGlobalServiceWorker"));
-  const registerAt = src.indexOf('register("/sw.js?v=3"', src.indexOf("function registerGlobalServiceWorker"));
   /* Ta sama zasada: liczy się rejestracja za bramką, nie numer cache. */
+  const registerAt = src.search(/register\(\s*"\/sw\.js\?v=\d+"/);
   assert(gateAt !== -1 && registerAt !== -1, "brak bramki albo rejestracji");
   assert(gateAt < registerAt, "bramka jest po rejestracji");
   return "OK";

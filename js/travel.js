@@ -58,7 +58,7 @@
     } catch (e) { return false; }
   })();
   if (globalWorkerAllowed && 'serviceWorker' in navigator) {
-    try { workerPending = navigator.serviceWorker.register('/sw.js?v=3', {scope:'/', updateViaCache:'none'}).then(function () { return navigator.serviceWorker.ready; }).then(function () { workerSettled = true; }, function () { workerSettled = true; }); } catch (e) { workerSettled = true; }
+    try { workerPending = navigator.serviceWorker.register('/sw.js?v=4', {scope:'/', updateViaCache:'none'}).then(function () { return navigator.serviceWorker.ready; }).then(function () { workerSettled = true; }, function () { workerSettled = true; }); } catch (e) { workerSettled = true; }
   }
   function navigate(animateArrival) {
     if (!target || leaving) return;
