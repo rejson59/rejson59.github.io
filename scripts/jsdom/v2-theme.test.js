@@ -217,4 +217,30 @@ assert.match(engine, /position:relative;z-index:2/,
     'menu „Więcej” znów jest przezroczyste — treść pod nim prześwituje');
 }
 
+/* ---------- 11. szkło ma PRZEPUSZCZAĆ obraz (26.11, „jak na filmiku”) ----------
+   Sedno: przy kryciu 0,20-0,42 panel uginał ciemność — dlatego ugięcie
+   było technicznie poprawne, a niewidoczne. W filmiku szkło nie przyciemnia:
+   widać przez nie żywy, kolorowy obraz, a efekt robi ugięcie + obwódka.
+
+   Strażnik pilnuje OBU warunków widoczności:
+   a) tint paneli niski (hero <= 0.12, karty <= 0.16),
+   b) tapeta NIE jest przygaszona filtrem przed nałożeniem szkła. */
+const tintHeroV8 = v2.match(/--lg-v2-tint-hero:\s*rgba\([^)]*?([\d.]+)\)/);
+assert.ok(tintHeroV8 && parseFloat(tintHeroV8[1]) <= 0.12,
+  `hero tint ${tintHeroV8 && tintHeroV8[1]} — za gęste, ugięcie znowu zniknie pod zasłoną`);
+const tintCardV8 = v2.match(/--lg-v2-tint-card:\s*rgba\([^)]*?([\d.]+)\)/);
+assert.ok(tintCardV8 && parseFloat(tintCardV8[1]) <= 0.16,
+  `tint kart ${tintCardV8 && tintCardV8[1]} — tapeta nie będzie przez nie widoczna`);
+/* Tapeta: brightness(0.55) przygaszał ją o 45% ZANIM szkło ją przepuściło.
+   Jedno i drugie było przyczyną „nie widzę efektu”. */
+for (const [name, css] of [['lg-v2', v2], ['glass2', read('hub/glass2.css')]]) {
+  const dim = css.match(/body::before[\s\S]{0,160}?brightness\(([\d.]+)\)/);
+  assert.ok(!dim || parseFloat(dim[1]) >= 0.9,
+    `${name}: tapeta przygaszona brightness(${dim && dim[1]}) — szkło nie ma czego pokazywać`);
+}
+/* Obwódka jest głównym nośnikiem „grubości tafli” przy przezroczystym szkle. */
+const edge = v2.match(/--lg-v2-edge:\s*rgba\(255, 255, 255, ([\d.]+)\)/);
+assert.ok(edge && parseFloat(edge[1]) >= 0.45,
+  'obwódka paneli zbyt słaba — przy przezroczystym szkle nie odetnie tafli od tapety');
+
 console.log('PASS: nowy materiał v2, pełna tapeta, żadnych brakujących plików');
