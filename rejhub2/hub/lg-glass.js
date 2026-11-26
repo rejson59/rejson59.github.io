@@ -38,15 +38,15 @@
 
   /* Ile pikseli szeroka jest wstęga załamania przy krawędzi. Grubsza wstęga
      = bardziej „szklana” ramka, ale więcej pracy dla GPU. */
-  var EDGE_BAND = 30;
+  var EDGE_BAND = 36;
 
   /* Siła przesunięcia w pikselach (maksymalne wychylenie na krawędzi).
      Wartość dodatnia wypycha obraz do wewnątrz — tak działa soczewka
      wypukła, czyli szkło. Skala rośnie z rozmiarem panelu: 14 px na małej
      karcie wygląda mocno, a na pełnoekranowym panelu byłoby niewidoczne. */
-  var SCALE_MIN = 34;
-  var SCALE_MAX = 92;
-  var SCALE_RATIO = 0.16;
+  var SCALE_MIN = 40;
+  var SCALE_MAX = 110;
+  var SCALE_RATIO = 0.20;
 
   /* Chromium sprawdzamy po obecności Houdini? Nie — po prostu próbujemy
      zastosować filtr i sprawdzamy, czy przeglądarka go przyjęła. */
@@ -416,7 +416,16 @@
     ".rj-chat-alert-panel",
     ".rj-header-profile",
     ".nav-more-panel",
-    ".mobile-menu"
+    ".mobile-menu",
+    /* Karty treści: nauka (RejClass), narzędzia, pliki. To one są
+       największą powierzchnią szkła na podstronach. */
+    ".rjc-subject",
+    ".rjc-note-definitions",
+    ".rjc-note-everyday",
+    ".rjc-bio-point",
+    ".e-topic",
+    ".lesson-card",
+    ".topic-card"
   ].join(",");
 
   function collect(root) {

@@ -45,10 +45,16 @@ html[data-theme="light"] {
   --lg2-drop: 0 18px 44px -28px rgba(42, 68, 109, 0.42);
 }
 
-/* ---------- 1. Górny pasek ---------- */
-body .rj-shared-header,
-body .topbar {
+/* ---------- 1. Górny pasek ----------
+   Podwojona klasa podnosi specyficzność o 100. Bez tego przegrywał
+   z `body.rj-home .rj-shared-header` z project-cards.css (201 do 101),
+   mimo `!important` — bo przy równej wadze ważniejsza jest specyficzność. */
+body .rj-shared-header.rj-shared-header,
+body .topbar.topbar,
+html body .rj-shared-header,
+html body .topbar {
   background: var(--lg2-fill) !important;
+  background-image: none !important;
   border: 1px solid var(--lg2-edge) !important;
   border-radius: 20px !important;
   box-shadow: var(--lg2-drop), var(--lg2-rim) !important;
@@ -91,6 +97,21 @@ body.rj-home .rj-home-stats {
   border: 1px solid var(--lg2-edge) !important;
   border-radius: 20px !important;
   box-shadow: var(--lg2-drop), var(--lg2-rim) !important;
+  -webkit-backdrop-filter: var(--lg2-blur) !important;
+  backdrop-filter: var(--lg2-blur) !important;
+}
+
+/* ---------- 3b. Sekcje treści (nauka, narzędzia, pliki) ----------
+   Stare warstwy dają im `blur(8px)` i ciemny tint — czyli szkło, ale bez
+   nowego materiału. To największa powierzchnia na stronie, więc różnica
+   byłaby najbardziej widoczna właśnie tutaj. */
+body :is(.rjc-note-definitions, .rjc-note-everyday, .rjc-note-compare,
+         .rjc-bio-point, .rjc-bio-sidebar, .rjc-bio-lesson, .rjc-bio-quiz,
+         .e-topic, .e-lesson, .lesson-card, .topic-card, .note-card) {
+  background: var(--lg2-fill) !important;
+  border: 1px solid var(--lg2-edge) !important;
+  border-radius: 18px !important;
+  box-shadow: var(--lg2-rim) !important;
   -webkit-backdrop-filter: var(--lg2-blur) !important;
   backdrop-filter: var(--lg2-blur) !important;
 }
