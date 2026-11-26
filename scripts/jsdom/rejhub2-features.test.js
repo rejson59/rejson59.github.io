@@ -233,7 +233,10 @@ check('menu Więcej używa tego samego szkła co topbar', () => {
   assert.ok(panel.length > 0, 'brak reguły panelu menu');
   assert.match(panel, /background:[\s\S]*?rgba\(255, 255, 255, 0\.17\)[\s\S]*?rgba\(16, 24, 39, 0\.72\)/,
     'panel musi mieć gradient i taflę topbaru');
-  assert.match(panel, /backdrop-filter:\s*blur\(22px\) saturate\(185%\)/, 'ten sam blur co topbar');
+  /* v7 (26.11): blur zniknął z CAŁEGO serwisu — panel menu musi mieć
+     dokładnie ten sam materiał co topbar, czyli zero mgły. Test pilnuje
+     samej ZASADY (brak rozmycia), nie konkretnej wartości z przeszłości. */
+  assert.match(panel, /backdrop-filter:\s*blur\(0px\)/, 'panel menu musi mieć ten sam materiał co topbar (bez mgły)');
   assert.ok(!/rgba\(24, 33, 52, 0\.84\)/.test(css), 'stara ciemniejsza tafla nie może wrócić');
 });
 

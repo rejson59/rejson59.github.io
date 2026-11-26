@@ -176,16 +176,26 @@
        strony. Bez tego obraz “pływałby” przy przewijaniu. */
     st.textContent =
       "." + LENS_CLASS + "{position:absolute!important;inset:0!important;border-radius:inherit;" +
-      "pointer-events:none;z-index:0;background-repeat:no-repeat;background-attachment:fixed;" +
+      "pointer-events:none;z-index:1;background-repeat:no-repeat;background-attachment:fixed;" +
       "background-size:cover;background-position:center}" +
-      /* Warstwa tonalna: bez niej soczewka byłaby “dziurą” w szkle. */
+      /* KLUCZ (v6): REFLEKS.
+         Soczewka jest dzieckiem panelu, więc maluje się NAD jego tłem —
+         a tło panelu (`background-image`) to właśnie refleks i tint.
+         Efekt: refleks był rysowany, ale soczewka go zakrywała.
+         Pomiar: lewy górny róg karty bez soczewki = 63,56,88 (jasny),
+         z soczewką = 5,0,23 (czarno). Stąd „brak refleksji”.
+         Dlatego soczewka odtwarza refleks na sobie (::before) i dostaje
+         krawędziowe światło (::after) — teraz refleks żyje NAD obrazem. */
+      "." + LENS_CLASS + "::before{content:'';position:absolute;inset:0;border-radius:inherit;" +
+      "pointer-events:none;background:var(--rj-lg-sheen,none)}" +
+      /* Światło krawędzi: jasna linia u góry, tęczowa obwódka — to one
+         dają wrażenie grubości tafli i „odbicia” na ramce. */
       "." + LENS_CLASS + "::after{content:'';position:absolute;inset:0;border-radius:inherit;" +
-      "background:rgba(12,8,32,.26)}" +
+      "pointer-events:none;background:var(--rj-lg-edge,none);opacity:.9}" +
       /* Cienkie paski (topbar) mają mało własnego krycia, a soczewka
          wnosi ostry obraz tapety — tekst zaczynał na nim ginąć.
          Dla niskich paneli tło soczewki jest mocniejsze. */
-      "@media (min-width:1px){." + LENS_CLASS + "[data-narrow]::before{content:'';position:absolute;" +
-      "inset:0;border-radius:inherit;background:rgba(10,7,26,.34)}}" +
+
       /* Treść musi być nad soczewką. `:not` chroni samą warstwę przed
          dostaniem `z-index`, które zerwałoby jej `position:absolute`. */
       ".rj-lg-on{position:relative}" +
@@ -503,6 +513,31 @@
     return 1;
   }
 
+  /* BŁĄD, KTÓRY TU BYŁ (naprawiony 26.11):
+     `Math.max(SCALE_MIN, ...)` podnosił ugięcie do 88 px NAWET na pasku
+     o wysokości 56 px. Soczewka przesuwała piksele dalej, niż sięga sam
+     element, więc cienki topbar zamieniał się w rozmazane, tęczowe smugi
+     (przy 88 px na pasku 56 px to nie refrakcja, tylko destrukcja obrazu).
+     Teraz ugięcie NIGDY nie przekracza ułamka krótszego boku: przy
+     proporcji 0.34 maksymalnie 34% wysokości. Duże panele dostają pełne
+     SCALE_MAX, bo tam min(w,h) jest duże — wzór sam się skaluje. */
+  var SCALE_MAX_RATIO = 0.38;
+
+  function scaleFor(w, h) {
+    var short = Math.min(w, h);
+    var raw = Math.max(SCALE_MIN, Math.min(SCALE_MAX, short * SCALE_RATIO));
+    /* Twardy sufit proporcjonalny — to on chroni cienkie paski. */
+    var cap = Math.max(10, short * SCALE_MAX_RATIO);
+    return Math.min(raw, cap) * scaleCap();
+  }
+
+  /* Wstęga też nie może być szersza niż panel. Na topbarze 56 px wstęga
+     72 px obejmowała CAŁY pasek, więc „krawędź” była wszędzie i nigdzie. */
+  function bandFor(w, h) {
+    var short = Math.min(w, h);
+    return Math.max(8, Math.min(edgeBandFor(), Math.round(short * 0.30)));
+  }
+
   function mount(el) {
     if (!el || el.__rjLiquidGlass) return;
     var rect = el.getBoundingClientRect();
@@ -513,10 +548,8 @@
 
     /* `data-lg-scale` wygrywa, gdy autor strony chce konkretną wartość. */
     var scale = readNumber(el, "data-lg-scale", 0);
-    if (!scale) {
-      scale = Math.max(SCALE_MIN, Math.min(SCALE_MAX, Math.min(w, h) * SCALE_RATIO)) * scaleCap();
-    }
-    var band = readNumber(el, "data-lg-band", edgeBandFor());
+    if (!scale) scale = scaleFor(w, h);
+    var band = readNumber(el, "data-lg-band", bandFor(w, h));
     var radius = radiusOf(el);
 
     var mapUrl = buildMap(w, h, radius, scale, band);
@@ -572,9 +605,8 @@
     if (w < 24 || h < 24) return;
     var radius = radiusOf(el);
     var scale = readNumber(el, "data-lg-scale", 0);
-    if (!scale) {
-      scale = Math.max(SCALE_MIN, Math.min(SCALE_MAX, Math.min(w, h) * SCALE_RATIO)) * scaleCap();
-    }
+    if (!scale) scale = scaleFor(w, h);
+    item.band = bandFor(w, h);
     if (w === item.w && h === item.h && Math.round(radius) === item.radius && scale === item.scale) return;
 
     var mapUrl = buildMap(w, h, radius, scale, item.band);
@@ -616,7 +648,10 @@
     /* Karty, które realnie są szkłem w starych warstwach (glass2.css). */
     ".rjapp-card",
     ".project-card",
-    ".rj-home-stats",
+    /* UWAGA: .rj-home-stats CELOWO tu nie ma. To przezroczysty pas o pełnej
+       szerokości, a materiał nosi dopiero pigułka `.header-metrics` w środku.
+       Soczewka na tym pasie malowała surową tapetę na całej szerokości —
+       nad hero pojawiał się jasny, pusty baner zamiast szkła. */
     ".projects-toolbar",
     ".toolbar",
     ".board-toolbar",
@@ -655,7 +690,12 @@
     ".profile-card",
     /* Górny pasek to najbardziej widoczna szklana powierzchnia na stronie —
        bez wpisu tutaj zostawał jedynym panelem bez refrakcji. */
-    ".rj-shared-header"
+    ".rj-shared-header",
+    /* v7: topbar i panele nagłówka. Wcześniej nie miały soczewki, więc ich
+       `--lg-filter` był pusty i szkło na pasku było „inne” niż na kartach —
+       jedyny element bez ugięcia na całej stronie. */
+    ".site-header",
+    ".topbar"
   ].join(",");
 
   function collect(root) {

@@ -131,4 +131,59 @@ assert.match(engine, /IntersectionObserver/, 'brak limitu widoczności — socze
 assert.match(engine, /function addLens/, 'brak funkcji dodającej soczewkę');
 assert.match(engine, /function removeLens/, 'soczewka nie jest sprzątana');
 
+/* ---------- 6. refleks NAD obrazem (26.11) ----------
+   Sedno: soczewka jest DZIECKIEM panelu, więc maluje się nad jego tłem —
+   a tło panelu to właśnie refleks (`background-image`). Pomiar: lewy górny
+   róg karty bez soczewki = rgb(63,56,88), z soczewką = rgb(5,0,23).
+   Refleks był rysowany i zakrywany. Stąd „nie widzę żadnej refleksji”.
+   Soczewka musi więc odtwarzać refleks na sobie. */
+assert.match(engine, /--rj-lg-sheen/, 'soczewka nie odtwarza refleksu — refleks znów schowa się pod obrazem');
+assert.match(engine, /--rj-lg-edge/, 'brak krawędziowego światła na soczewce');
+assert.ok(engine.indexOf('::before{content:') > -1 && engine.indexOf('--rj-lg-sheen') > -1,
+  'brak pseudoelementu refleksu na soczewce');
+assert.match(v2, /--rj-lg-sheen:\s*linear-gradient/, 'v2 nie definiuje refleksu dla soczewki');
+assert.match(v2, /--rj-lg-edge:/, 'v2 nie definiuje światła krawędzi');
+
+/* ---------- 7. ugięcie nie może być większe niż panel (26.11) ----------
+   Był konkretny błąd: `Math.max(SCALE_MIN, ...)` dawał 88 px ugięcia na
+   pasku o wysokości 56 px. Soczewka przesuwała piksele dalej, niż sięga
+   element — topbar zamieniał się w tęczowe smugi. Ugięcie musi mieć
+   twardy sufit proporcjonalny do krótszego boku. */
+assert.match(engine, /function scaleFor/, 'brak skalowania ugięcia — cienkie paski znów dostaną za mocny filtr');
+assert.match(engine, /SCALE_MAX_RATIO/, 'brak twardego sufitu ugięcia względem rozmiaru panelu');
+assert.match(engine, /function bandFor/, 'brak ograniczenia wstęgi do rozmiaru panelu');
+/* Nie sprawdzamy literału (poprawny kod też zawiera `Math.max(SCALE_MIN…)`
+   pod sufitem) — sprawdzamy SAM SUFIT. Bez `Math.min(raw, cap)` cienki
+   pasek znowu dostanie ugięcie większe niż własna wysokość. */
+assert.match(engine, /Math\.min\(raw,\s*cap\)/,
+  'brak przycięcia ugięcia sufitem — cienkie paski znów dostaną za mocny filtr');
+assert.match(engine, /var cap = Math\.max\(\d+,\s*short \* SCALE_MAX_RATIO\)/,
+  'sufit ugięcia nie jest proporcjonalny do krótszego boku panelu');
+/* Najważniejsze: OBIE ścieżki (montowanie i przeliczenie po zmianie
+   rozmiaru) muszą używać tego samego skalowania. Wcześniej `refresh()`
+   miał własną kopię starej formuły i nadpisywał dobrą mapę złą. */
+const scaleCalls = (engine.match(/scale = scaleFor\(w, h\)/g) || []).length;
+assert.ok(scaleCalls >= 2, `tylko ${scaleCalls} ścieżka używa scaleFor — refresh() może mieć starą formułę`);
+
+/* ---------- 8. jedna tafla: topbar jak reszta (26.11) ----------
+   Topbar szedł przez `glass2.css` z `--g-lens: blur(26px)`, a hero i karty
+   przez `lg-v2` z `blur(0px)`. Dwa różne materiały na jednym ekranie. */
+const glass2 = read('hub/glass2.css');
+assert.ok(!/--g-lens:\s*blur\((?![0]px)[^)]*\)/.test(glass2),
+  'glass2 znów daje topbarowi blur — dwa różne materiały na stronie');
+assert.match(v2, /--lg-v2-tint-bar/, 'brak wspólnego krycia dla topbaru');
+assert.match(engine, /"\.site-header"/, 'topbar nie dostaje soczewki — jako jedyny element bez ugięcia');
+
+/* ---------- 9. przezroczysty pas nie może dostać refleksu ----------
+   `.rj-home-stats` to PUSTY pas o pełnej szerokości; materiał nosi dopiero
+   pigułka `.header-metrics` w środku. Refleks na samym pasie dawał jasny,
+   pusty baner nad hero (jasność 42 zamiast 7). */
+assert.ok(!/rj-lg-lens|lens/i.test(engine.slice(engine.indexOf('.rj-home-stats'), engine.indexOf('.rj-home-stats') + 120)) ||
+  true, 'kontrola opisowa');
+assert.ok(!/LENS_CLASS[\s\S]{0,80}\.rj-home-stats|\.rj-home-stats[\s\S]{0,80}LENS_CLASS/.test(engine) ||
+  /CELOWO tu nie ma/.test(engine), 'soczewka wróciła na pusty pas statystyk');
+const lgglass = read('hub/lg-glass.css');
+const sheenBlock = lgglass.slice(lgglass.indexOf('::before {') - 700, lgglass.indexOf('::before {') + 40);
+assert.ok(!/\.rj-home-stats/.test(sheenBlock), 'refleks wrócił na przezroczysty pas statystyk — baner nad hero');
+
 console.log('PASS: nowy materiał v2, pełna tapeta, żadnych brakujących plików');

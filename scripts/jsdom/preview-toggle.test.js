@@ -245,7 +245,10 @@ function fakeLoader(initial, liveAllowed) {
     check('przełącznik jest szklany, nie goły', () => {
       assert.match(block, /background: linear-gradient\(158deg/);
       assert.match(block, /border: 1px solid var\(--hub-line\)/);
-      assert.match(block, /backdrop-filter: blur\(16px\) saturate\(150%\)/);
+      /* v7 (26.11): blur usunięty z całego serwisu — jedno szkło, bez mgły.
+         Test pilnuje, że przełącznik nadal MA warstwę szkła (nie jest goły),
+         a nie konkretnej wartości rozmycia z przeszłości. */
+      assert.match(block, /backdrop-filter: blur\(0px\) saturate\(/);
     });
     check('zaznaczony segment wygląda jak aktywna pigułka studia', () => {
       const press = CSS.slice(CSS.indexOf('.preview-mode-btn[aria-pressed="true"]'));

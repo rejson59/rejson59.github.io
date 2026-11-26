@@ -108,7 +108,7 @@ html[data-theme="light"] {
 
 /* Refleks kładziemy na pseudo-elemencie, nie na treści — inaczej przygasza
    tekst. `mix-blend-mode: screen` rozjaśnia tylko to, co pod nim. */
-:is(.rj-lg-surface, .rjapp-card, .project-card, .rj-home-stats,
+:is(.rj-lg-surface, .rjapp-card, .project-card,
     .projects-toolbar, .toolbar, .board-toolbar, .comm-online-card,
     .rejchat-rules, .rejchat-info-tip, .comm-auth-inner, .services-window,
     .services-window-top, .rj-chat-alert-panel, .rj-header-profile,
@@ -239,8 +239,9 @@ html[data-theme="light"] body .project-card {
 .rj-island .rj-panel,
 .rj-island .rj-dock,
 .rj-lg-fixed {
-  -webkit-backdrop-filter: blur(16px) saturate(180%) brightness(1.04);
-  backdrop-filter: blur(26px) saturate(185%) brightness(1.05);
+  /* v7: jedno szkło w serwisie — bez mgły (patrz lg-v2.css, sekcja 1d). */
+  -webkit-backdrop-filter: blur(0px) saturate(1.85) brightness(1.04);
+  backdrop-filter: blur(0px) saturate(1.85) brightness(1.04);
 }
 
 /* ==========================================================================
