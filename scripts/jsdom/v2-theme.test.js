@@ -186,4 +186,35 @@ const lgglass = read('hub/lg-glass.css');
 const sheenBlock = lgglass.slice(lgglass.indexOf('::before {') - 700, lgglass.indexOf('::before {') + 40);
 assert.ok(!/\.rj-home-stats/.test(sheenBlock), 'refleks wrócił na przezroczysty pas statystyk — baner nad hero');
 
+/* ---------- 10. rozwijane menu nie może rozwalić topbaru (26.11) ----------
+   Realny błąd: silnik dokładał `position: relative` KAŻDEMU dziecku panelu
+   z klasą `rj-lg-on`. Nagłówek też ją dostaje, więc `<summary>` menu
+   „Więcej” stawał się pozycjonowany — a absolutny panel menu liczył się
+   względem niego, wpadał do układu i rozdymał topbar z 66 px do ~320 px.
+   Osobno: `overflow: clip` na nagłówku ucinał całe menu.
+
+   Strażnik pilnuje OBIE strony: panel menu musi zostać absolutny,
+   a nagłówek nie może być przycinany. */
+assert.ok(!/\.rj-lg-on>:not\([^)]*\)\{position:relative/.test(engine),
+  'wróciła reguła `position:relative` na wszystkich dzieciach — menu „Więcej” znów stanie się elementem układu');
+assert.match(engine, /:not\(\.nav-more-panel\)/,
+  'brak wyłączenia panelu menu spod `position:relative`');
+assert.match(engine, /classList\.contains\("site-header"\)/,
+  'silnik znów przycina nagłówek (`overflow: clip`) — menu „Więcej” będzie ucięte');
+/* `z-index` działa tylko na elementach pozycjonowanych. Usunięcie
+   `position` bez warunku przykryło treść karty profilu soczewką. */
+assert.match(engine, /position:relative;z-index:2/,
+  'treść panelu straciła pozycjonowanie — soczewka przykryje zawartość karty');
+/* Menu musi być kryjące, inaczej tekst strony prześwituje przez nie. */
+{
+  /* W arkuszu są dwie reguły zaczynające się od `body .nav-more-panel,`
+     (pierwsza to wspólny tint, druga to pozycjonowanie nakładek).
+     Szukamy tej, która ustawia `position: absolute`. */
+  const blocks = v2.split('body .nav-more-panel,').slice(1);
+  const abs = blocks.find((b) => b.slice(0, 700).includes('position: absolute'));
+  assert.ok(abs, 'brak reguły pozycjonującej menu jako nakładkę');
+  assert.match(abs.slice(0, 700), /rgba\(8, 5, 22, 0\.9[0-9]/,
+    'menu „Więcej” znów jest przezroczyste — treść pod nim prześwituje');
+}
+
 console.log('PASS: nowy materiał v2, pełna tapeta, żadnych brakujących plików');

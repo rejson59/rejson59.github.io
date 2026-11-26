@@ -227,6 +227,40 @@ body .mobile-menu {
   box-shadow: var(--lg-v2-drop), var(--lg-v2-inset) !important;
 }
 
+/* Rozwijane menu MUSI zostać nakładką nad treścią — nigdy elementem
+   układu. Silnik dokłada klasę `rj-lg-on` także do nagłówka, a jej reguła
+   dzieci ustawiała wcześniej `position:relative`, przez co panel menu
+   wypadał z warstwy i wypychał topbar w dół (widok z 26.11). */
+body .nav-more-panel,
+body .rj-chat-alert-panel,
+body .rj-header-profile,
+body .mobile-menu,
+body .site-nav .nav-more-panel,
+body .rj-shared-header .nav-more-panel {
+  position: absolute !important;
+  z-index: 120 !important;
+  /* Menu to NAKŁADKA nad treścią, więc musi być kryjące — inaczej tekst
+     karty pod nim prześwituje i dwie warstwy tekstu nachodzą na siebie
+     (widok z 26.11). Tint ciemniejszy niż topbar, bo tuż pod menu
+     stoją jasne elementy. */
+  background-color: rgba(8, 5, 22, 0.97) !important;
+  background-image: var(--lg-v2-sheen) !important;
+  border: 1px solid var(--lg-v2-edge) !important;
+  box-shadow: 0 30px 70px -30px rgba(2, 0, 14, 0.95), var(--lg-v2-inset) !important;
+  color: rgba(244, 240, 255, 0.96) !important;
+}
+
+/* Linki w menu muszą być jasne — ciemny tekst ginął na ciemnej tafli. */
+body .nav-more-panel :is(a, summary, span, li, p, strong) {
+  color: rgba(244, 240, 255, 0.96) !important;
+}
+
+body .nav-more-panel a:hover,
+body .nav-more-panel a:focus-visible {
+  background: rgba(255, 255, 255, 0.10) !important;
+  color: #fff !important;
+}
+
 body {
   --rj-lg-sheen: linear-gradient(
     152deg,
