@@ -199,7 +199,22 @@
       /* Treść musi być nad soczewką. `:not` chroni samą warstwę przed
          dostaniem `z-index`, które zerwałoby jej `position:absolute`. */
       ".rj-lg-on{position:relative}" +
-      ".rj-lg-on>:not(." + LENS_CLASS + "){position:relative;z-index:2}";
+      /* Treść nad soczewką.
+         `z-index` działa TYLKO na elementach pozycjonowanych, więc treść
+         musi dostać `position:relative` — bez tego soczewka (z-index:1)
+         przykrywała całą zawartość panelu. Karta profilu była pustym
+         prostokątem.
+         Ale NIE wolno nadpisywać `position:absolute` rozwijanych menu:
+         `.nav-more-panel` ma `top:calc(100% + 14px)`, a po zmianie na
+         `relative` wpadał do układu i rozdymał topbar do ~320 px.
+         Dlatego `relative` dostają tylko elementy, które nie są już
+         pozycjonowane, i wyłączamy z tego panele nakładek. */
+      ".rj-lg-on > :not(." + LENS_CLASS + "):not(.nav-more-panel):not(.mobile-menu):not(.rj-chat-alert-panel):not(.rj-header-profile){position:relative;z-index:2}" +
+      /* Panele nakładek zostają absolutne — tylko podnosimy je w warstwie. */
+      ".rj-lg-on > .nav-more-panel{position:absolute!important;z-index:120!important;opacity:1!important}" +
+      ".rj-lg-on > .mobile-menu{z-index:120}" +
+      ".rj-lg-on > .rj-chat-alert-panel{z-index:120}" +
+      ".rj-lg-on > .rj-header-profile{z-index:120}";
     document.head.appendChild(st);
   }
 
@@ -226,9 +241,13 @@
        A jest szkodliwe: na kartach z podglądem (`overflow` ustawia im
        później JS) `clip` ucinał zawartość przy powrocie do góry strony.
        Dlatego przycinamy tylko wtedy, gdy panel i tak przycina. */
+    /* Nagłówek MUSI zostać bez przycinania: siedzą w nim rozwijane menu,
+       które wychodzą poza jego ramkę. `overflow: clip` ucinał cały panel
+       „Więcej” — menu otwierało się, ale było niewidoczne. */
     var ov = "";
     try { ov = window.getComputedStyle(el).overflow; } catch (e) { ov = ""; }
-    if (ov === "visible" || ov === "") {
+    if ((ov === "visible" || ov === "") && !el.classList.contains("site-header") &&
+        !el.classList.contains("rj-shared-header") && !el.classList.contains("topbar")) {
       el.setAttribute("data-rj-lens-overflow", "1");
       try { el.style.overflow = "clip"; } catch (e) { /* ignorujemy */ }
     }
