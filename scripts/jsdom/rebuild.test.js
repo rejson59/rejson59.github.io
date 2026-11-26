@@ -359,7 +359,11 @@ console.log('\n=== G. MENU, SZKŁO I PANEL BEZ ZBĘDNYCH PRZEŁĄCZNIKÓW ===');
 
   check('szkło jest bardziej przezroczyste, a tapeta mniej przyciemniona', () => {
     assert.match(read('css/glass-last.css'), /--gl-tint: rgba\(11, 17, 29, 0\.5\)/, 'tinta szkła została za gęsta');
-    assert.match(GLASS, /--g-lens: blur\(26px\) saturate\(175%\)/, 'obiektyw szkła bez zmian');
+    /* v7 (26.11): blur usunięty z całego serwisu — jedna tafla, bez mgły.
+       Ten warunek sprawdzał KONKRETNĄ wartość z przeszłości; dziś pilnuje
+       samej zasady: każda powierzchnia ma zero rozmycia. */
+    assert.ok(!/--g-lens:\s*blur\((?!0px)/.test(GLASS), 'wróciła mgła na szkle');
+    assert.match(GLASS, /--g-lens:\s*blur\(0px\)/, 'brak warstwy szkła na topbarze');
     assert.ok(!GLASS.includes('brightness(0.92)'), 'tapeta nadal przyciemniona o 8%');
     assert.ok(!/rgba\(5, 8, 16, 0\.86\)/.test(GLASS), 'zasłona nadal mocno przyciemnia dół');
   });

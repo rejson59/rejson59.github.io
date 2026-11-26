@@ -59,11 +59,20 @@
   --lg-v2-glass-card: blur(0px) saturate(1.85) brightness(1.04);
   --lg-v2-glass-chip: blur(0px) saturate(1.8) brightness(1.05);
 
-  /* Tinty są CELOWO bardzo niskie. Czytelność bierze się z cienia pod
-     tekstem i z ciemnego pola tapety, nie z zasłony na całym panelu. */
-  --lg-v2-tint-hero: rgba(14, 10, 38, 0.09);
-  --lg-v2-tint-card: rgba(16, 12, 40, 0.13);
-  --lg-v2-tint-chip: rgba(16, 12, 40, 0.14);
+  /* v7 (26.11): „ciemne szkło też jest ładne”.
+     Tinty były 0,09-0,14 — panele były prawie niewidoczne, więc strona
+     czytała się jak tapeta z napisami, a nie jak szkło na tapecie.
+     Podnosimy je do 0,20-0,26: panel ma własną głębię, a tapeta dalej
+     przez niego prześwituje i jest co uginać. Wszystkie powierzchnie
+     (topbar, hero, karty, panele boczne) dostają JEDEN tint — wcześniej
+     topbar miał własną receptę i wyglądał jak element z innej strony. */
+  --lg-v2-tint-hero: rgba(12, 9, 32, 0.20);
+  --lg-v2-tint-card: rgba(12, 9, 32, 0.24);
+  --lg-v2-tint-chip: rgba(12, 9, 32, 0.26);
+
+  /* Topbar: ciemniejszy od hero — jest cienki, więc potrzebuje więcej
+     krycia, żeby linki nie walczyły z jasnymi wstęgami tapety. */
+  --lg-v2-tint-bar: rgba(10, 7, 26, 0.42);
 
   /* Scrim pod tekstem hero. To NIE jest zasłona na całym panelu (to robiła
      poprzednia wersja i dawało „fioletowy blok”). To gradient tylko po
@@ -179,6 +188,86 @@ html[data-theme="light"] {
    rozciągnięte na cały ekran — na monitorze 2560 px każdy szczegół był
    rozmyty jeszcze PRZED nałożeniem szkła, więc szkło nie miało czego
    pokazywać. Stąd `.webp` 2560×1440 + `image-set` dla ekranów 2×. */
+
+/* 1c. Refleks, który leży NAD obrazem (v6)
+   --------------------------------------------------------------------------
+   Pomiar z 26.11: lewy górny róg karty BEZ warstwy soczewki = rgb(63,56,88)
+   — jasny, czyli refleks jest rysowany. Z soczewką = rgb(5,0,23) — czarno.
+   Soczewka jest dzieckiem panelu, więc maluje się nad jego tłem, a tło
+   panelu to właśnie refleks. Dlatego refleks był, ale go nie było widać.
+
+   Te zmienne czyta soczewka (`.rj-lg-lens::before` / `::after`) i rysuje
+   refleks jeszcze raz — tym razem NAD obrazem tapety. Jeden gradient,
+   jedno źródło prawdy: ten sam, którego używają panele jako tła. */
+/* --------------------------------------------------------------------------
+   1d. Jedna tafla dla całej strony (v7)
+   --------------------------------------------------------------------------
+   Był błąd spójności: topbar i panele boczne szły przez receptę `glass2.css`
+   (`--g-lens: blur(26px)`), a hero i karty przez `lg-v2` (`blur(0px)`).
+   Efekt: górny pasek był MLECZNY, a reszta CZYSTA — dwa różne materiały
+   na jednym ekranie. Do tego `blur(26px)` wprost łamie zasadę „żadnego
+   blura”: rozmycie zjada dokładnie to, co robi szkło, czyli ugięcie
+   krawędzi.
+
+   Od teraz każda powierzchnia bierze ten sam materiał. Różni je tylko
+   krycie (cienki pasek potrzebuje więcej) i to, czy dostaje soczewkę. */
+
+body .site-header,
+body .topbar,
+body .rj-shared-header,
+body .nav-more-panel,
+body .rj-chat-alert-panel,
+body .rj-header-profile,
+body .mobile-menu {
+  background-image: var(--lg-v2-sheen) !important;
+  background-color: var(--lg-v2-tint-bar) !important;
+  border-color: var(--lg-v2-edge) !important;
+  -webkit-backdrop-filter: var(--lg-v2-glass-card) !important;
+  backdrop-filter: var(--lg-v2-glass-card) !important;
+  box-shadow: var(--lg-v2-drop), var(--lg-v2-inset) !important;
+}
+
+body {
+  --rj-lg-sheen: linear-gradient(
+    152deg,
+    rgba(255, 255, 255, 0.30) 0%,
+    rgba(255, 255, 255, 0.11) 14%,
+    rgba(255, 255, 255, 0) 38%,
+    rgba(255, 255, 255, 0) 66%,
+    rgba(255, 255, 255, 0.05) 88%,
+    rgba(255, 255, 255, 0.16) 100%
+  );
+  --rj-lg-edge:
+    /* górna linia światła — najjaśniejsza na środku */
+    linear-gradient(180deg,
+      rgba(255, 255, 255, 0.55) 0px,
+      rgba(255, 255, 255, 0.10) 1px,
+      rgba(255, 255, 255, 0) 2px),
+    /* dolna, słabsza */
+    linear-gradient(0deg,
+      rgba(255, 255, 255, 0.14) 0px,
+      rgba(255, 255, 255, 0) 2px),
+    /* tęczowa obwódka — rozszczepienie światła na krawędzi */
+    linear-gradient(115deg,
+      rgba(200, 170, 255, 0.45) 0%,
+      rgba(255, 255, 255, 0) 18%,
+      rgba(255, 255, 255, 0) 82%,
+      rgba(255, 190, 230, 0.35) 100%);
+}
+
+html[data-theme="light"] body {
+  --rj-lg-sheen: linear-gradient(
+    152deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0.22) 16%,
+    rgba(255, 255, 255, 0.06) 42%,
+    rgba(255, 255, 255, 0.10) 76%,
+    rgba(255, 255, 255, 0.30) 100%
+  );
+  --rj-lg-edge:
+    linear-gradient(180deg, rgba(255,255,255,0.9) 0px, rgba(255,255,255,0) 2px),
+    linear-gradient(0deg, rgba(160,140,220,0.20) 0px, rgba(255,255,255,0) 2px);
+}
 
 body::before {
   background-image: url("/hub/wallpaper-2560.webp");
@@ -360,13 +449,16 @@ body .project-card > span {
    5. Górny pasek i wyspa — ten sam materiał
    -------------------------------------------------------------------------- */
 
+body .site-header.site-header,
 body .rj-shared-header.rj-shared-header,
 body .topbar.topbar {
-  background-color: rgba(14, 9, 34, 0.22) !important;
+  /* v7: krycie z jednej zmiennej (--lg-v2-tint-bar), żeby topbar nie miał
+     własnej, „przypadkowej” wartości obok hero i kart. */
+  background-color: var(--lg-v2-tint-bar) !important;
   background-image: var(--lg-v2-sheen) !important;
   border: 1px solid var(--lg-v2-edge) !important;
-  -webkit-backdrop-filter: var(--lg-v2-glass-chip) !important;
-  backdrop-filter: var(--lg-v2-glass-chip) !important;
+  -webkit-backdrop-filter: var(--lg-v2-glass-card) !important;
+  backdrop-filter: var(--lg-v2-glass-card) !important;
   box-shadow: var(--lg-v2-drop), var(--lg-v2-inset) !important;
 }
 
@@ -664,8 +756,8 @@ body .rj-side-ads {
      przyciemniony i rozmywa to, co pod nim jedzie. */
   #rj-mobile-ads {
     background: rgba(11, 8, 30, 0.78) !important;
-    -webkit-backdrop-filter: blur(18px) saturate(1.7) !important;
-    backdrop-filter: blur(18px) saturate(1.7) !important;
+    -webkit-backdrop-filter: blur(0px) saturate(1.8) brightness(1.04) !important;
+    backdrop-filter: blur(0px) saturate(1.8) brightness(1.04) !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
     box-shadow: 0 12px 30px -22px rgba(2, 0, 14, 0.9) !important;
   }
