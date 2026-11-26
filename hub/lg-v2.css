@@ -59,20 +59,25 @@
   --lg-v2-glass-card: blur(0px) saturate(1.85) brightness(1.04);
   --lg-v2-glass-chip: blur(0px) saturate(1.8) brightness(1.05);
 
-  /* v7 (26.11): „ciemne szkło też jest ładne”.
-     Tinty były 0,09-0,14 — panele były prawie niewidoczne, więc strona
-     czytała się jak tapeta z napisami, a nie jak szkło na tapecie.
-     Podnosimy je do 0,20-0,26: panel ma własną głębię, a tapeta dalej
-     przez niego prześwituje i jest co uginać. Wszystkie powierzchnie
-     (topbar, hero, karty, panele boczne) dostają JEDEN tint — wcześniej
-     topbar miał własną receptę i wyglądał jak element z innej strony. */
-  --lg-v2-tint-hero: rgba(12, 9, 32, 0.20);
-  --lg-v2-tint-card: rgba(12, 9, 32, 0.24);
-  --lg-v2-tint-chip: rgba(12, 9, 32, 0.26);
+  /* v8 (26.11): „chcę, żeby było jak na filmiku”.
+     W filmiku szkło NIE przyciemnia — przepuszcza kolor w pełnym
+     nasyceniu, a cały efekt bierze się z UGIĘCIA i jasnej OBWÓDKI.
+     Tutaj tinty spadają z 0,20-0,42 do 0,05-0,14, czyli panele są
+     prawie przezroczyste. Tapeta pod nimi jest widoczna i kolorowa,
+     więc soczewka ma co uginać — wcześniej przy kryciu 0,24 uginała
+     ciemność, stąd „nie widzę żadnej refleksji”.
 
-  /* Topbar: ciemniejszy od hero — jest cienki, więc potrzebuje więcej
-     krycia, żeby linki nie walczyły z jasnymi wstęgami tapety. */
-  --lg-v2-tint-bar: rgba(10, 7, 26, 0.42);
+     Czytelność NIE bierze się już z zasłony, tylko z:
+       · scrimu pod tekstem (osobna warstwa, --lg-v2-scrim),
+       · cienia pod tekstem,
+       · jasnej obwódki, która oddziela panel od tła. */
+  --lg-v2-tint-hero: rgba(10, 6, 28, 0.06);
+  --lg-v2-tint-card: rgba(10, 6, 28, 0.09);
+  --lg-v2-tint-chip: rgba(10, 6, 28, 0.12);
+
+  /* Topbar jest cienki i leży na samym niebie tapety, więc potrzebuje
+     trochę więcej krycia — ale nadal ma być WIDAĆ przez niego obraz. */
+  --lg-v2-tint-bar: rgba(8, 5, 22, 0.16);
 
   /* Scrim pod tekstem hero. To NIE jest zasłona na całym panelu (to robiła
      poprzednia wersja i dawało „fioletowy blok”). To gradient tylko po
@@ -88,10 +93,13 @@
   );
 
   /* --- krawędź: tu siedzi cała „grubość” szkła --- */
-  --lg-v2-edge: rgba(255, 255, 255, 0.40);
-  --lg-v2-edge-top: rgba(255, 255, 255, 0.85);
-  --lg-v2-edge-bottom: rgba(255, 255, 255, 0.12);
-  --lg-v2-rainbow: rgba(190, 150, 255, 0.55);
+  /* v8 („jak na filmiku”): obwódka jest GŁÓWNYM nośnikiem grubości tafli.
+     Przy prawie przezroczystym szkle to ona odcina panel od tapety,
+     a nie zasłona. Dlatego mocniej niż wcześniej. */
+  --lg-v2-edge: rgba(255, 255, 255, 0.58);
+  --lg-v2-edge-top: rgba(255, 255, 255, 0.98);
+  --lg-v2-edge-bottom: rgba(255, 255, 255, 0.18);
+  --lg-v2-rainbow: rgba(205, 165, 255, 0.62);
 
   /* Górna linia światła: najjaśniejsza na środku, gaśnie na bokach. */
   --lg-v2-lightline: linear-gradient(
@@ -264,12 +272,12 @@ body .nav-more-panel a:focus-visible {
 body {
   --rj-lg-sheen: linear-gradient(
     152deg,
-    rgba(255, 255, 255, 0.30) 0%,
-    rgba(255, 255, 255, 0.11) 14%,
-    rgba(255, 255, 255, 0) 38%,
-    rgba(255, 255, 255, 0) 66%,
-    rgba(255, 255, 255, 0.05) 88%,
-    rgba(255, 255, 255, 0.16) 100%
+    rgba(255, 255, 255, 0.42) 0%,
+    rgba(255, 255, 255, 0.15) 13%,
+    rgba(255, 255, 255, 0) 36%,
+    rgba(255, 255, 255, 0) 64%,
+    rgba(255, 255, 255, 0.07) 86%,
+    rgba(255, 255, 255, 0.22) 100%
   );
   --rj-lg-edge:
     /* górna linia światła — najjaśniejsza na środku */
@@ -308,7 +316,7 @@ body::before {
   background-size: cover;
   background-position: center;
   /* Bardzo lekkie podbicie nasycenia: tapeta ma nieść kolor pod szkłem. */
-  filter: saturate(0.95) brightness(0.55) contrast(1.08);
+  filter: saturate(1.05) brightness(0.96) contrast(1.04);
 }
 
 html[data-theme="light"] body::before {
@@ -755,6 +763,20 @@ body.rj-home .profile-card .profile-since {
    bez rozmycia, bez mleka, sama głębia. */
 body .profile-card > .rj-lg-lens::after {
   background: rgba(10, 7, 28, 0.42) !important;
+}
+
+/* Kafelki statystyk wewnątrz karty profilu — szkło na szkle. */
+/* v8: karta profilu leży na jasnej wstędze tapety i przy kryciu 0,09
+   tekst `@rejson59` spadał do kontrastu 1,2:1 (norma 4,5:1). Hero może
+   być niemal przezroczysty, bo ma osobny scrim pod tekstem — karta nie ma
+   gdzie go położyć, więc dostaje własne, nieco mocniejsze krycie.
+   To NIE jest powrót do mlecznego szkła: 0,34 to nadal mniej niż połowa
+   tego, co było przy 0,42 w topbarze, a tapeta wyraźnie przez nią widać. */
+/* Specyficzność: reguła zbiorcza wyżej to
+   `body:not(.rj-community) :is(… .profile-card …)` = (0,3,0).
+   Samo `body .profile-card.profile-card` = (0,2,1) i przegrywało. */
+body:not(.rj-community) .profile-card.profile-card {
+  background-color: rgba(9, 6, 26, 0.34) !important;
 }
 
 /* Kafelki statystyk wewnątrz karty profilu — szkło na szkle. */
