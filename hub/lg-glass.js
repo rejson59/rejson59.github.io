@@ -38,7 +38,7 @@
 
   /* Ile pikseli szeroka jest wstęga załamania przy krawędzi. Grubsza wstęga
      = bardziej „szklana” ramka, ale więcej pracy dla GPU. */
-  var EDGE_BAND = 52;
+  var EDGE_BAND = 72;
 
   /* Siła przesunięcia w pikselach (maksymalne wychylenie na krawędzi).
      Wartość dodatnia wypycha obraz do wewnątrz — tak działa soczewka
@@ -49,9 +49,9 @@
      efektem, jaki ma szkło. Poprzednie 40-110 px ginęło — przy braku
      rozmycia trzeba je było podnieść, inaczej panel wygląda jak zwykły
      prostokąt z ramką. Teraz ugięcie widać na pierwszy rzut oka. */
-  var SCALE_MIN = 54;
-  var SCALE_MAX = 132;
-  var SCALE_RATIO = 0.26;
+  var SCALE_MIN = 88;
+  var SCALE_MAX = 230;
+  var SCALE_RATIO = 0.34;
 
   /* ---------- soczewka jako warstwa (v3) ----------
 
@@ -93,7 +93,7 @@
           if (!node.__rjLiquidGlass) continue;
           if (e.isIntersecting) {
             if (addLens(node) && node.__rjLens) {
-              node.__rjLens.style.filter = "url(#" + node.__rjLiquidGlass.id + ")";
+              node.__rjLens.style.filter = lensFilter(node.__rjLiquidGlass.id);
             }
           } else {
             removeLens(node);
@@ -128,6 +128,43 @@
       if (m && m[2]) return m[2];
     } catch (e) { /* ignorujemy */ }
     return "/hub/wallpaper-2560.webp";
+  }
+
+  /* Przepisuje wszystkie warstwy tła z `body::before` na soczewkę.
+     `background-attachment` zostaje `fixed` (z arkusza), więc obraz
+     pokrywa się z tłem strony piksel w piksel. */
+  function copyBackdrop(span) {
+    var img = "", size = "", pos = "", rep = "";
+    try {
+      var bg = window.getComputedStyle(document.body, "::before");
+      img = bg.backgroundImage || "";
+      size = bg.backgroundSize || "";
+      pos = bg.backgroundPosition || "";
+      rep = bg.backgroundRepeat || "";
+    } catch (e) { /* ignorujemy */ }
+    if (!img || img === "none") img = "url(\"" + backdropUrl() + "\")";
+    span.style.backgroundImage = img;
+    if (size) span.style.backgroundSize = size;
+    if (pos) span.style.backgroundPosition = pos;
+    if (rep) span.style.backgroundRepeat = rep;
+  }
+
+  /* Filtr, który strona nakłada na samą tapetę (`body::before`).
+     Soczewka kopiuje obraz tapety, więc MUSI dostać ten sam filtr —
+     inaczej wnętrze panelu jest jaśniejsze od otoczenia i tekst ginie.
+     Wycinamy z niego `url(...)`, żeby nie wciągnąć filtrów SVG. */
+  function backdropTone() {
+    try {
+      var f = window.getComputedStyle(document.body, "::before").filter || "";
+      f = f.replace(/url\([^)]*\)/g, "").replace(/\s+/g, " ").trim();
+      return f === "none" ? "" : f;
+    } catch (e) { return ""; }
+  }
+
+  /* Pełny filtr warstwy: ugięcie + tony tapety. */
+  function lensFilter(id) {
+    var t = backdropTone();
+    return "url(#" + id + ")" + (t ? " " + t : "");
   }
 
   function ensureLensStyles() {
@@ -168,7 +205,11 @@
     /* Pasek do ~90 px wysokości dostaje mocniejszą warstwę tonalną —
        soczewka w cienkim pasie „zjada” tło i tekst traci kontrast. */
     if (r.height <= 90) span.setAttribute("data-narrow", "");
-    span.style.backgroundImage = "url(\"" + backdropUrl() + "\")";
+    /* KLUCZ (v4): soczewka musi malować DOKŁADNIE to samo, co tło strony —
+       wszystkie warstwy, nie tylko tapetę. Wcześniej brała sam `url()`
+       tapety, więc przykrywała delikatną siatkę, którą refrakcja ma giąć.
+       Efekt: filtr działał, ale nie miał czego odkształcić. */
+    copyBackdrop(span);
     el.insertBefore(span, el.firstChild);
     /* Soczewka ma `position:absolute; inset:0`, więc sama nie wystaje poza
        panel — przycinanie NIE jest potrzebne do poprawnego wyglądu.
@@ -189,7 +230,7 @@
   /* Aberracja chromatyczna: krawędź rozszczepia światło jak pryzmat.
      v3 podnosi ją z 0.10 do 0.16 — przy czystym szkole (bez mgły)
      to ona odpowiada za wrażenie „grubej tafli”. */
-  var CHROMA = 0.16;
+  var CHROMA = 0.22;
 
   /* Chromium sprawdzamy po obecności Houdini? Nie — po prostu próbujemy
      zastosować filtr i sprawdzamy, czy przeglądarka go przyjęła. */
@@ -546,7 +587,7 @@
     item.h = h;
     item.radius = Math.round(radius);
     if (el.__rjLens && el.__rjLiquidGlass) {
-      el.__rjLens.style.filter = "url(#" + el.__rjLiquidGlass.id + ")";
+      el.__rjLens.style.filter = lensFilter(el.__rjLiquidGlass.id);
     }
   }
 

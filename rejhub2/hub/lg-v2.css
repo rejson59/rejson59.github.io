@@ -153,6 +153,26 @@ html[data-theme="light"] {
 }
 
 /* --------------------------------------------------------------------------
+   1b. Co giąć (v5) — tapeta zamiast sztucznej siatki
+   --------------------------------------------------------------------------
+   Pomiar z 26.11 wyjaśnił, dlaczego refrakcja „nie działała”, mimo że filtr
+   był poprawny: za hero tapeta była PRAWIE JEDNOLITA.
+
+       stara tapeta, obszar za hero:   jasność 18, odchylenie  9,0
+       stara tapeta, obszar ze wstęgą: jasność 59, odchylenie 37,3
+
+   Soczewka ugina obraz o kilkadziesiąt pikseli. Na gładkim gradiencie
+   ugnięcie tego samego koloru daje ten sam kolor — zero różnicy. Dlatego
+   efekt działał tylko na krawędziach, pod którymi przypadkiem przechodziła
+   wstęga. Nowa tapeta ma jasne linie w CAŁEJ powierzchni:
+
+       nowa tapeta, obszar za hero:    jasność 69,5, odchylenie 60,5
+
+   Wcześniej próbowałem łatać to siatką CSS. Nie działało: siatka jest
+   periodyczna, a przesunięcie ~90 px nakłada ją na siebie — różnica
+   wychodziła zero. Struktura musi być NIEPOWTARZALNA, czyli w tapecie. */
+
+/* --------------------------------------------------------------------------
    2. Tło pod szkłem
    --------------------------------------------------------------------------
    Tapeta dostaje pełną rozdzielczość. Wcześniej serwowane było 1280×720
@@ -165,12 +185,12 @@ body::before {
   background-size: cover;
   background-position: center;
   /* Bardzo lekkie podbicie nasycenia: tapeta ma nieść kolor pod szkłem. */
-  filter: saturate(1.08) contrast(1.02);
+  filter: saturate(0.95) brightness(0.55) contrast(1.08);
 }
 
 html[data-theme="light"] body::before {
   background-image: url("/hub/wallpaper-2560.webp");
-  filter: saturate(0.96) brightness(1.12) contrast(0.96);
+  filter: saturate(0.92) brightness(1.02) contrast(0.96);
 }
 
 @media (max-width: 700px) {
@@ -188,7 +208,7 @@ html[data-theme="light"] body::before {
 body::after {
   background:
     radial-gradient(120% 80% at 50% -18%, rgba(10, 6, 30, 0.22), transparent 62%),
-    linear-gradient(180deg, rgba(8, 5, 24, 0.06) 0%, rgba(8, 5, 24, 0.10) 58%, rgba(6, 4, 20, 0.30) 100%);
+    linear-gradient(180deg, rgba(8, 5, 24, 0.10) 0%, rgba(8, 5, 24, 0.30) 42%, rgba(6, 4, 20, 0.62) 100%);
 }
 
 html[data-theme="light"] body::after {
@@ -582,6 +602,33 @@ html[data-theme="light"] body:not(.rj-community) :is(
 ) {
   background-color: var(--lg-v2-tint-card) !important;
   background-image: var(--lg-v2-sheen) !important;
+}
+
+/* 5b. Drobny tekst na szkle (v5)
+   --------------------------------------------------------------------------
+   Pomiar z 26.11 na 430x932: `@rejson59` 2,2:1, „DANE: KOPIA ZAPASOWA”
+   2,0:1 — poniżej normy 4,5:1. Powód: soczewka podniosła jasność wnętrza
+   karty, a te dwie linie miały krycie 0,5 i 0,38 na jasnej tapecie.
+   Podnosimy samo krycie tekstu (bez ruszania tła), więc nadal jest to
+   „drugi plan”, ale czytelny. */
+
+body.rj-home .profile-card .profile-note {
+  color: rgba(226, 234, 250, 0.78) !important;
+}
+
+body.rj-home .profile-card .profile-login {
+  color: rgba(230, 237, 252, 0.86) !important;
+}
+
+body.rj-home .profile-card .profile-since {
+  color: rgba(220, 230, 248, 0.78) !important;
+}
+
+/* Karta profilu leży na samej tapetie, a jasne wstęgi potrafią przejść
+   dokładnie pod „@rejson59”. Dokładamy tint tylko na jej soczewce —
+   bez rozmycia, bez mleka, sama głębia. */
+body .profile-card > .rj-lg-lens::after {
+  background: rgba(10, 7, 28, 0.42) !important;
 }
 
 /* Kafelki statystyk wewnątrz karty profilu — szkło na szkle. */

@@ -3424,7 +3424,7 @@ html[data-theme="light"] body .brand .brand-mark {
 /* 3. Zasłona: mniej granatu, więcej koloru z tapety. Karty nadal mają
    własne, ciemniejsze szkło, więc kontrast tekstu zostaje. */
 body::before {
-  filter: saturate(122%) brightness(1.05) !important;
+  filter: saturate(104%) brightness(0.60) contrast(1.06) !important;
 }
 
 body::after {
@@ -3436,7 +3436,7 @@ body::after {
 
 @media (max-width: 700px) {
   body::before {
-    filter: saturate(116%) brightness(0.96) !important;
+    filter: saturate(102%) brightness(0.64) contrast(1.05) !important;
   }
 }
 

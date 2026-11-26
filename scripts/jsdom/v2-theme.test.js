@@ -70,6 +70,25 @@ assert.match(v2, /wallpaper-2560\.webp/, 'v2 nie używa tapety 2560');
 assert.match(v2, /wallpaper-portrait\.webp/, 'v2 nie ma wariantu pionowego');
 assert.ok(!/wallpaper-1280\.webp/.test(v2), 'v2 wrócił do tapety 1280 — będzie rozmyta');
 
+/* ---------- 3b. tapeta MUSI mieć strukturę do gięcia (26.11) ----------
+   Regresja, którą naprawiamy: filtr ugięcia działał poprawnie (142 820
+   zmienionych pikseli przy ON vs OFF), ale go nie było widać, bo za hero
+   tapeta była niemal jednolita: jasność 18, odchylenie 9,0. Soczewka
+   ugina obraz o kilkadziesiąt pikseli — na gładkim gradiencie to zero
+   różnicy. Dlatego pilnujemy, żeby w kodzie nie było „płaskiej” tapety
+   jako jedynej warstwy pod panelem i żeby soczewka kopiowała CAŁE tło
+   (wszystkie warstwy), a nie sam `url()` obrazka. */
+const lgjs = read('hub/lg-glass.js');
+assert.match(lgjs, /function copyBackdrop/, 'soczewka znów bierze tylko url() tapety — nie skopiuje struktury tła');
+assert.match(lgjs, /function backdropTone/, 'soczewka nie dostaje tonu tapety — wnętrze panelu będzie jaśniejsze od otoczenia');
+assert.match(lgjs, /function lensFilter/, 'brak łączenia ugięcia i tonu w jeden filtr');
+assert.ok(/lensFilter\(/.test(lgjs), 'lensFilter nie jest używany');
+/* Tapeta leży na tle strony i w soczewce — obie muszą istnieć. */
+const wall = path.join(root, 'hub/wallpaper-2560.webp');
+assert.ok(fs.existsSync(wall), 'brak tapety 2560');
+assert.ok(fs.statSync(wall).size > 60000,
+  'tapeta 2560 podejrzanie mała — prawdopodobnie znów płaski gradient bez struktury');
+
 /* ---------- 4. materiał: mało mgły, mocna krawędź ---------- */
 /* Regresja, którą naprawiamy: tint rzędu 0.5 i blur 18-28 px dawały
    jednolitą płytę. Nowy materiał musi zostać przejrzysty. */
