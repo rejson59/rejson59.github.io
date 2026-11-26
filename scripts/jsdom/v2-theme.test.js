@@ -75,8 +75,20 @@ assert.ok(!/wallpaper-1280\.webp/.test(v2), 'v2 wrócił do tapety 1280 — będ
    jednolitą płytę. Nowy materiał musi zostać przejrzysty. */
 const tintHero = v2.match(/--lg-v2-tint-hero:\s*rgba\([^)]*?([\d.]+)\)/);
 assert.ok(tintHero && parseFloat(tintHero[1]) <= 0.2, 'hero znów jest przyciemnione (tint > 0.2)');
-const blurHero = v2.match(/--lg-v2-blur-hero:\s*blur\((\d+)px\)/);
-assert.ok(blurHero && parseInt(blurHero[1], 10) <= 12, 'blur hero > 12 px — wróci „mleczna szyba”');
+/* v3 (26.11): użytkownik poprosił o „żadnego blura, czyste oraz płynne
+   szkło”. Rozmycie musi zostać na ZERO — inaczej wraca mleczna mgła,
+   a ugięcie krawędzi przestaje być widoczne pod rozmyciem.
+   `blur(0px)` jest celowe: Chromium tylko wtedy podpina filtr SVG. */
+const blurry = [...v2.matchAll(/--lg-v2-glass-[a-z]+:\s*blur\((\d+(?:\.\d+)?)px\)/g)];
+assert.ok(blurry.length >= 3, 'brak deklaracji materiału (--lg-v2-glass-*)');
+for (const m of blurry) {
+  assert.equal(parseFloat(m[1]), 0, `materiał ma blur ${m[1]}px — użytkownik prosił o zero`);
+}
+
+/* Refrakcja musi być dopięta z !important — lg-glass.css ma ją bez,
+   więc bez tego filtra nie ma w ogóle (tak było w v2). */
+assert.match(v2, /\.rj-lg-on\.rj-lg-on[\s\S]{0,200}var\(--lg-filter\)/, 'brak dopięcia refrakcji z wystarczającą specyficznością');
+assert.match(v2, /@supports \(backdrop-filter: url\(/, 'brak bramki @supports dla refrakcji');
 
 /* Cień tekstu NAD gradientem psuł „Rejson.” (kontrast 3.6:1). */
 assert.match(v2, /text-shadow:\s*none\s*!important/, 'brak wyłączenia text-shadow na gradiencie imienia');
@@ -85,5 +97,19 @@ assert.match(v2, /text-shadow:\s*none\s*!important/, 'brak wyłączenia text-sha
 for (const needle of ['prefers-reduced-transparency', 'rj-potato', 'prefers-reduced-motion', 'data-theme="light"']) {
   assert.ok(v2.includes(needle), `v2: brak wariantu ${needle}`);
 }
+
+
+/* ---------- 5. soczewka (v3) ----------
+   Sedno odkrycia z 26.11: `url()` w `backdrop-filter` jest w Chromium
+   PRZYJMOWANE I IGNOROWANE — panel nie ugina niczego, a `getComputedStyle`
+   pokazuje filtr, więc łatwo uwierzyć, że działa. Prawdziwe ugięcie robi
+   `filter: url()` na zwykłym elemencie. Silnik musi więc wstawiać warstwę
+   `.rj-lg-lens` z tapetą i przepuszczać ją przez filtr. */
+const engine = read('hub/lg-glass.js');
+assert.match(engine, /LENS_CLASS/, 'silnik nie ma warstwy soczewki — wróci „szkło bez ugięcia”');
+assert.match(engine, /background-attachment:fixed|background-attachment: fixed/, 'soczewka bez tapety `fixed` — obraz nie pokryje się z tłem');
+assert.match(engine, /IntersectionObserver/, 'brak limitu widoczności — soczewka na 43 kartach zamuli telefon');
+assert.match(engine, /function addLens/, 'brak funkcji dodającej soczewkę');
+assert.match(engine, /function removeLens/, 'soczewka nie jest sprzątana');
 
 console.log('PASS: nowy materiał v2, pełna tapeta, żadnych brakujących plików');

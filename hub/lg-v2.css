@@ -1,7 +1,7 @@
 /* © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
    Kopiowanie i ponowne użycie bez pisemnej zgody zabronione. Licencja: /LICENSE, /licencja */
 /* ==========================================================================
-   RejHub 2.0 — odświeżenie 2026-11-26 („v2: płynne szkło”)
+   RejHub 2.0 — odświeżenie 2026-11-26 („v3: czyste szkło, zero mgły”)
 
    CO SIĘ ZMIENIŁO WOBEC POPRZEDNIEJ WERSJI
    ----------------------------------------
@@ -32,17 +32,38 @@
    1. Nowy język wizualny — zmienne
    -------------------------------------------------------------------------- */
 
+/* v3 (26.11, na prośbę: „żadnego blura, czyste oraz płynne szkło”)
+
+   POPRZEDNIO materiał miał blur 8-11 px. Efekt: panel wyglądał jak szyba
+   z mleczną mgłą — obraz pod nim był rozmyty, więc nie było widać tego,
+   co robi prawdziwe szkło: UGIĘCIA. Filmik pokazuje dokładnie odwrotnie —
+   pod panelem widać ostry obraz, tylko przy krawędzi linie się wyginają.
+
+   Dlatego:
+     · `backdrop-filter` NIE zawiera już `blur()`. Zostaje sama korekta
+       koloru (saturacja + jasność), która nie rozmywa ani jednego piksela.
+     · Ugięcie robi `feDisplacementMap` z hub/lg-glass.js — i to ono jest
+       teraz jedynym efektem „szkła”.
+     · Ramkę budują: linia światła, tęczowa obwódka i refleks. To one dają
+       wrażenie grubości tafli, a nie mgła na środku.
+
+   Ważne: `blur(0px)` NIE jest tu kosmetyką. Chromium uruchamia warstwę
+   `backdrop-filter` (i tym samym pozwala podpiąć `url(#filtr)`) tylko
+   wtedy, gdy w łańcuchu jest funkcja rozmycia — nawet o zerowym promieniu.
+   Dlatego `blur(0px)` zostaje, ale nie rozmywa niczego. */
+
 :root {
-  /* --- materiał: mniej mgły, więcej koloru --- */
-  --lg-v2-blur-hero: blur(8px) saturate(2) brightness(1.06);
-  --lg-v2-blur-card: blur(11px) saturate(1.95) brightness(1.05);
-  --lg-v2-blur-chip: blur(9px) saturate(1.9) brightness(1.06);
+  /* --- materiał: zero rozmycia, tylko kolor --- */
+  /* `blur(0px)` = warstwa pod refrakcję; saturate/brightness = kolor. */
+  --lg-v2-glass-hero: blur(0px) saturate(1.9) brightness(1.05);
+  --lg-v2-glass-card: blur(0px) saturate(1.85) brightness(1.04);
+  --lg-v2-glass-chip: blur(0px) saturate(1.8) brightness(1.05);
 
   /* Tinty są CELOWO bardzo niskie. Czytelność bierze się z cienia pod
      tekstem i z ciemnego pola tapety, nie z zasłony na całym panelu. */
-  --lg-v2-tint-hero: rgba(14, 10, 38, 0.10);
-  --lg-v2-tint-card: rgba(16, 12, 40, 0.16);
-  --lg-v2-tint-chip: rgba(16, 12, 40, 0.16);
+  --lg-v2-tint-hero: rgba(14, 10, 38, 0.09);
+  --lg-v2-tint-card: rgba(16, 12, 40, 0.13);
+  --lg-v2-tint-chip: rgba(16, 12, 40, 0.14);
 
   /* Scrim pod tekstem hero. To NIE jest zasłona na całym panelu (to robiła
      poprzednia wersja i dawało „fioletowy blok”). To gradient tylko po
@@ -58,36 +79,37 @@
   );
 
   /* --- krawędź: tu siedzi cała „grubość” szkła --- */
-  --lg-v2-edge: rgba(255, 255, 255, 0.34);
-  --lg-v2-edge-top: rgba(255, 255, 255, 0.72);
-  --lg-v2-edge-bottom: rgba(255, 255, 255, 0.10);
-  --lg-v2-rainbow: rgba(190, 150, 255, 0.45);
+  --lg-v2-edge: rgba(255, 255, 255, 0.40);
+  --lg-v2-edge-top: rgba(255, 255, 255, 0.85);
+  --lg-v2-edge-bottom: rgba(255, 255, 255, 0.12);
+  --lg-v2-rainbow: rgba(190, 150, 255, 0.55);
 
   /* Górna linia światła: najjaśniejsza na środku, gaśnie na bokach. */
   --lg-v2-lightline: linear-gradient(
     90deg,
     rgba(255, 255, 255, 0) 0%,
-    rgba(255, 255, 255, 0.55) 18%,
-    rgba(255, 255, 255, 0.85) 50%,
-    rgba(255, 255, 255, 0.55) 82%,
+    rgba(255, 255, 255, 0.65) 18%,
+    rgba(255, 255, 255, 0.95) 50%,
+    rgba(255, 255, 255, 0.65) 82%,
     rgba(255, 255, 255, 0) 100%
   );
 
-  /* Refleks: jedno szerokie odbicie od góry-lewej, plus drugie od dołu. */
+  /* Refleks: jedno szerokie odbicie od góry-lewej, plus drugie od dołu.
+     Przy braku mgły refleks jest głównym sygnałem „to jest tafla”. */
   --lg-v2-sheen: linear-gradient(
     152deg,
-    rgba(255, 255, 255, 0.22) 0%,
-    rgba(255, 255, 255, 0.07) 18%,
+    rgba(255, 255, 255, 0.26) 0%,
+    rgba(255, 255, 255, 0.08) 18%,
     rgba(255, 255, 255, 0) 42%,
     rgba(255, 255, 255, 0.02) 72%,
-    rgba(255, 255, 255, 0.09) 100%
+    rgba(255, 255, 255, 0.11) 100%
   );
 
   --lg-v2-inset:
     inset 0 1px 0 0 var(--lg-v2-edge-top),
     inset 0 -1px 0 0 var(--lg-v2-edge-bottom),
-    inset 1px 0 0 0 rgba(255, 255, 255, 0.14),
-    inset -1px 0 0 0 rgba(255, 255, 255, 0.14);
+    inset 1px 0 0 0 rgba(255, 255, 255, 0.16),
+    inset -1px 0 0 0 rgba(255, 255, 255, 0.16);
 
   /* Cień: miękki i daleki. Ma „unosić” panel nad tapetą, nie przyciemniać go. */
   --lg-v2-drop:
@@ -106,11 +128,11 @@
 }
 
 html[data-theme="light"] {
-  --lg-v2-blur-hero: blur(9px) saturate(1.7) brightness(1.04);
-  --lg-v2-blur-card: blur(12px) saturate(1.6) brightness(1.03);
-  --lg-v2-tint-hero: rgba(255, 255, 255, 0.18);
-  --lg-v2-tint-card: rgba(255, 255, 255, 0.26);
-  --lg-v2-tint-chip: rgba(255, 255, 255, 0.32);
+  --lg-v2-glass-hero: blur(0px) saturate(1.6) brightness(1.03);
+  --lg-v2-glass-card: blur(0px) saturate(1.5) brightness(1.02);
+  --lg-v2-tint-hero: rgba(255, 255, 255, 0.16);
+  --lg-v2-tint-card: rgba(255, 255, 255, 0.22);
+  --lg-v2-tint-chip: rgba(255, 255, 255, 0.28);
   --lg-v2-scrim: linear-gradient(
     100deg,
     rgba(255, 255, 255, 0.50) 0%,
@@ -118,10 +140,10 @@ html[data-theme="light"] {
     rgba(255, 255, 255, 0.14) 46%,
     rgba(255, 255, 255, 0) 62%
   );
-  --lg-v2-edge: rgba(255, 255, 255, 0.78);
+  --lg-v2-edge: rgba(255, 255, 255, 0.80);
   --lg-v2-edge-top: rgba(255, 255, 255, 0.98);
-  --lg-v2-edge-bottom: rgba(160, 140, 220, 0.16);
-  --lg-v2-rainbow: rgba(150, 120, 240, 0.30);
+  --lg-v2-edge-bottom: rgba(160, 140, 220, 0.18);
+  --lg-v2-rainbow: rgba(150, 120, 240, 0.32);
   --lg-v2-drop:
     0 26px 60px -34px rgba(60, 40, 120, 0.30),
     0 8px 24px -18px rgba(60, 40, 120, 0.18);
@@ -189,8 +211,8 @@ html body .hero.hero {
   background-image: var(--lg-v2-sheen) !important;
   border: 1px solid var(--lg-v2-edge) !important;
   border-radius: var(--lg-v2-radius) !important;
-  -webkit-backdrop-filter: var(--lg-v2-blur-hero) !important;
-  backdrop-filter: var(--lg-v2-blur-hero) !important;
+  -webkit-backdrop-filter: var(--lg-v2-glass-hero) !important;
+  backdrop-filter: var(--lg-v2-glass-hero) !important;
   box-shadow: var(--lg-v2-drop), var(--lg-v2-inset) !important;
   /* Cień pod tekstem: to on zastępuje zasłonę, którą właśnie zabraliśmy.
      Bez niego biały napis na jasnej wstędze tapety traci kontrast. */
@@ -206,8 +228,8 @@ html[data-theme="light"] body.rj-home .hero.hero {
   background-color: var(--lg-v2-tint-hero) !important;
   background-image: var(--lg-v2-sheen) !important;
   border-color: var(--lg-v2-edge) !important;
-  -webkit-backdrop-filter: var(--lg-v2-blur-hero) !important;
-  backdrop-filter: var(--lg-v2-blur-hero) !important;
+  -webkit-backdrop-filter: var(--lg-v2-glass-hero) !important;
+  backdrop-filter: var(--lg-v2-glass-hero) !important;
 }
 
 /* Górna linia światła — najważniejszy pojedynczy detal „szkła z filmiku”. */
@@ -289,8 +311,8 @@ html body .project-card {
   background-image: var(--lg-v2-sheen) !important;
   border: 1px solid var(--lg-v2-edge) !important;
   border-radius: var(--lg-v2-radius-card) !important;
-  -webkit-backdrop-filter: var(--lg-v2-blur-card) !important;
-  backdrop-filter: var(--lg-v2-blur-card) !important;
+  -webkit-backdrop-filter: var(--lg-v2-glass-card) !important;
+  backdrop-filter: var(--lg-v2-glass-card) !important;
   box-shadow: var(--lg-v2-drop), var(--lg-v2-inset) !important;
 }
 
@@ -323,8 +345,8 @@ body .topbar.topbar {
   background-color: rgba(14, 9, 34, 0.22) !important;
   background-image: var(--lg-v2-sheen) !important;
   border: 1px solid var(--lg-v2-edge) !important;
-  -webkit-backdrop-filter: var(--lg-v2-blur-chip) !important;
-  backdrop-filter: var(--lg-v2-blur-chip) !important;
+  -webkit-backdrop-filter: var(--lg-v2-glass-chip) !important;
+  backdrop-filter: var(--lg-v2-glass-chip) !important;
   box-shadow: var(--lg-v2-drop), var(--lg-v2-inset) !important;
 }
 
@@ -344,8 +366,8 @@ body .rj-home-stats .rj-panel {
   background-image: var(--lg-v2-sheen) !important;
   border: 1px solid var(--lg-v2-edge) !important;
   border-radius: 999px !important;
-  -webkit-backdrop-filter: var(--lg-v2-blur-chip) !important;
-  backdrop-filter: var(--lg-v2-blur-chip) !important;
+  -webkit-backdrop-filter: var(--lg-v2-glass-chip) !important;
+  backdrop-filter: var(--lg-v2-glass-chip) !important;
   box-shadow: var(--lg-v2-inset) !important;
 }
 
@@ -379,8 +401,8 @@ body:not(.rj-community) :is(.rjapp-hero, .tools-hero, .services-hero, .rjc-hero,
   background-image: var(--lg-v2-sheen) !important;
   border: 1px solid var(--lg-v2-edge) !important;
   border-radius: var(--lg-v2-radius) !important;
-  -webkit-backdrop-filter: var(--lg-v2-blur-hero) !important;
-  backdrop-filter: var(--lg-v2-blur-hero) !important;
+  -webkit-backdrop-filter: var(--lg-v2-glass-hero) !important;
+  backdrop-filter: var(--lg-v2-glass-hero) !important;
   box-shadow: var(--lg-v2-drop), var(--lg-v2-inset) !important;
   /* Scrim pod tekstem — ten sam powód co w hero: kolor tapety przechodzi
      pod napisami i bez tego biały tekst na jasnej wstędze znika. */
@@ -432,8 +454,8 @@ body .btn.btn-ghost {
   background-image: var(--lg-v2-sheen);
   border: 1px solid var(--lg-v2-edge);
   color: #f3edff;
-  -webkit-backdrop-filter: var(--lg-v2-blur-chip);
-  backdrop-filter: var(--lg-v2-blur-chip);
+  -webkit-backdrop-filter: var(--lg-v2-glass-chip);
+  backdrop-filter: var(--lg-v2-glass-chip);
   box-shadow: var(--lg-v2-inset);
 }
 
@@ -537,8 +559,8 @@ body:not(.rj-community) :is(
   background-image: var(--lg-v2-sheen) !important;
   border: 1px solid var(--lg-v2-edge) !important;
   border-radius: var(--lg-v2-radius-card) !important;
-  -webkit-backdrop-filter: var(--lg-v2-blur-card) !important;
-  backdrop-filter: var(--lg-v2-blur-card) !important;
+  -webkit-backdrop-filter: var(--lg-v2-glass-card) !important;
+  backdrop-filter: var(--lg-v2-glass-card) !important;
   box-shadow: var(--lg-v2-drop), var(--lg-v2-inset) !important;
 }
 
@@ -606,8 +628,8 @@ body .rj-side-ads {
     background-color: rgba(20, 13, 48, 0.62) !important;
     background-image: var(--lg-v2-sheen) !important;
     border: 1px solid var(--lg-v2-edge) !important;
-    -webkit-backdrop-filter: var(--lg-v2-blur-chip) !important;
-    backdrop-filter: var(--lg-v2-blur-chip) !important;
+    -webkit-backdrop-filter: var(--lg-v2-glass-chip) !important;
+    backdrop-filter: var(--lg-v2-glass-chip) !important;
     box-shadow: var(--lg-v2-inset) !important;
   }
 }
@@ -649,5 +671,55 @@ html.rj-potato body .profile-card.profile-card {
   body .project-card.project-card {
     transition: none !important;
     animation: none !important;
+  }
+}
+
+/* ==========================================================================
+   10. Refrakcja: dopięcie filtra (v3 — teraz to jest ISTOTA efektu)
+   ==========================================================================
+   `hub/lg-glass.js` liczy dla każdego panelu mapę ugięcia i zapisuje ją
+   w zmiennej `--lg-filter` jako `url(#rj-lg-N)`. Arkusz musi tę zmienną
+   dołożyć do `backdrop-filter`.
+
+   Problem, który to naprawia: `lg-glass.css` ma regułę `.rj-lg-on`
+   z `backdrop-filter: var(--lg-glass) var(--lg-filter)` — ale BEZ
+   `!important`. Moje reguły w tym pliku mają `!important`, więc wygrywały
+   i **filtra nie było w ogóle**. Innymi słowy: na wszystkich powierzchniach
+   obsługiwanych przez ten plik działał sam blur, a ugnięcie krawędzi
+   nigdy się nie podpinało. Przy v2 (blur 8-11 px) nie było tego widać,
+   bo mgła i tak dominowała. Teraz, bez bluru, to jest jedyny efekt —
+   musi być dopięty.
+
+   `url(var(--x))` jest niepoprawnym CSS-em, więc zmienna stoi w deklaracji
+   samodzielnie. Domyślnie wskazuje na filtr neutralny i panel wygląda
+   normalnie, zanim mapa się policzy. */
+
+@supports (backdrop-filter: url(#rj-lg-probe)) or (-webkit-backdrop-filter: url(#rj-lg-probe)) {
+  body .rj-lg-on.rj-lg-on,
+  body .rjapp-card.rj-lg-on.rj-lg-on,
+  body .project-card.rj-lg-on.rj-lg-on,
+  body .profile-card.rj-lg-on.rj-lg-on,
+  body .hero.rj-lg-on.rj-lg-on,
+  html body .rj-lg-on.rj-lg-on {
+    -webkit-backdrop-filter: var(--lg-v2-glass-card) var(--lg-filter) !important;
+    backdrop-filter: var(--lg-v2-glass-card) var(--lg-filter) !important;
+  }
+
+  /* Hero i duże kontenery: ten sam filtr, własne krycie. */
+  body .hero.rj-lg-on.rj-lg-on,
+  body :is(.rjapp-hero, .tools-hero, .services-hero, .rjc-hero,
+           .partner-hero, .lic-hero, .cn-hero).rj-lg-on.rj-lg-on {
+    -webkit-backdrop-filter: var(--lg-v2-glass-hero) var(--lg-filter) !important;
+    backdrop-filter: var(--lg-v2-glass-hero) var(--lg-filter) !important;
+  }
+}
+
+/* Warianty dostępności muszą wyłączyć także refrakcję — inaczej
+   „ograniczona przezroczystość” i tryb ziemniaka dostają panel bez mgły,
+   ale z ugięciem, które przy kryjącym tle i tak nie ma czego uginać. */
+@media (prefers-reduced-transparency: reduce) {
+  body .rj-lg-on.rj-lg-on {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
   }
 }
