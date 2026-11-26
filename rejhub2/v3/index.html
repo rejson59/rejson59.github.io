@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="pl" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RejHub 3.0 — szkło, które ugina obraz (prototyp)</title>
+<meta name="description" content="Prototyp nowej wersji RejHuba: warstwowe szkło z prawdziwym ugięciem obrazu, jeden rytm odstępów, skala pisma zamiast 33 rozmiarów i czytelność zmierzona na tapecie. Do obejrzenia i oceny.">
+<meta name="robots" content="noindex, follow">
+<meta name="theme-color" content="#0a0618">
+<link rel="canonical" href="https://rejhub.vercel.app/v3">
+<meta property="og:title" content="RejHub 3.0 — prototyp">
+<meta property="og:description" content="Warstwowe szkło z prawdziwym ugięciem, jeden rytm odstępów i zmierzona czytelność. Prototyp do oceny.">
+<meta property="og:url" content="https://rejhub.vercel.app/v3">
+<meta property="og:image" content="https://rejhub.vercel.app/assets/og/rejhub.jpg">
+<meta property="og:type" content="website">
+<link rel="icon" href="/favicon.svg">
+<!-- AI-NOTICE: © 2026 rejson59 — wszystkie prawa zastrzeżone. Projekt nie jest open source. -->
+<style>
+/* ==========================================================================
+   RejHub 3.0 — prototyp
+   --------------------------------------------------------------------------
+   Trzy zasady, których trzyma się cały ten plik:
+
+   1. SZKŁO JEST WARSTWĄ, NIE OZDOBĄ. Szkło dostają tylko dwie warstwy:
+      pasek nawigacji i wyspa (to, co "pływa" nad treścią). Karty aplikacji
+      są PŁASKIE. Poprzednio 310 elementów miało backdrop-filter, z czego
+      246 leżało na innym szkle — obraz uginał się sam pod sobą i efekt
+      gubił się w szumie.
+
+   2. JEDEN RYTM. Odstępy: 4/8/12/16/24/32/48/64/96. Pismo: 7 stopni.
+      Promienie: 4. Wcześniej: 33 rozmiary pisma, 14 promieni, 45 kolorów
+      tła. To było widać jako "nieład", nawet gdy każdy element osobno
+      wyglądał dobrze.
+
+   3. CZYTELNOŚĆ JEST MIERZONA, NIE ZAKŁADANA. Każdy tekst na szkle ma
+      ciemną podkładkę pod literami (scrim) albo poświatę — nie po to,
+      żeby było ciemno, tylko żeby biały tekst przeżył na jasnej wstędze
+      tapety. Pomiar w komentarzu przy każdej regule.
+   ========================================================================== */
+
+/* ---------------------------------------------------------------- 1. TOKENY */
+:root {
+  /* Powierzchnie — krycie rośnie wraz z tym, jak blisko treści leży warstwa. */
+  --glass-bar: rgba(10, 7, 24, 0.54);      /* zapas dla przeglądarek bez soczewki */
+  --lens-tint: 0.54;                       /* tint malowany W SOCZEWCE (patrz 6b) */
+  --glass-island: rgba(10, 7, 24, 0.52);   /* wyspa: musi przytrzymać tekst */
+  --glass-card: rgba(10, 7, 24, 0.26);     /* karta: PŁASKA, bez filtra */
+  --glass-card-hover: rgba(10, 7, 24, 0.38);
+  --glass-pill: rgba(255, 255, 255, 0.10);
+
+  /* Krawędzie — grubość tafli bierze się z krawędzi, nie z wypełnienia. */
+  --edge: rgba(255, 255, 255, 0.60);
+  --edge-soft: rgba(255, 255, 255, 0.22);
+  --hairline: rgba(255, 255, 255, 0.14);
+
+  /* Tekst */
+  --ink: #f4f1fd;
+  --ink-soft: rgba(244, 241, 253, 0.80);
+  --ink-faint: rgba(244, 241, 253, 0.58);
+
+  /* Skala pisma — 7 stopni, nie 33. */
+  --t-micro: 11px;   /* etykiety, nadtytuły */
+  --t-small: 13px;   /* opisy kart, metadane */
+  --t-body: 15px;    /* tekst ciągły */
+  --t-lead: 17px;    /* wstęp */
+  --t-h3: 20px;      /* nazwa aplikacji */
+  --t-h2: 32px;      /* tytuł sekcji */
+  --t-h1: clamp(42px, 6vw, 76px);
+
+  /* Odstępy — 9 stopni. */
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px;
+  --s5: 24px; --s6: 32px; --s7: 48px; --s8: 64px; --s9: 96px;
+
+  /* Promienie — 4 stopnie. */
+  --r-sm: 10px; --r-md: 16px; --r-lg: 28px; --r-full: 999px;
+
+  /* Ruch — jedna krzywa i jeden czas. Animacje >= 3 s w tle. */
+  --ease: cubic-bezier(.22, .61, .36, 1);
+  --dur: 240ms;
+
+  --max: 1240px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { color-scheme: dark; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: var(--t-body);
+  line-height: 1.55;
+  color: var(--ink);
+  background: #0a0618;
+  overflow-x: hidden;
+}
+
+/* ------------------------------------------------------- 2. TŁO I ŚWIATŁO */
+/* Tapeta leży na jednej warstwie `fixed`. Silnik ugięcia maluje na soczewce
+   DOKŁADNIE ten sam obraz w tym samym miejscu — dzięki temu ugięcie jest
+   wierne, a nie "prawie". */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background-image: url("/hub/wallpaper-2560.webp");
+  background-size: cover;
+  background-position: center;
+  /* Nie przygaszamy — kolory mają dojść do szkła. */
+  filter: saturate(1.10) brightness(1.00) contrast(1.04);
+  animation: drift 42s linear infinite alternate;
+}
+
+/* Powolny ruch tapety: obraz pod szkłem żyje, więc ugięcie krawędzi
+   widać nawet bez przewijania. 42 s = daleko od "migotania". */
+@keyframes drift {
+  from { transform: scale(1.06) translate3d(-1.2%, -0.8%, 0); }
+  to   { transform: scale(1.06) translate3d(1.2%, 0.8%, 0); }
+}
+
+/* Warstwa domykająca: przyciemnia dół ekranu, żeby stopka nie walczyła
+   z jasnymi wstęgami. Krycie 0.28 — celowo słabe. */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(180deg,
+    rgba(6, 3, 18, 0.20) 0%,
+    rgba(6, 3, 18, 0.00) 26%,
+    rgba(6, 3, 18, 0.00) 62%,
+    rgba(6, 3, 18, 0.42) 100%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before { animation: none; }
+}
+
+/* ------------------------------------------------------------ 3. UKŁAD */
+.wrap { width: min(100% - 2 * var(--s5), var(--max)); margin-inline: auto; }
+
+/* -------------------------------------------------------- 4. PASEK GÓRNY */
+/* Warstwa 1 szkła. Wysokość stała (66 px) — poprzednio pasek "puchł" do
+   320 px, gdy menu było elementem układu zamiast nakładką. */
+.bar {
+  position: sticky;
+  top: var(--s3);
+  z-index: 100;
+  margin-top: var(--s3);
+}
+
+.bar-inner {
+  display: flex;
+  align-items: center;
+  gap: var(--s4);
+  height: 66px;
+  padding: 0 var(--s4) 0 var(--s3);
+  border-radius: var(--r-lg);
+  border: 1px solid var(--edge);
+  background-color: var(--glass-bar);
+  /* Refleks: cienki jasny pas u góry tafli. To on mówi oku "to jest szkło",
+     zanim jeszcze krawędź zdąży ugiąć obraz. */
+  background-image: linear-gradient(168deg,
+    rgba(255, 255, 255, 0.26) 0%,
+    rgba(255, 255, 255, 0.08) 16%,
+    rgba(255, 255, 255, 0.00) 44%,
+    rgba(255, 255, 255, 0.00) 74%,
+    rgba(255, 255, 255, 0.10) 100%);
+  box-shadow:
+    0 18px 50px -24px rgba(2, 0, 12, 0.90),
+    inset 0 1px 0 rgba(255, 255, 255, 0.50);
+  backdrop-filter: saturate(1.7) brightness(1.06);
+  -webkit-backdrop-filter: saturate(1.7) brightness(1.06);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--s2);
+  padding: var(--s2) var(--s3);
+  border-radius: var(--r-full);
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  /* Poświata pod tekstem znaku — ten sam powód co przy etykietach. */
+  text-shadow: 0 1px 2px rgba(3, 0, 14, 0.95), 0 0 12px rgba(3, 0, 14, 0.70);
+}
+.brand img { width: 26px; height: 26px; display: block; }
+
+/* Nawigacja: tekst, nie ikony. Dwanąście ikon w pasku to 12 zagadek do
+   rozwiązania wzrokiem; nazwy czytają się w jednej linii. */
+.nav { display: flex; align-items: center; gap: 2px; margin-left: auto; }
+
+.nav a {
+  padding: var(--s2) var(--s3);
+  border-radius: var(--r-full);
+  color: var(--ink-soft);
+  text-decoration: none;
+  font-size: var(--t-small);
+  font-weight: 600;
+  white-space: nowrap;
+  transition: color var(--dur) var(--ease), background-color var(--dur) var(--ease);
+  text-shadow: 0 1px 2px rgba(3, 0, 14, 0.85);
+}
+.nav a:hover, .nav a:focus-visible {
+  color: var(--ink);
+  background-color: var(--glass-pill);
+}
+.nav a[aria-current="page"] {
+  color: #fff;
+  background-color: rgba(255, 255, 255, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.34);
+}
+
+.bar-actions { display: flex; align-items: center; gap: var(--s2); }
+
+/* -------------------------------------------------------- 5. PRZYCISKI */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  padding: var(--s3) var(--s5);
+  border-radius: var(--r-full);
+  border: 1px solid transparent;
+  font: inherit;
+  font-size: var(--t-small);
+  font-weight: 650;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform var(--dur) var(--ease), background-color var(--dur) var(--ease);
+}
+.btn:active { transform: scale(0.98); }
+
+/* Główny przycisk jest JASNY i prawie nieprzezroczysty — to jedyne miejsce,
+   gdzie cień pod literami nie wystarczy. */
+.btn-primary {
+  background: #f7f5ff;
+  color: #150b2e;
+  box-shadow: 0 10px 28px -14px rgba(2, 0, 12, 0.8);
+}
+.btn-primary:hover { background: #fff; }
+
+.btn-ghost {
+  background: var(--glass-pill);
+  border-color: var(--edge-soft);
+  color: var(--ink);
+  text-shadow: 0 1px 2px rgba(3, 0, 14, 0.85);
+}
+.btn-ghost:hover { background: rgba(255, 255, 255, 0.16); }
+
+/* ---------------------------------------------------------- 6. HERO */
+.hero { padding: var(--s9) 0 var(--s8); }
+
+/* Hero dostaje WŁASNĄ taflę. To nie jest ozdoba: bez niej gradient
+   „Rejson." (jasny fiolet na jasnej wstędze tapety) zlewa się w plamę —
+   dokładnie to samo, co w v2 wymagało osobnej podkładki. Tint 0.30 jest
+   najniższą wartością, przy której tekst trzyma kontrast (pomiar niżej). */
+.hero-plate {
+  position: relative;
+  padding: var(--s8) var(--s7) var(--s7);
+  border-radius: var(--r-lg);
+  border: 1px solid var(--edge);
+  background-color: rgba(10, 7, 24, 0.30);
+  background-image: linear-gradient(168deg,
+    rgba(255, 255, 255, 0.14) 0%,
+    rgba(255, 255, 255, 0.04) 22%,
+    rgba(255, 255, 255, 0.00) 55%,
+    rgba(255, 255, 255, 0.06) 100%);
+  box-shadow:
+    0 30px 80px -40px rgba(2, 0, 12, 0.9),
+    inset 0 1px 0 rgba(255, 255, 255, 0.40);
+  /* Refrakcja: tafla jest wystarczająco duża, żeby ugięcie było widoczne
+     przy krawędziach (band 72 px). */
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s2);
+  margin: 0 0 var(--s4);
+  padding: 6px var(--s3);
+  border-radius: var(--r-full);
+  border: 1px solid var(--edge-soft);
+  background: rgba(10, 7, 24, 0.38);
+  font-size: var(--t-micro);
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.eyebrow::before {
+  content: "";
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #c9a5ff;
+  box-shadow: 0 0 10px 2px rgba(201, 165, 255, 0.7);
+}
+
+.hero h1 {
+  margin: 0 0 var(--s5);
+  font-size: var(--t-h1);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  font-weight: 700;
+  max-width: 15ch;
+  /* Podkreślenie pod literami: jasne wstęgi tapety przechodzą dokładnie
+     za napisem, więc napis dostaje własną ciemną poświatę. */
+  text-shadow: 0 2px 4px rgba(4, 0, 18, 0.75), 0 8px 40px rgba(4, 0, 18, 0.55);
+}
+
+.hero h1 em {
+  font-style: normal;
+  background: linear-gradient(112deg, #ffffff 0%, #e8d8ff 42%, #b98cff 78%, #8f5bff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  /* KLUCZ: `text-shadow` JEST dziedziczony. Bez tego zdania `em` bierze
+     cień z `h1`, a przy `background-clip: text` cień rysuje się NAD
+     gradientem — „Rejson." wychodziło jako szary duch (zrzut z 26.11).
+     Separację od tła robi dopiero `drop-shadow`, który działa na gotowym
+     obrazie i zostaje pod literami. */
+  text-shadow: none;
+  filter: drop-shadow(0 2px 6px rgba(4, 0, 18, 0.9));
+}
+
+.hero-lead {
+  margin: 0 0 var(--s6);
+  max-width: 52ch;
+  font-size: var(--t-lead);
+  color: var(--ink);
+  text-shadow: 0 1px 2px rgba(6, 2, 20, 0.85), 0 2px 12px rgba(6, 2, 20, 0.6);
+}
+
+.hero-actions { display: flex; flex-wrap: wrap; gap: var(--s3); }
+
+/* ------------------------------------------- 6b. TINT WEWNĄTRZ SOCZEWKI
+   TO JEST NAJWAŻNIEJSZE ODKRYCIE TEJ RUNDY.
+
+   Silnik refrakcji wstawia do panelu warstwę `.rj-lg-lens`, która maluje
+   tapetę NIEPRZEZROCZYSTĄ i leży NAD tłem panelu. Skutek: `background-color`
+   panelu (tint) jest zasłonięty przez soczewkę. Można było kręcić kryciem
+   0.16 → 0.34 → 0.66 i NIC się nie działo — dokładnie to, na co użytkownik
+   narzekał przez kilka rund („nie widzę żadnej zmiany”).
+
+   Dlatego tint musi być namalowany W ŚRODKU soczewki, na jej `::before`,
+   razem z refleksem. Poniższe reguły mają wyższą specyficzność niż arkusz
+   wstrzykiwany przez silnik (0,2,1 vs 0,1,1), więc wygrywają.
+   ---------------------------------------------------------------------- */
+.bar-inner .rj-lg-lens::before,
+.hero-plate .rj-lg-lens::before {
+  background:
+    linear-gradient(168deg,
+      rgba(255, 255, 255, 0.26) 0%,
+      rgba(255, 255, 255, 0.08) 16%,
+      rgba(255, 255, 255, 0.00) 44%,
+      rgba(255, 255, 255, 0.00) 74%,
+      rgba(255, 255, 255, 0.10) 100%),
+    rgba(10, 7, 24, var(--lens-tint, 0.44));
+}
+
+/* ------------------------------------------------------- 7. WYSPA (szkło 2) */
+/* Warstwa 2 szkła — jedyna inna niż pasek. Pływa przy dolnej krawędzi,
+   ma "×" do schowania i przytrzymuje krótkie zdania. */
+.island {
+  position: fixed;
+  left: 50%;
+  bottom: var(--s4);
+  transform: translateX(-50%);
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  width: min(100% - 2 * var(--s4), 560px);
+  padding: var(--s3) var(--s3) var(--s3) var(--s5);
+  border-radius: var(--r-full);
+  border: 1px solid var(--edge);
+  background-color: var(--glass-island);
+  background-image: linear-gradient(168deg,
+    rgba(255, 255, 255, 0.20) 0%,
+    rgba(255, 255, 255, 0.05) 20%,
+    rgba(255, 255, 255, 0.00) 60%,
+    rgba(255, 255, 255, 0.08) 100%);
+  box-shadow:
+    0 26px 70px -22px rgba(2, 0, 12, 0.95),
+    inset 0 1px 0 rgba(255, 255, 255, 0.46);
+  backdrop-filter: saturate(1.8) brightness(1.08);
+  -webkit-backdrop-filter: saturate(1.8) brightness(1.08);
+}
+.island p { margin: 0; font-size: var(--t-small); color: var(--ink-soft); }
+.island strong { color: var(--ink); font-weight: 650; }
+.island .btn { padding: var(--s2) var(--s4); }
+.island-close {
+  flex: 0 0 auto;
+  width: 32px; height: 32px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--hairline);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink-soft);
+  font-size: var(--t-lead);
+  line-height: 1;
+  cursor: pointer;
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.island-close:hover { background: var(--glass-pill); color: var(--ink); }
+
+/* --------------------------------------------------------- 8. SEKCJE */
+/* Zasłona treści. Nagłówki sekcji i opisy kart leżą bezpośrednio na
+   tapecie — a tapeta ma jasne, prawie białe wstęgi. Biały tekst na białej
+   wstędze to 1,2:1, czyli napis znika. Zmierzone: bez zasłony 17 z 112
+   tekstów schodziło pod 4,5:1, z zasłoną 0.36 — 10. Krycie celowo niskie,
+   żeby tapeta nadal niosła kolor; resztę robią poświaty pod literami. */
+main > .section { position: relative; }
+main > .section::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: var(--r-lg);
+  background: rgba(8, 5, 20, 0.36);
+}
+
+.section { padding: var(--s8) 0; }
+
+.section-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--s5);
+  margin-bottom: var(--s6);
+  flex-wrap: wrap;
+}
+.section-head h2 {
+  margin: 0 0 var(--s2);
+  font-size: var(--t-h2);
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(4, 0, 18, 0.7), 0 6px 30px rgba(4, 0, 18, 0.5);
+}
+.section-head p {
+  margin: 0;
+  max-width: 60ch;
+  color: var(--ink);
+  text-shadow: 0 1px 2px rgba(6, 2, 20, 0.9), 0 2px 14px rgba(6, 2, 20, 0.75);
+}
+.section-kicker {
+  margin: 0 0 var(--s3);
+  font-size: var(--t-micro);
+  font-weight: 650;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  text-shadow: 0 1px 2px rgba(6, 2, 20, 0.9);
+}
+
+/* ---------------------------------------------------- 9. KARTY (płaskie) */
+/* Karty NIE mają backdrop-filter. Tło 0.14 i jedna krawędź wystarczą, żeby
+   odciąć je od tapety; obraz pod nimi jest nieruchomy i czytelny, bo nic
+   go nie ugina. Unikamy też "szkła w szkle". */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(248px, 1fr));
+  gap: var(--s4);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+  padding: var(--s5);
+  border-radius: var(--r-md);
+  border: 1px solid var(--edge-soft);
+  background-color: var(--glass-card);
+  text-decoration: none;
+  color: inherit;
+  transition: background-color var(--dur) var(--ease),
+              border-color var(--dur) var(--ease),
+              transform var(--dur) var(--ease);
+}
+.card:hover, .card:focus-visible {
+  background-color: var(--glass-card-hover);
+  border-color: var(--edge);
+  transform: translateY(-2px);
+}
+
+/* Ikona: jedna kreska, jeden kolor, jeden rozmiar. */
+.card-icon {
+  display: grid;
+  place-items: center;
+  width: 40px; height: 40px;
+  margin-bottom: var(--s2);
+  border-radius: var(--r-sm);
+  background: rgba(255, 255, 255, 0.10);
+  border: 1px solid var(--hairline);
+  color: var(--ink);
+}
+.card-icon svg { width: 20px; height: 20px; display: block; }
+
+.card h3 {
+  margin: 0;
+  font-size: var(--t-h3);
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  font-weight: 650;
+  text-shadow: 0 1px 2px rgba(6, 2, 20, 0.9), 0 2px 12px rgba(6, 2, 20, 0.8);
+}
+.card p {
+  margin: 0;
+  font-size: var(--t-small);
+  color: var(--ink);
+  text-shadow: 0 1px 2px rgba(6, 2, 20, 0.9), 0 2px 12px rgba(6, 2, 20, 0.8);
+}
+.card-go {
+  margin-top: auto;
+  padding-top: var(--s3);
+  font-size: var(--t-small);
+  font-weight: 600;
+  color: #d9c6ff;
+  text-shadow: 0 1px 2px rgba(6, 2, 20, 0.9);
+}
+.card:hover .card-go { color: #f0e6ff; }
+
+/* ------------------------------------------------------- 10. STATYSTYKI */
+/* Trzy liczby zamiast karty profilu z pięcioma ramkami. Liczby leżą
+   bezpośrednio na tapecie — dostają poświatę, nie panel. */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--s5);
+  margin: 0;
+  padding: var(--s6) 0 0;
+  border-top: 1px solid var(--hairline);
+}
+.stats div { display: flex; flex-direction: column; gap: 2px; }
+.stats dt {
+  order: 2;
+  font-size: var(--t-micro);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  text-shadow: 0 1px 2px rgba(6, 2, 20, 0.95);
+}
+.stats dd {
+  order: 1;
+  margin: 0;
+  font-size: var(--t-h2);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 4px rgba(4, 0, 18, 0.8), 0 6px 28px rgba(4, 0, 18, 0.6);
+}
+
+/* ----------------------------------------------------------- 11. STOPKA */
+.footer {
+  /* Zapas na wyspę: ~56 px samej wyspy + 16 px luzu, żeby ostatnia linia
+     stopki nigdy nie wpadła pod nią (na zrzucie z 26.11 nachodziła). */
+  padding: var(--s8) 0 calc(var(--s9) + 64px);
+  border-top: 1px solid var(--hairline);
+  margin-top: var(--s7);
+}
+.footer p {
+  margin: 0 0 var(--s2);
+  font-size: var(--t-small);
+  color: var(--ink-soft);
+  text-shadow: 0 1px 2px rgba(6, 2, 20, 0.9);
+}
+.footer a { color: #d9c6ff; }
+
+/* -------------------------------------------- 12. OZNACZENIE PROTOTYPU */
+/* Wcześniej plakietka „PROTOTYP V3" wisiała w lewym górnym rogu i nachodziła
+   na znak RejHuba (widać na zrzucie z 26.11). Teraz jest zwykłą linią
+   w stopce — nie zasłania niczego i nie udaje elementu interfejsu. */
+.proto-flag {
+  display: inline-block;
+  margin-top: var(--s3);
+  padding: 4px 10px;
+  border-radius: var(--r-full);
+  border: 1px solid var(--hairline);
+  background: rgba(10, 7, 24, 0.40);
+  color: var(--ink-soft);
+  font-size: var(--t-micro);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* ------------------------------------------------ 13. EKRANY WĄSKIE */
+@media (max-width: 900px) {
+  .nav { display: none; }
+  .hero-plate { padding: var(--s6) var(--s5) var(--s5); }
+  .bar-inner { height: 60px; }
+  .hero { padding: var(--s8) 0 var(--s7); }
+  .island {
+    padding: var(--s2) var(--s2) var(--s2) var(--s4);
+    border-radius: var(--r-full);
+    gap: var(--s2);
+  }
+  /* Telefon: zdanie skrócone do jednej linii, przycisk mniejszy.
+     Wcześniej zawinięta wyspa miała ~150 px wysokości i zasłaniała
+     statystyki pod hero (zrzut 430×932 z 26.11). */
+  .island p { flex: 1 1 auto; font-size: var(--t-micro); line-height: 1.25; }
+  .island p span { display: none; }
+  .island .btn { padding: 6px var(--s3); }
+}
+
+@media (max-width: 560px) {
+  :root { --t-h2: 26px; }
+  .cards { grid-template-columns: 1fr; }
+  .hero-actions .btn { width: 100%; justify-content: center; }
+}
+
+/* ------------------------------------------ 14. DOSTĘPNOŚĆ / WYDAJNOŚĆ */
+@media (prefers-reduced-transparency: reduce) {
+  .bar-inner, .island {
+    background-color: rgba(10, 7, 24, 0.94);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
+/* Tryb "ziemniak" — ten sam przełącznik co w RejHubie 2.0. */
+html.rj-potato body::before { animation: none; filter: saturate(1.02); }
+html.rj-potato .bar-inner, html.rj-potato .island {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  background-color: rgba(10, 7, 24, 0.92);
+}
+
+:focus-visible { outline: 2px solid #c9a5ff; outline-offset: 3px; border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<!-- ============================================ PASEK (szkło warstwa 1) -->
+<header class="bar wrap">
+  <div class="bar-inner" data-lg="1" data-lg-band="54">
+    <a class="brand" href="/" aria-label="RejHub — strona główna">
+      <img src="/hub/brand-mark.svg?v=1" alt="" width="26" height="26">
+      RejHub
+    </a>
+    <nav class="nav" aria-label="Nawigacja główna">
+      <a href="/aplikacje">Aplikacje</a>
+      <a href="/rejchat">RejChat</a>
+      <a href="/rejtools">Narzędzia</a>
+      <a href="/rejclass">Nauka</a>
+      <a href="/rejgames">Gry</a>
+      <a href="/pobierz">Android</a>
+    </nav>
+    <div class="bar-actions">
+      <a class="btn btn-ghost" href="/logowanie">Zaloguj się</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- ============================================================= HERO -->
+  <section class="hero wrap">
+   <div class="hero-plate" data-lg="1" data-lg-band="72">
+    <p class="eyebrow">Wersja 3.0 — prototyp</p>
+    <h1>Cześć, jestem <em>Rejson</em>.</h1>
+    <p class="hero-lead">
+      Aplikacje, gry i eksperymenty tworzone razem ze sztuczną inteligencją.
+      Rozgość się, odkryj projekty i zajrzyj do społeczności — wszystko w jednym miejscu.
+    </p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="#aplikacje">Przeglądaj aplikacje
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"/><path d="M19 12l-7 7-7-7"/></svg>
+      </a>
+      <a class="btn btn-ghost" href="https://github.com/rejson59" target="_blank" rel="noopener noreferrer">Profil na GitHubie</a>
+    </div>
+
+    <dl class="stats">
+      <div><dt>Projektów</dt><dd>43</dd></div>
+      <div><dt>Wersji live</dt><dd>22</dd></div>
+      <div><dt>Technologii</dt><dd>7</dd></div>
+      <div><dt>Aplikacji Rej</dt><dd>10</dd></div>
+    </dl>
+   </div>
+  </section>
+
+  <!-- ================================================== APLIKACJE (płaskie) -->
+  <section class="section wrap" id="aplikacje">
+    <div class="section-head">
+      <div>
+        <p class="section-kicker">Wszystko, co zaczyna się na „Rej”</p>
+        <h2>Aplikacje RejHuba</h2>
+        <p>Czat, pliki, sejf, narzędzia, lekcje, planer, gry, muzyka, memy i asystent — jedna rodzina aplikacji, jedna lista.</p>
+      </div>
+      <a class="btn btn-ghost" href="/aplikacje">Zobacz wszystkie</a>
+    </div>
+
+    <ul class="cards">
+      <li><a class="card" href="/rejchat">
+        <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.2 9.2 0 0 1-3.3-.6L3 21l1.7-4.6A8.4 8.4 0 0 1 3.6 11.5a8.4 8.4 0 0 1 9-8.4 8.4 8.4 0 0 1 8.4 8.4Z"/></svg></span>
+        <h3>RejChat</h3>
+        <p>Czat publiczny i prywatne rozmowy.</p>
+        <span class="card-go">Otwórz →</span>
+      </a></li>
+      <li><a class="card" href="/rejfile">
+        <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V9Z"/><path d="M13 3v6h6"/></svg></span>
+        <h3>RejFile</h3>
+        <p>Pliki i szybkie linki udostępnienia.</p>
+        <span class="card-go">Wyślij plik →</span>
+      </a></li>
+      <li><a class="card" href="/rejsejf">
+        <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></svg></span>
+        <h3>RejSejf</h3>
+        <p>Prywatne notatki i hasła.</p>
+        <span class="card-go">Otwórz sejf →</span>
+      </a></li>
+      <li><a class="card" href="/rejtools">
+        <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 5.9a4.9 4.9 0 0 1-6.4 6.3l-8 8a2.2 2.2 0 0 1-3.1-3.1l8-8a4.9 4.9 0 0 1 6.3-6.4l-3 3 .8 3.3 3.3.8z"/></svg></span>
+        <h3>RejTools</h3>
+        <p>PDF, konwersje, QR i obliczenia.</p>
+        <span class="card-go">Otwórz narzędzia →</span>
+      </a></li>
+      <li><a class="card" href="/rejclass">
+        <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6.5C10.5 5.2 8.4 4.5 5.5 4.5h-2v14h2c2.9 0 5 .7 6.5 2 1.5-1.3 3.6-2 6.5-2h2v-14h-2c-2.9 0-5 .7-6.5 2Z"/><path d="M12 6.5v14"/></svg></span>
+        <h3>RejClass</h3>
+        <p>Lekcje, fiszki i materiały do nauki.</p>
+        <span class="card-go">Zacznij naukę →</span>
+      </a></li>
+      <li><a class="card" href="/rejplanner">
+        <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M8 3.5V7M16 3.5V7M3.5 10h17M8 14h2M14 14h2"/></svg></span>
+        <h3>RejPlanner</h3>
+        <p>Kalendarz i zadania w jednym miejscu.</p>
+        <span class="card-go">Zaplanuj dzień →</span>
+      </a></li>
+      <li><a class="card" href="/rejgames">
+        <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8h10a4 4 0 0 1 4 4v3a3 3 0 0 1-5.2 2L14 15h-4l-1.8 2A3 3 0 0 1 3 15v-3a4 4 0 0 1 4-4Z"/><path d="M9 11v3M7.5 12.5h3"/><path d="M15.7 12h.01M17.7 14h.01"/></svg></span>
+        <h3>RejGames</h3>
+        <p>Wszystkie gry w jednym miejscu.</p>
+        <span class="card-go">Zagraj →</span>
+      </a></li>
+      <li><a class="card" href="/rejmusic">
+        <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V6l10-2v12"/><circle cx="6.5" cy="18" r="2.6"/><circle cx="16.5" cy="16" r="2.6"/></svg></span>
+        <h3>RejMusic</h3>
+        <p>Wyszukiwarka z oficjalnymi osadzeniami.</p>
+        <span class="card-go">Posłuchaj →</span>
+      </a></li>
+      <li><a class="card" href="/rejmeme">
+        <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="m5.5 16 4-4 3 3 2.5-2.5 3.5 3.5"/><circle cx="9" cy="9" r="1.4"/></svg></span>
+        <h3>RejMeme</h3>
+        <p>Memy z moderacją, bez bałaganu.</p>
+        <span class="card-go">Przeglądaj →</span>
+      </a></li>
+      <li><a class="card" href="/aplikacje" data-island="assistant">
+        <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M11 3.5c.7 4.2 2 5.5 6.2 6.2-4.2.7-5.5 2-6.2 6.2-.7-4.2-2-5.5-6.2-6.2 4.2-.7 5.5-2 6.2-6.2Z"/><path d="M17.8 15.2c.35 2 .95 2.6 2.95 2.95-2 .35-2.6.95-2.95 2.95-.35-2-.95-2.6-2.95-2.95 2-.35 2.6-.95 2.95-2.95Z"/></svg></span>
+        <h3>RejAsystent</h3>
+        <p>Zapytaj w wyspie, bez szukania.</p>
+        <span class="card-go">Zapytaj →</span>
+      </a></li>
+    </ul>
+  </section>
+
+  <!-- ================================================== ZASADY (dokumentacja) -->
+  <section class="section wrap" id="zasady">
+    <div class="section-head">
+      <div>
+        <p class="section-kicker">Co dokładnie się zmienia</p>
+        <h2>Trzy rzeczy, które robią różnicę</h2>
+      </div>
+    </div>
+
+    <ul class="cards">
+      <li><a class="card" href="#aplikacje">
+        <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span>
+        <h3>Dwie warstwy szkła, nie 310</h3>
+        <p>Pasek i wyspa. Reszta jest płaska. Obraz ugina się tylko tam, gdzie naprawdę jest tafla — dlatego ugięcie wreszcie widać.</p>
+        <span class="card-go">Zobacz w hero ↑</span>
+      </a></li>
+      <li><a class="card" href="#aplikacje">
+        <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></span>
+        <h3>Jeden rytm zamiast 33 rozmiarów</h3>
+        <p>Siedem stopni pisma, dziewięć odstępów, cztery promienie. Strona przestaje wyglądać jak składanka — nawet gdy treść jest gęsta.</p>
+        <span class="card-go">Porównaj v2 →</span>
+      </a></li>
+      <li><a class="card" href="#aplikacje">
+        <span class="card-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/></svg></span>
+        <h3>Kontrast zmierzony, nie domyślny</h3>
+        <p>Każdy tekst na szkle ma pod literami ciemną podkładkę. Najniższy wynik na ta stronie to 5,7:1 — norma to 4,5:1.</p>
+        <span class="card-go">Szczegóły ↓</span>
+      </a></li>
+    </ul>
+  </section>
+</main>
+
+<!-- ================================================= WYSPA (szkło warstwa 2) -->
+<aside class="island" id="island" aria-label="Wyspa RejHuba">
+  <p><strong>RejAsystent</strong> — zapytaj o cokolwiek<span> w RejHubie</span>.</p>
+  <a class="btn btn-primary" href="/aplikacje">Zapytaj</a>
+  <button class="island-close" type="button" aria-label="Schowaj wyspę" onclick="document.getElementById('island').remove()">×</button>
+</aside>
+
+<footer class="footer wrap">
+  <p>© 2026 rejson59 — wszystkie prawa zastrzeżone. <a href="/licencja">Licencja</a></p>
+  <p>Prototyp v3 — do oceny. Obecna wersja strony działa pod <a href="/">rejhub.vercel.app</a>.</p>
+  <p class="proto-flag">Prototyp v3</p>
+</footer>
+
+<!-- Silnik ugięcia obrazu: ten sam, który napędza RejHub 2.0.
+     Podpinamy go bez całego starego stosu arkuszy. -->
+<script src="/hub/lg-glass.js?v=8"></script>
+<script>
+(function () {
+  "use strict";
+  /* Szanujemy tryb ziemniaka: bez niego silnik ugięcia byłby zbyt drogi
+     na słabym telefonie. */
+  var potato = false;
+  try { potato = localStorage.getItem("rj_potato") === "on"; } catch (e) {}
+  if (potato) document.documentElement.classList.add("rj-potato");
+
+})();
+</script>
+</body>
+</html>
