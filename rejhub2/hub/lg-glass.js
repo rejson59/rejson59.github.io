@@ -38,15 +38,158 @@
 
   /* Ile pikseli szeroka jest wstęga załamania przy krawędzi. Grubsza wstęga
      = bardziej „szklana” ramka, ale więcej pracy dla GPU. */
-  var EDGE_BAND = 36;
+  var EDGE_BAND = 52;
 
   /* Siła przesunięcia w pikselach (maksymalne wychylenie na krawędzi).
      Wartość dodatnia wypycha obraz do wewnątrz — tak działa soczewka
      wypukła, czyli szkło. Skala rośnie z rozmiarem panelu: 14 px na małej
-     karcie wygląda mocno, a na pełnoekranowym panelu byłoby niewidoczne. */
-  var SCALE_MIN = 40;
-  var SCALE_MAX = 110;
-  var SCALE_RATIO = 0.20;
+     karcie wygląda mocno, a na pełnoekranowym panelu byłoby niewidoczne.
+
+     v3 (26.11): blur zniknął z materiału, więc załamanie jest JEDYNYM
+     efektem, jaki ma szkło. Poprzednie 40-110 px ginęło — przy braku
+     rozmycia trzeba je było podnieść, inaczej panel wygląda jak zwykły
+     prostokąt z ramką. Teraz ugięcie widać na pierwszy rzut oka. */
+  var SCALE_MIN = 54;
+  var SCALE_MAX = 132;
+  var SCALE_RATIO = 0.26;
+
+  /* ---------- soczewka jako warstwa (v3) ----------
+
+     DLACZEGO TAK, A NIE `backdrop-filter: url(#…)`:
+
+     `url()` w `backdrop-filter` jest w Chromium PRZYJMOWANE, ale po cichu
+     ignorowane — `getComputedStyle` pokaże `url(#rj-lg-3)`, a mimo to obraz
+     pod panelem pozostanie nieugięty. Sprawdzone na tapecie w paski: pasy
+     pod `blur(6px) url(#…)` były idealnie proste. To dlatego „załamanie”
+     nigdy nie działało, mimo zielonych testów i poprawnych filtrów w DOM.
+
+     `filter: url(#…)` na zwykłym elemencie działa bez zarzutu. Dlatego
+     silnik wstawia do panelu warstwę `.rj-lg-lens`, maluje na niej tapetę
+     w tym samym miejscu co `body::before` (`background-attachment: fixed`)
+     i przepuszcza ją przez filtr ugięcia. Treść panelu leży wyżej (z-index),
+     więc soczewka jest tylko tłem — tekst pozostaje ostry i czytelny.
+
+     Koszt: jedna dodatkowa warstwa na panel. Dlatego tylko duże powierzchnie
+     (patrz LENS_MIN_AREA) i twardy limit LENS_MAX. */
+  var LENS_CLASS = "rj-lg-lens";
+  var LENS_MAX = 10;          /* bezpiecznik: tyle paneli naraz, maksymalnie */
+  var LENS_MIN_AREA = 9000;   /* px² — mniejsze elementy nie są tego warte */
+  var lensCount = 0;
+  var lensObserver = null;
+
+  /* Soczewka jest kosztowna: to osobna warstwa kompozytora z filtrem SVG,
+     przemalowywana przy każdym przewinięciu (tapeta jest `fixed`). Na stronie
+     z 43 kartami projektów trzymanie ich wszystkich naraz zamuliłoby nawet
+     mocny telefon. Dlatego soczewka żyje TYLKO na panelach widocznych
+     w oknie — wchodzi przy wejściu w kadr, znika przy wyjściu. Efekt jest
+     identyczny, a koszt stały: tyle warstw, ile widać, nie ile jest na stronie. */
+  function watchVisibility(el) {
+    if (!window.IntersectionObserver) { addLens(el); return; }
+    if (!lensObserver) {
+      lensObserver = new IntersectionObserver(function (entries) {
+        for (var i = 0; i < entries.length; i++) {
+          var e = entries[i];
+          var node = e.target;
+          if (!node.__rjLiquidGlass) continue;
+          if (e.isIntersecting) {
+            if (addLens(node) && node.__rjLens) {
+              node.__rjLens.style.filter = "url(#" + node.__rjLiquidGlass.id + ")";
+            }
+          } else {
+            removeLens(node);
+          }
+        }
+      }, { rootMargin: "120px 0px" });
+    }
+    lensObserver.observe(el);
+  }
+
+  function removeLens(el) {
+    if (!el || !el.__rjLens) return;
+    try { el.__rjLens.parentNode.removeChild(el.__rjLens); } catch (e) { /* ignorujemy */ }
+    el.__rjLens = null;
+    /* Zdejmujemy TYLKO własne nadpisanie — `overflow` ustawiony przez
+       stronę (np. karty z podglądem) musi zostać nietknięty. */
+    if (el.getAttribute("data-rj-lens-overflow") === "1") {
+      try { el.style.removeProperty("overflow"); } catch (e) { /* ignorujemy */ }
+      el.removeAttribute("data-rj-lens-overflow");
+    }
+    if (lensCount > 0) lensCount--;
+  }
+
+  /* Adres tapety. Bierzemy go z `body::before`, żeby soczewka zawsze
+     pokazywała DOKŁADNIE to samo, co tło strony — także po zmianie tapety
+     w arkuszu, bez zmiany tego pliku. */
+  function backdropUrl() {
+    try {
+      var bg = window.getComputedStyle(document.body, "::before");
+      var img = bg.backgroundImage || "";
+      var m = img.match(/url\((["']?)([^"')]+)\1\)/);
+      if (m && m[2]) return m[2];
+    } catch (e) { /* ignorujemy */ }
+    return "/hub/wallpaper-2560.webp";
+  }
+
+  function ensureLensStyles() {
+    if (document.getElementById("rj-lg-lens-style")) return;
+    var st = document.createElement("style");
+    st.id = "rj-lg-lens-style";
+    /* `background-attachment: fixed` ustawia tapetę względem OKNA, a nie
+       panelu — dzięki temu soczewka pokrywa się piksel w piksel z tłem
+       strony. Bez tego obraz “pływałby” przy przewijaniu. */
+    st.textContent =
+      "." + LENS_CLASS + "{position:absolute!important;inset:0!important;border-radius:inherit;" +
+      "pointer-events:none;z-index:0;background-repeat:no-repeat;background-attachment:fixed;" +
+      "background-size:cover;background-position:center}" +
+      /* Warstwa tonalna: bez niej soczewka byłaby “dziurą” w szkle. */
+      "." + LENS_CLASS + "::after{content:'';position:absolute;inset:0;border-radius:inherit;" +
+      "background:rgba(12,8,32,.26)}" +
+      /* Cienkie paski (topbar) mają mało własnego krycia, a soczewka
+         wnosi ostry obraz tapety — tekst zaczynał na nim ginąć.
+         Dla niskich paneli tło soczewki jest mocniejsze. */
+      "@media (min-width:1px){." + LENS_CLASS + "[data-narrow]::before{content:'';position:absolute;" +
+      "inset:0;border-radius:inherit;background:rgba(10,7,26,.34)}}" +
+      /* Treść musi być nad soczewką. `:not` chroni samą warstwę przed
+         dostaniem `z-index`, które zerwałoby jej `position:absolute`. */
+      ".rj-lg-on{position:relative}" +
+      ".rj-lg-on>:not(." + LENS_CLASS + "){position:relative;z-index:2}";
+    document.head.appendChild(st);
+  }
+
+  function addLens(el) {
+    if (el.querySelector(":scope > ." + LENS_CLASS)) return true;
+    if (lensCount >= LENS_MAX) return false;
+    var r = el.getBoundingClientRect();
+    if (r.width * r.height < LENS_MIN_AREA) return false;
+
+    var span = document.createElement("span");
+    span.className = LENS_CLASS;
+    span.setAttribute("aria-hidden", "true");
+    /* Pasek do ~90 px wysokości dostaje mocniejszą warstwę tonalną —
+       soczewka w cienkim pasie „zjada” tło i tekst traci kontrast. */
+    if (r.height <= 90) span.setAttribute("data-narrow", "");
+    span.style.backgroundImage = "url(\"" + backdropUrl() + "\")";
+    el.insertBefore(span, el.firstChild);
+    /* Soczewka ma `position:absolute; inset:0`, więc sama nie wystaje poza
+       panel — przycinanie NIE jest potrzebne do poprawnego wyglądu.
+       A jest szkodliwe: na kartach z podglądem (`overflow` ustawia im
+       później JS) `clip` ucinał zawartość przy powrocie do góry strony.
+       Dlatego przycinamy tylko wtedy, gdy panel i tak przycina. */
+    var ov = "";
+    try { ov = window.getComputedStyle(el).overflow; } catch (e) { ov = ""; }
+    if (ov === "visible" || ov === "") {
+      el.setAttribute("data-rj-lens-overflow", "1");
+      try { el.style.overflow = "clip"; } catch (e) { /* ignorujemy */ }
+    }
+    lensCount++;
+    el.__rjLens = span;
+    return true;
+  }
+
+  /* Aberracja chromatyczna: krawędź rozszczepia światło jak pryzmat.
+     v3 podnosi ją z 0.10 do 0.16 — przy czystym szkole (bez mgły)
+     to ona odpowiada za wrażenie „grubej tafli”. */
+  var CHROMA = 0.16;
 
   /* Chromium sprawdzamy po obecności Houdini? Nie — po prostu próbujemy
      zastosować filtr i sprawdzamy, czy przeglądarka go przyjęła. */
@@ -225,7 +368,7 @@
        Dwa dodatkowe przesunięcia o różnej sile — jedno w kanale R,
        drugie w B — i złożenie z powrotem. Bez tego ugięcie wygląda
        „cyfrowo”: obraz się przesuwa, ale nie ma wrażenia grubego szkła. */
-    var chroma = scale * 0.10;
+    var chroma = scale * CHROMA;
     var dispR = document.createElementNS(ns, "feDisplacementMap");
     dispR.setAttribute("in", "bent");
     dispR.setAttribute("in2", "map");
@@ -301,6 +444,24 @@
     return 18;
   }
 
+  /* Na wąskim ekranie ta sama siła ugięcia wygląda znacznie mocniej —
+     panel jest mały, więc wstęga krawędzi zajmuje większą jego część
+     i powstają jasne smugi zamiast szkła. Dlatego szerokość wstęgi
+     i siła skali skalują się z szerokością okna. */
+  function edgeBandFor() {
+    var vw = window.innerWidth || 1440;
+    if (vw <= 520) return Math.round(EDGE_BAND * 0.45);
+    if (vw <= 900) return Math.round(EDGE_BAND * 0.70);
+    return EDGE_BAND;
+  }
+
+  function scaleCap() {
+    var vw = window.innerWidth || 1440;
+    if (vw <= 520) return 0.55;
+    if (vw <= 900) return 0.78;
+    return 1;
+  }
+
   function mount(el) {
     if (!el || el.__rjLiquidGlass) return;
     var rect = el.getBoundingClientRect();
@@ -312,9 +473,9 @@
     /* `data-lg-scale` wygrywa, gdy autor strony chce konkretną wartość. */
     var scale = readNumber(el, "data-lg-scale", 0);
     if (!scale) {
-      scale = Math.max(SCALE_MIN, Math.min(SCALE_MAX, Math.min(w, h) * SCALE_RATIO));
+      scale = Math.max(SCALE_MIN, Math.min(SCALE_MAX, Math.min(w, h) * SCALE_RATIO)) * scaleCap();
     }
-    var band = readNumber(el, "data-lg-band", EDGE_BAND);
+    var band = readNumber(el, "data-lg-band", edgeBandFor());
     var radius = radiusOf(el);
 
     var mapUrl = buildMap(w, h, radius, scale, band);
@@ -342,6 +503,12 @@
     el.style.setProperty("--lg-filter", "url(#" + id + ")");
     el.classList.add("rj-lg-on");
 
+    /* Soczewka: warstwa z tapetą przepuszczona przez filtr ugięcia.
+       `filter` na span-ie, a nie na panelu — inaczej filtr objąłby też
+       tekst i cała treść by się rozjechała. */
+    ensureLensStyles();
+    watchVisibility(el);
+
     /* Rozmiar się zmienił → stara mapa jest nieaktualna. Przeliczamy po
        chwili spokoju, żeby nie robić tego przy każdym pikselu animacji. */
     if (window.ResizeObserver) {
@@ -365,7 +532,7 @@
     var radius = radiusOf(el);
     var scale = readNumber(el, "data-lg-scale", 0);
     if (!scale) {
-      scale = Math.max(SCALE_MIN, Math.min(SCALE_MAX, Math.min(w, h) * SCALE_RATIO));
+      scale = Math.max(SCALE_MIN, Math.min(SCALE_MAX, Math.min(w, h) * SCALE_RATIO)) * scaleCap();
     }
     if (w === item.w && h === item.h && Math.round(radius) === item.radius && scale === item.scale) return;
 
@@ -378,6 +545,9 @@
     item.w = w;
     item.h = h;
     item.radius = Math.round(radius);
+    if (el.__rjLens && el.__rjLiquidGlass) {
+      el.__rjLens.style.filter = "url(#" + el.__rjLiquidGlass.id + ")";
+    }
   }
 
   function unmount(el) {
@@ -386,6 +556,9 @@
     try { if (item.observer) item.observer.disconnect(); } catch (e) { /* ignorujemy */ }
     try { if (item.filter && item.filter.parentNode) item.filter.parentNode.removeChild(item.filter); } catch (e) { /* ignorujemy */ }
     el.classList.remove("rj-lg-on");
+    removeLens(el);
+    try { if (lensObserver) lensObserver.unobserve(el); } catch (e) { /* ignorujemy */ }
+    try { el.style.removeProperty("overflow"); } catch (e) { /* ignorujemy */ }
     try { el.style.removeProperty("--lg-filter"); } catch (e) { /* ignorujemy */ }
     try { delete el.__rjLiquidGlass; } catch (e) { el.__rjLiquidGlass = null; }
   }
@@ -425,7 +598,23 @@
     ".rjc-bio-point",
     ".e-topic",
     ".lesson-card",
-    ".topic-card"
+    ".topic-card",
+    /* v3: hero i duże kontenery podstron. Bez wpisu tutaj nie dostają
+       filtra, a przy braku bluru zostałyby zwykłym prostokątem z ramką —
+       dokładnie tym, na co użytkownik narzekał („to nie wygląda jak
+       szkło, tylko jak ciemny blok”). */
+    ".hero",
+    ".rjapp-hero",
+    ".tools-hero",
+    ".services-hero",
+    ".rjc-hero",
+    ".partner-hero",
+    ".lic-hero",
+    ".cn-hero",
+    ".profile-card",
+    /* Górny pasek to najbardziej widoczna szklana powierzchnia na stronie —
+       bez wpisu tutaj zostawał jedynym panelem bez refrakcji. */
+    ".rj-shared-header"
   ].join(",");
 
   function collect(root) {

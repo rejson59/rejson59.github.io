@@ -180,14 +180,14 @@ self.addEventListener("fetch", function (event) {
               /* Wyspa bez materiału wyglądałaby na obcą: dock miałby stary
                  wygląd, a strona projektu nowy. Ta sama recepta co na
                  RejHubie — jeden plik, jedno miejsce. */
-              inject += '\n<link rel="stylesheet" href="/hub/lg-glass.css?v=4">';
-              inject += '\n<script src="/hub/lg-glass.js?v=4" defer></script>';
+              inject += '\n<link rel="stylesheet" href="/hub/lg-glass.css?v=5">';
+              inject += '\n<script src="/hub/lg-glass.js?v=5" defer></script>';
               }
               /* Ten sam projekt mógł wcześniej odwiedzić RejHub, gdzie
                  hub-shell wyrejestrował workera. Skoro strona właśnie
                  przyszła przez ten worker, jest zarejestrowany — ale warto
                  upewnić się, że zostanie na kolejne wizyty poza RejHubem. */
-              inject += '\n<script>try{navigator.serviceWorker.register("/sw.js?v=5",{scope:"/",updateViaCache:"none"})}catch(e){}</script>';
+              inject += '\n<script>try{navigator.serviceWorker.register("/sw.js?v=6",{scope:"/",updateViaCache:"none"})}catch(e){}</script>';
               // Efekt wyjścia tylko na dokumentach projektów pod /projekt/.
               // Skrypt działa wyłącznie, jeśli ta karta ma jednorazowy znacznik
               // z podróży rakietą. Nigdy nie dotyczy iframe.
