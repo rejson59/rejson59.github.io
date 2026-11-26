@@ -92,7 +92,9 @@ html[data-theme="light"] {
     .projects-toolbar, .toolbar, .board-toolbar, .comm-online-card,
     .rejchat-rules, .rejchat-info-tip, .comm-auth-inner, .services-window,
     .services-window-top, .rj-chat-alert-panel, .rj-header-profile,
-    .nav-more-panel, .mobile-menu, .card.rj-lg-surface) {
+    .nav-more-panel, .mobile-menu, .card.rj-lg-surface,
+    .rjc-subject, .rjc-note-definitions, .rjc-note-everyday, .rjc-bio-point,
+    .e-topic, .lesson-card, .topic-card) {
   position: relative;
   isolation: isolate;
   border-radius: var(--lg-radius);

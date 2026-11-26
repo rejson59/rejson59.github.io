@@ -27,7 +27,9 @@
 
   var KEY = "rj_potato";
   var root = document.documentElement;
-  var SLOW_FPS = 45;        /* poniżej tylu klatek uznajemy okno za ciężkie */
+  var SLOW_FPS = 30;        /* poniżej tylu klatek uznajemy okno za ciężkie —
+                             45 łapało też zwykłe telefony i karty w tle,
+                             a tryb ziemniaka wyłącza CAŁE szkło serwisu */
   var WINDOW_MS = 2000;     /* długość jednego pomiaru */
   var BAD_WINDOWS = 2;      /* ile ciężkich okien z rzędu włącza tryb */
   var WARMUP_MS = 8000;     /* start strony nigdy nie jest „lagiem” */

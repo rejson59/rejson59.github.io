@@ -180,8 +180,8 @@ self.addEventListener("fetch", function (event) {
               /* Wyspa bez materiału wyglądałaby na obcą: dock miałby stary
                  wygląd, a strona projektu nowy. Ta sama recepta co na
                  RejHubie — jeden plik, jedno miejsce. */
-              inject += '\n<link rel="stylesheet" href="/hub/lg-glass.css?v=3">';
-              inject += '\n<script src="/hub/lg-glass.js?v=3" defer></script>';
+              inject += '\n<link rel="stylesheet" href="/hub/lg-glass.css?v=4">';
+              inject += '\n<script src="/hub/lg-glass.js?v=4" defer></script>';
               }
               /* Ten sam projekt mógł wcześniej odwiedzić RejHub, gdzie
                  hub-shell wyrejestrował workera. Skoro strona właśnie
