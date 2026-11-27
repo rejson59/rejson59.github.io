@@ -185,9 +185,11 @@
     var liveBtn = p.liveUrl
       ? '<a class="btn btn-live btn-journey btn-sm" data-journey href="' + esc(p.liveUrl) + '" target="_blank" rel="noopener noreferrer"><span>Otwórz projekt</span>' + ICON_ARROW + "</a>"
       : "";
-    var feedbackBtn = '<button class="btn btn-feedback btn-sm" type="button" data-feedback-project="' + esc(p.name) + '" data-rj-keep>' +
-      '<span class="feedback-pill-dot" aria-hidden="true"></span>Zgłoś błąd / pomysł</button>';
-    return liveBtn + feedbackBtn;
+    /* Przycisk „Zgłoś błąd / pomysł” usunięty (27.11). Zgłaszanie odbywa się
+       teraz wyłącznie przez nowoczesną wyspę (hub/island.js), która ma własne
+       wejście „Zgłoś błąd / pomysł”. Stara pigułka dublowała tę funkcję
+       i wyglądała jak element z poprzedniej epoki. */
+    return liveBtn;
   }
 
   function cardHTML(p, index) {

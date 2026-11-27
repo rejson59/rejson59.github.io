@@ -9,6 +9,12 @@ assert.ok(home.querySelector('[data-tilt]')); assert.ok(home.querySelector('scri
 assert.doesNotMatch(read('js/app.js'),/journeyUrl|\/podroz\/\?projekt/);
 assert.match(read('js/app.js'),/card-preview.*esc\(p.liveUrl\)/);
 assert.match(read('js/app.js'),/btn-live btn-journey btn-sm.*esc\(p.liveUrl\)/);
+/* Stara pigułka „Zgłoś błąd / pomysł” przy kartach projektu usunięta (27.11).
+   Zgłaszanie ma jedno wejście — nowoczesną wyspę. Ten strażnik pilnuje, żeby
+   pigułka nie wróciła przez podmianę szablonu albo arkusza. */
+assert.equal(/btn-feedback/.test(read('js/app.js')), false, 'app.js nie tworzy starej pigułki');
+assert.equal(/btn-feedback/.test(read('rejhub2/index.html')), false, 'strona główna nie ma starej pigułki');
+assert.equal(/btn-feedback|feedback-pill-dot/.test(read('css/style.css')), false, 'arkusz nie ma stylów starej pigułki');
 /* Nowa strona 404 to zwykła strona błędu — podróż przez portal została tylko w /podroz i /portal. */
 assert.match(read('js/portal-legacy.js'),/location.replace\('\/podroz\/\?projekt=/);
 assert.match(read('rejhub2/podroz/index.html'),/travel-legacy\.js/);
