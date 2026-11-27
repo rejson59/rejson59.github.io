@@ -65,10 +65,10 @@ check('karty są płaskie (bez backdrop-filter i bez filtra)', () => {
 
 /* ---------- 2. tint w soczewce (odkrycie z 26.11) ---------- */
 check('tint jest malowany w soczewce, nie tylko na panelu', () => {
-  assert.match(css, /\.rj-lg-lens::before/,
-    'brak reguły .rj-lg-lens::before — tint znów będzie zasłonięty przez soczewkę');
-  const block = css.slice(css.indexOf('.rj-lg-lens::before'));
-  assert.match(block.slice(0, 700), /rgba\(10, 7, 24, var\(--lens-tint/,
+  assert.match(css, /\.lg3-lens::after/,
+    'brak reguły .lg3-lens::after — tint znów będzie zasłonięty przez soczewkę');
+  const block = css.slice(css.indexOf('.lg3-lens::after'));
+  assert.match(block.slice(0, 400), /rgba\(255, 255, 255, var\(--lens-tint/,
     'soczewka nie dostaje tintu — krycie panelu nie ma wtedy żadnego efektu');
 });
 
@@ -76,10 +76,11 @@ check('krycie tintu mieści się w przedziale, który daje kontrast >= 4,5:1', (
   const m = /--lens-tint:\s*([\d.]+)/.exec(css);
   assert.ok(m, 'brak --lens-tint');
   const v = parseFloat(m[1]);
-  /* Pomiar z 26.11 na tapecie 2560: 0.44 → 4,0:1 (za mało na najjaśniejszej
-     wstędze), 0.54 → 5,1:1. Poniżej 0.50 wracamy pod normę, powyżej 0.75
-     pasek staje się ciemną płytą, którą użytkownik odrzucił. */
-  assert.ok(v >= 0.50 && v <= 0.75, `--lens-tint ${v} poza przedziałem 0.50–0.75`);
+  /* v3 (27.11): szkło jest JASNE (biała mgła), nie granatowe — tak wygląda
+     na referencjach. Przy zbyt niskim kryciu tekst gubi się na jasnych
+     wstęgach tapety; przy zbyt wysokim tafla staje się mleczną szybą
+     i tapeta pod nią znika. Zmierzone okno: 0.18–0.34. */
+  assert.ok(v >= 0.16 && v <= 0.36, `--lens-tint ${v} poza przedziałem 0.16–0.36`);
 });
 
 check('każdy tekst na szkle ma poświatę albo ciemną podkładkę', () => {
@@ -120,6 +121,46 @@ check('nie ma rozmiarów pisma spoza skali', () => {
   /* Każde `font-size: Npx` musi być jedną ze zmiennych skali. */
   const hard = [...css.matchAll(/font-size:\s*(\d+(?:\.\d+)?)px/g)].map((m) => m[1]);
   assert.deepEqual(hard, [], 'twarde rozmiary pisma: ' + hard.join(', '));
+});
+
+/* ---------- 5. silnik ugięcia (regresje z 27.11) ----------
+   Każda z tych czterech rzeczy kosztowała rundę pracy, bo objaw był ten
+   sam („obraz się nie zgadza"), a przyczyna inna. Test ma je trzymać. */
+const ENG = read('rejhub2/v3/lg3.js');
+
+check('obszar filtra równy elementowi (nie 130%)', () => {
+  assert.match(ENG, /x: "0", y: "0", width: "100%", height: "100%"/,
+    'obszar filtra znów większy od elementu — mapa odkształceń przesunie wnętrze tafli');
+  assert.ok(!/"width": "130%"/.test(ENG), 'wróciło 130% w obszarze filtra');
+});
+
+check('mapa odkształceń ma rozmiar warstwy, nie panelu', () => {
+  assert.match(ENG, /buildMap\(w \+ 2 \* pad, h \+ 2 \* pad, pad,/,
+    'mapa bez zapasu — feImage położy ją z przesunięciem o pad');
+});
+
+check('profil soczewki ma szczyt na krawędzi (sześcian, nie sinus)', () => {
+  assert.match(ENG, /return u \* u \* u/,
+    'profil bez sześcianu — ugięcie znów rozleje się w jasną smugę');
+  assert.ok(!/Math\.sin\(Math\.PI/.test(ENG),
+    'wrócił profil sinusoidalny (v2) — ugina najsłabiej tam, gdzie ma najmocniej');
+});
+
+check('tło soczewki liczone z clientWidth (bez paska przewijania)', () => {
+  assert.match(ENG, /document\.documentElement\.clientWidth/,
+    'rozmiar okna z innerWidth — tapeta w soczewce przesunie się o szerokość paska');
+});
+
+check('bezpieczniki: tryb ziemniaka i reduced-transparency', () => {
+  assert.match(ENG, /rj_potato/, 'brak reakcji na tryb ziemniaka');
+  assert.match(ENG, /prefers-reduced-transparency/, 'brak reakcji na prośbę o mniej przezroczystości');
+});
+
+check('strona używa nowego silnika, nie starego', () => {
+  assert.match(html, /src="\/v3\/lg3\.js\?v=\d+"/, 'strona nie ładuje lg3.js');
+  /* Sprawdzamy tylko <script src>, nie komentarze — komentarz może
+     wyjaśniać, dlaczego stary silnik został zastąpiony. */
+  assert.ok(!/<script[^>]+src="[^"]*lg-glass\.js/.test(html), 'został stary silnik lg-glass.js');
 });
 
 if (failed) {
