@@ -1,51 +1,56 @@
-/* ==========================================================================
-   lg3.js — silnik „liquid glass" v3
-   --------------------------------------------------------------------------
-   Czym różni się od hub/lg-glass.js (v2):
-
-   1. PROFIL. v2 używał sin(π·t^0.72) — funkcji, która rośnie od zera na
-      krawędzi. Kierunek był odwrócony: prawdziwy fazowany brzeg soczewki
-      ugina obraz NAJMOCNIEJ tuż przy krawędzi i wygasa do zera w środku.
-      Dlatego v2 dawał miękką smugę zamiast załamania.
-
-      Tutaj: h(t) = 1 − (1−t)³  (wysokość powierzchni),
-             dh/dt = 3(1−t)²    (nachylenie = siła ugięcia).
-      Nachylenie jest największe na krawędzi i gładko (C¹) wygasa.
-      „Gładko" to sedno — brak skoków = brak widocznego szwu.
-
-   2. WĄSKA WSTĘGA, DUŻE UGIĘCIE. Szeroka wstęga (72 px) przy małej skali
-      rozmywa efekt na dużym obszarze i wygląda jak mgła. Wąska (26–40 px)
-      przy dużej skali daje czytelny „walec" na krawędzi.
-
-   3. ROZSZCZEPIENIE. Trzy przebiegi feDisplacementMap o skalach
-      S·(1−d), S, S·(1+d). d ≈ 0.10 — tyle wystarczy, żeby na krawędzi
-      powstała tęcza, ale obraz w środku zostaje ostry.
-
-   4. ODDYCHANIE. Warstwa soczewki dostaje delikatny ruch (translate 1 px
-      w 9 s) i podążający za kursorem refleks. To ten detal sprawia, że
-      szkło wygląda jak materiał, a nie jak nadruk.
-
-   Wejście: element z [data-lg3], opcjonalnie
-     data-lg3-band  — szerokość wstęgi w px (domyślnie 34)
-     data-lg3-scale — maksymalne przesunięcie w px (domyślnie 64)
-     data-lg3-chroma— rozszczepienie 0..1 (domyślnie 0.10)
-
-   Wyjście: element dostaje klasę .lg3-on i <span class="lg3-lens">.
-   ========================================================================== */
+/* © 2026 rejson59 — wszystkie prawa zastrzeżone / all rights reserved.
+   Kopiowanie i ponowne użycie bez pisemnej zgody zabronione. Licencja: /LICENSE, /licencja */
+/*!
+ * RejHub 3.0 — silnik szkła (lg3.js)
+ *
+ * ============================================================================
+ *  CO BYŁO ŹLE (i dlaczego użytkownik to zauważył)
+ * ============================================================================
+ *
+ * Poprzednia wersja malowała tapetę WEWNĄTRZ tafli i odkształcała JĄ filtrem.
+ * To jest sztuczne tło: tafla nie czyta tego, co naprawdę leży pod nią, tylko
+ * własną kopię tapety. Widać to natychmiast, gdy ktokolwiek położy na stronie
+ * coś innego niż tapetę — obraz, film, inną taflę — bo szkło tego nie zna.
+ * Do tego kopię trzeba było ręcznie wyrównywać do okna przy każdym przewinięciu,
+ * co dało trzy rundy walki z „obrazem, który nie zgadza się z tłem”.
+ *
+ * ============================================================================
+ *  JAK JEST TERAZ
+ * ============================================================================
+ *
+ * Prawdziwe szkło: `backdrop-filter: url(#filtr)` — przeglądarka sama podaje
+ * filtrowi piksele, które leżą POD elementem. Zero kopii, zero wyrównywania,
+ * zero przewijania do przeliczania. Ugięcie działa na tym, co naprawdę jest
+ * pod taflą (łącznie z innymi taflami, obrazami i animacjami).
+ *
+ * Według liquidglassdesign.com (listopad 2026) ścieżka `backdrop-filter: url()`
+ * działa w Chromium. Safari jej nie renderuje (WebKit bug 245510), a Firefox
+ * tylko dla filtrów GPU. Dlatego:
+ *
+ *   1. WARSTWA CSS (zawsze) — tint + blur + saturacja + rant. Wygląda dobrze
+ *      bez ugięcia, bo każdy z Safari i Firefoksa widzi tylko ją.
+ *   2. WARSTWA REFRAKCJI (tylko tam, gdzie działa) — dokładana przez skrypt.
+ *
+ * Detekcja przez `navigator.userAgentData.brands` (tylko Chromium), a nie przez
+ * `@supports`: `url()` jest poprawną składnią dla parsera, więc `@supports`
+ * przejdzie także tam, gdzie nic się nie narysuje.
+ *
+ * UWAGA O SKŁADNI: nie łączymy `url()` z `blur()` w jednej deklaracji.
+ * Safari odrzuca CAŁĄ wartość, jeśli jakakolwiek jej część jest nieznana —
+ * traci wtedy także blur. Ugięcie idzie osobną klasą, nadpisaną po blurze.
+ */
 (function (window, document) {
   "use strict";
 
-  if (window.RJGlass3) return;
-
   var NS = "http://www.w3.org/2000/svg";
-  var LENS = "lg3-lens";
   var MAX_LENSES = 8;
+  var READY = "lg3-ready";
 
-  /* ---------- bezpieczniki ----------
-     Filtr SVG z trzema przebiegami odkształcenia jest kosztowny. Na słabym
-     telefonie, przy włączonym trybie oszczędzania albo gdy użytkownik prosi
-     o mniej przezroczystości, lepiej pokazać spokojne szkło bez ugięcia niż
-     zamulić stronę. */
+  /* ---------- bezpieczniki ---------- */
+
+  /* Filtr odkształcenia jest kosztowny. Na słabym telefonie, przy włączonym
+     trybie oszczędzania albo gdy użytkownik prosi o mniej przezroczystości,
+     lepiej pokazać spokojne szkło bez ugięcia niż zamulić stronę. */
   function disabled() {
     try {
       if (window.localStorage && localStorage.getItem("rj_potato") === "on") return "potato";
@@ -57,14 +62,32 @@
     } catch (e) { /* ignorujemy */ }
     return "";
   }
-  var MAP_CACHE = {};
-  var uid = 0;
-  var lensCount = 0;
+
+  /* Czy ta przeglądarka naprawdę narysuje `backdrop-filter: url()`?
+     Sprawdzamy markę (Chromium), bo to jedyny silnik, który to renderuje.
+     `@supports` tu nie wystarcza — patrz komentarz na górze. */
+  function canRefract() {
+    try {
+      var d = navigator.userAgentData;
+      if (d && d.brands) {
+        for (var i = 0; i < d.brands.length; i++) {
+          if (d.brands[i].brand === "Chromium") return true;
+        }
+        return false;
+      }
+    } catch (e) { /* brak API — schodzimy do UA */ }
+
+    /* Starsze Chromium bez `userAgentData`. Kolejność ma znaczenie:
+       Edge i Opera też mają „Chrome/" w UA, ale wszystkie trzy to Chromium
+       i wszystkie renderują ten filtr — więc wystarczy samo „Chrome/". */
+    var ua = navigator.userAgent || "";
+    return /Chrome\//.test(ua);
+  }
 
   /* ---------- geometria ---------- */
 
   /* Odległość punktu od zaokrąglonego prostokąta.
-     Zwraca { d: odległość do obrysu, nx, ny: normalna do wnętrza }. */
+     Zwraca { d: odległość do obrysu, nx, ny: normalna skierowana do wnętrza }. */
   function edgeDistance(x, y, w, h, r) {
     var cx = Math.min(Math.max(x, r), w - r);
     var cy = Math.min(Math.max(y, r), h - r);
@@ -73,11 +96,9 @@
     var len = Math.sqrt(dx * dx + dy * dy);
 
     if (len > r * 0.0001) {
-      /* narożnik: normalna to promień okręgu */
       return { d: r - len, nx: dx / len, ny: dy / len };
     }
 
-    /* krawędź prosta: najbliższa ściana */
     var left = x, right = w - x, top = y, bottom = h - y;
     var m = Math.min(left, right, top, bottom);
     if (m === left) return { d: x, nx: 1, ny: 0 };
@@ -89,11 +110,10 @@
   /* Profil fazy: nachylenie powierzchni w funkcji t = d / band.
      t = 0 → krawędź, t = 1 → wnętrze. Zwraca 0..1.
 
-     EKSPONENT 3 (nie 2). Przy kwadracie ugięcie było największe na samej
-     krawędzi i od razu „puchło" przez całą wstęgę — na ekranie dawało to
-     jasną smugę zamiast załamania. Sześcian trzyma szczyt wąsko przy
-     krawędzi i szybko wygasa, więc widać wyraźny „walec" i czysty obraz
-     tuż za nim. */
+     Sześcian, nie kwadrat. Przy kwadracie ugięcie było największe tuż przy
+     krawędzi i od razu „puchło" przez całą wstęgę — na ekranie dawało jasną
+     smugę zamiast załamania. Sześcian trzyma szczyt wąsko i szybko wygasa,
+     więc widać wyraźny „walec", a obraz tuż za nim zostaje czysty. */
   function bevelSlope(t) {
     if (t <= 0) return 1;
     if (t >= 1) return 0;
@@ -103,14 +123,15 @@
 
   /* ---------- mapa odkształceń ---------- */
 
-  /* `pad` — o ile warstwa soczewki jest większa od panelu w każdą stronę.
-     Mapa MUSI mieć rozmiar warstwy, nie panelu: `feImage` nie zawsze
-     rozciąga obraz do obszaru filtra i wtedy mapa ląduje z przesunięciem
-     o `pad` (zmierzone 27.11 — to była przyczyna „obraz ucieka w tafie").
-     Sam obrys panelu jest wsunięty o `pad`, a wszystko na zewnątrz zostaje
-     neutralne (i tak jest przycinane przez panel). */
-  function buildMap(w, h, pad, r, scale, band) {
-    var key = [w, h, pad, Math.round(r), Math.round(scale), Math.round(band)].join(":");
+  var MAP_CACHE = {};
+
+  /* Mapa ma DOKŁADNIE rozmiar elementu — bez zapasu.
+
+     Poprzednio warstwa soczewki była większa od panelu o `pad` i mapa musiała
+     to nadganiać. Przy `backdrop-filter` problem znika: filtr działa na
+     obszarze elementu, więc mapa 1:1 jest z nim zgodna z definicji. */
+  function buildMap(w, h, r, scale, band) {
+    var key = [w, h, Math.round(r), Math.round(scale), Math.round(band)].join(":");
     if (MAP_CACHE[key]) return MAP_CACHE[key];
 
     var canvas = document.createElement("canvas");
@@ -121,34 +142,22 @@
 
     var img = ctx.createImageData(w, h);
     var data = img.data;
-    /* Wymiary PANELU (bez zapasu) i jego promień. */
-    var pw = Math.max(1, w - 2 * pad);
-    var ph = Math.max(1, h - 2 * pad);
-    var rr = Math.max(0, Math.min(r, Math.min(pw, ph) / 2));
-    var bb = Math.max(2, Math.min(band, Math.min(pw, ph) / 2));
+    var rr = Math.max(0, Math.min(r, Math.min(w, h) / 2));
+    var bb = Math.max(2, Math.min(band, Math.min(w, h) / 2));
     var half = scale / 2;
 
     for (var y = 0; y < h; y++) {
       for (var x = 0; x < w; x++) {
         var p = (y * w + x) * 4;
-        /* neutralne 128/128 = brak przesunięcia */
+        /* 128/128 = brak przesunięcia (środek skali). */
         var vx = 128, vy = 128;
 
-        /* Współrzędne względem panelu; poza panelem zostaje neutralnie. */
-        var px = x + 0.5 - pad;
-        var py = y + 0.5 - pad;
-        if (px < 0 || py < 0 || px > pw || py > ph) {
-          data[p] = 128; data[p + 1] = 128; data[p + 2] = 0; data[p + 3] = 255;
-          continue;
-        }
-
-        var e = edgeDistance(px, py, pw, ph, rr);
+        var e = edgeDistance(x + 0.5, y + 0.5, w, h, rr);
         if (e.d < bb) {
-          var t = e.d / bb;
-          var k = bevelSlope(t);
+          var k = bevelSlope(e.d / bb);
           if (k > 0.0005) {
-            /* Soczewka wypukła: obraz ucieka DO ŚRODKA, czyli przeciwnie
-               do normalnej skierowanej do wnętrza. */
+            /* Soczewka wypukła: obraz ucieka DO ŚRODKA, czyli przeciwnie do
+               normalnej skierowanej do wnętrza. */
             vx = 128 - e.nx * k * half;
             vy = 128 - e.ny * k * half;
           }
@@ -175,6 +184,7 @@
       defs.setAttribute("id", "lg3-defs");
       defs.setAttribute("aria-hidden", "true");
       defs.setAttribute("focusable", "false");
+      /* NIE `display:none` — element SVG z filtrem musi istnieć w drzewie. */
       defs.style.cssText =
         "position:absolute;width:0;height:0;overflow:hidden;pointer-events:none";
       document.body.appendChild(defs);
@@ -189,17 +199,9 @@
   }
 
   function buildFilter(id, mapUrl, scale, chroma) {
-    /* OBSZAR FILTRA MUSI BYĆ RÓWNY ELEMENTOWI (0/0/100%/100%).
-
-       Wcześniej (i w v2) było tu -15%/130%, „żeby przesunięte piksele nie
-       zostały obcięte". Skutek był odwrotny do zamierzonego: `feImage`
-       rozciąga mapę odkształceń na CAŁY obszar filtra, więc faza soczewki
-       wypadała poza widoczną taflę, a jej wnętrze dostawało jednolite
-       przesunięcie. Na ekranie: obraz w tafli „uciekał" o kilkadziesiąt
-       pikseli i linie tapety nie przechodziły przez krawędź (zmierzone
-       27.11: przesunięcie ~70 px przy skali 62).
-       Zapas na przesunięte piksele załatwia PADDING warstwy soczewki
-       (patrz mount), nie obszar filtra. */
+    /* Obszar filtra = element (0/0/100%/100%). Przy `backdrop-filter` filtr
+       dostaje dokładnie obszar elementu, więc `feImage` bez `preserveAspectRatio`
+       rozciąga mapę 1:1 na ten sam obszar. */
     var f = el("filter", {
       id: id,
       x: "0", y: "0", width: "100%", height: "100%",
@@ -213,24 +215,25 @@
     }));
 
     var d = Math.max(0, Math.min(1, chroma));
-    var mid = scale;
     var lo = scale * (1 - d);
+    var mid = scale;
     var hi = scale * (1 + d);
 
-    /* Trzy przebiegi: R mocniej, G środkowo, B słabiej. */
+    /* Trzy przebiegi o różnej sile = rozszczepienie chromatyczne
+       (R mocniej, G środkowo, B słabiej). */
     var passes = [
-      ["dispR", lo, "warpR"],
-      ["dispG", mid, "warpG"],
-      ["dispB", hi, "warpB"]
+      [lo, "warpR"],
+      [mid, "warpG"],
+      [hi, "warpB"]
     ];
     passes.forEach(function (p) {
       f.appendChild(el("feDisplacementMap", {
         "in": "SourceGraphic",
         "in2": "map",
-        "scale": String(p[1]),
+        "scale": String(p[0]),
         "xChannelSelector": "R",
         "yChannelSelector": "G",
-        "result": p[2]
+        "result": p[1]
       }));
     });
 
@@ -245,25 +248,26 @@
       }));
     });
 
-    f.appendChild(el("feBlend", {
-      in: "onlyR", in2: "onlyG", mode: "screen", result: "rg"
-    }));
-    f.appendChild(el("feBlend", {
-      in: "rg", in2: "onlyB", mode: "screen", result: "rgb"
-    }));
+    f.appendChild(el("feBlend", { in: "onlyR", in2: "onlyG", mode: "screen", result: "rg" }));
+    f.appendChild(el("feBlend", { in: "rg", in2: "onlyB", mode: "screen", result: "rgb" }));
 
     return f;
   }
 
   /* ---------- montaż ---------- */
 
+  var uid = 0;
+  var lensCount = 0;
+
   function radiusOf(node) {
     var c = window.getComputedStyle(node);
     var r = parseFloat(c.borderTopLeftRadius) || 0;
-    /* 999px → promień rzeczywisty (połowa krótszego boku) */
     return Math.min(r, Math.min(node.offsetWidth, node.offsetHeight) / 2);
   }
 
+  /* Panel dostaje klasę `lg3-refract` — to ONA włącza ugięcie w CSS.
+     Warstwy (sheen/edge/glow) rysuje CSS, nie JS: nie ma tu już żadnego
+     malowania tapety, więc nie ma czego synchronizować. */
   function mount(node) {
     if (!node || node.__lg3) return;
     var w = Math.round(node.offsetWidth);
@@ -276,155 +280,34 @@
     var chroma = node.hasAttribute("data-lg3-chroma")
       ? parseFloat(node.getAttribute("data-lg3-chroma")) : 0.10;
 
-    /* Zapas liczony PRZED mapą — mapa musi znać rozmiar warstwy. */
-    var pad = Math.ceil(band * 1.5) + Math.ceil(scale / 2) + 2;
-    var mapUrl = buildMap(w + 2 * pad, h + 2 * pad, pad, radiusOf(node), scale, band);
-    if (!mapUrl) return;
-
     var id = "lg3-" + (++uid);
-    ensureDefs().appendChild(buildFilter(id, mapUrl, scale, chroma));
 
-    var lens = document.createElement("span");
-    lens.className = LENS;
-    lens.setAttribute("aria-hidden", "true");
-    /* Soczewka wychodzi POZA panel o szerokość wstęgi.
-
-       Bez tego ugięte piksele z krawędzi nie mają dokąd uciec: warstwa
-       kończy się razem z panelem, więc `filter` obcina je i na ekranie
-       zostaje ostra linia zamiast załamania (dokładnie to widać na
-       zbliżeniu z 27.11). Zapas jest przycinany przez `overflow: clip`
-       panelu — ustawianym niżej. */
-    lens.style.inset = "-" + pad + "px";
-    lens.setAttribute("data-lg3-pad", String(pad));
-    paintBackdrop(lens);
-    lens.style.filter = "url(#" + id + ")";
-
-    node.insertBefore(lens, node.firstChild);
-    /* Panel musi przyciąć soczewkę do swojego obrysu — inaczej jej zapas
-       wystaje poza taflę. `clip` nie tworzy kontekstu przewijania, więc
-       nie psuje przyklejonego paska. */
-    var ov = "";
-    try { ov = window.getComputedStyle(node).overflow; } catch (e) { ov = ""; }
-    if (ov === "visible" || ov === "") {
-      node.setAttribute("data-lg3-clip", "1");
-      node.style.overflow = "clip";
+    var mapUrl = buildMap(w, h, radiusOf(node), scale, band);
+    if (mapUrl) {
+      ensureDefs().appendChild(buildFilter(id, mapUrl, scale, chroma));
+      /* Kolejność ma znaczenie: klasa z `url()` jest w CSS PO blura, więc
+         nadpisuje łańcuch tylko tam, gdzie ugięcie naprawdę działa. */
+      node.style.setProperty("--lg3-filter", "url(#" + id + ")");
+      node.classList.add("lg3-refract");
     }
-    node.classList.add("lg3-on");
-    node.__lg3 = { id: id, lens: lens, w: w, h: h };
 
+    node.classList.add("lg3-on");
+    node.__lg3 = { id: id, w: w, h: h };
     lensCount++;
-    lens.setAttribute("data-lg3-pad", String(pad));
-    if (NATURAL) syncLens(lens, node);
   }
 
   function unmount(node) {
     if (!node || !node.__lg3) return;
     var o = node.__lg3;
     try {
-      o.lens.parentNode.removeChild(o.lens);
       var f = document.getElementById(o.id);
       if (f) f.parentNode.removeChild(f);
     } catch (e) { /* ignorujemy */ }
     node.__lg3 = null;
     node.classList.remove("lg3-on");
-    if (node.getAttribute("data-lg3-clip") === "1") {
-      try { node.style.removeProperty("overflow"); } catch (e) { /* ignorujemy */ }
-      node.removeAttribute("data-lg3-clip");
-    }
+    node.classList.remove("lg3-refract");
+    try { node.style.removeProperty("--lg3-filter"); } catch (e) { /* ignorujemy */ }
     if (lensCount > 0) lensCount--;
-  }
-
-  /* Soczewka musi namalować DOKŁADNIE ten sam fragment tapety, który leży
-     pod panelem — inaczej obraz „nie zgadza się" z tłem, linie się łamią
-     i całość wygląda jak wklejony obrazek, a nie jak szkło.
-
-     ZMIERZONE 27.11 (dwa razy, bo pierwszy wniosek był odwrotny):
-
-     1. `background-size: cover` z `background-attachment: fixed` liczy się
-        WZGLĘDEM ELEMENTU, nie okna. Soczewka 579×279 dostawała więc tapetę
-        powiększoną pod siebie.
-     2. Sam `filter` na elemencie zmienia zachowanie tła: `fixed` przestaje
-        działać względem okna i tło zaczyna być pozycjonowane od narożnika
-        ELEMENTU. Sprawdzone eksperymentem: dwie identyczne tafle, jedna
-        z filtrem — pokazują różne fragmenty tapety.
-
-     Dlatego nie polegamy na `fixed`. Liczymy rozmiar `cover` jawnie i
-     przesuwamy tło o minus pozycję elementu w oknie, czyli odtwarzamy
-     widok „jakby tło było przyklejone do okna". Przy przewijaniu trzeba
-     to przeliczyć — stąd sync() niżej. */
-  var NATURAL = null;
-  var WALL = "/hub/wallpaper-2560.webp";
-
-  function coverSize(nw, nh) {
-    /* `documentElement.clientWidth` to szerokość pola widzenia BEZ paska
-       przewijania — dokładnie ta, względem której `background-size: cover`
-       skaluje tło strony. `innerWidth` bywa o ~15 px większe. */
-    var vw = document.documentElement.clientWidth || window.innerWidth;
-    var vh = window.innerHeight;
-    var k = Math.max(vw / nw, vh / nh);
-    return { w: nw * k, h: nh * k, vw: vw, vh: vh };
-  }
-
-  /* Ustawia tło soczewki tak, żeby pokrywało się z tłem strony.
-
-     TU BYŁ BŁĄD (27.11) — trzy rzeczy naraz:
-
-     1. Tło liczy się od NAROŻNIKA ELEMENTU, nie okna (`background-attachment:
-        fixed` przestaje działać, gdy element ma `filter`). Dlatego pozycja
-        musi być skompensowana o pozycję elementu — i to o TĘ, którą
-        naprawdę widzi przeglądarka, czyli jego wewnętrzne pole.
-     2. Elementem, który maluje tło, jest WARSTWA SOCZEWKI, a nie panel.
-        Soczewka jest o `pad` większa od panelu i przesunięta o −pad, więc
-        jej pozycja ≠ pozycja panelu. Branie pozycji panelu przesuwało
-        tapetę o `pad` w obie osie.
-     3. Rozmiar skali liczy się z okna, ale okno to `clientWidth/Height`
-        (bez paska przewijania), nie `innerWidth`. */
-  function syncLens(lens, node) {
-    if (!NATURAL) return;
-    var c = coverSize(NATURAL.w, NATURAL.h);
-    lens.style.backgroundSize = Math.round(c.w) + "px " + Math.round(c.h) + "px";
-
-    /* Bierzemy pole soczewki; padreduje ono panel, więc wynik jest spójny
-       z tym, co widzi przeglądarka. */
-    var pad = parseFloat(lens.getAttribute("data-lg3-pad")) || 0;
-    var nw = node.offsetWidth + 2 * pad;
-    var nh = node.offsetHeight + 2 * pad;
-    var x = (c.vw - c.w) / 2;
-    var y = (c.vh - c.h) / 2;
-
-    /* Tło jest mniejsze niż warstwa tylko wtedy, gdy panel jest węższy od
-       kadru — wtedy warstwa ma własny rozmiar i pozycja liczy się od zera. */
-    if (nw < c.vw) x = (c.vw - c.w) / 2;
-    if (nh < c.vh) y = (c.vh - c.h) / 2;
-
-    lens.style.backgroundPosition = Math.round(x) + "px " + Math.round(y) + "px";
-  }
-
-  var syncing = false;
-  function syncAll() {
-    if (!NATURAL || syncing) return;
-    syncing = true;
-    var list = document.querySelectorAll("." + LENS);
-    for (var i = 0; i < list.length; i++) {
-      var node = list[i].parentNode;
-      if (node) syncLens(list[i], node);
-    }
-    syncing = false;
-  }
-
-  function paintBackdrop(node) {
-    node.style.backgroundImage = 'url("' + WALL + '")';
-    node.style.backgroundRepeat = "no-repeat";
-    /* Bez `fixed` — patrz komentarz wyżej. Pozycję liczymy sami. */
-    node.style.backgroundAttachment = "scroll";
-
-    if (NATURAL) return;
-    var im = new Image();
-    im.onload = function () {
-      NATURAL = { w: im.naturalWidth, h: im.naturalHeight };
-      syncAll();
-    };
-    im.src = WALL;
   }
 
   /* ---------- refleks podążający za kursorem ---------- */
@@ -453,7 +336,7 @@
 
   /* ---------- start ---------- */
 
-  var seen = null;   /* WeakSet zamontowanych */
+  var seen = null;
 
   function scan(root) {
     var list = (root || document).querySelectorAll("[data-lg3]");
@@ -473,26 +356,23 @@
     var why = disabled();
     if (why) {
       document.documentElement.setAttribute("data-lg3-off", why);
-      return;   /* CSS daje wtedy ciemny zapas — patrz html[data-lg3-off] */
+      return;   /* CSS daje wtedy ciemniejszy zapas — patrz html[data-lg3-off] */
     }
+
+    /* Warstwa CSS (tint, rant, sheen) działa od razu i wszędzie.
+       `lg3-ready` mówi arkuszowi: możesz zdjąć zapas „bez JS". */
+    document.documentElement.classList.add(READY);
+
+    /* Refrakcja tylko tam, gdzie naprawdę się narysuje. Klasa na <html>
+       pozwala arkuszowi odróżnić „szkło pełne" od „szkło bez ugięcia"
+       (Safari, Firefox) bez sięgania po hacki. */
+    if (!canRefract()) return;
+    document.documentElement.classList.add("lg3-refract-on");
 
     scan(document);
     trackPointer();
 
-    /* Tło soczewki jest wyrównywane do okna ręcznie, więc przy przewijaniu
-       trzeba je przeliczyć — inaczej obraz pod szkłem „odjeżdża". */
-    var ticking = false;
-    function onScroll() {
-      if (ticking) return;
-      ticking = true;
-      window.requestAnimationFrame(function () {
-        ticking = false;
-        syncAll();
-      });
-    }
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-
+    /* Nowe panele w drzewie (np. karty doładowane z JS). */
     if (window.MutationObserver) {
       var t = 0;
       new MutationObserver(function (recs) {
@@ -506,7 +386,8 @@
       }).observe(document.body, { childList: true, subtree: true });
     }
 
-    /* Zmiana rozmiaru: mapy trzeba przeliczyć (nowe wymiary). */
+    /* Zmiana rozmiaru: mapa musi mieć nowe wymiary, inaczej faza rozjedzie
+       się z obrysem. Przeliczamy z opóźnieniem, bo pętla jest kosztowna. */
     var rz = 0;
     window.addEventListener("resize", function () {
       clearTimeout(rz);
@@ -537,6 +418,7 @@
     },
     mount: mount,
     unmount: unmount,
-    scan: scan
+    scan: scan,
+    canRefract: canRefract
   });
 })(window, document);
