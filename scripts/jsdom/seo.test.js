@@ -13,7 +13,10 @@ const sd = staticDom.window.document;
 const offchat = sd.querySelector('.showcase-grid [data-repo="OffChat"]');
 assert(offchat && offchat.querySelector('.card-preview iframe[data-card-preview]'), 'OffChat jest wyróżniony z podglądem');
 assert(offchat.querySelector('[data-featured-meta="OffChat"]'));
-assert(offchat.querySelector('[data-feedback-project="OffChat"]'));
+/* Stara pigułka zgłaszania usunięta (27.11) — zgłaszanie ma jedno wejście,
+   nowoczesną wyspę. Ten warunek pilnuje teraz, że na karcie NIE ma już
+   zdublowanego przycisku ze starym wyglądem. */
+assert.equal(offchat.querySelector('[data-feedback-project="OffChat"]'), null);
 assert.equal(offchat.querySelector('.card-online-num').textContent.trim(), '—', 'brak danych obecności nie jest zerem');
 assert(offchat.querySelector('[data-project-views="OffChat"]'));
 assert(offchat.querySelector('[data-project-unique="OffChat"]'));
