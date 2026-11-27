@@ -343,9 +343,11 @@ body::after {
   letter-spacing: -0.03em;
   font-weight: 700;
   max-width: 15ch;
-  /* Podkreślenie pod literami: jasne wstęgi tapety przechodzą dokładnie
-     za napisem, więc napis dostaje własną ciemną poświatę. */
-  text-shadow: 0 2px 4px rgba(255, 255, 255, 0.75), 0 8px 40px rgba(255, 255, 255, 0.55);
+  /* CIEMNY tekst potrzebuje JASNEJ aureoli, ale CIASNEJ.
+     Poprzednia wersja (0 8px 40px) rozmywała ją na 40 px — na jasnej
+     tapecie dawało to rozmazaną plamę za napisem, nie czytelność.
+     Zasada: aureola ma być węższa niż grubość kreski litery. */
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.65), 0 0 12px rgba(255, 255, 255, 0.55);
 }
 
 .hero h1 em {
@@ -525,13 +527,33 @@ body::after {
   mix-blend-mode: soft-light;
 }
 
-/* Bez silnika (stare przeglądarki, brak JS) panel nadal ma być czytelny.
-   JASNE tło, bo tekst jest teraz ciemny — ciemna płyta dałaby ciemny
-   tekst na ciemnym tle (kontrast ~1,2:1, czyli brak). */
+/* ============ ZAPAS: tylko gdy silnik NIE WYSTARTOWAŁ ============
+
+   Runda 41. Na zrzucie z 27.11 tafle były PŁASKĄ BIELĄ — bez ugięcia,
+   bez bluru, bez krawędzi. Przyczyna: arkusz wstawiał `rgba(255,255,255,.80)`
+   dla `html:not(.lg3-ready)`, a ta klasa zależy WYŁĄCZNIE od JS. Wystarczyło,
+   że plik silnika przyszedł z cache (albo wykonał się po pierwszym malowaniu),
+   i strona na zawsze zostawała w stanie „silnik nie wystartował".
+
+   Poprawka jest dwuczęściowa:
+     1. Tafla MA WŁASNE tło zawsze (token `--lens-tint`), więc wygląda jak
+        szkło nawet bez JS. Zapas nie musi jej zastępować.
+     2. `lg3-ready` ustawia także inline boot w HTML — natychmiast, nie po
+        wczytaniu zewnętrznego pliku. */
+
+/* Tafle mają tło z tokenu, niezależnie od stanu silnika. */
+.bar-inner,
+.hero-plate,
+.island {
+  background-color: rgba(255, 255, 255, var(--lens-tint));
+}
+
+/* Zapas dla naprawdę starych przeglądarek — nieco więcej bieli,
+   ale nadal SZKŁO, nie biały prostokąt. */
 html:not(.lg3-ready) .bar-inner,
 html:not(.lg3-ready) .island,
 html:not(.lg3-ready) .hero-plate {
-  background-color: rgba(255, 255, 255, 0.80);
+  background-color: rgba(255, 255, 255, 0.62);
 }
 
 /* Safari i Firefox nie rysują `backdrop-filter: url()`, ale blur, tint
@@ -616,15 +638,13 @@ html[data-lg3-off] .lg3-glow {
    wstędze to 1,2:1, czyli napis znika. Zmierzone: bez zasłony 17 z 112
    tekstów schodziło pod 4,5:1, z zasłoną 0.36 — 10. Krycie celowo niskie,
    żeby tapeta nadal niosła kolor; resztę robią poświaty pod literami. */
+/******** UWAGA: ten cień SEK C JI USUNIĘTY (runda 41) ********
+   Było tu `main > .section::before { background: rgba(8, 5, 20, 0.36) }` —
+   ciemna podkładka pod KAŻDĄ sekcję. Miała sens na granatowej tapecie;
+   na jasnej stała się ciemnym prostokątem widocznym na zrzucie z 27.11
+   („co to ma być?!"). Sekcje nie potrzebują już własnego tła — tapeta
+   ma być widoczna, bo to na niej widać ugięcie szkła. */
 main > .section { position: relative; }
-main > .section::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  border-radius: var(--r-lg);
-  background: rgba(8, 5, 20, 0.36);
-}
 
 .section { padding: var(--s8) 0; }
 
@@ -1015,7 +1035,7 @@ html.rj-potato .bar-inner, html.rj-potato .island {
 <!-- Silnik szkła v3. Zastępuje hub/lg-glass.js, bo tamten ma odwrócony
      profil soczewki (ugina najsłabiej przy krawędzi) i nie wyrównuje
      tapety do okna — obraz „nie zgadzał się" z tłem i efekt ginął. -->
-<script src="/v3/lg3.js?v=1"></script>
+<script src="/v3/lg3.js?v=3"></script>
 <script>
 (function () {
   "use strict";
@@ -1034,8 +1054,14 @@ html.rj-potato .bar-inner, html.rj-potato .island {
   function boot() {
     var list = document.querySelectorAll("[data-lg3]");
     for (var i = 0; i < list.length; i++) dress(list[i]);
-    /* `lg3-ready` ustawia sam silnik (init w lg3.js), bo to on wie, czy
-       szkło w ogóle wystartowało. Tutaj nie duplikujemy tej decyzji. */
+
+    /* `lg3-ready` ustawiamy NATYCHMIAST, jeszcze przed zewnętrznym
+       silnikiem. Klasa mówi arkuszowi „JS żyje, nie pokazuj zapasu".
+       Poprzednio zależała wyłącznie od lg3.js — gdy ten przyszedł
+       z cache albo wykonał się po pierwszym malowaniu, strona zostawała
+       w stanie awaryjnym (płaska biel bez szkła). To nie może zależeć
+       od pliku zewnętrznego. */
+    document.documentElement.classList.add("lg3-ready");
     if (window.RJGlass3) window.RJGlass3.refresh();
   }
   if (document.readyState === "loading") {
