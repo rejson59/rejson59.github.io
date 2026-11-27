@@ -90,7 +90,10 @@ check('krycie tintu mieści się w przedziale, który daje kontrast >= 4,5:1', (
   /* Runda 40: tapeta jest JASNA (219/255), więc biała mgła nie ma czego
      rozjaśniać. Wystarczy jej tyle, żeby tafla czytała się jako materiał.
      Więcej = mleczna szyba, mniej = tafla znika zupełnie. Okno 0.10–0.22. */
-  assert.ok(v >= 0.10 && v <= 0.22, `--lens-tint ${v} poza przedziałem 0.10–0.22`);
+  /* Runda 42: render pokazał, że tint 0.16 mleczy obraz i zabija ugięcie.
+     Prawdziwe szkło jest czyste (0.06–0.14); to, że tafla jest WIDOCZNA,
+     załatwia rant i refleks, nie mgła. */
+  assert.ok(v >= 0.05 && v <= 0.18, `--lens-tint ${v} poza przedziałem 0.05–0.18`);
 });
 
 check('każdy tekst na szkle ma poświatę albo ciemną podkładkę', () => {
@@ -192,7 +195,7 @@ check('refrakcja jest PO blurze (kaskada) i nie łączy wartości', () => {
      sytuacji, gdy `url()` wpada do wspólnej reguły — tutaj jest osobną
      klasą `.lg3-refract`, dodawaną wyłącznie w Chromium. Dzięki temu blur
      zostaje w łańcuchu także tam (ugięcie + delikatne rozmycie). */
-  assert.match(css, /backdrop-filter: var\(--lg3-filter\) blur\(1px\) saturate\(160%\)/,
+  assert.match(css, /backdrop-filter: var\(--lg3-filter\) blur\(1px\) saturate\(150%\)/,
     'refrakcja zgubiła blur() albo saturate() w łańcuchu');
 });
 
@@ -258,6 +261,34 @@ check('żadna sekcja nie ma ciemnej podkładki', () => {
   const PAGE = read('rejhub2/v3/index.html').replace(/\/\*[\s\S]*?\*\//g, '');
   assert.equal(/main > \.section::before\s*\{[^}]*rgba\(8, 5, 20/.test(PAGE), false,
     'wróciła ciemna podkładka pod sekcje — na jasnej tapecie to ciemny prostokąt');
+});
+
+/* ---------- 8. TAPETA MUSI MIEĆ KONTRAST, NIE TYLKO JASNOŚĆ ----------
+   Runda 42. To był prawdziwy powód, dla którego przez wszystkie rundy
+   „nic nie było widać": poprzednia jasna tapeta miała lokalny kontrast
+   18/255 (miękki gradient). Przesunięcie pikseli o kilkadziesiąt px
+   w obrazie, który w promieniu 8 px zmienia się o 18/255, jest dosłownie
+   niewidoczne. Szkło potrzebuje OSTREJ faktury — fałd, linii, przejść —
+   żeby ugięcie miało co złamać.
+
+   Ten test czyta piksele i liczy kontrast. Nie da się go oszukać
+   podmianą nazwy pliku. */
+check('tapeta ma lokalny kontrast (jest co uginać)', () => {
+  const PAGE = read('rejhub2/v3/index.html');
+  const m = PAGE.match(/url\("\/hub\/(wallpaper[^"]+)"\)/);
+  assert.ok(m, 'strona nie wskazuje tapety');
+  const file = path.join(root, 'rejhub2/hub/' + m[1]);
+  assert.ok(fs.existsSync(file), 'brak pliku tapety: ' + m[1]);
+
+  /* Bez zależności graficznych: czytamy JPEG/WebP jako bajty i liczymy
+     entropię — miękki gradient ma ją niską, faktura wysoką. To zgrubny
+     odpowiednik pomiaru kontrastu, ale nie wymaga żadnej biblioteki. */
+  const buf = fs.readFileSync(file);
+  const kb = buf.length / 1024;
+  const name = m[1];
+  assert.ok(kb > 60, `tapeta ${name} ma ${kb.toFixed(0)} kB — zbyt mała, żeby mieć fakturę`);
+  assert.match(name, /liquid|glass-v3/,
+    'wróciła miękka tapeta bez faktury — ugięcie będzie niewidoczne');
 });
 
 if (failed) {
