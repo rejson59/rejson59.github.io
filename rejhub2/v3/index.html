@@ -45,8 +45,8 @@
      ono na referencjach z liquidglassdesign.com — biała mgła, która
      rozjaśnia obraz pod sobą. Granatowy tint gasił tapetę i całość
      wyglądała jak ciemna płyta, a nie jak szkło. */
-  --glass-bar: rgba(255, 255, 255, 0.14);   /* zapas dla przeglądarek bez soczewki */
-  --lens-tint: 0.22;                        /* krycie bieli W SOCZEWCE */
+  --glass-bar: rgba(255, 255, 255, var(--lens-tint));  /* ten sam tint co wyspa */
+  --lens-tint: 0.22;                        /* krycie bieli W TAFI */
   --glass-island: rgba(255, 255, 255, 0.20);
   --glass-card: rgba(255, 255, 255, 0.07);  /* karta: PŁASKA, bez filtra */
   --glass-card-hover: rgba(255, 255, 255, 0.13);
@@ -164,22 +164,16 @@ body::after {
   padding: 0 var(--s4) 0 var(--s3);
   border-radius: var(--r-lg);
   border: 1px solid var(--edge);
-  background-color: var(--glass-bar);
-  /* Zapas koloru dla przeglądarek bez soczewki — właściwy materiał
-     rysuje warstwa .lg3-lens (patrz 6b). */
-  /* Refleks: cienki jasny pas u góry tafli. To on mówi oku "to jest szkło",
-     zanim jeszcze krawędź zdąży ugiąć obraz. */
-  background-image: linear-gradient(168deg,
-    rgba(255, 255, 255, 0.26) 0%,
-    rgba(255, 255, 255, 0.08) 16%,
-    rgba(255, 255, 255, 0.00) 44%,
-    rgba(255, 255, 255, 0.00) 74%,
-    rgba(255, 255, 255, 0.10) 100%);
+  /* TŁO I BLUR RYSUJE SILNIK — patrz 6b.
+     Wcześniej stało tu `backdrop-filter: saturate(1.7) brightness(1.06)`
+     bez `blur()`. To nie było szkło, tylko podbarwienie: obraz pod taflą
+     zostawał ostry, więc oko czytało płytę, a nie soczewkę. Czysty
+     `saturate+brightness` wygląda jak filtr na zdjęciu, nie jak materiał.
+     Blur jest tym, co odróżnia szkło od szkła mlecznego w obie strony:
+     mały (6 px) — wnętrze zostaje czytelne, krawędź ugina. */
   box-shadow:
     0 18px 50px -24px rgba(2, 0, 12, 0.90),
     inset 0 1px 0 rgba(255, 255, 255, 0.50);
-  backdrop-filter: saturate(1.7) brightness(1.06);
-  -webkit-backdrop-filter: saturate(1.7) brightness(1.06);
 }
 
 .brand {
@@ -355,43 +349,59 @@ body::after {
 .hero-actions { display: flex; flex-wrap: wrap; gap: var(--s3); }
 
 /* -------------------------------- 6b. MATERIAŁ SZKŁA (silnik lg3.js)
-   Silnik wstawia do panelu warstwę `.lg3-lens`, która maluje tapetę
-   ugiętą filtrem SVG. Ta warstwa leży NAD tłem panelu, więc:
 
-   - TINT MUSI BYĆ NA SOCZEWCE, nie na panelu. Inaczej jest zasłonięty —
-     dokładnie to sprawiało, że przez kilka rund zmiany krycia były
-     niewidoczne.
-   - REFLEKS i KRAWĘDŹ to osobne warstwy NAD soczewką, bo soczewka
-     odtwarza surowy obraz i zgubiłaby je.
+   TO JEST PRAWDZIWE SZKŁO. Panel nie maluje własnej kopii tapety — prosi
+   przeglądarkę o piksele, które leżą POD nim (`backdrop-filter`). Dlatego
+   działa na wszystkim, co przypadkiem znajdzie się pod taflą: na obrazie,
+   na filmie, na innej tafli.
 
-   Warstwy od dołu: tapeta → soczewka (ugięcie+tint) → poświata →
-   refleks → krawędź → treść. */
+   Poprzednia wersja wstawiała warstwę `.lg3-lens` z tapetą w tle i filtrowała
+   JĄ. To było sztuczne tło — tafla nie wiedziała, co jest pod nią, tylko
+   odtwarzała własną kopię tapety. Do tego kopia wymagała ręcznego
+   wyrównywania do okna przy każdym przewinięciu (trzy rundy walki z „obrazem,
+   który się nie zgadza z tłem").
 
-.lg3-lens {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  border-radius: inherit;
-  pointer-events: none;
-  will-change: filter;
+   Warstwy od dołu:
+     1. `backdrop-filter: blur + saturate` — zawsze, każda przeglądarka.
+     2. tint (biel) — półprzezroczyste tło panelu.
+     3. `.lg3-edge` — rant: hairline + jasna góra (światło wpada z góry).
+     4. `.lg3-sheen` — refleks, wędruje za kursorem.
+     5. `backdrop-filter: url()` — ugięcie krawędzi, TYLKO Chromium.
+
+   Kolejność w kaskadzie jest istotna: reguła z `url()` stoi PO regule
+   z `blur()`, więc ją nadpisuje. Nie łączymy ich w jednej deklaracji —
+   Safari odrzuca całą wartość, gdy którakolwiek część jest nieznana,
+   i traciłaby także blur (patrz liquidglassdesign.com, listopad 2026). */
+
+/* UWAGA: BEZ `isolation: isolate`.
+   Izolacja tworzy „backdrop root" — element przestaje próbkować to, co leży
+   pod nim na stronie, a `backdrop-filter` dostaje puste tło. Efekt: szkło
+   robi się szare, a ugięcie nie ma czego uginać. Do tego stopnia, że
+   `lg3-refract` rysuje wtedy własną kopię zamiast prawdziwego tła.
+   Klasa służy tylko do pozycjonowania treści nad warstwami refleksu. */
+.lg3-on { position: relative; }
+
+/* 1. Szkło podstawowe — działa wszędzie, również bez ugięcia. */
+.lg3-on {
+  -webkit-backdrop-filter: blur(6px) saturate(160%);
+  backdrop-filter: blur(6px) saturate(160%);
 }
 
-/* Tint: biała mgła. Wartość jest zmienną, żeby jedna liczba rządziła
-   jasnością całego szkła na stronie. */
-.lg3-lens::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: rgba(255, 255, 255, var(--lens-tint));
-  pointer-events: none;
+/* 2. Tint: biała mgła. Jedna liczba rządzi jasnością całego szkła. */
+.lg3-on {
+  background-color: rgba(255, 255, 255, var(--lens-tint));
 }
 
-.lg3-on { position: relative; isolation: isolate; }
+/* 3. Ugięcie krawędzi — tylko tam, gdzie silnik je włączył (Chromium).
+   Zmienna `--lg3-filter` wskazuje filtr wygenerowany dla TEGO panelu. */
+.lg3-refract {
+  -webkit-backdrop-filter: var(--lg3-filter) blur(1px) saturate(160%);
+  backdrop-filter: var(--lg3-filter) blur(1px) saturate(160%);
+}
 
 /* Treść nad szkłem. NIE ruszamy elementów już pozycjonowanych —
    w v2 `position:relative` wypchnął etykiety poza kartę. */
-.lg3-on > :not(.lg3-lens):not(.lg3-sheen):not(.lg3-edge):not(.lg3-glow) {
+.lg3-on > :not(.lg3-sheen):not(.lg3-edge):not(.lg3-glow) {
   position: relative;
   z-index: 2;
 }
@@ -485,6 +495,16 @@ html:not(.lg3-ready) .hero-plate {
   background-color: rgba(12, 8, 30, 0.72);
 }
 
+/* Safari i Firefox nie rysują `backdrop-filter: url()`, ale blur, tint
+   i rant działają tam normalnie. Nie chcemy więc ciemnej płyty — tylko
+   trochę mocniejszego tła, bo bez ugięcia krawędzi tekst potrzebuje
+   odrobiny więcej spokoju. */
+html.lg3-ready:not(.lg3-refract-on) .bar-inner,
+html.lg3-ready:not(.lg3-refract-on) .island,
+html.lg3-ready:not(.lg3-refract-on) .hero-plate {
+  background-color: rgba(255, 255, 255, 0.26);
+}
+
 /* Bezpieczniki: tryb „ziemniak" i prośba o mniej przezroczystości wyłączają
    silnik (patrz lg3.js). Wtedy zostaje spokojne, ciemniejsze szkło — czytelne
    i tanie. Ugięcia nie ma, ale strona działa płynnie. */
@@ -516,17 +536,14 @@ html[data-lg3-off] .lg3-glow {
   padding: var(--s3) var(--s3) var(--s3) var(--s5);
   border-radius: var(--r-full);
   border: 1px solid var(--edge);
+  /* Tło, tint i blur — silnik (6b). Ten sam powód co przy pasku:
+     `saturate+brightness` bez `blur()` to podbarwienie, nie szkło. */
+  /* Zapas koloru, gdy silnik nie ruszy (brak JS / wyłączone bezpiecznikiem).
+     Gdy ruszy, `.lg3-on` nadpisuje to wspólnym tintem. */
   background-color: var(--glass-island);
-  background-image: linear-gradient(168deg,
-    rgba(255, 255, 255, 0.20) 0%,
-    rgba(255, 255, 255, 0.05) 20%,
-    rgba(255, 255, 255, 0.00) 60%,
-    rgba(255, 255, 255, 0.08) 100%);
   box-shadow:
     0 26px 70px -22px rgba(2, 0, 12, 0.95),
     inset 0 1px 0 rgba(255, 255, 255, 0.46);
-  backdrop-filter: saturate(1.8) brightness(1.08);
-  -webkit-backdrop-filter: saturate(1.8) brightness(1.08);
 }
 .island p {
   margin: 0;
@@ -962,8 +979,9 @@ html.rj-potato .bar-inner, html.rj-potato .island {
 <script>
 (function () {
   "use strict";
-  /* Warstwy materiału dokładamy do każdej tafy automatycznie: refleks,
-     wewnętrzna poświata i krawędź muszą leżeć NAD soczewką. */
+  /* Warstwy materiału (refleks, poświata, krawędź) dokładamy do każdej tafy.
+     Nie zależą od ugięcia — rysują się także w Safari i Firefoksie, gdzie
+     `backdrop-filter: url()` nic nie rysuje. */
   function dress(node) {
     if (node.querySelector(":scope > .lg3-sheen")) return;
     ["lg3-glow", "lg3-sheen", "lg3-edge"].forEach(function (cls) {
@@ -976,9 +994,8 @@ html.rj-potato .bar-inner, html.rj-potato .island {
   function boot() {
     var list = document.querySelectorAll("[data-lg3]");
     for (var i = 0; i < list.length; i++) dress(list[i]);
-    /* Klasa mówi CSS, że silnik wystartował — bez niej panel dostaje
-       ciemny zapas, żeby tekst był czytelny. */
-    document.documentElement.classList.add("lg3-ready");
+    /* `lg3-ready` ustawia sam silnik (init w lg3.js), bo to on wie, czy
+       szkło w ogóle wystartowało. Tutaj nie duplikujemy tej decyzji. */
     if (window.RJGlass3) window.RJGlass3.refresh();
   }
   if (document.readyState === "loading") {

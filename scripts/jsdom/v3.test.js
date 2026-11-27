@@ -41,7 +41,12 @@ check('backdrop-filter ma tylko pasek i wyspa', () => {
   /* Liczymy tylko REALNE użycia. `rz-potato` to nie selektor powierzchni,
      a tryb wydajnościowy, który filtr wyłącza — regex łapał go przez
      rozciągnięcie na sąsiedni blok. Dlatego parsujemy bloki po kolei. */
-  const blocks = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)];
+  /* Parsujemy komentarze osobno: regex `([^{}]+)\{` łapał po drodze
+     selektory z komentarzy (np. „`.lg3-on` to klasa..."), przez co test
+     zgłaszał fałszywy alarm. Wcześniej tego nie robił, bo komentarze nie
+     zawierały `.klasa` w tym miejscu — teraz zawierają. */
+  const clean = css.replace(/\/\*[\s\S]*?\*\//g, '');
+  const blocks = [...clean.matchAll(/([^{}]+)\{([^{}]*)\}/g)];
   const bad = [];
   for (const [, sel, body] of blocks) {
     if (!/backdrop-filter:\s*(?!none)/.test(body)) continue;
@@ -49,8 +54,12 @@ check('backdrop-filter ma tylko pasek i wyspa', () => {
        html.rj-potato .bar-inner, html.rj-potato .island {…}). Każdy człon
        listy musi wskazywać dozwoloną powierzchnię. */
     const owners = sel.split(',').map((one) =>
-      (([...one.matchAll(/\.([a-z-]+)/g)].pop()) || [, '?'])[1]);
-    const extra = owners.filter((o) => o !== 'bar-inner' && o !== 'island');
+      (([...one.matchAll(/\.([a-z0-9-]+)/g)].pop()) || [, '?'])[1]);
+    /* Dozwolone są WYŁĄCZNIE trzy tafla: pasek, wyspa i płyta hero.
+       `.lg3-on` to klasa stanu nakładana na te same elementy, `.lg3-refract`
+       włącza ugięcie — żadna nie jest osobną powierzchnią. */
+    const OK = ['bar-inner', 'island', 'hero-plate', 'lg3-on', 'lg3-refract'];
+    const extra = owners.filter((o) => OK.indexOf(o) === -1);
     if (extra.length) bad.push(sel.trim().replace(/\s+/g, ' ').slice(0, 50));
   }
   assert.deepEqual(bad, [], 'szkło wyciekło na: ' + bad.join(', '));
@@ -64,12 +73,14 @@ check('karty są płaskie (bez backdrop-filter i bez filtra)', () => {
 });
 
 /* ---------- 2. tint w soczewce (odkrycie z 26.11) ---------- */
-check('tint jest malowany w soczewce, nie tylko na panelu', () => {
-  assert.match(css, /\.lg3-lens::after/,
-    'brak reguły .lg3-lens::after — tint znów będzie zasłonięty przez soczewkę');
-  const block = css.slice(css.indexOf('.lg3-lens::after'));
-  assert.match(block.slice(0, 400), /rgba\(255, 255, 255, var\(--lens-tint/,
-    'soczewka nie dostaje tintu — krycie panelu nie ma wtedy żadnego efektu');
+check('tint siedzi na tych samych taflach co blur', () => {
+  /* W architekturze z kopią tapety tint MUSIAŁ być na soczewce, bo panel
+     był pod nią zasłonięty. Teraz soczewki nie ma — tint jest zwykłym tłem
+     panelu, a blur i tak go przepuszcza. Ten warunek pilnuje, żeby tint nie
+     zniknął razem z usuniętą warstwą. */
+  assert.match(css, /background-color: rgba\(255, 255, 255, var\(--lens-tint\)\)/,
+    'brak tintu na tafli — szkło straci biel i zrobi się przezroczystą dziurą');
+  assert.equal(/\.lg3-lens/.test(css), false, 'wróciła warstwa-kopia .lg3-lens');
 });
 
 check('krycie tintu mieści się w przedziale, który daje kontrast >= 4,5:1', () => {
@@ -123,37 +134,77 @@ check('nie ma rozmiarów pisma spoza skali', () => {
   assert.deepEqual(hard, [], 'twarde rozmiary pisma: ' + hard.join(', '));
 });
 
-/* ---------- 5. silnik ugięcia (regresje z 27.11) ----------
-   Każda z tych czterech rzeczy kosztowała rundę pracy, bo objaw był ten
-   sam („obraz się nie zgadza"), a przyczyna inna. Test ma je trzymać. */
+/* ---------- 5. ARCHITEKTURA SZKŁA ----------
+   Runda 39 (27.11) zmieniła fundament: panel NIE maluje własnej kopii tapety,
+   tylko prosi przeglądarkę o piksele spod siebie (`backdrop-filter: url()`).
+   Poprzednia wersja wstawiała warstwę z tapetą w tle — to było sztuczne tło
+   i użytkownik to zauważył („dlaczego sztucznie dałeś tło").
+
+   Te strażniki mają nie dopuścić do powrotu kopii. Każdy z nich odpowiada
+   konkretnemu objawowi, który już raz widzieliśmy:
+     - kopia tapety → szkło nie zna niczego poza tapetą,
+     - brak bluru → obraz pod taflą ostry, więc to podbarwienie, nie szkło,
+     - `isolation` → backdrop root, szkło robi się szare,
+     - kaskada → `url()` przed `blur()` kasuje blur w Safari,
+     - łączenie wartości → Safari odrzuca CAŁĄ deklarację. */
 const ENG = read('rejhub2/v3/lg3.js');
 
-check('obszar filtra równy elementowi (nie 130%)', () => {
-  assert.match(ENG, /x: "0", y: "0", width: "100%", height: "100%"/,
-    'obszar filtra znów większy od elementu — mapa odkształceń przesunie wnętrze tafli');
-  assert.ok(!/"width": "130%"/.test(ENG), 'wróciło 130% w obszarze filtra');
+check('silnik NIE maluje kopii tapety (prawdziwy backdrop-filter)', () => {
+  assert.equal(/WALL|wallpaper-2560|paintBackdrop|backgroundImage/.test(ENG), false,
+    'silnik znów maluje tapetę w tle — to sztuczne tło, nie szkło');
+  assert.match(ENG, /backdrop-filter/,
+    'silnik nie używa backdrop-filter — wtedy nie ma prawdziwego szkła');
 });
 
-check('mapa odkształceń ma rozmiar warstwy, nie panelu', () => {
-  assert.match(ENG, /buildMap\(w \+ 2 \* pad, h \+ 2 \* pad, pad,/,
-    'mapa bez zapasu — feImage położy ją z przesunięciem o pad');
+check('refrakcja jedzie przez backdrop-filter: url(), nie przez filter na kopii', () => {
+  const css = read('rejhub2/v3/index.html');
+  assert.match(css, /backdrop-filter: var\(--lg3-filter\)/,
+    'brak backdrop-filter: url(...) — ugięcie nie czyta prawdziwego tła');
+  assert.equal(/body\.lg3-lens|\.lg3-lens\s*\{/.test(css), false,
+    'wróciła warstwa-kopia .lg3-lens');
+  assert.equal(/\.lg3-on[^{]*\{[^}]*filter:\s*url\(/.test(ENG + css), false,
+    'wrócił filter: url() na warstwie zamiast backdrop-filter');
 });
 
-check('profil soczewki ma szczyt na krawędzi (sześcian, nie sinus)', () => {
-  assert.match(ENG, /return u \* u \* u/,
-    'profil bez sześcianu — ugięcie znów rozleje się w jasną smugę');
-  assert.ok(!/Math\.sin\(Math\.PI/.test(ENG),
-    'wrócił profil sinusoidalny (v2) — ugina najsłabiej tam, gdzie ma najmocniej');
+check('szkło ma blur, nie samo saturate+brightness', () => {
+  const css = read('rejhub2/v3/index.html');
+  assert.match(css, /backdrop-filter: blur\(\d+px\) saturate\(/,
+    'brak blur() w warstwie podstawowej — obraz pod taflą zostaje ostry');
 });
 
-check('tło soczewki liczone z clientWidth (bez paska przewijania)', () => {
-  assert.match(ENG, /document\.documentElement\.clientWidth/,
-    'rozmiar okna z innerWidth — tapeta w soczewce przesunie się o szerokość paska');
+check('żadna tafla nie ma isolation (tworzy backdrop root)', () => {
+  const css = read('rejhub2/v3/index.html');
+  const block = css.slice(css.indexOf('.lg3-on {'));
+  assert.equal(/^[^}]*isolation:\s*isolate/.test(block), false,
+    'isolation:isolate na tafli — szkło przestaje próbkować tło pod sobą');
 });
 
-check('bezpieczniki: tryb ziemniaka i reduced-transparency', () => {
-  assert.match(ENG, /rj_potato/, 'brak reakcji na tryb ziemniaka');
-  assert.match(ENG, /prefers-reduced-transparency/, 'brak reakcji na prośbę o mniej przezroczystości');
+check('refrakcja jest PO blurze (kaskada) i nie łączy wartości', () => {
+  const css = read('rejhub2/v3/index.html');
+  const blurAt = css.indexOf('backdrop-filter: blur(');
+  const refractAt = css.indexOf('backdrop-filter: var(--lg3-filter)');
+  assert.ok(blurAt > 0 && refractAt > blurAt,
+    'reguła z url() musi stać PO regule z blur(), inaczej ją kasuje');
+  /* ŚWIADOME POŁĄCZENIE `url(...) blur(...)`.
+     liquidglassdesign.com ostrzega, że Safari odrzuca całą wartość, jeśli
+     którakolwiek część jest nieznana. Zanim to przyjąłem, sprawdziłem:
+     Safari w ogóle nie uruchamia silnika (`canRefract()` → false), więc NIE
+     dostaje tej klasy i nie widzi tej deklaracji. Ostrzeżenie dotyczy
+     sytuacji, gdy `url()` wpada do wspólnej reguły — tutaj jest osobną
+     klasą `.lg3-refract`, dodawaną wyłącznie w Chromium. Dzięki temu blur
+     zostaje w łańcuchu także tam (ugięcie + delikatne rozmycie). */
+  assert.match(css, /backdrop-filter: var\(--lg3-filter\) blur\(1px\) saturate\(160%\)/,
+    'refrakcja zgubiła blur() albo saturate() w łańcuchu');
+});
+
+check('detekcja Chromium przez userAgentData, nie przez @supports', () => {
+  assert.match(ENG, /navigator\.userAgentData/, 'brak detekcji przez userAgentData');
+  assert.match(ENG, /lg3-refract-on/, 'brak klasy odróżniającej szkło pełne od samego bluru');
+});
+
+check('mapa odkształceń ma rozmiar elementu (bez zapasu)', () => {
+  assert.match(ENG, /buildMap\(w, h, radiusOf\(node\)/, 'mapa budowana z zapasem pad');
+  assert.equal(/data-lg3-pad/.test(ENG), false, 'wrócił zapas warstwy — przy backdrop-filter niepotrzebny');
 });
 
 check('strona używa nowego silnika, nie starego', () => {
@@ -167,4 +218,4 @@ if (failed) {
   console.log('\n' + failed + ' NIEZALICZONYCH');
   process.exit(1);
 }
-console.log('PASS: prototyp trzyma dwie warstwy szkła, tint w soczewce i skalę pisma');
+console.log('PASS: prototyp ma prawdziwy backdrop-filter (bez kopii tapety), tint na tafli i skalę pisma');
