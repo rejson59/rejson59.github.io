@@ -46,21 +46,33 @@
      rozjaśnia obraz pod sobą. Granatowy tint gasił tapetę i całość
      wyglądała jak ciemna płyta, a nie jak szkło. */
   --glass-bar: rgba(255, 255, 255, var(--lens-tint));  /* ten sam tint co wyspa */
-  --lens-tint: 0.22;                        /* krycie bieli W TAFI */
-  --glass-island: rgba(255, 255, 255, 0.20);
-  --glass-card: rgba(255, 255, 255, 0.07);  /* karta: PŁASKA, bez filtra */
-  --glass-card-hover: rgba(255, 255, 255, 0.13);
-  --glass-pill: rgba(255, 255, 255, 0.14);
+  /* Na JASNEJ tapecie biała mgła nie ma czego rozjaśniać — wystarczy
+     odrobina, żeby tafla była widoczna jako materiał. Więcej = mleczna szyba. */
+  --lens-tint: 0.16;
+  --glass-island: rgba(255, 255, 255, 0.18);
+  --glass-card: rgba(255, 255, 255, 0.34);  /* karta: PŁASKA, bez filtra */
+  --glass-card-hover: rgba(255, 255, 255, 0.52);
+  --glass-pill: rgba(255, 255, 255, 0.30);
 
   /* Krawędzie — grubość tafli bierze się z krawędzi, nie z wypełnienia. */
-  --edge: rgba(255, 255, 255, 0.60);
-  --edge-soft: rgba(255, 255, 255, 0.22);
-  --hairline: rgba(255, 255, 255, 0.14);
+  /* Krawędzie NA JASNYM tle: białe ranty znikają, więc krawędź jest
+     ciemniejsza od tafli, a nie jaśniejsza. */
+  --edge: rgba(40, 32, 66, 0.34);
+  --edge-soft: rgba(40, 32, 66, 0.18);
+  --hairline: rgba(40, 32, 66, 0.10);
 
-  /* Tekst */
-  --ink: #f4f1fd;
-  --ink-soft: rgba(244, 241, 253, 0.80);
-  --ink-faint: rgba(244, 241, 253, 0.58);
+  /* Tekst — CIEMNY, bo tapeta jest JASNA (runda 40).
+
+     Przez wszystkie poprzednie rundy tekst był biały, bo tapeta była
+     granatowa (jasność 48/255). Po podmianie tła na jasne (219/255)
+     biały tekst przestałby istnieć: biel na bieli to 1:1 niezależnie od
+     tego, jak mocno podkreślę ją poświatą. Poświata ratowała sytuację na
+     ciemnym tle; na jasnym jest dokładnie odwrotnie — ratuje ciemny tekst.
+
+     Wartości dobrane pod najciemniejsze fałdy nowej tapety (~#8f8aa8). */
+  --ink: #16121f;
+  --ink-soft: rgba(22, 18, 31, 0.82);
+  --ink-faint: rgba(22, 18, 31, 0.62);
 
   /* Skala pisma — 7 stopni, nie 33. */
   --t-micro: 11px;   /* etykiety, nadtytuły */
@@ -109,11 +121,23 @@ body::before {
   position: fixed;
   inset: 0;
   z-index: -2;
-  background-image: url("/hub/wallpaper-2560.webp");
+  /* JASNA tapeta — i to jest cała różnica (runda 40).
+
+     Poprzednia była CIEMNA: średnia jasność 48/255, 64% pikseli poniżej 60.
+     Na takim tle szkło nie ma czego rozjaśniać, a rozszczepienie nie ma
+     czego rozszczepić — wszystkie efekty, które dostrajałem przez trzy
+     rundy, były na ciemnym fundamencie po prostu niewidoczne. Użytkownik
+     widział „ciemną płytę", bo ciemna była tapeta pod nią.
+
+     Nowa: 219/255, zero pikseli poniżej 60, z ostrymi fałdami jedwabiu —
+     to one dają oku punkt odniesienia, po którym poznaje ugięcie.
+     Plik: /hub/wallpaper-glass-v3.jpg (1376×768, 219 kB). */
+  background-image: url("/hub/wallpaper-glass-v3.jpg");
   background-size: cover;
   background-position: center;
-  /* Nie przygaszamy — kolory mają dojść do szkła. */
-  filter: saturate(1.10) brightness(1.00) contrast(1.04);
+  /* Lekko podbijamy kontrast fałd — bez tego obraz jest zbyt miękki,
+     żeby ugięcie krawędzi miało co łamać. */
+  filter: saturate(1.06) contrast(1.06);
   animation: drift 42s linear infinite alternate;
 }
 
@@ -172,7 +196,7 @@ body::after {
      Blur jest tym, co odróżnia szkło od szkła mlecznego w obie strony:
      mały (6 px) — wnętrze zostaje czytelne, krawędź ugina. */
   box-shadow:
-    0 18px 50px -24px rgba(2, 0, 12, 0.90),
+    0 18px 50px -24px rgba(90, 80, 130, 0.90),
     inset 0 1px 0 rgba(255, 255, 255, 0.50);
 }
 
@@ -187,7 +211,7 @@ body::after {
   font-weight: 700;
   letter-spacing: 0.01em;
   /* Poświata pod tekstem znaku — ten sam powód co przy etykietach. */
-  text-shadow: 0 1px 2px rgba(3, 0, 14, 0.95), 0 0 12px rgba(3, 0, 14, 0.70);
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.95), 0 0 12px rgba(255, 255, 255, 0.70);
 }
 .brand img { width: 26px; height: 26px; display: block; }
 
@@ -205,16 +229,16 @@ body::after {
   white-space: nowrap;
   letter-spacing: -0.01em;
   transition: color var(--dur) var(--ease), background-color var(--dur) var(--ease);
-  text-shadow: 0 1px 2px rgba(3, 0, 14, 0.85);
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.85);
 }
 .nav a:hover, .nav a:focus-visible {
   color: var(--ink);
   background-color: var(--glass-pill);
 }
 .nav a[aria-current="page"] {
-  color: #fff;
-  background-color: rgba(255, 255, 255, 0.16);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.34);
+  color: var(--ink);
+  background-color: rgba(255, 255, 255, 0.62);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), inset 0 0 0 1px rgba(40, 32, 66, 0.14);
 }
 
 .bar-actions {
@@ -249,9 +273,11 @@ body::after {
 /* Główny przycisk jest JASNY i prawie nieprzezroczysty — to jedyne miejsce,
    gdzie cień pod literami nie wystarczy. */
 .btn-primary {
-  background: #f7f5ff;
-  color: #150b2e;
-  box-shadow: 0 10px 28px -14px rgba(2, 0, 12, 0.8);
+  /* Ciemny przycisk na jasnej tapecie. Odwrotność poprzedniej wersji:
+     biała pastylka na jasnym tle nie ma krawędzi, tylko cień. */
+  background: #17121f;
+  color: #f7f5ff;
+  box-shadow: 0 10px 28px -14px rgba(90, 80, 130, 0.8);
 }
 .btn-primary:hover { background: #fff; }
 
@@ -259,7 +285,7 @@ body::after {
   background: var(--glass-pill);
   border-color: var(--edge-soft);
   color: var(--ink);
-  text-shadow: 0 1px 2px rgba(3, 0, 14, 0.85);
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.85);
 }
 .btn-ghost:hover { background: rgba(255, 255, 255, 0.16); }
 
@@ -268,8 +294,8 @@ body::after {
   font-size: var(--t-small);
   /* Na jasnym szkle sam obrys nie wystarcza — przycisk dostaje ciemniejszą
      pastylkę, żeby etykieta miała kontrast niezależny od tapety. */
-  background: rgba(10, 7, 26, 0.42);
-  border-color: rgba(255, 255, 255, 0.42);
+  background: rgba(255, 255, 255, 0.62);
+  border-color: rgba(40, 32, 66, 0.22);
 }
 
 /* ---------------------------------------------------------- 6. HERO */
@@ -295,7 +321,7 @@ body::after {
   padding: 6px var(--s3);
   border-radius: var(--r-full);
   border: 1px solid var(--edge-soft);
-  background: rgba(10, 7, 24, 0.38);
+  background: rgba(255, 255, 255, 0.52);
   font-size: var(--t-micro);
   font-weight: 600;
   letter-spacing: 0.16em;
@@ -306,8 +332,8 @@ body::after {
   content: "";
   width: 6px; height: 6px;
   border-radius: 50%;
-  background: #c9a5ff;
-  box-shadow: 0 0 10px 2px rgba(201, 165, 255, 0.7);
+  background: #7c4dff;
+  box-shadow: 0 0 10px 2px rgba(124, 77, 255, 0.5);
 }
 
 .hero h1 {
@@ -319,12 +345,16 @@ body::after {
   max-width: 15ch;
   /* Podkreślenie pod literami: jasne wstęgi tapety przechodzą dokładnie
      za napisem, więc napis dostaje własną ciemną poświatę. */
-  text-shadow: 0 2px 4px rgba(4, 0, 18, 0.75), 0 8px 40px rgba(4, 0, 18, 0.55);
+  text-shadow: 0 2px 4px rgba(255, 255, 255, 0.75), 0 8px 40px rgba(255, 255, 255, 0.55);
 }
 
 .hero h1 em {
   font-style: normal;
-  background: linear-gradient(112deg, #ffffff 0%, #e8d8ff 42%, #b98cff 78%, #8f5bff 100%);
+  /* Gradient na JASNYM tle: biel i jasny fiolet (poprzednia wersja)
+     znikały — „Rejson." było jaśniejsze niż tapeta, więc nie miało
+     krawędzi. Teraz gradient idzie od ciemnego fioletu do nasyconego
+     błękitu, czyli ma kontrast na każdym fragmencie. */
+  background: linear-gradient(112deg, #2a1145 0%, #4b2394 38%, #6d3ff0 68%, #2563eb 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -335,7 +365,7 @@ body::after {
      Separację od tła robi dopiero `drop-shadow`, który działa na gotowym
      obrazie i zostaje pod literami. */
   text-shadow: none;
-  filter: drop-shadow(0 2px 6px rgba(4, 0, 18, 0.9));
+  filter: drop-shadow(0 1px 1px rgba(255, 255, 255, 0.75));
 }
 
 .hero-lead {
@@ -343,7 +373,7 @@ body::after {
   max-width: 52ch;
   font-size: var(--t-lead);
   color: var(--ink);
-  text-shadow: 0 1px 2px rgba(6, 2, 20, 0.85), 0 2px 12px rgba(6, 2, 20, 0.6);
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.85), 0 2px 12px rgba(255, 255, 255, 0.6);
 }
 
 .hero-actions { display: flex; flex-wrap: wrap; gap: var(--s3); }
@@ -424,7 +454,10 @@ body::after {
       rgba(255, 255, 255, 0) 44%,
       rgba(255, 255, 255, 0.05) 76%,
       rgba(255, 255, 255, 0.16) 100%);
-  mix-blend-mode: screen;
+  /* `screen` na jasnym tle wypala taflę do bieli — refleks przestaje być
+     refleksem, a staje się białym prostokątem. `soft-light` modeluje
+     odbicie: rozjaśnia jasne, przyciemnia ciemne, zostawia różnice. */
+  mix-blend-mode: soft-light;
 }
 
 /* CZYTELNOŚĆ NA JASNYM SZKLE (zmierzone 27.11).
@@ -470,11 +503,15 @@ body::after {
   z-index: 3;
   border-radius: inherit;
   pointer-events: none;
+  /* Rant na JASNYM tle. Biała linia 0.95 (poprzednia wersja) była
+     niewidoczna, bo tafla sama jest jasna. Krawędź musi być CIEMNIEJSZA
+     od tafli, z jednym jasnym błyskiem u góry — tak wygląda szkło
+     oświetlone z góry, gdy leży na jasnym tle. */
   box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.52),
-    inset 0 1.5px 0 rgba(255, 255, 255, 0.95),
-    inset 0 -1.5px 0 rgba(255, 255, 255, 0.28),
-    0 18px 50px -22px rgba(2, 0, 12, 0.85);
+    inset 0 0 0 1px rgba(52, 42, 84, 0.30),
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.85),
+    inset 0 -1.5px 0 rgba(52, 42, 84, 0.16),
+    0 18px 50px -22px rgba(70, 60, 110, 0.55);
 }
 
 /* Wewnętrzna poświata tuż pod krawędzią — daje wrażenie grubości tafli. */
@@ -484,15 +521,17 @@ body::after {
   z-index: 2;
   border-radius: inherit;
   pointer-events: none;
-  box-shadow: inset 0 0 30px 5px rgba(255, 255, 255, 0.12);
-  mix-blend-mode: screen;
+  box-shadow: inset 0 0 30px 5px rgba(255, 255, 255, 0.30);
+  mix-blend-mode: soft-light;
 }
 
-/* Bez silnika (stare przeglądarki, brak JS) panel nadal ma być czytelny. */
+/* Bez silnika (stare przeglądarki, brak JS) panel nadal ma być czytelny.
+   JASNE tło, bo tekst jest teraz ciemny — ciemna płyta dałaby ciemny
+   tekst na ciemnym tle (kontrast ~1,2:1, czyli brak). */
 html:not(.lg3-ready) .bar-inner,
 html:not(.lg3-ready) .island,
 html:not(.lg3-ready) .hero-plate {
-  background-color: rgba(12, 8, 30, 0.72);
+  background-color: rgba(255, 255, 255, 0.80);
 }
 
 /* Safari i Firefox nie rysują `backdrop-filter: url()`, ale blur, tint
@@ -506,13 +545,14 @@ html.lg3-ready:not(.lg3-refract-on) .hero-plate {
 }
 
 /* Bezpieczniki: tryb „ziemniak" i prośba o mniej przezroczystości wyłączają
-   silnik (patrz lg3.js). Wtedy zostaje spokojne, ciemniejsze szkło — czytelne
-   i tanie. Ugięcia nie ma, ale strona działa płynnie. */
+   silnik (patrz lg3.js). Zostaje wtedy SPOKOJNE, ale nadal jasne szkło —
+   ciemna płyta byłaby nieczytelna przy ciemnym tekście. Ugięcia nie ma
+   (to ono jest drogie), reszta materiału zostaje. */
 html[data-lg3-off] .bar-inner,
 html[data-lg3-off] .island,
 html[data-lg3-off] .hero-plate {
-  background-color: rgba(12, 8, 30, 0.74);
-  border-color: rgba(255, 255, 255, 0.34);
+  background-color: rgba(255, 255, 255, 0.86);
+  border-color: rgba(40, 32, 66, 0.22);
 }
 html[data-lg3-off] .lg3-sheen,
 html[data-lg3-off] .lg3-edge,
@@ -542,7 +582,7 @@ html[data-lg3-off] .lg3-glow {
      Gdy ruszy, `.lg3-on` nadpisuje to wspólnym tintem. */
   background-color: var(--glass-island);
   box-shadow:
-    0 26px 70px -22px rgba(2, 0, 12, 0.95),
+    0 26px 70px -22px rgba(90, 80, 130, 0.95),
     inset 0 1px 0 rgba(255, 255, 255, 0.46);
 }
 .island p {
@@ -550,7 +590,7 @@ html[data-lg3-off] .lg3-glow {
   font-size: var(--t-small);
   color: var(--ink);
   /* Podkładka pod literami — na jasnej tafli biały tekst sam by się zgubił. */
-  text-shadow: 0 1px 3px rgba(6, 2, 20, 0.95), 0 0 12px rgba(6, 2, 20, 0.7);
+  text-shadow: 0 1px 3px rgba(255, 255, 255, 0.95), 0 0 12px rgba(255, 255, 255, 0.7);
 }
 .island strong { color: var(--ink); font-weight: 650; }
 .island .btn { padding: var(--s2) var(--s4); }
@@ -602,13 +642,13 @@ main > .section::before {
   line-height: 1.12;
   letter-spacing: -0.02em;
   font-weight: 700;
-  text-shadow: 0 2px 4px rgba(4, 0, 18, 0.7), 0 6px 30px rgba(4, 0, 18, 0.5);
+  text-shadow: 0 2px 4px rgba(255, 255, 255, 0.7), 0 6px 30px rgba(255, 255, 255, 0.5);
 }
 .section-head p {
   margin: 0;
   max-width: 60ch;
   color: var(--ink);
-  text-shadow: 0 1px 2px rgba(6, 2, 20, 0.9), 0 2px 14px rgba(6, 2, 20, 0.75);
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9), 0 2px 14px rgba(255, 255, 255, 0.75);
 }
 .section-kicker {
   margin: 0 0 var(--s3);
@@ -617,7 +657,7 @@ main > .section::before {
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--ink-soft);
-  text-shadow: 0 1px 2px rgba(6, 2, 20, 0.9);
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9);
 }
 
 /* ---------------------------------------------------- 9. KARTY (płaskie) */
@@ -672,13 +712,13 @@ main > .section::before {
   line-height: 1.25;
   letter-spacing: -0.01em;
   font-weight: 650;
-  text-shadow: 0 1px 2px rgba(6, 2, 20, 0.9), 0 2px 12px rgba(6, 2, 20, 0.8);
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9), 0 2px 12px rgba(255, 255, 255, 0.8);
 }
 .card p {
   margin: 0;
   font-size: var(--t-small);
   color: var(--ink);
-  text-shadow: 0 1px 2px rgba(6, 2, 20, 0.9), 0 2px 12px rgba(6, 2, 20, 0.8);
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9), 0 2px 12px rgba(255, 255, 255, 0.8);
 }
 .card-go {
   margin-top: auto;
@@ -686,7 +726,7 @@ main > .section::before {
   font-size: var(--t-small);
   font-weight: 600;
   color: #d9c6ff;
-  text-shadow: 0 1px 2px rgba(6, 2, 20, 0.9);
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9);
 }
 .card:hover .card-go { color: #f0e6ff; }
 
@@ -708,7 +748,7 @@ main > .section::before {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--ink-soft);
-  text-shadow: 0 1px 2px rgba(6, 2, 20, 0.95);
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.95);
 }
 .stats dd {
   order: 1;
@@ -717,7 +757,7 @@ main > .section::before {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.02em;
-  text-shadow: 0 2px 4px rgba(4, 0, 18, 0.8), 0 6px 28px rgba(4, 0, 18, 0.6);
+  text-shadow: 0 2px 4px rgba(255, 255, 255, 0.8), 0 6px 28px rgba(255, 255, 255, 0.6);
 }
 
 /* ----------------------------------------------------------- 11. STOPKA */
@@ -732,7 +772,7 @@ main > .section::before {
   margin: 0 0 var(--s2);
   font-size: var(--t-small);
   color: var(--ink-soft);
-  text-shadow: 0 1px 2px rgba(6, 2, 20, 0.9);
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.9);
 }
 .footer a { color: #d9c6ff; }
 
@@ -746,7 +786,7 @@ main > .section::before {
   padding: 4px 10px;
   border-radius: var(--r-full);
   border: 1px solid var(--hairline);
-  background: rgba(10, 7, 24, 0.40);
+  background: rgba(255, 255, 255, 0.40);
   color: var(--ink-soft);
   font-size: var(--t-micro);
   font-weight: 700;
@@ -786,7 +826,7 @@ main > .section::before {
 /* ------------------------------------------ 14. DOSTĘPNOŚĆ / WYDAJNOŚĆ */
 @media (prefers-reduced-transparency: reduce) {
   .bar-inner, .island {
-    background-color: rgba(10, 7, 24, 0.94);
+    background-color: rgba(255, 255, 255, 0.94);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
   }
@@ -797,7 +837,7 @@ html.rj-potato body::before { animation: none; filter: saturate(1.02); }
 html.rj-potato .bar-inner, html.rj-potato .island {
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
-  background-color: rgba(10, 7, 24, 0.92);
+  background-color: rgba(255, 255, 255, 0.92);
 }
 
 :focus-visible { outline: 2px solid #c9a5ff; outline-offset: 3px; border-radius: 4px; }

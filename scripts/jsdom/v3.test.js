@@ -87,11 +87,10 @@ check('krycie tintu mieści się w przedziale, który daje kontrast >= 4,5:1', (
   const m = /--lens-tint:\s*([\d.]+)/.exec(css);
   assert.ok(m, 'brak --lens-tint');
   const v = parseFloat(m[1]);
-  /* v3 (27.11): szkło jest JASNE (biała mgła), nie granatowe — tak wygląda
-     na referencjach. Przy zbyt niskim kryciu tekst gubi się na jasnych
-     wstęgach tapety; przy zbyt wysokim tafla staje się mleczną szybą
-     i tapeta pod nią znika. Zmierzone okno: 0.18–0.34. */
-  assert.ok(v >= 0.16 && v <= 0.36, `--lens-tint ${v} poza przedziałem 0.16–0.36`);
+  /* Runda 40: tapeta jest JASNA (219/255), więc biała mgła nie ma czego
+     rozjaśniać. Wystarczy jej tyle, żeby tafla czytała się jako materiał.
+     Więcej = mleczna szyba, mniej = tafla znika zupełnie. Okno 0.10–0.22. */
+  assert.ok(v >= 0.10 && v <= 0.22, `--lens-tint ${v} poza przedziałem 0.10–0.22`);
 });
 
 check('każdy tekst na szkle ma poświatę albo ciemną podkładkę', () => {
@@ -212,6 +211,22 @@ check('strona używa nowego silnika, nie starego', () => {
   /* Sprawdzamy tylko <script src>, nie komentarze — komentarz może
      wyjaśniać, dlaczego stary silnik został zastąpiony. */
   assert.ok(!/<script[^>]+src="[^"]*lg-glass\.js/.test(html), 'został stary silnik lg-glass.js');
+});
+
+/* ---------- 6. FUNDAMENT: tapeta musi być jasna ----------
+   Runda 40. Przez trzy rundy dostrajałem szkło na ciemnej tapecie
+   (jasność 48/255, 64% pikseli < 60) i wszystkie efekty były niewidoczne.
+   Użytkownik widział „ciemną płytę", bo ciemna była tapeta pod nią.
+   Ten strażnik pilnuje samego fundamentu — bez niego reszta nie ma sensu. */
+check('tapeta jest jasna (szkło ma co rozjaśniać)', () => {
+  assert.match(read('rejhub2/v3/index.html'), /wallpaper-glass-v3/, 'strona nie używa jasnej tapety');
+  assert.equal(/wallpaper-2560\.webp/.test(html), false,
+    'wróciła ciemna tapeta 2560 (jasność 48/255)');
+  assert.match(css + html, /--ink:\s*#16121f/,
+    'tekst nie jest ciemny — na jasnej tapecie biały tekst daje 1,1:1');
+  assert.ok(
+    css.indexOf('--edge: rgba(40, 32, 66') >= 0,
+    'krawędzie wróciły do białych — na jasnym tle są niewidoczne');
 });
 
 if (failed) {
