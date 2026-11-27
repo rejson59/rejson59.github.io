@@ -229,6 +229,37 @@ check('tapeta jest jasna (szkło ma co rozjaśniać)', () => {
     'krawędzie wróciły do białych — na jasnym tle są niewidoczne');
 });
 
+/* ---------- 7. STANY AWARYJNE NIE MOGĄ UDAWAĆ SZKŁA ----------
+   Runda 41. Na zrzucie z 27.11 tafle były płaską bielą — bez ugięcia,
+   bez bluru, bez krawędzi. Przyczyna: arkusz wstawiał mocne białe tło dla
+   `html:not(.lg3-ready)`, a ta klasa zależała WYŁĄCZNIE od zewnętrznego
+   JS. Wystarczył stary plik z cache, żeby strona na zawsze została
+   w stanie „silnik nie wystartował". */
+check('stan awaryjny nie jest płaską bielą', () => {
+  const PAGE = read('rejhub2/v3/index.html');
+  assert.match(PAGE, /\.bar-inner,\s*\n\.hero-plate,\s*\n\.island \{\s*\n  background-color: rgba\(255, 255, 255, var\(--lens-tint\)\)/,
+    'tafle nie mają własnego tła z tokenu — zapas je zastąpi płaską bielą');
+  const zapas = PAGE.slice(PAGE.indexOf('html:not(.lg3-ready) .bar-inner'));
+  const kolor = (zapas.match(/background-color:\s*rgba\(255, 255, 255, ([\d.]+)\)/) || [])[1];
+  assert.ok(Number(kolor) <= 0.65,
+    `zapas ma krycie ${kolor} — przy 0.8 tafla jest białą płytą, nie szkłem`);
+});
+
+check('lg3-ready ustawia inline boot, nie tylko plik zewnętrzny', () => {
+  const PAGE = read('rejhub2/v3/index.html');
+  const boot = PAGE.slice(PAGE.indexOf('function boot()'));
+  assert.match(boot.slice(0, 900), /classList\.add\("lg3-ready"\)/,
+    'lg3-ready zależy tylko od lg3.js — stary cache zostawi stronę w stanie awaryjnym');
+});
+
+check('żadna sekcja nie ma ciemnej podkładki', () => {
+  /* Komentarze wycinamy — poprzednia wersja tego testu łapała własny
+     komentarz opisujący usuniętą regułę i zgłaszała fałszywy alarm. */
+  const PAGE = read('rejhub2/v3/index.html').replace(/\/\*[\s\S]*?\*\//g, '');
+  assert.equal(/main > \.section::before\s*\{[^}]*rgba\(8, 5, 20/.test(PAGE), false,
+    'wróciła ciemna podkładka pod sekcje — na jasnej tapecie to ciemny prostokąt');
+});
+
 if (failed) {
   console.log('\n' + failed + ' NIEZALICZONYCH');
   process.exit(1);
