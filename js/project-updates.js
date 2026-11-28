@@ -12,7 +12,8 @@
  */
 window.PROJECT_UPDATES = {
   "Zayra-ai-asistant": { version: "v2026.11.27" },
-  "rejson59.github.io": { version: "v2026.11.26", note: "Społeczność 2.0: zdjęcia i filmy w postach, wątki odpowiedzi, agent AI" },
+  "rejson59.github.io": { version: "v2026.11.27", note: "Społeczność 2.0: zdjęcia i filmy w postach, wątki odpowiedzi, agent AI" },
+  "mini-gry": { version: "v2026.11.27" },
   "FreshBlox": { version: "v2026.11.26" },
   "skills-library": { version: "v2026.11.25" },
   "Your-LM": { version: "v2026.11.24" },
